@@ -1,0 +1,3 @@
+[submodule "QCat/3rdLib/spdlog"]
+	path = QCat/3rdLib/spdlog
+	url = https://github.com/gabime/spdlog
