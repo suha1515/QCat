@@ -28,6 +28,7 @@ project "QCat"
 
 	includedirs
 	{
+		"%{prj.name}/src",
 		"%{prj.name}/3rdLib/spdlog/include"
 	}
 

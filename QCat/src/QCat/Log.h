@@ -2,6 +2,7 @@
 #include "QCatCore.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/fmt/ostr.h"
 
 namespace QCat
 {
@@ -28,9 +29,9 @@ namespace QCat
 #define QCAT_CORE_FATAL(...) 	::QCat::Log::GetCoreLogger()->fatal(__VA_ARGS__)
 
 // 클라이언트 로그 매크로
-#define QCAT_TRACE(...)	::QCat::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define QCAT_TRACE(...)		::QCat::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define QCAT_INFO(...)		::QCat::Log::GetClientLogger()->info(__VA_ARGS__)
 #define QCAT_WARN(...)		::QCat::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define QCAT_ERROR(...)	::QCat::Log::GetClientLogger()->error(__VA_ARGS__)
+#define QCAT_ERROR(...)		::QCat::Log::GetClientLogger()->error(__VA_ARGS__)
 #define QCAT_FATAL(...) 	::QCat::Log::GetClientLogger()->fatal(__VA_ARGS__)
 
