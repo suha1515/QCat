@@ -1,3 +1,4 @@
+#include "qcpch.h"
 #include "Application.h"
 
 #include "QCat/Events/ApplicationEvent.h"

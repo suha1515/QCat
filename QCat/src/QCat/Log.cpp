@@ -1,3 +1,4 @@
+#include "qcpch.h"
 #include "Log.h"
 
 namespace QCat

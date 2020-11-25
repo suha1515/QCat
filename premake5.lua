@@ -18,6 +18,9 @@ project "QCat"
 	targetdir ("bin/" .. outputdir .."/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .."/%{prj.name}")
 
+	pchheader "qcpch.h"
+	pchsource "QCat/src/qcpch.cpp"
+
 	disablewarnings{"4819"}
 
 	files
