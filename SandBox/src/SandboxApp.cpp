@@ -5,6 +5,7 @@ class Sandbox : public QCat::Application
 public:
 	Sandbox()
 	{
+		
 	}
 	~Sandbox()
 	{

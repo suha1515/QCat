@@ -22,17 +22,22 @@ project "QCat"
 	pchsource "QCat/src/qcpch.cpp"
 
 	disablewarnings{"4819"}
-
+	characterset ("MBCS")
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
 	}
 
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/3rdLib/spdlog/include"
+		"%{prj.name}/3rdLib/spdlog/include",
+	}
+
+	links
+	{
+		"d3d11.lib",
 	}
 
 	filter "system:windows"
@@ -68,10 +73,16 @@ project "SandBox"
 	objdir ("bin-int/" .. outputdir .."/%{prj.name}")
 
 	disablewarnings{"4819"}
+	characterset ("MBCS")
+
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/resource.h",
+		"%{prj.name}/SandBox.rc",
+		"%{prj.name}/SandBox.aps",
+		"%{prj.name}/Resource/**.ico"
 	}
 
 	includedirs
@@ -106,4 +117,5 @@ project "SandBox"
 	filter "configurations:Dist"
 		defines "QCAT_DIST"
 		optimize "On"
+
 

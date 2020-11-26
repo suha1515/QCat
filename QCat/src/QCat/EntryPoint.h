@@ -3,6 +3,8 @@
 #ifdef QCAT_PLATFORM_WINDOWS
 
 extern QCat::Application* QCat::CreateApplication();
+
+
 int main(int argc,char** argv)
 {
 	QCat::Log::Init();
@@ -14,5 +16,6 @@ int main(int argc,char** argv)
 	app->Run();
 	delete app;
 }
+
 
 #endif

@@ -8,6 +8,8 @@ namespace QCat
 {
 	Application::Application()
 	{
+		m_window = std::unique_ptr<Window>(Window::Create());
+
 	}
 
 	Application::~Application()
@@ -15,16 +17,10 @@ namespace QCat
 	}
 	void Application::Run()
 	{
-		WindowResizeEvent e(1280, 720);
-		if (e.IsInCategory(EventCategoryApplication))
+		while (m_Running)
 		{
-			QCAT_TRACE(e);
+			m_window->OnUpdate();
 		}
-		if (e.IsInCategory(EventCategoryInput))
-		{
-			QCAT_TRACE(e);
-		}
-		while (true);
 	}
 }
 
