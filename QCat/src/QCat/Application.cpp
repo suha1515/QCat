@@ -27,6 +27,8 @@ namespace QCat
 	{
 		while (m_Running)
 		{
+			for (Layer* layer : m_layerStack)
+				layer->OnUpdate();
 			m_window->OnUpdate();
 		}
 	}
@@ -34,11 +36,22 @@ namespace QCat
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
-		if (e.GetEventType() == EventType::KeyPressed)
+		
+		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
-			QCAT_CORE_INFO("{0}", e);
+			(*--it)->OnEvent(e);
+			if (e.Handled)
+				break;
 		}
 		QCAT_CORE_INFO("{0}", e);
+	}
+	void Application::PushLayer(Layer* layer)
+	{
+		m_layerStack.PushLayer(layer);
+	}
+	void Application::PushOverlay(Layer* layer)
+	{
+		m_layerStack.PushOverlay(layer);
 	}
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
