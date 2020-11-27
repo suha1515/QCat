@@ -1,6 +1,10 @@
 #include "qcpch.h"
 #include "WindowsWindow.h"
 
+#include "QCat/Events/ApplicationEvent.h"
+#include "QCat/Events/MouseEvent.h"
+#include "QCat/Events/KeyboardEvent.h"
+
 namespace QCat
 {
 	Window* Window::Create(const WindowProps& props)
@@ -14,6 +18,9 @@ namespace QCat
 	WindowsWindow::WindowsWindow(int width, int height, const char* pWndName)
 		:wndClassName(pWndName), wndName(pWndName), width(width), height(height), windowOpen(true)
 	{
+		Window::m_data.Height = height;
+		Window::m_data.Width = width;
+		Window::m_data.Title = pWndName;
 		//윈도우 클래스 등록
 		hInstance = GetModuleHandle(nullptr);
 		WNDCLASSEX wc = { 0 };
@@ -115,18 +122,47 @@ namespace QCat
 		switch (msg)
 		{
 		case WM_CLOSE:
+		{
 			windowOpen = false;
-			return 0;
+			WindowCloseEvent event;
+			m_data.EventCallback(event);
+			PostQuitMessage(0);
+			break;
+		}
 			// 윈도우 포커스를 잃었을때
 		case WM_KILLFOCUS:
 			/************************	키보드 메시지	************************/
 			//  WM_KEY 관련 메시지일경우 wParam에 해당 키보드의 코드가 있다.
+			break;
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
-			break;
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
+		{
+			const int scancode = (lParam >> 16) & 0x1ff;
+			const int key = static_cast<unsigned char>(wParam);
+			const int action = keyboard.OnKeyInput(key,((lParam >> 31) & 1) ? QCAT_RELEASE : QCAT_PRESS);
+			
+			switch (action)
+			{
+			case QCAT_PRESS:
+			{
+				KeyPressedEvent event(key, 0);
+				m_data.EventCallback(event);
+				break;
+			}
+			case QCAT_RELEASE:
+			{
+				KeyReleasedEvent event(key);
+				m_data.EventCallback(event);
+				break;
+			}
+			case QCAT_REPEAT:
+				KeyPressedEvent event(key, 1);
+				m_data.EventCallback(event);
+			}
 			break;
+		}
 			//  WM_CHAR 일경우 해당 키보드에 해당하는 문자열이 wParam에 있다.
 		case WM_CHAR:
 			break;
@@ -134,27 +170,39 @@ namespace QCat
 			/************************	마우스 메시지	************************/
 		case WM_MOUSEMOVE:
 		{
-		
+			const POINTS pt = MAKEPOINTS(lParam);
+			MouseMoveEvent event((float)pt.x, (float)pt.y);
+			m_data.EventCallback(event);
 			break;
 		}
 		case WM_LBUTTONDOWN:
 		{
+			MouseButtonPressedEvent event(0);
+			m_data.EventCallback(event);
 			break;
 		}
 		case WM_RBUTTONDOWN:
 		{
+			MouseButtonPressedEvent event(1);
+			m_data.EventCallback(event);
 			break;
 		}
 		case WM_LBUTTONUP:
 		{
+			MouseButtonReleasedEvent event(0);
+			m_data.EventCallback(event);
 			break;
 		}
 		case WM_RBUTTONUP:
 		{
+			MouseButtonReleasedEvent event(1);
+			m_data.EventCallback(event);
 			break;
 		}
 		case WM_MOUSEWHEEL:
 		{
+			MouseScrollEvent event((float)(-((SHORT)HIWORD(wParam) / (double)WHEEL_DELTA)), 0);
+			m_data.EventCallback(event);
 			break;
 		}
 		/*******************************************************************/
@@ -167,6 +215,21 @@ namespace QCat
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
+	std::optional<int>  WindowsWindow::UpdateMessage() noexcept
+	{
+		MSG msg;
+
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == WM_QUIT)
+				return (int)msg.wParam;
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		return {};
+	}
 	void WindowsWindow::SetICon(HICON ico)
 	{
 		SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)ico);
@@ -174,6 +237,8 @@ namespace QCat
 	}
 	void WindowsWindow::OnUpdate()
 	{
+		const auto ecode = UpdateMessage();
+
 		pGfx->BeginFrame();
 
 		pGfx->EndFrame();
@@ -185,9 +250,6 @@ namespace QCat
 	unsigned int WindowsWindow::GetHeight() const
 	{
 		return 0;
-	}
-	void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
-	{
 	}
 	void WindowsWindow::SetVSync(bool enabled)
 	{

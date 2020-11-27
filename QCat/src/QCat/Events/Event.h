@@ -1,8 +1,7 @@
 #pragma once
-#include "QCat/QCatCore.h"
 
-#include <string>
-#include <functional>
+#include "qcpch.h"
+#include "QCat/QCatCore.h"
 
 namespace QCat
 {
@@ -33,6 +32,7 @@ namespace QCat
 
 	class QCAT_API Event
 	{
+		friend class EventDispatcher;
 	public:
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
@@ -53,16 +53,17 @@ namespace QCat
 		using EventFn = std::function<bool(T&)>;
 	public:
 		EventDispatcher(Event& event)
-			:m_Event(event)
-		{}
+			: m_Event(event)
+		{
+		}
 
 		template<typename T>
 		bool Dispatch(EventFn<T> func)
 		{
 			if (m_Event.GetEventType() == T::GetStaticType())
 			{
-				m_Event.m_Handled = func(*(T*)&m_Event);
-				return ture;
+				m_Event.m_Handled = func(static_cast<T&>(m_Event));
+				return true;
 			}
 			return false;
 		}

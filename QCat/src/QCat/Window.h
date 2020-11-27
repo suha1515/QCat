@@ -16,7 +16,7 @@ namespace QCat
 			unsigned int height = 720)
 			: Title(title), Width(width), Height(height)
 		{
-		}
+ 		}
 	};
 	class QCAT_API Window
 	{
@@ -37,5 +37,16 @@ namespace QCat
 
 
 		static Window* Create(const WindowProps& props = WindowProps());
+
+		struct WindowData
+		{
+			std::string Title;
+			unsigned int Width, Height;
+			bool VSync;
+
+			EventCallbackFn EventCallback;
+		};
+	protected:
+		WindowData m_data;
 	};
 }
