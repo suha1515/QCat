@@ -45,7 +45,7 @@ namespace QCat
 			if (e.Handled)
 				break;
 		}
-		QCAT_CORE_INFO("{0}", e);
+		//QCAT_CORE_INFO("{0}", e);
 	}
 	void Application::PushLayer(Layer* layer)
 	{

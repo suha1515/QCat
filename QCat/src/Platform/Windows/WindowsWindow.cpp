@@ -49,13 +49,13 @@ namespace QCat
 		wr.top = 0;
 		wr.bottom = height + wr.top;
 		//현재 적용된 스타일을 참고하여 RECT 로 새로적용된 크기를 계산한다.
-		if ((AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0))
+		if ((AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE) == 0))
 		{
 			
 		}
 		//윈도우 생성
 		hWnd = CreateWindow(wndClassName, wndName,
-			WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
+			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
 			nullptr, nullptr, hInstance, this
 		);
 		// 에러체크
@@ -108,7 +108,7 @@ namespace QCat
 			// WNDPROC 새로 지정.
 			SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&WindowsWindow::MsgThunk));
 
-			return pWnd->MsgHandle(hWnd, msg, wParam, lParam);
+			return pWnd->MsgThunk(hWnd, msg, wParam, lParam);
 		}
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
@@ -137,6 +137,24 @@ namespace QCat
 			/************************	키보드 메시지	************************/
 			//  WM_KEY 관련 메시지일경우 wParam에 해당 키보드의 코드가 있다.
 			break;
+		case WM_SIZE:
+		{
+			if (wParam != SIZE_MINIMIZED)
+			{
+				UINT width = LOWORD(lParam);
+				UINT height = HIWORD(lParam);
+				if (pGfx != nullptr)
+				{
+					SetWindowSize(width, height);
+				}
+				if (m_data.EventCallback)
+				{
+					WindowResizeEvent event(width, height);
+					m_data.EventCallback(event);
+				}
+			}
+			break;
+		}
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
 		case WM_KEYUP:
@@ -147,6 +165,8 @@ namespace QCat
 			const int action = keyboard.OnKeyInput(key,((lParam >> 31) & 1) ? QCAT_RELEASE : QCAT_PRESS);
 			
 			switch (action)
+			{
+			if (m_data.EventCallback)
 			{
 			case QCAT_PRESS:
 			{
@@ -163,7 +183,9 @@ namespace QCat
 			case QCAT_REPEAT:
 				KeyPressedEvent event(key, 1);
 				m_data.EventCallback(event);
+				break;
 			}
+			}	
 			break;
 		}
 			//  WM_CHAR 일경우 해당 키보드에 해당하는 문자열이 wParam에 있다.
@@ -261,6 +283,15 @@ namespace QCat
 	}
 	void WindowsWindow::SetVSync(bool enabled)
 	{
+	}
+	void WindowsWindow::SetWindowSize(unsigned int width,unsigned  int height) 
+	{
+		this->width = width;
+		this->height = height;
+		pGfx->CleanRenderTarget();
+		pGfx->GetSwapChain()->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+		pGfx->CreateRenderTarget();
+		pGfx->SetViewPort(width, height);
 	}
 	bool WindowsWindow::IsVSync() const
 	{

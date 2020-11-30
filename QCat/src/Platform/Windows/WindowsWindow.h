@@ -38,6 +38,7 @@ namespace QCat
 		virtual unsigned int GetHeight() const override;
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_data.EventCallback = callback; }
 		virtual void SetVSync(bool enabled) override;
+		virtual void SetWindowSize(unsigned int width, unsigned int hieght);
 		virtual bool IsVSync() const override;
 	private:
 		Keyboard keyboard;

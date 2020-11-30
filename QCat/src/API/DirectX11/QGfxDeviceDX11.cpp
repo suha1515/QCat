@@ -156,6 +156,21 @@ namespace QCat {
 	{
 		swapchain->Present(1u,0);
 	}
+	void QGfxDeviceDX11::CleanRenderTarget()
+	{
+		if (renderTargetView)
+		{
+			renderTargetView.Reset();
+		}
+	}
+	void QGfxDeviceDX11::CreateRenderTarget()
+	{
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
+		//swapchain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+		swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D),reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
+		if(renderTargetView==nullptr)
+			device->CreateRenderTargetView(pBackBuffer.Get(), NULL, &renderTargetView);
+	}
 	ComPtr<ID3D11Device>& QGfxDeviceDX11::GetDevice()
 	{
 		return device;
@@ -163,6 +178,21 @@ namespace QCat {
 	ComPtr<ID3D11DeviceContext>& QGfxDeviceDX11::GetContext()
 	{
 		return immediateContext;
+	}
+	ComPtr<IDXGISwapChain1>& QGfxDeviceDX11::GetSwapChain()
+	{
+		return swapchain;
+	}
+	void QGfxDeviceDX11::SetViewPort(int width, int height)
+	{
+		D3D11_VIEWPORT vp;
+		vp.Width = (float)width;
+		vp.Height = (float)height;
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
+		immediateContext->RSSetViewports(1u, &vp);
 	}
 }
 

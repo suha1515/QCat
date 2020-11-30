@@ -20,9 +20,15 @@ namespace QCat {
 
 		void BeginFrame();
 		void EndFrame();
-
+	public:
+		void CleanRenderTarget();
+		void CreateRenderTarget();
+	public:
 		ComPtr<ID3D11Device>& GetDevice();
 		ComPtr<ID3D11DeviceContext>& GetContext();
+		ComPtr<IDXGISwapChain1>& GetSwapChain();
+	public:
+		void SetViewPort(int width, int height);
 		
 	private:
 		UINT width;

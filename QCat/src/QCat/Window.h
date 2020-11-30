@@ -34,6 +34,7 @@ namespace QCat
 		//  Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
+		virtual void SetWindowSize(unsigned int width, unsigned int hieght) = 0;
 		virtual bool IsVSync() const = 0;
 
 
