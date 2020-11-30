@@ -146,7 +146,8 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::BeginFrame()
 	{
-		std::array<float, 4> color = { 0.0f,0.0f,0.0f,0.0f };
+		std::array<float, 4> color = { 1.0f,0.0f,1.0f,0.0f };
+		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), NULL);
 		immediateContext->ClearRenderTargetView(renderTargetView.Get(), color.data());
 
 		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -154,6 +155,14 @@ namespace QCat {
 	void QGfxDeviceDX11::EndFrame()
 	{
 		swapchain->Present(1u,0);
+	}
+	ComPtr<ID3D11Device>& QGfxDeviceDX11::GetDevice()
+	{
+		return device;
+	}
+	ComPtr<ID3D11DeviceContext>& QGfxDeviceDX11::GetContext()
+	{
+		return immediateContext;
 	}
 }
 

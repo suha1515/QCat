@@ -7,14 +7,15 @@
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
-void OnEvent2(QCat::Event& e)
-{
-
-}
 namespace QCat
 {
+
+	Application* Application::instance = nullptr;
 	Application::Application()
 	{
+		instance = this;
+		QCAT_CORE_ASSERT(!instance, "Application already exsists! ");
+
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 	}
@@ -27,9 +28,10 @@ namespace QCat
 	{
 		while (m_Running)
 		{
+			m_window->OnBegin();
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate();
-			m_window->OnUpdate();
+			m_window->OnEnd();
 		}
 	}
 	void Application::OnEvent(Event& e)

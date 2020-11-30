@@ -9,7 +9,7 @@ public:
 	{}
 	void OnUpdate() override
 	{
-		QCAT_INFO("ExampleLayer::Update");
+		//QCAT_INFO("ExampleLayer::Update");
 	}
 	void OnEvent(QCat::Event& event) override
 	{
@@ -23,6 +23,7 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExamLayer());
+		PushOverlay(new QCat::ImGuiLayer());
 	}
 	~Sandbox()
 	{

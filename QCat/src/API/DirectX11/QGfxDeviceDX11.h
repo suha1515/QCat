@@ -6,6 +6,7 @@
 #include <DirectXMath.h>
 #include <wrl.h>
 
+using namespace Microsoft::WRL;
 
 namespace QCat {
 
@@ -20,20 +21,23 @@ namespace QCat {
 		void BeginFrame();
 		void EndFrame();
 
+		ComPtr<ID3D11Device>& GetDevice();
+		ComPtr<ID3D11DeviceContext>& GetContext();
+		
 	private:
 		UINT width;
 		UINT height;
 	private:
 		D3D_FEATURE_LEVEL fetureLevel;
-		Microsoft::WRL::ComPtr<ID3D11Device> device;
-		Microsoft::WRL::ComPtr<IDXGISwapChain1> swapchain;
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediateContext;
+		ComPtr<ID3D11Device> device;
+		ComPtr<IDXGISwapChain1> swapchain;
+		ComPtr<ID3D11DeviceContext> immediateContext;
 
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencil;
+		ComPtr<ID3D11Texture2D> backBuffer;
+		ComPtr<ID3D11Texture2D> depthStencil;
 
-		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+		ComPtr<ID3D11RenderTargetView> renderTargetView;
+		ComPtr<ID3D11DepthStencilView> depthStencilView;
 	};
 }
 	

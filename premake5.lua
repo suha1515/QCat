@@ -10,10 +10,18 @@ workspace "QCat"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architexture}"
 
+-- Include directories
+IncludeDir = {}
+IncludeDir["ImGui"] = "QCat/3rdLib/Imgui"
+
+include "QCat/3rdLib/Imgui"
+
 project "QCat"
 	location "QCat"
 	kind "StaticLib"
 	language "C++"
+	cppdialect "C++latest"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .."/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .."/%{prj.name}")
@@ -33,16 +41,16 @@ project "QCat"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/3rdLib/spdlog/include",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links
 	{
 		"d3d11.lib",
+		"ImGui"
 	}
 
 	filter "system:windows"
-		cppdialect "C++latest"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines
@@ -53,21 +61,22 @@ project "QCat"
 
 	filter "configurations:Debug"
 		defines "QCAT_DEBUG"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "QCAT_RELEASE"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "QCAT_DIST"
-		optimize "On"
+		optimize "on"
 
 project "SandBox"
 	location "SandBox"
 	kind "ConsoleApp"
-
 	language "C++"
+	cppdialect "C++latest"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .."/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .."/%{prj.name}")
@@ -97,8 +106,6 @@ project "SandBox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++latest"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines
@@ -108,14 +115,14 @@ project "SandBox"
 
 	filter "configurations:Debug"
 		defines "QCAT_DEBUG"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "QCAT_RELEASE"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "QCAT_DIST"
-		optimize "On"
+		optimize "on"
 
 

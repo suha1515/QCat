@@ -5,6 +5,8 @@
 #include "QCat/Events/MouseEvent.h"
 #include "QCat/Events/KeyboardEvent.h"
 
+#include "Platform/ImGui/Windows_Directx11/imgui_impl_win32.h"
+
 namespace QCat
 {
 	Window* Window::Create(const WindowProps& props)
@@ -63,6 +65,7 @@ namespace QCat
 		}
 
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
+
 
 		pGfx = std::make_unique<QGfxDeviceDX11>(hWnd, width, height);
 		// Raw값을 받아올 장치에대해 세부화한다
@@ -230,26 +233,31 @@ namespace QCat
 
 		return {};
 	}
+	HWND WindowsWindow::GetHandle() noexcept
+	{
+		return hWnd;
+	}
 	void WindowsWindow::SetICon(HICON ico)
 	{
 		SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)ico);
 		SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)ico);
 	}
-	void WindowsWindow::OnUpdate()
+	void WindowsWindow::OnBegin()
 	{
 		const auto ecode = UpdateMessage();
-
 		pGfx->BeginFrame();
-
+	}
+	void WindowsWindow::OnEnd()
+	{
 		pGfx->EndFrame();
 	}
 	unsigned int WindowsWindow::GetWidth() const
 	{
-		return 0;
+		return width;
 	}
 	unsigned int WindowsWindow::GetHeight() const
 	{
-		return 0;
+		return height;
 	}
 	void WindowsWindow::SetVSync(bool enabled)
 	{

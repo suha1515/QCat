@@ -19,12 +19,17 @@ namespace QCat
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
+
+		inline static Application& GetInstance() { return *instance; }
+		inline Window* GetWindow() { return m_window.get(); }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 	private:
 		std::unique_ptr<Window> m_window;
 		bool m_Running = true;
 		LayerStack m_layerStack;
+	private:
+		static Application* instance;
 	};
 
 	// To be Defined in Client

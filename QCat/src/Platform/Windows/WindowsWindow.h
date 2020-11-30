@@ -7,6 +7,7 @@
 
 
 
+
 namespace QCat
 {
 	class WindowsWindow :public Window
@@ -24,12 +25,16 @@ namespace QCat
 		LRESULT MsgHandle(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
 		std::optional<int> UpdateMessage() noexcept;
+	public:
+		HWND GetHandle() noexcept;
 
+	public:
 		void SetICon(HICON ico);
 
 		// Window을(를) 통해 상속됨
-		virtual void OnUpdate() override;
-		virtual unsigned int GetWidth() const override;
+		virtual void OnBegin() override;
+		virtual void OnEnd() override;
+ 		virtual unsigned int GetWidth() const override;
 		virtual unsigned int GetHeight() const override;
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_data.EventCallback = callback; }
 		virtual void SetVSync(bool enabled) override;
