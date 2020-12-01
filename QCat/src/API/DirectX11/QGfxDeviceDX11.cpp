@@ -56,7 +56,7 @@ namespace QCat {
 		sd.BufferCount = 2;
 		sd.Flags = 0;
 		sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-		sd.Scaling = DXGI_SCALING_STRETCH;
+		sd.Scaling = DXGI_SCALING_NONE;
 
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullscreenDesc;
 		fullscreenDesc.RefreshRate.Numerator = 60;
@@ -79,7 +79,8 @@ namespace QCat {
 		hr = pDXGIDevice->SetMaximumFrameLatency(1);
 
 		//Create BackBuffer
-		hr = swapchain->GetBuffer(0,__uuidof(ID3D11Texture2D),&backBuffer);
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
+		hr = swapchain->GetBuffer(0,__uuidof(ID3D11Texture2D),reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
 		if (FAILED(hr))
 		{
 			std::stringstream ss;
@@ -87,7 +88,7 @@ namespace QCat {
 			QCAT_CORE_ERROR(ss.str());
 		}
 
-		hr = device->CreateRenderTargetView(backBuffer.Get(), nullptr, &renderTargetView);
+		hr = device->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &renderTargetView);
 		if (FAILED(hr))
 		{
 			std::stringstream ss;
@@ -167,7 +168,7 @@ namespace QCat {
 	{
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pBackBuffer;
 		//swapchain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-		swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D),reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
+		swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
 		if(renderTargetView==nullptr)
 			device->CreateRenderTargetView(pBackBuffer.Get(), NULL, &renderTargetView);
 	}

@@ -52,4 +52,22 @@ namespace QCat
 
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
+
+	class QCAT_API KeyTypedEvent : public KeyboardEvent
+	{
+	public:
+		KeyTypedEvent(int keycode)
+			: KeyboardEvent(keycode) {}
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "KeyTypeEvent : " << m_keycode;
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(KeyTyped)
+	private:
+		int m_repeatCount;
+	};
 }

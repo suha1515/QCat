@@ -32,14 +32,12 @@ namespace QCat
 		wc.cbClsExtra = 0;
 		wc.cbWndExtra = 0;
 		wc.hInstance = hInstance;
-		wc.hIcon = static_cast<HICON>(LoadImage(hInstance, IDI_APPLICATION, IMAGE_ICON, 32, 32, 0));
-		UINT errorcode = 0;
-		errorcode = GetLastError();
-		wc.hCursor = nullptr;
+		//wc.hIcon = static_cast<HICON>(LoadImage(hInstance, IDI_APPLICATION, IMAGE_ICON, 32, 32, 0));
+		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 		wc.hbrBackground = nullptr;
 		wc.lpszMenuName = nullptr;
 		wc.lpszClassName = wndClassName;
-		wc.hIconSm = static_cast<HICON>(LoadImage(hInstance, IDI_APPLICATION, IMAGE_ICON, 16, 16, 0));
+		//wc.hIconSm = static_cast<HICON>(LoadImage(hInstance, IDI_APPLICATION, IMAGE_ICON, 16, 16, 0));
 		RegisterClassEx(&wc);
 
 		// 윈도우 사이즈를 기준으로하여 클라이언트 영역을 계산한다.
@@ -55,7 +53,8 @@ namespace QCat
 		}
 		//윈도우 생성
 		hWnd = CreateWindow(wndClassName, wndName,
-			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
+			WS_OVERLAPPEDWINDOW,
+			CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
 			nullptr, nullptr, hInstance, this
 		);
 		// 에러체크
@@ -63,9 +62,8 @@ namespace QCat
 		{
 		
 		}
-
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
-
+		UpdateWindow(hWnd);
 
 		pGfx = std::make_unique<QGfxDeviceDX11>(hWnd, width, height);
 		// Raw값을 받아올 장치에대해 세부화한다
@@ -160,8 +158,29 @@ namespace QCat
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
 		{
+			if (wParam == VK_PROCESSKEY)
+				break;
+			if (wParam == VK_HANJA)
+				break;
+
+			int lParam2 = lParam;
 			const int scancode = (lParam >> 16) & 0x1ff;
-			const int key = static_cast<unsigned char>(wParam);
+			int key = static_cast<unsigned char>(wParam);
+			int extended = (lParam & 0x01000000);
+			switch (key)
+			{
+			case VK_SHIFT:
+			{
+				key = extended ? VK_RSHIFT : VK_LSHIFT;
+				break;
+			}
+			case VK_CONTROL:
+				key = extended ? VK_RCONTROL : VK_LCONTROL;
+				break;
+			case VK_MENU:
+				key = extended ? VK_RMENU : VK_LMENU;
+				break;
+			}
 			const int action = keyboard.OnKeyInput(key,((lParam >> 31) & 1) ? QCAT_RELEASE : QCAT_PRESS);
 			
 			switch (action)
@@ -190,7 +209,11 @@ namespace QCat
 		}
 			//  WM_CHAR 일경우 해당 키보드에 해당하는 문자열이 wParam에 있다.
 		case WM_CHAR:
+		{
+			KeyTypedEvent event(wParam);
+			m_data.EventCallback(event);
 			break;
+		}
 			/*******************************************************************/
 			/************************	마우스 메시지	************************/
 		case WM_MOUSEMOVE:
@@ -289,7 +312,7 @@ namespace QCat
 		this->width = width;
 		this->height = height;
 		pGfx->CleanRenderTarget();
-		pGfx->GetSwapChain()->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+		pGfx->GetSwapChain()->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 		pGfx->CreateRenderTarget();
 		pGfx->SetViewPort(width, height);
 	}

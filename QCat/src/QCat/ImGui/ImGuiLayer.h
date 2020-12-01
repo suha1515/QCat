@@ -18,6 +18,7 @@ namespace QCat
 		void OnAttach();
 		void OnDetach();
 		void OnUpdate();
+		void OnRender();
 		void OnEvent(Event& event);
 	private:
 		bool OnMouseButtonPressEvent(MouseButtonPressedEvent& e);
@@ -26,7 +27,7 @@ namespace QCat
 		bool OnMouseButtonScrollEvent(MouseScrollEvent& e);
 		bool OnKeyPressedEvent(KeyPressedEvent& e);
 		bool OnKeyReleasedEvent(KeyReleasedEvent& e);
-	//	bool OnKeyTypedEvent(KeyTypedEvent& e);
+		bool OnKeyTypedEvent(KeyTypedEvent& e);
 		bool OnWindowResizedEvent(WindowResizeEvent& e);
 	private:
 		Timer timer;

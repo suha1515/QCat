@@ -31,6 +31,8 @@ namespace QCat
 			m_window->OnBegin();
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate();
+			
+
 			m_window->OnEnd();
 		}
 	}

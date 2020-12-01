@@ -13,7 +13,9 @@ namespace QCat
 
 		virtual void OnAttach(){}
 		virtual void OnDetach(){}
+		virtual void OnBegin(){}
 		virtual void OnUpdate(){}
+		virtual void OnRende(){};
 		virtual void OnEvent(Event& event){}
 
 		inline const std::string& GetName() const { return m_DebugName; }

@@ -31,61 +31,67 @@ namespace QCat
 		WindowsWindow* window = dynamic_cast<WindowsWindow*>(Application::GetInstance().GetWindow());
 		QCAT_CORE_ASSERT(window, "Imgui Attach Error :: Window Nullptr");
 		HWND hwnd = window->GetHandle();
-		//ImGuiIO& io = ImGui::GetIO();
-		//io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;         // We can honor GetMouseCursor() values (optional)
-		//io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;          // We can honor io.WantSetMousePos requests (optional, rarely used)
-		//io.BackendPlatformName = "imgui_impl_win32";
+		ImGuiIO& io = ImGui::GetIO();
+		io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;         // We can honor GetMouseCursor() values (optional)
+		io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;          // We can honor io.WantSetMousePos requests (optional, rarely used)
+		io.BackendPlatformName = "imgui_impl_win32";
+		io.ImeWindowHandle = hwnd;
+		// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array that we will update during the application lifetime.
+		io.KeyMap[ImGuiKey_Tab] = VK_TAB;
+		io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
+		io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
+		io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
+		io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
+		io.KeyMap[ImGuiKey_PageUp] = VK_PRIOR;
+		io.KeyMap[ImGuiKey_PageDown] = VK_NEXT;
+		io.KeyMap[ImGuiKey_Home] = VK_HOME;
+		io.KeyMap[ImGuiKey_End] = VK_END;
+		io.KeyMap[ImGuiKey_Insert] = VK_INSERT;
+		io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
+		io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
+		io.KeyMap[ImGuiKey_Space] = VK_SPACE;
+		io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
+		io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
+		io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
+		io.KeyMap[ImGuiKey_A] = 'A';
+		io.KeyMap[ImGuiKey_C] = 'C';
+		io.KeyMap[ImGuiKey_V] = 'V';
+		io.KeyMap[ImGuiKey_X] = 'X';
+		io.KeyMap[ImGuiKey_Y] = 'Y';
+		io.KeyMap[ImGuiKey_Z] = 'Z';
 
-		//// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array that we will update during the application lifetime.
-		//io.KeyMap[ImGuiKey_Tab] = VK_TAB;
-		//io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
-		//io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
-		//io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
-		//io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
-		//io.KeyMap[ImGuiKey_PageUp] = VK_PRIOR;
-		//io.KeyMap[ImGuiKey_PageDown] = VK_NEXT;
-		//io.KeyMap[ImGuiKey_Home] = VK_HOME;
-		//io.KeyMap[ImGuiKey_End] = VK_END;
-		//io.KeyMap[ImGuiKey_Insert] = VK_INSERT;
-		//io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
-		//io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
-		//io.KeyMap[ImGuiKey_Space] = VK_SPACE;
-		//io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
-		//io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
-		//io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
-		//io.KeyMap[ImGuiKey_A] = 'A';
-		//io.KeyMap[ImGuiKey_C] = 'C';
-		//io.KeyMap[ImGuiKey_V] = 'V';
-		//io.KeyMap[ImGuiKey_X] = 'X';
-		//io.KeyMap[ImGuiKey_Y] = 'Y';
-		//io.KeyMap[ImGuiKey_Z] = 'Z';
 
-		ImGui_ImplWin32_Init(hwnd);
+		//ImGui_ImplWin32_Init(hwnd);
 		ImGui_ImplDX11_Init(window->Gfx().GetDevice().Get(), window->Gfx().GetContext().Get());
 	}
 	void ImGuiLayer::OnDetach()
 	{
 		ImGui_ImplDX11_Shutdown();
-		ImGui_ImplWin32_Shutdown();
+		//ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
 	void ImGuiLayer::OnUpdate()
 	{
-		//ImGuiIO& io = ImGui::GetIO();
-		//Application& app = Application::GetInstance();
-		//io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
-		//io.DeltaTime = (float)timer.Mark();
+		ImGuiIO& io = ImGui::GetIO();
+		Application& app = Application::GetInstance();
+		io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
+		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+		io.DeltaTime = (float)timer.Mark();
+
 		//io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		//QCAT_CORE_INFO("Imgui Layer update");
 		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
+		//ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
 		static bool show = true;
 		ImGui::ShowDemoWindow(&show);
-
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+	void ImGuiLayer::OnRender()
+	{
+		
 	}
 	void ImGuiLayer::OnEvent(Event& event)
 	{
@@ -96,6 +102,7 @@ namespace QCat
 		dispatcher.Dispatch<MouseScrollEvent>(BIND_EVENT_FN(OnMouseButtonScrollEvent));
 		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(OnKeyPressedEvent));
 		dispatcher.Dispatch<KeyReleasedEvent>(BIND_EVENT_FN(OnKeyReleasedEvent));
+		dispatcher.Dispatch<KeyTypedEvent>(BIND_EVENT_FN(OnKeyTypedEvent));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResizedEvent));
 	}
 	bool ImGuiLayer::OnMouseButtonPressEvent(MouseButtonPressedEvent& e)
@@ -129,18 +136,34 @@ namespace QCat
 	}
 	bool ImGuiLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[e.GetKeyCode()] = true;
+
+		io.KeyCtrl  = io.KeysDown[VK_LCONTROL] || io.KeysDown[VK_RCONTROL];
+		io.KeyShift = io.KeysDown[VK_LSHIFT] || io.KeysDown[VK_RSHIFT];
+		io.KeyAlt   = io.KeysDown[VK_LMENU] || io.KeysDown[VK_RMENU];
+		io.KeySuper = io.KeysDown[VK_LWIN] || io.KeysDown[VK_RWIN];
+
 		return false;
 	}
 	bool ImGuiLayer::OnKeyReleasedEvent(KeyReleasedEvent& e)
 	{
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[e.GetKeyCode()] = false;
+
+		return false;
+	}
+	bool ImGuiLayer::OnKeyTypedEvent(KeyTypedEvent& e)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		int keycode = e.GetKeyCode();
+		if (keycode >0 && keycode < 0x10000)
+			io.AddInputCharacter((unsigned int)keycode);
+
 		return false;
 	}
 	bool ImGuiLayer::OnWindowResizedEvent(WindowResizeEvent& e)
 	{
-		//ImGuiIO& io = ImGui::GetIO();
-		//io.DisplaySize = ImVec2((float)e.GetWidth(), (float)e.GetHeight());
-		//io.DisplayFramebufferScale = ImVec2(1.0f,1.0f);
-		//io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		return false;
 	}
 }
