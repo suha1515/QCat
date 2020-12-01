@@ -6,6 +6,7 @@
 #include "QCat/Events/KeyboardEvent.h"
 
 #include "Platform/ImGui/Windows_Directx11/imgui_impl_win32.h"
+#include "QCat/Log.h"
 
 namespace QCat
 {
@@ -23,6 +24,7 @@ namespace QCat
 		Window::m_data.Height = height;
 		Window::m_data.Width = width;
 		Window::m_data.Title = pWndName;
+		QCAT_CORE_INFO("Creating Window {0} ({1}, {2})", pWndName, width, height);
 		//윈도우 클래스 등록
 		hInstance = GetModuleHandle(nullptr);
 		WNDCLASSEX wc = { 0 };
@@ -219,32 +221,69 @@ namespace QCat
 		case WM_MOUSEMOVE:
 		{
 			const POINTS pt = MAKEPOINTS(lParam);
+			mouse.SetPos(pt.x, pt.y);
 			MouseMoveEvent event((float)pt.x, (float)pt.y);
 			m_data.EventCallback(event);
 			break;
 		}
 		case WM_LBUTTONDOWN:
-		{
-			MouseButtonPressedEvent event(0);
-			m_data.EventCallback(event);
-			break;
-		}
 		case WM_RBUTTONDOWN:
-		{
-			MouseButtonPressedEvent event(1);
-			m_data.EventCallback(event);
-			break;
-		}
 		case WM_LBUTTONUP:
-		{
-			MouseButtonReleasedEvent event(0);
-			m_data.EventCallback(event);
-			break;
-		}
 		case WM_RBUTTONUP:
 		{
-			MouseButtonReleasedEvent event(1);
-			m_data.EventCallback(event);
+			int i,button, action;
+			if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP)
+				button = QCAT_MOUSE_BUTTON_LEFT;
+			else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP)
+				button = QCAT_MOUSE_BUTTON_RIGHT;
+			else if (msg == WM_MBUTTONDOWN || msg == WM_MBUTTONUP)
+				button = QCAT_MOUSE_BUTTON_MIDDLE;
+			else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+				button = QCAT_MOUSE_BUTTON_4;
+			else
+				button = QCAT_MOUSE_BUTTON_5;
+
+			if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN ||
+				msg == WM_MBUTTONDOWN || msg == WM_XBUTTONDOWN)
+			{
+				action = QCAT_PRESS;
+			}
+			else
+				action = QCAT_RELEASE;
+
+			for (i = 0; i <= QCAT_MOUSE_BUTTON_LAST; i++)
+			{
+				if (mouse.mouseButtons[i] == QCAT_PRESS)
+					break;
+			}
+			if (i > QCAT_MOUSE_BUTTON_LAST)
+				SetCapture(hWnd);
+
+			mouse.InputMouseClick(button, action);
+
+			for (i = 0; i <= QCAT_MOUSE_BUTTON_LAST; i++)
+			{
+				if (mouse.mouseButtons[i] == QCAT_PRESS)
+					break;
+			}
+			if (i > QCAT_MOUSE_BUTTON_LAST)
+				ReleaseCapture();
+
+			switch (action)
+			{
+			case QCAT_PRESS:
+			{
+				MouseButtonPressedEvent event(button);
+				m_data.EventCallback(event);
+				break;
+			}
+			case QCAT_RELEASE:
+			{
+				MouseButtonReleasedEvent event(button);
+				m_data.EventCallback(event);
+				break;
+			}
+			}
 			break;
 		}
 		case WM_MOUSEWHEEL:

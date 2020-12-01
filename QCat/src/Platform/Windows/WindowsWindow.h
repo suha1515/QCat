@@ -1,11 +1,8 @@
 #pragma once
 #include "QCat/Window.h"
-
-#include "QCat/Input/KeyBoard/KeyBoard.h"
-
+#include "QCat/InputDevice/KeyBoard/KeyBoard.h"
+#include "QCat/InputDevice/Mouse/Mouse.h"
 #include "API/DirectX11/QGfxDeviceDX11.h"
-
-
 
 
 namespace QCat
@@ -28,20 +25,28 @@ namespace QCat
 	public:
 		HWND GetHandle() noexcept;
 
+
+		int GetKeyState(int keycode) noexcept { return keyboard.GetKey(keycode); }
+		int GetMouseState(int button) noexcept { return mouse.GetButton(button);}
+		std::pair<int, int> GetMousePos() noexcept { return mouse.GetMousePos(); } ;
 	public:
 		void SetICon(HICON ico);
 
 		// Window을(를) 통해 상속됨
 		virtual void OnBegin() override;
 		virtual void OnEnd() override;
+
  		virtual unsigned int GetWidth() const override;
 		virtual unsigned int GetHeight() const override;
+		inline virtual void* GetNativeWindow() { return this; };
+
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_data.EventCallback = callback; }
 		virtual void SetVSync(bool enabled) override;
 		virtual void SetWindowSize(unsigned int width, unsigned int hieght);
 		virtual bool IsVSync() const override;
 	private:
 		Keyboard keyboard;
+		Mouse mouse;
 	private:
 		uint32_t width = 1280;
 		uint32_t height = 720;

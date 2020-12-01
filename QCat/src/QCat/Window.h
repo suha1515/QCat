@@ -30,6 +30,7 @@ namespace QCat
 
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
+		virtual void* GetNativeWindow()=0;
 
 		//  Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
@@ -37,7 +38,7 @@ namespace QCat
 		virtual void SetWindowSize(unsigned int width, unsigned int hieght) = 0;
 		virtual bool IsVSync() const = 0;
 
-
+		
 		static Window* Create(const WindowProps& props = WindowProps());
 
 		struct WindowData

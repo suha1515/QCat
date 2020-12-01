@@ -14,6 +14,10 @@
 	#error QCat only support Windows!
 #endif
 
+#ifdef QCAT_DEBUG
+	#define QCAT_ENABLE_ASSERTS
+#endif
+
 
 #ifdef QCAT_ENABLE_ASSERTS
 #define QCAT_ASSERT(x, ...) { if(!(x)) { QCAT_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }

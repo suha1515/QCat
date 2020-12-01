@@ -61,14 +61,17 @@ project "QCat"
 
 	filter "configurations:Debug"
 		defines "QCAT_DEBUG"
+		runtime "Debug"
 		symbols "on"
 
 	filter "configurations:Release"
 		defines "QCAT_RELEASE"
+		runtime "Release"
 		optimize "on"
 
 	filter "configurations:Dist"
 		defines "QCAT_DIST"
+		runtime "Release"
 		optimize "on"
 
 project "SandBox"

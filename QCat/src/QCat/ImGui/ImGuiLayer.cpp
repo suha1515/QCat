@@ -60,7 +60,9 @@ namespace QCat
 		io.KeyMap[ImGuiKey_Y] = 'Y';
 		io.KeyMap[ImGuiKey_Z] = 'Z';
 
-
+		QCAT_CORE_ASSERT(::QueryPerformanceFrequency((LARGE_INTEGER*)&g_TicksPerSecond), "Init failed : TickperSecn");
+		QCAT_CORE_ASSERT(::QueryPerformanceCounter((LARGE_INTEGER*)&g_Time), "Init failed : g_Time");
+	
 		//ImGui_ImplWin32_Init(hwnd);
 		ImGui_ImplDX11_Init(window->Gfx().GetDevice().Get(), window->Gfx().GetContext().Get());
 	}
@@ -77,6 +79,10 @@ namespace QCat
 		io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		io.DeltaTime = (float)timer.Mark();
+		/*INT64 current_time;
+		::QueryPerformanceCounter((LARGE_INTEGER*)&current_time);
+		io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
+		g_Time = current_time;*/
 
 		//io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 		//QCAT_CORE_INFO("Imgui Layer update");

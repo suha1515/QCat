@@ -4,6 +4,7 @@
 #include "Events/KeyboardEvent.h"
 #include "QCat/Log.h"
 
+#include "Input.h"
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
@@ -13,8 +14,8 @@ namespace QCat
 	Application* Application::instance = nullptr;
 	Application::Application()
 	{
-		instance = this;
 		QCAT_CORE_ASSERT(!instance, "Application already exsists! ");
+		instance = this;
 
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(OnEvent));
@@ -32,6 +33,12 @@ namespace QCat
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate();
 			
+			if (Input::IsMouseButtonPressed(QCAT_MOUSE_BUTTON_LEFT))
+			{
+				//QCAT_CORE_INFO("Button Clicked!");
+			}
+			//auto [x, y] = Input::GetMousePos();
+			//QCAT_CORE_TRACE("{0} , {1}", x, y);
 
 			m_window->OnEnd();
 		}
