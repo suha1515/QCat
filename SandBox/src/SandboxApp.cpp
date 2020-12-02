@@ -22,10 +22,7 @@ class Sandbox : public QCat::Application
 public:
 	Sandbox()
 	{
-		if (DirectX::AVX::XMVerifyAVXSupport())
-			QCAT_TRACE("AVX SUPPORT!");
 		PushLayer(new ExamLayer());
-		PushOverlay(new QCat::ImGuiLayer());
 	}
 	~Sandbox()
 	{

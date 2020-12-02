@@ -15,11 +15,13 @@ namespace QCat
 		ImGuiLayer();
 		~ImGuiLayer();
 
-		void OnAttach();
-		void OnDetach();
-		void OnUpdate();
-		void OnRender();
-		void OnEvent(Event& event);
+		virtual void OnAttach() override;
+		virtual void OnDetach()	override;
+		virtual void OnEvent(Event& event) override;
+
+		virtual void OnImGuiRender() override;
+		void OnBegin();
+		void OnEnd();
 	private:
 		bool OnMouseButtonPressEvent(MouseButtonPressedEvent& e);
 		bool OnMouseButtonReleaseEvent(MouseButtonReleasedEvent& e);

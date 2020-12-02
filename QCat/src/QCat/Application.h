@@ -1,10 +1,12 @@
 #pragma once
 #include "QCatCore.h"
+#include "Window.h"
 #include "Events/Event.h"
 #include "QCat/Layer/LayerStack.h"
 #include "QCat/Events/ApplicationEvent.h"
 
-#include "Window.h"
+#include "QCat/ImGui/ImGuiLayer.h"
+
 namespace QCat
 {
 	class QCAT_API Application
@@ -26,6 +28,7 @@ namespace QCat
 		bool OnWindowClose(WindowCloseEvent& e);
 	private:
 		std::unique_ptr<Window> m_window;
+		ImGuiLayer* m_ImguiLayer;
 		bool m_Running = true;
 		LayerStack m_layerStack;
 	private:

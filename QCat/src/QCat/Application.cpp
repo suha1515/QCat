@@ -4,6 +4,7 @@
 #include "Events/KeyboardEvent.h"
 #include "QCat/Log.h"
 
+#include  "Platform/Windows/WindowsWindow.h"
 #include "Input.h"
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
@@ -19,11 +20,14 @@ namespace QCat
 
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+
+		m_ImguiLayer = new ImGuiLayer();
+		PushOverlay(m_ImguiLayer);
 	}
 
 	Application::~Application()
 	{
-		
+	
 	}
 	void Application::Run()
 	{
@@ -32,14 +36,16 @@ namespace QCat
 			m_window->OnBegin();
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate();
-			
-			if (Input::IsKeyPressded(QCAT_KEY_0))
+			if (m_Running)
 			{
-				QCAT_CORE_INFO("Key Clicked!");
-			}
-			//auto [x, y] = Input::GetMousePos();
-			//QCAT_CORE_TRACE("{0} , {1}", x, y);
+				m_ImguiLayer->OnBegin();
+				for (Layer* layer : m_layerStack)
+					layer->OnImGuiRender();
+				WindowsWindow* window = dynamic_cast<WindowsWindow*>(GetWindow());
+				HWND hwnd = window->GetHandle();
 
+				m_ImguiLayer->OnEnd();
+			}	
 			m_window->OnEnd();
 		}
 	}

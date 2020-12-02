@@ -5,7 +5,7 @@
 #include "QCat/Events/MouseEvent.h"
 #include "QCat/Events/KeyboardEvent.h"
 
-#include "Platform/ImGui/Windows_Directx11/imgui_impl_win32.h"
+#include "backends/imgui_impl_win32.h"
 #include "QCat/Log.h"
 
 namespace QCat

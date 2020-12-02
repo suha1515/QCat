@@ -3,8 +3,8 @@
 #include "imgui.h"
 
 #include "QCat/Application.h"
-#include "Platform/ImGui/Windows_Directx11/imgui_impl_dx11.h"
-#include "Platform/ImGui/Windows_Directx11/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx11.h"
+#include "backends/imgui_impl_win32.h"
 
 #include "Platform/Windows/WindowsWindow.h"
 #include "API/DirectX11/QGfxDeviceDX11.h"
@@ -21,6 +21,7 @@ namespace QCat
 	}
 	ImGuiLayer::~ImGuiLayer()
 	{
+		OnDetach();
 	}
 	void ImGuiLayer::OnAttach()
 	{
@@ -32,72 +33,50 @@ namespace QCat
 		QCAT_CORE_ASSERT(window, "Imgui Attach Error :: Window Nullptr");
 		HWND hwnd = window->GetHandle();
 		ImGuiIO& io = ImGui::GetIO();
-		io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;         // We can honor GetMouseCursor() values (optional)
-		io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;          // We can honor io.WantSetMousePos requests (optional, rarely used)
-		io.BackendPlatformName = "imgui_impl_win32";
-		io.ImeWindowHandle = hwnd;
-		// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array that we will update during the application lifetime.
-		io.KeyMap[ImGuiKey_Tab] = VK_TAB;
-		io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
-		io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
-		io.KeyMap[ImGuiKey_UpArrow] = VK_UP;
-		io.KeyMap[ImGuiKey_DownArrow] = VK_DOWN;
-		io.KeyMap[ImGuiKey_PageUp] = VK_PRIOR;
-		io.KeyMap[ImGuiKey_PageDown] = VK_NEXT;
-		io.KeyMap[ImGuiKey_Home] = VK_HOME;
-		io.KeyMap[ImGuiKey_End] = VK_END;
-		io.KeyMap[ImGuiKey_Insert] = VK_INSERT;
-		io.KeyMap[ImGuiKey_Delete] = VK_DELETE;
-		io.KeyMap[ImGuiKey_Backspace] = VK_BACK;
-		io.KeyMap[ImGuiKey_Space] = VK_SPACE;
-		io.KeyMap[ImGuiKey_Enter] = VK_RETURN;
-		io.KeyMap[ImGuiKey_Escape] = VK_ESCAPE;
-		io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
-		io.KeyMap[ImGuiKey_A] = 'A';
-		io.KeyMap[ImGuiKey_C] = 'C';
-		io.KeyMap[ImGuiKey_V] = 'V';
-		io.KeyMap[ImGuiKey_X] = 'X';
-		io.KeyMap[ImGuiKey_Y] = 'Y';
-		io.KeyMap[ImGuiKey_Z] = 'Z';
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Win
 
-		QCAT_CORE_ASSERT(::QueryPerformanceFrequency((LARGE_INTEGER*)&g_TicksPerSecond), "Init failed : TickperSecn");
-		QCAT_CORE_ASSERT(::QueryPerformanceCounter((LARGE_INTEGER*)&g_Time), "Init failed : g_Time");
-	
-		//ImGui_ImplWin32_Init(hwnd);
+		// When viewports are enabled we tweak WindowRounding / WindowBg so platform windows can look identical to regular ones.
+		ImGuiStyle & style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		ImGui_ImplWin32_Init(hwnd);
 		ImGui_ImplDX11_Init(window->Gfx().GetDevice().Get(), window->Gfx().GetContext().Get());
 	}
 	void ImGuiLayer::OnDetach()
 	{
 		ImGui_ImplDX11_Shutdown();
-		//ImGui_ImplWin32_Shutdown();
+		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
-	void ImGuiLayer::OnUpdate()
+	void ImGuiLayer::OnImGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::GetInstance();
-		io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
-		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-		io.DeltaTime = (float)timer.Mark();
-		/*INT64 current_time;
-		::QueryPerformanceCounter((LARGE_INTEGER*)&current_time);
-		io.DeltaTime = (float)(current_time - g_Time) / g_TicksPerSecond;
-		g_Time = current_time;*/
-
-		//io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-		//QCAT_CORE_INFO("Imgui Layer update");
-		ImGui_ImplDX11_NewFrame();
-		//ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-
 		static bool show = true;
 		ImGui::ShowDemoWindow(&show);
+	}
+	void ImGuiLayer::OnBegin()
+	{
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+	}
+	void ImGuiLayer::OnEnd()
+	{
 		ImGui::Render();
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	}
-	void ImGuiLayer::OnRender()
-	{
-		
+		ImGuiIO& io = ImGui::GetIO();
+		// Update and Render additional Platform Windows
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
 	}
 	void ImGuiLayer::OnEvent(Event& event)
 	{
