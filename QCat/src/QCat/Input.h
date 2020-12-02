@@ -1,5 +1,6 @@
 #pragma once
 #include "QCat/QCatCore.h"
+#include "KeyCode.h"
 #include <utility>
 
 namespace QCat

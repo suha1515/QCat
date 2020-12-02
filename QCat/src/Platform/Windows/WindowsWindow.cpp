@@ -165,7 +165,6 @@ namespace QCat
 			if (wParam == VK_HANJA)
 				break;
 
-			int lParam2 = lParam;
 			const int scancode = (lParam >> 16) & 0x1ff;
 			int key = static_cast<unsigned char>(wParam);
 			int extended = (lParam & 0x01000000);
@@ -212,7 +211,7 @@ namespace QCat
 			//  WM_CHAR 일경우 해당 키보드에 해당하는 문자열이 wParam에 있다.
 		case WM_CHAR:
 		{
-			KeyTypedEvent event(wParam);
+			KeyTypedEvent event((int)wParam);
 			m_data.EventCallback(event);
 			break;
 		}

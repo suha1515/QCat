@@ -33,9 +33,9 @@ namespace QCat
 			for (Layer* layer : m_layerStack)
 				layer->OnUpdate();
 			
-			if (Input::IsMouseButtonPressed(QCAT_MOUSE_BUTTON_LEFT))
+			if (Input::IsKeyPressded(QCAT_KEY_0))
 			{
-				//QCAT_CORE_INFO("Button Clicked!");
+				QCAT_CORE_INFO("Key Clicked!");
 			}
 			//auto [x, y] = Input::GetMousePos();
 			//QCAT_CORE_TRACE("{0} , {1}", x, y);

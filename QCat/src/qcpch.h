@@ -21,3 +21,5 @@
 #ifdef QCAT_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif
+
+

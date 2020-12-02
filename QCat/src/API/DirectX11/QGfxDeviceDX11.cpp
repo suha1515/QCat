@@ -2,6 +2,7 @@
 #include "QGfxDeviceDX11.h"
 #include "QCat/Log.h"
 
+
 namespace QCat {
 
 	QGfxDeviceDX11::QGfxDeviceDX11(HWND hwnd, int width, int height,bool fullscreen)

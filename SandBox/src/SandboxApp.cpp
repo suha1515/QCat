@@ -1,5 +1,5 @@
 #include <QCat.h>
-
+#include <Extensions/DirectXMathAVX.h>
 
 class ExamLayer : public QCat::Layer
 {
@@ -22,6 +22,8 @@ class Sandbox : public QCat::Application
 public:
 	Sandbox()
 	{
+		if (DirectX::AVX::XMVerifyAVXSupport())
+			QCAT_TRACE("AVX SUPPORT!");
 		PushLayer(new ExamLayer());
 		PushOverlay(new QCat::ImGuiLayer());
 	}

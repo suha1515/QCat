@@ -67,7 +67,5 @@ namespace QCat
 		}
 
 		EVENT_CLASS_TYPE(KeyTyped)
-	private:
-		int m_repeatCount;
 	};
 }
