@@ -57,7 +57,6 @@ project "QCat"
 
 	filter "system:windows"
 		systemversion "latest"
-
 		defines
 		{
 			"QCAT_PLATFORM_WINDOWS",

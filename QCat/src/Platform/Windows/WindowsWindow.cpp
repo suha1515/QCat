@@ -301,19 +301,21 @@ namespace QCat
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
-	std::optional<int>  WindowsWindow::UpdateMessage() noexcept
+	bool WindowsWindow::OnMessageUpdate()
 	{
 		MSG msg;
-
 		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
-				return (int)msg.wParam;
+				return false;
 
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-
+		return true;
+	}
+	std::optional<int>  WindowsWindow::UpdateMessage() noexcept
+	{
 		return {};
 	}
 	HWND WindowsWindow::GetHandle() noexcept
@@ -327,7 +329,6 @@ namespace QCat
 	}
 	void WindowsWindow::OnBegin()
 	{
-		const auto ecode = UpdateMessage();
 		pGfx->BeginFrame();
 	}
 	void WindowsWindow::OnEnd()

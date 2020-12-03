@@ -33,20 +33,20 @@ namespace QCat
 	{
 		while (m_Running)
 		{
-			m_window->OnBegin();
-			for (Layer* layer : m_layerStack)
-				layer->OnUpdate();
+			m_window->OnMessageUpdate();
 			if (m_Running)
 			{
+				m_window->OnBegin();
+				for (Layer* layer : m_layerStack)
+					layer->OnUpdate();
+
 				m_ImguiLayer->OnBegin();
 				for (Layer* layer : m_layerStack)
 					layer->OnImGuiRender();
-				WindowsWindow* window = dynamic_cast<WindowsWindow*>(GetWindow());
-				HWND hwnd = window->GetHandle();
-
 				m_ImguiLayer->OnEnd();
-			}	
-			m_window->OnEnd();
+
+				m_window->OnEnd();
+			}
 		}
 	}
 	void Application::OnEvent(Event& e)

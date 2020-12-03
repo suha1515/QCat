@@ -21,6 +21,7 @@ namespace QCat
 		static LRESULT CALLBACK MsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 		LRESULT MsgHandle(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
+		virtual bool OnMessageUpdate() override;
 		std::optional<int> UpdateMessage() noexcept;
 	public:
 		HWND GetHandle() noexcept;
