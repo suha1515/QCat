@@ -1,5 +1,4 @@
 #include <QCat.h>
-#include <Extensions/DirectXMathAVX.h>
 
 class ExamLayer : public QCat::Layer
 {

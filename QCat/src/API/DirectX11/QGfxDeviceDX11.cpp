@@ -64,8 +64,60 @@ namespace QCat {
 		Microsoft::WRL::ComPtr<IDXGIAdapter> pDXGIAdapter;
 		hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pDXGIAdapter);
 
+		// To get specific information about Graphic Card
+		//DXGI_ADAPTER_DESC adapterDesc;
+		//pDXGIAdapter->GetDesc(&adapterDesc);	
+
 		Microsoft::WRL::ComPtr<IDXGIFactory2> pIDXGIFactory;
 		hr = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&pIDXGIFactory);
+
+		int adapterCount = 0;
+		IDXGIAdapter* pAdapter;
+		for (UINT i = 0; pIDXGIFactory->EnumAdapters(i, &pAdapter) != DXGI_ERROR_NOT_FOUND; ++i)
+		{
+			DXGI_ADAPTER_DESC adapterDesc;
+			IDXGIOutput* pOutput;
+			pAdapter->GetDesc(&adapterDesc);
+			if (pAdapter->CheckInterfaceSupport(__uuidof(IDXGIDevice),NULL)!= DXGI_ERROR_UNSUPPORTED)
+			{
+				std::wstring wgrapics = adapterDesc.Description;
+				std::string graphics; graphics.assign(wgrapics.begin(), wgrapics.end());
+				UINT i = 0;
+				while (pAdapter->EnumOutputs(i, &pOutput) != DXGI_ERROR_NOT_FOUND)
+				{
+					DXGI_OUTPUT_DESC outputDesc;
+					pOutput->GetDesc(&outputDesc);
+					std::wstring wmonitorname = outputDesc.DeviceName;
+					std::string  monitername;
+					monitername.assign(wmonitorname.begin(), wmonitorname.end());
+					QCAT_CORE_INFO("{0} adapeter is {1}  support DX  and monitor {2}", adapterCount, graphics, monitername);
+					++i;
+					pOutput->Release();
+				}
+			}
+			else
+			{
+				std::wstring wgrapics = adapterDesc.Description;
+				std::string graphics; graphics.assign(wgrapics.begin(), wgrapics.end());
+				UINT i = 0;
+				while (pAdapter->EnumOutputs(i, &pOutput) != DXGI_ERROR_NOT_FOUND)
+				{
+					DXGI_OUTPUT_DESC outputDesc;
+					pOutput->GetDesc(&outputDesc);
+					std::wstring wmonitorname = outputDesc.DeviceName;
+					std::string  monitername;
+					monitername.assign(wmonitorname.begin(), wmonitorname.end());
+					QCAT_CORE_INFO("{0} adapeter is {1} doesnt support DX and monitor {2}", adapterCount, graphics, monitername);
+					++i;
+					pOutput->Release();
+				}
+			}
+			adapterCount++;
+			pAdapter->Release();
+		}
+
+			
+
 
 		//Swap Chain
 		// https://docs.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-flip-model
@@ -173,9 +225,8 @@ namespace QCat {
 	void QGfxDeviceDX11::BeginFrame()
 	{
 		std::array<float, 4> color = { 1.0f,0.0f,1.0f,0.0f };
-		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), NULL);
 		immediateContext->ClearRenderTargetView(renderTargetView.Get(), color.data());
-
+		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), NULL);
 		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 	void QGfxDeviceDX11::EndFrame()
