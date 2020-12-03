@@ -4,9 +4,33 @@
 
 
 namespace QCat {
+	void QGfxDeviceDX11::Init(void* pHandle)
+	{
+		HWND hwnd = static_cast<HWND>(pHandle);
+		QCAT_CORE_ASSERT(hwnd != NULL, "window handle is NULL!");
 
-	QGfxDeviceDX11::QGfxDeviceDX11(HWND hwnd, int width, int height,bool fullscreen)
-		:width(width),height(height)
+		RECT rect;
+		GetClientRect(hwnd, &rect);
+		
+		int width = rect.right - rect.left;
+		int height = rect.bottom - rect.top;
+
+		Initialize(hwnd, width, height);
+	}
+	void QGfxDeviceDX11::Begin()
+	{
+		BeginFrame();
+	}
+	void QGfxDeviceDX11::End()
+	{
+		EndFrame();
+	}
+
+	QGfxDeviceDX11::QGfxDeviceDX11()
+	{
+		height = 0, width = 0;
+	}
+	void QGfxDeviceDX11::Initialize(HWND hwnd, int width, int height,bool fullscreen)
 	{
 		UINT createDeviceFlags = 0;
 	#ifdef QCAT_DEBUG

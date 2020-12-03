@@ -2,7 +2,8 @@
 #include "QCat/Window.h"
 #include "QCat/InputDevice/KeyBoard/KeyBoard.h"
 #include "QCat/InputDevice/Mouse/Mouse.h"
-#include "API/DirectX11/QGfxDeviceDX11.h"
+
+#include "Renderer/Graphics.h"
 
 
 namespace QCat
@@ -15,7 +16,7 @@ namespace QCat
 		WindowsWindow& operator=(const WindowsWindow&) = delete;
 		~WindowsWindow();
 
-		QGfxDeviceDX11& Gfx();
+		Graphics* Gfx();
 
 		static LRESULT CALLBACK MsgSetUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 		static LRESULT CALLBACK MsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -58,7 +59,7 @@ namespace QCat
 		bool windowOpen;
 		bool initialized = false;
 
-		std::unique_ptr<QGfxDeviceDX11> pGfx;
+		std::unique_ptr<Graphics> pGfx;
 	
 	};
 }

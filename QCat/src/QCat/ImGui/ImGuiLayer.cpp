@@ -47,7 +47,8 @@ namespace QCat
 		}
 
 		ImGui_ImplWin32_Init(hwnd);
-		ImGui_ImplDX11_Init(window->Gfx().GetDevice().Get(), window->Gfx().GetContext().Get());
+		QGfxDeviceDX11* pgfx = dynamic_cast<QGfxDeviceDX11*>(window->Gfx());
+		ImGui_ImplDX11_Init(pgfx->GetDevice().Get(), pgfx->GetContext().Get());
 	}
 	void ImGuiLayer::OnDetach()
 	{

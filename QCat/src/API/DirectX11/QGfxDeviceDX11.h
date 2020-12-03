@@ -1,5 +1,6 @@
 #pragma once
 #include <QCat/QCatCore.h>
+#include <Renderer/Graphics.h>
 #include <d3d11_3.h>
 #include <dxgi1_3.h>
 #include <d3dcompiler.h>
@@ -10,13 +11,20 @@ using namespace Microsoft::WRL;
 
 namespace QCat {
 
-	class QCAT_API QGfxDeviceDX11
+	class QCAT_API QGfxDeviceDX11 : public Graphics
 	{
 	public:
-		QGfxDeviceDX11(HWND hwnd, int width, int height, bool fullscreen = false);
+		// inherit from Graphics
+		virtual void Init(void* pHandle) override;
+		virtual void Begin() override;
+		virtual void End() override;
+	public:
+		QGfxDeviceDX11();
 		QGfxDeviceDX11(const QGfxDeviceDX11&) = delete;
 		QGfxDeviceDX11& operator=(const QGfxDeviceDX11&) = delete;
 		~QGfxDeviceDX11();
+
+		void Initialize(HWND hwnd, int width, int height, bool fullscreen = false);
 
 		void BeginFrame();
 		void EndFrame();

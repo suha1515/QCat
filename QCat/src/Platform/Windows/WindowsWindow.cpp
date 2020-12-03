@@ -1,6 +1,8 @@
 #include "qcpch.h"
 #include "WindowsWindow.h"
 
+#include "API/DirectX11/QGfxDeviceDX11.h"
+
 #include "QCat/Events/ApplicationEvent.h"
 #include "QCat/Events/MouseEvent.h"
 #include "QCat/Events/KeyboardEvent.h"
@@ -67,7 +69,9 @@ namespace QCat
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
 		UpdateWindow(hWnd);
 
-		pGfx = std::make_unique<QGfxDeviceDX11>(hWnd, width, height);
+		pGfx = std::make_unique<QGfxDeviceDX11>();
+		pGfx->Init(hWnd);
+
 		// Raw값을 받아올 장치에대해 세부화한다
 		// 입력장치에는 다양한 장치가있으며 사용자는 해당 장치에대해서 입력을 받고자할때
 		// WM_MOUSEMOVE 나 WM_KEYDOWN 같은 키보드나 마우스 메시지가아닌 WM_INPUT으로 해당 장치에대한 정보를 받아야한다
@@ -89,9 +93,9 @@ namespace QCat
 		// 핸들을 파괴한다.
 		DestroyWindow(hWnd);
 	}
-	QGfxDeviceDX11& WindowsWindow::Gfx()
+	Graphics* WindowsWindow::Gfx()
 	{
-		return *pGfx;
+		return pGfx.get();
 	}
 	LRESULT WindowsWindow::MsgSetUp(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 	{
@@ -329,11 +333,11 @@ namespace QCat
 	}
 	void WindowsWindow::OnBegin()
 	{
-		pGfx->BeginFrame();
+		pGfx->Begin();
 	}
 	void WindowsWindow::OnEnd()
 	{
-		pGfx->EndFrame();
+		pGfx->End();
 	}
 	unsigned int WindowsWindow::GetWidth() const
 	{
@@ -350,10 +354,13 @@ namespace QCat
 	{
 		this->width = width;
 		this->height = height;
-		pGfx->CleanRenderTarget();
-		pGfx->GetSwapChain()->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-		pGfx->CreateRenderTarget();
-		pGfx->SetViewPort(width, height);
+		QGfxDeviceDX11* gfx = dynamic_cast<QGfxDeviceDX11*>(pGfx.get());
+		QCAT_CORE_ASSERT(gfx != nullptr, "cast Error!");
+
+		gfx->CleanRenderTarget();
+		gfx->GetSwapChain()->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+		gfx->CreateRenderTarget();
+		gfx->SetViewPort(width, height);
 	}
 	bool WindowsWindow::IsVSync() const
 	{
