@@ -2,6 +2,7 @@
 #include "WindowsWindow.h"
 
 #include "API/DirectX11/QGfxDeviceDX11.h"
+#include "API//Opengl/QCatOpengl.h"
 
 #include "QCat/Events/ApplicationEvent.h"
 #include "QCat/Events/MouseEvent.h"
@@ -69,7 +70,7 @@ namespace QCat
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
 		UpdateWindow(hWnd);
 
-		pGfx = std::make_unique<QGfxDeviceDX11>();
+		pGfx = std::make_unique<QCatOpengl>();
 		pGfx->Init(hWnd);
 
 		// Raw값을 받아올 장치에대해 세부화한다

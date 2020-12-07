@@ -116,9 +116,6 @@ namespace QCat {
 			pAdapter->Release();
 		}
 
-			
-
-
 		//Swap Chain
 		// https://docs.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-flip-model
 		// flip -model

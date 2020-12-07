@@ -14,8 +14,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architexture}"
 IncludeDir = {}
 IncludeDir["ImGui"] = "QCat/3rdLib/Imgui"
 IncludeDir["DirectXMath"] = "QCat/3rdLib/DirectXMath"
+IncludeDir["Glad"] = "QCat/3rdLib/Glad/Include"
 
 include "QCat/3rdLib/Imgui"
+include "QCat/3rdLib/Glad"
 
 project "QCat"
 	location "QCat"
@@ -46,13 +48,16 @@ project "QCat"
 		"%{prj.name}/src",
 		"%{prj.name}/3rdLib/spdlog/include",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.DirectXMath}"
+		"%{IncludeDir.DirectXMath}",
+		"%{IncludeDir.Glad}"
 	}
 
 	links
 	{
 		"d3d11.lib",
-		"ImGui"
+		"opengl32.lib",
+		"ImGui",
+		"Glad"
 	}
 
 	filter "system:windows"
