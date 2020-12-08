@@ -1,7 +1,6 @@
 #pragma once
 #include <Renderer/Graphics.h>
-//#include <glad/glad.h>
-
+#include <glad/glad.h>
 
 namespace QCat
 {
@@ -12,13 +11,14 @@ namespace QCat
 		~QCatOpengl();
 
 		void Initialize();
+		void MakeCurrent();
 	public:
 		virtual void Init(void* pHandle) override;
 		virtual void Begin() override;
 		virtual void End() override;
 	public:
+		static HGLRC rc;
 	private:
 		HDC dc;
-		HGLRC rc;
 	};
 }

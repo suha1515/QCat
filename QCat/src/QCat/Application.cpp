@@ -28,8 +28,11 @@ namespace QCat
 		m_window = std::unique_ptr<Window>(Window::Create());
 		m_window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 
-		//m_ImguiLayer = new ImGuiLayer();
-		//PushOverlay(m_ImguiLayer);
+		//m_window2 = std::unique_ptr<Window>(Window::Create());
+		//m_window2->SetEventCallback(BIND_EVENT_FN(OnEvent));
+
+		m_ImguiLayer = new ImGuiLayer();
+		PushOverlay(m_ImguiLayer);
 
 
 		//WindowsWindow* pWindow = dynamic_cast<WindowsWindow*>(m_window.get());
@@ -108,7 +111,6 @@ namespace QCat
 			m_window->OnMessageUpdate();
 			if (m_Running)
 			{
-				m_window->OnBegin();
 				for (Layer* layer : m_layerStack)
 					layer->OnUpdate();
 
@@ -136,13 +138,17 @@ namespace QCat
 				//vp.TopLeftY = 0;
 				//pGfx->GetContext()->RSSetViewports(1u, &vp);
 				////pGfx->GetContext()->Draw(3u,0u);
+				m_window->OnBegin();
+				
 
-			/*	m_ImguiLayer->OnBegin();
+				m_ImguiLayer->OnBegin();
 				for (Layer* layer : m_layerStack)
 					layer->OnImGuiRender();
-				m_ImguiLayer->OnEnd();*/
-
+				m_ImguiLayer->OnEnd();
 				m_window->OnEnd();
+			//	m_window2->OnBegin();
+
+			//	m_window2->OnEnd();
 			}
 		}
 	}

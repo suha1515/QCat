@@ -1,19 +1,35 @@
 #include "qcpch.h"
 #include "QCatOpengl.h"
 #include "QCat/Log.h"
-#include <gl/GL.h>
+//#include <gl/GL.h>
 #include "wgl/wglext.h"
 
 namespace QCat
 {
+	HGLRC QCatOpengl::rc;
+
+	typedef void* (APIENTRYP PFNWGLGETPROCADDRESSPROC_PRIVATE)(const char*);
+	static PFNWGLGETPROCADDRESSPROC_PRIVATE gladGetProcAddressPtr;
+	static HMODULE module;
+	void Set_Proc()
+	{
+	    module = GetModuleHandle("opengl32.dll");
+		void (*tmp)(void);
+		tmp = (void(*)(void)) GetProcAddress(module, "wglGetProcAddress");
+		gladGetProcAddressPtr = (PFNWGLGETPROCADDRESSPROC_PRIVATE)tmp;
+	}
 	void* Get_Proc(const char* name)
 	{
-		HMODULE module = GetModuleHandle("opengl32.dll");
-		void* result = nullptr;
-		result = (void*)GetProcAddress(module, name);
+		// with wglGetProcAddress you can get function pointer about functions whics is above 1.2 version
+		// if  you want to get function pointer bellow 1.2 version you should use GetProcAddress
+		// if you are trying to get function pointer through wrong method you will get NULL pointer
+		void* result =nullptr;
+		if(gladGetProcAddressPtr!=nullptr)
+			result = gladGetProcAddressPtr(name);		
+		if (result == NULL)
+			result = (void*)GetProcAddress(module, name);
 		return result;
 	}
-
 	QCatOpengl::~QCatOpengl()
 	{
 		if (dc)
@@ -23,8 +39,6 @@ namespace QCat
 	}
 	void QCatOpengl::Initialize()
 	{
-		//int statuss= gladLoadGLLoader(&Get_Proc);
-		//glGetString = (PFNGLGETSTRINGPROC)Get_Proc("glGetString");
 		HWND fakeWND = CreateWindow(
 			"QCat Engine", "QCat Engine",		 // window class, title
 			WS_CLIPSIBLINGS | WS_CLIPCHILDREN,	 // style
@@ -45,6 +59,7 @@ namespace QCat
 		pfd.cColorBits = 32;
 		pfd.cAccumBits = 8;
 		pfd.cDepthBits = 24;
+		pfd.cStencilBits = 8;
 
 		// match appropritate pixel foramt for device to given pixel format description
 		int pfdID = ChoosePixelFormat(fakeDC, &pfd);
@@ -70,12 +85,11 @@ namespace QCat
 		// retrieve the opengl function
 		PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB = nullptr;
 		wglChoosePixelFormatARB = reinterpret_cast<PFNWGLCHOOSEPIXELFORMATARBPROC>(wglGetProcAddress("wglChoosePixelFormatARB"));
-		QCAT_CORE_ASSERT(wglChoosePixelFormatARB!=nullptr,"Error! Cant retrieve the opengl Function : wglChoosePixelFormatARB");
+		QCAT_CORE_ASSERT(wglChoosePixelFormatARB != nullptr, "Error! Cant retrieve the opengl Function : wglChoosePixelFormatARB");
 
 		PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = nullptr;
 		wglCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(wglGetProcAddress("wglCreateContextAttribsARB"));
 		QCAT_CORE_ASSERT(wglCreateContextAttribsARB != nullptr, "Error! Cant retrieve the opengl Function : wglCreateContextAttribsARB");
-
 
 		const int pixelAttribs[] = {
 				WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -108,9 +122,13 @@ namespace QCat
 			0
 		};
 
-		rc = wglCreateContextAttribsARB(dc, 0, contextAttribs);
-		QCAT_CORE_ASSERT(rc!=NULL, "wglCreateContextAttribsARB failed");
-
+		if (!rc)
+		{
+			rc = wglCreateContextAttribsARB(dc, 0, contextAttribs);
+			QCAT_CORE_ASSERT(rc != NULL, "wglCreateContextAttribsARB failed");
+			Set_Proc();
+			int statuss = gladLoadGLLoader(&Get_Proc);
+		}
 		wglMakeCurrent(NULL, NULL);
 		wglDeleteContext(fakeRc);
 		ReleaseDC(fakeWND, fakeDC);
@@ -120,6 +138,17 @@ namespace QCat
 
 		std::string version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 		QCAT_CORE_TRACE("OPENGL VERSION {0}", version);
+	}
+
+	void QCatOpengl::MakeCurrent()
+	{
+		bool suceed = wglMakeCurrent(dc, rc);
+		if (!suceed)
+		{
+			DWORD errorcode = GetLastError();
+			QCAT_CORE_ASSERT(suceed != false, "MakeCurrent() failed");
+		}
+			
 	}
 
 	void QCatOpengl::Init(void* pHandle)
@@ -132,6 +161,7 @@ namespace QCat
 	}
 	void QCatOpengl::Begin()
 	{
+		MakeCurrent();
 		glClearColor(0.129f, 0.586f, 0.949f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}

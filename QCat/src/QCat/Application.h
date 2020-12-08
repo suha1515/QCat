@@ -30,6 +30,7 @@ namespace QCat
 		bool OnWindowClose(WindowCloseEvent& e);
 	private:
 		std::unique_ptr<Window> m_window;
+		std::unique_ptr<Window> m_window2;
 		ImGuiLayer* m_ImguiLayer;
 		bool m_Running = true;
 		LayerStack m_layerStack;

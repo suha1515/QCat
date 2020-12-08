@@ -70,7 +70,11 @@ namespace QCat
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
 		UpdateWindow(hWnd);
 
+#if defined(QCAT_DX11)
+		pGfx = std::make_unique<QGfxDeviceDX11>();
+#elif defined(QCAT_OPENGL)
 		pGfx = std::make_unique<QCatOpengl>();
+#endif
 		pGfx->Init(hWnd);
 
 		// Raw값을 받아올 장치에대해 세부화한다
@@ -353,8 +357,10 @@ namespace QCat
 	}
 	void WindowsWindow::SetWindowSize(unsigned int width,unsigned  int height) 
 	{
+
 		this->width = width;
 		this->height = height;
+#if defined(QCAT_DX11)
 		QGfxDeviceDX11* gfx = dynamic_cast<QGfxDeviceDX11*>(pGfx.get());
 		QCAT_CORE_ASSERT(gfx != nullptr, "cast Error!");
 
@@ -362,6 +368,7 @@ namespace QCat
 		gfx->GetSwapChain()->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 		gfx->CreateRenderTarget();
 		gfx->SetViewPort(width, height);
+#endif  
 	}
 	bool WindowsWindow::IsVSync() const
 	{

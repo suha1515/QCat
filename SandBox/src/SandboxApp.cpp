@@ -12,7 +12,7 @@ public:
 	}
 	void OnEvent(QCat::Event& event) override
 	{
-		QCAT_TRACE("{0}", event);
+		//QCAT_TRACE("{0}", event);
 	}
 };
 
