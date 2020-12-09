@@ -17,6 +17,7 @@
 #include <unordered_set>
 
 #include "QCatDefines.h"
+#include "QCat/Log.h"
 
 #ifdef QCAT_PLATFORM_WINDOWS
 	#include <Windows.h>

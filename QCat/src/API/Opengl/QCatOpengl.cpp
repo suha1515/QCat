@@ -143,12 +143,11 @@ namespace QCat
 	void QCatOpengl::MakeCurrent()
 	{
 		bool suceed = wglMakeCurrent(dc, rc);
-		if (!suceed)
-		{
-			DWORD errorcode = GetLastError();
-			QCAT_CORE_ASSERT(suceed != false, "MakeCurrent() failed");
-		}
-			
+		//if (!suceed)
+		//{
+		//	DWORD errorcode = GetLastError();
+		//	QCAT_CORE_ASSERT(suceed != false, "MakeCurrent() failed");
+		//}	
 	}
 
 	void QCatOpengl::Init(void* pHandle)
@@ -161,7 +160,6 @@ namespace QCat
 	}
 	void QCatOpengl::Begin()
 	{
-		MakeCurrent();
 		glClearColor(0.129f, 0.586f, 0.949f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}

@@ -9,6 +9,9 @@
 #include <wrl.h>
 #include "API/DirectX11/QGfxDeviceDX11.h"
 
+#include "Renderer/Shader.h"
+#include "Renderer/Buffer.h"
+
 namespace QCat
 {
 	class QCAT_API Application
@@ -35,19 +38,23 @@ namespace QCat
 		bool m_Running = true;
 		LayerStack m_layerStack;
 
-		unsigned int m_VertexArray, m_VertexBuffer, m_IndexBuffer;
 		//temperary code for Testing
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 
 		//InputLayout
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
-		//VertexShader
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
-
-		//PixelShader
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
+	
+		// for opengl
+		unsigned int m_vertexArray;
+		std::unique_ptr<Shader> m_Shader;
+		std::unique_ptr<Shader> m_vertexShader;
+		std::unique_ptr<Shader> m_pixelShader;
+		std::unique_ptr<VertexBuffer> m_VertexBuffer;
+		std::unique_ptr<IndexBuffer> m_IndexBuffer;
 
 
 	private:

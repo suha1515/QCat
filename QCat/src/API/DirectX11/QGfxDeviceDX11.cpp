@@ -221,7 +221,7 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::BeginFrame()
 	{
-		std::array<float, 4> color = { 1.0f,0.0f,1.0f,0.0f };
+		std::array<float, 4> color = { 0.129f, 0.586f, 0.949f, 1.0f };
 		immediateContext->ClearRenderTargetView(renderTargetView.Get(), color.data());
 		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), NULL);
 		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);

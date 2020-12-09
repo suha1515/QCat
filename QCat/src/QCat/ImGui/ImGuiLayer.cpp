@@ -101,12 +101,9 @@ namespace QCat
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 #if defined(QCAT_OPENGL)
-			if (ImGui::GetPlatformIO().Viewports.size() > 1)
-			{
-				WindowsWindow* window = dynamic_cast<WindowsWindow*>(Application::GetInstance().GetWindow());
-				QCatOpengl* pgfx = dynamic_cast<QCatOpengl*>(window->Gfx());
-				pgfx->MakeCurrent();
-			}
+			WindowsWindow* window = dynamic_cast<WindowsWindow*>(Application::GetInstance().GetWindow());
+			QCatOpengl* pgfx = dynamic_cast<QCatOpengl*>(window->Gfx());
+			pgfx->MakeCurrent();
 #endif  	
 		}
 	}
