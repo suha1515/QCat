@@ -4,6 +4,7 @@
 
 
 namespace QCat {
+	QGfxDeviceDX11* QGfxDeviceDX11::Instance = nullptr;
 	void QGfxDeviceDX11::Init(void* pHandle)
 	{
 		HWND hwnd = static_cast<HWND>(pHandle);
@@ -214,10 +215,13 @@ namespace QCat {
 		vp.TopLeftX = 0.0f;
 		vp.TopLeftY = 0.0f;
 		immediateContext->RSSetViewports(1u, &vp);
+
+		Instance = this;
 	}
 
 	QGfxDeviceDX11::~QGfxDeviceDX11()
 	{
+		Instance = nullptr;
 	}
 	void QGfxDeviceDX11::BeginFrame()
 	{

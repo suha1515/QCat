@@ -19,7 +19,26 @@ namespace wrl = Microsoft::WRL;
 
 namespace QCat
 {
+	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+	{
+		switch (type)
+		{
+		case QCat::ShaderDataType::Float:    return GL_FLOAT;
+		case QCat::ShaderDataType::Float2:   return GL_FLOAT;
+		case QCat::ShaderDataType::Float3:   return GL_FLOAT;
+		case QCat::ShaderDataType::Float4:   return GL_FLOAT;
+		case QCat::ShaderDataType::Mat3:     return GL_FLOAT;
+		case QCat::ShaderDataType::Mat4:     return GL_FLOAT;
+		case QCat::ShaderDataType::Int:      return GL_INT;
+		case QCat::ShaderDataType::Int2:     return GL_INT;
+		case QCat::ShaderDataType::Int3:     return GL_INT;
+		case QCat::ShaderDataType::Int4:     return GL_INT;
+		case QCat::ShaderDataType::Bool:     return GL_BOOL;
+		}
 
+		QCAT_CORE_ASSERT(false, "Unknown ShaderDataType!");
+		return 0;
+	}
 	Application* Application::instance = nullptr;
 	Application::Application()
 	{
@@ -43,39 +62,16 @@ namespace QCat
 		m_pixelShader.reset(new DX11PixelShader(*pGfx, "..\\bin\\Debug-windows-\\QCat\\Solid_PS.cso"));
 		//vertex Array
 		float vertices[] = {
-			 0.f, 0.5f,0.0f,
+			 0.0f, 0.5f,0.0f,
 			 0.5f, -0.5f,0.0f,
 			 -0.5f,-0.5f,0.0f
 		};
-
-		//vertex Buffer
-		UINT stride = sizeof(float)*3;
-		D3D11_BUFFER_DESC bd = {};
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.CPUAccessFlags = 0u;
-		bd.MiscFlags = 0u;
-		bd.ByteWidth = UINT(sizeof(vertices));
-		bd.StructureByteStride = 0;
-		D3D11_SUBRESOURCE_DATA sd = {};
-		sd.pSysMem = &vertices;
-		const UINT offset = 0u;
-		pGfx->GetDevice()->CreateBuffer(&bd, &sd, &pVertexBuffer);
-		
-	
+		unsigned int stride = sizeof(float) * 3;
 		//IndexArray
-		unsigned short indices[3] = { 0,1,2 };
-		//Index Buffer
-		D3D11_BUFFER_DESC ibd = {};
-		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		ibd.Usage = D3D11_USAGE_DEFAULT;
-		ibd.CPUAccessFlags = 0u;
-		ibd.MiscFlags = 0u;
-		ibd.ByteWidth = UINT(sizeof(indices));
-		ibd.StructureByteStride = sizeof(unsigned short);
-		D3D11_SUBRESOURCE_DATA isd = {};
-		isd.pSysMem = &indices;
-		pGfx->GetDevice()->CreateBuffer(&ibd, &isd, &pIndexBuffer);
+		unsigned int indices[3] = { 0,1,2 };
+
+		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices), &stride));
+		m_IndexBuffer.reset(IndexBuffer::Create(indices,sizeof(indices)));
 
 		//InputLayout
 		D3D11_INPUT_ELEMENT_DESC desc[] =
@@ -88,48 +84,72 @@ namespace QCat
 			&pInputLayout);
 #elif defined(QCAT_OPENGL)
 			glGenVertexArrays(1, &m_vertexArray);
-				glBindVertexArray(m_vertexArray);
+			glBindVertexArray(m_vertexArray);
 
-				float vertices[3 * 3] = {
-				-0.5f, -0.5f, 0.0f,
-				 0.5f, -0.5f, 0.0f,
-				 0.0f,  0.5f, 0.0f
+			float vertices[3 * 7] = {
+			-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+			 0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+			 0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
+			};
+
+			m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+
+			{
+				BufferLayout layout = {
+					{ ShaderDataType::Float3, "a_Position" },
+					{ ShaderDataType::Float4, "a_Color" }
 				};
 
-				m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-				glEnableVertexAttribArray(0);
-				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+				m_VertexBuffer->SetLayout(layout);
+			}
 
-				unsigned int indices[3] = { 0,1,2 };
-				m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
+			uint32_t index = 0;
+			const auto& layout = m_VertexBuffer->GetLayout();
+			for (const auto& element : layout)
+			{
+				glEnableVertexAttribArray(index);
+				glVertexAttribPointer(index,
+					element.GetComponentCount(),
+					ShaderDataTypeToOpenGLBaseType(element.type),
+					element.normalized ? GL_TRUE : GL_FALSE,
+					layout.GetStride(),
+					(const void*)element.offset);
+				index++;
+			}
 
-				std::string vertexSrc = R"(
-					#version 330 core
+			unsigned int indices[3] = { 0,1,2 };
+			m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
 
-					layout(location = 0) in vec3 a_Position;
+			std::string vertexSrc = R"(
+				#version 330 core
 
-					out vec3 v_Position;
+				layout(location = 0) in vec3 a_Position;
+				layout(location = 1) in vec4 a_Color;
+				out vec3 v_Position;
+				out vec4 v_Color;	
 
-					void main()
-					{
-						v_Position = a_Position;
-						gl_Position = vec4(a_Position, 1.0);
-					}
-				)";
+				void main()
+				{
+					v_Position = a_Position;
+					v_Color = a_Color;
+					gl_Position = vec4(a_Position, 1.0);
+				}
+			)";
 
-				std::string fragmentSrc = R"(
-					#version 330 core
+			std::string fragmentSrc = R"(
+				#version 330 core
 
-					layout(location = 0) out vec4 color;
+				layout(location = 0) out vec4 color;
 
-					in vec3 v_Position;
+				in vec3 v_Position;
+				in vec4 v_Color;
 
-					void main()
-					{
-						color = vec4(v_Position * 0.5 + 0.5, 1.0);
-					}
-				)";
-				m_Shader.reset(new OpenGLShader(vertexSrc, fragmentSrc));
+				void main()
+				{
+					color = v_Color;
+				}
+			)";
+			m_Shader.reset(new OpenGLShader(vertexSrc, fragmentSrc));
 #endif
 	}
 
@@ -151,10 +171,8 @@ namespace QCat
 				WindowsWindow* pWindow = dynamic_cast<WindowsWindow*>(m_window.get());
 				QGfxDeviceDX11* pGfx = dynamic_cast<QGfxDeviceDX11*>(pWindow->Gfx());
 				//// Topology
-				unsigned int stride = sizeof(float)*3;
-				const UINT offset = 0u;
-				pGfx->GetContext()->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
-				pGfx->GetContext()->IASetIndexBuffer(pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+				m_VertexBuffer->Bind();
+				m_IndexBuffer->Bind();
 
 				pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				pGfx->GetContext()->IASetInputLayout(pInputLayout.Get());

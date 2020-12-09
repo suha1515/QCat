@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <wrl.h>
+
 #include "QCatDefines.h"
 #include "QCat/Log.h"
 

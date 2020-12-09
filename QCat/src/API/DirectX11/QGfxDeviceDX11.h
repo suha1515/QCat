@@ -14,6 +14,16 @@ namespace QCat {
 	class QCAT_API QGfxDeviceDX11 : public Graphics
 	{
 	public:
+		static QGfxDeviceDX11* GetInstance()
+		{
+			if (Instance != nullptr)
+			{
+				return Instance;
+			}
+			return nullptr;
+		};
+
+	public:
 		// inherit from Graphics
 		virtual void Init(void* pHandle) override;
 		virtual void Begin() override;
@@ -52,6 +62,8 @@ namespace QCat {
 
 		ComPtr<ID3D11RenderTargetView> renderTargetView;
 		ComPtr<ID3D11DepthStencilView> depthStencilView;
+	private:
+		static QGfxDeviceDX11* Instance;
 	};
 }
 	
