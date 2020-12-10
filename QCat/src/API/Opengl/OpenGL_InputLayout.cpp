@@ -29,8 +29,14 @@ namespace QCat
 	{
 		//레이아웃인덱스  ,원소갯수,데이터타입,노말라이즈,스트라이드(데이터 너비),오프셋
 		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+	}
+	OpenGL_InputLayout::~OpenGL_InputLayout()
+	{
+	}
+	void OpenGL_InputLayout::Bind() const
+	{
 		uint32_t index = 0;
-			for (const auto& element : m_elements)
+		for (const auto& element : m_elements)
 		{
 			glEnableVertexAttribArray(index);
 			glVertexAttribPointer(index,
@@ -41,12 +47,6 @@ namespace QCat
 				(const void*)element.offset);
 			index++;
 		}
-	}
-	OpenGL_InputLayout::~OpenGL_InputLayout()
-	{
-	}
-	void OpenGL_InputLayout::Bind() const
-	{
 	}
 	void OpenGL_InputLayout::UnBind() const
 	{

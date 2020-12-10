@@ -11,8 +11,12 @@ namespace QCat
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
+
+		virtual const std::shared_ptr<BufferLayout>& GetLayout() const {return m_pBufferLayout;}
+		virtual void SetLayout(BufferLayout* layout) { m_pBufferLayout.reset(layout); }
  	private:
 		unsigned int m_renderID;
+		std::shared_ptr<BufferLayout> m_pBufferLayout;
 	};
 	class OpenGLIndexBuffer : public IndexBuffer
 	{

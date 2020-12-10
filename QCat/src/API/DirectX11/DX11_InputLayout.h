@@ -12,8 +12,10 @@ namespace QCat
 	public:
 		virtual void Bind()const;
 		virtual void UnBind()const;
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
 		std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+
 	};
 }

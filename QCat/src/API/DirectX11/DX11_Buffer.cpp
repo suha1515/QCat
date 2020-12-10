@@ -25,6 +25,9 @@ namespace QCat
 	{
 		const UINT offset = 0u;
 		QGfxDeviceDX11::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1u, m_pVertexBuffer.GetAddressOf(), &m_stride, &offset);
+		QCAT_CORE_ASSERT(m_pbufferLayout != nullptr, "InputLayout is nullptr! : VertexBuffer Binding Error");
+		m_pbufferLayout->Bind();
+
 	}
 	void DX11VertexBuffer::UnBind() const
 	{

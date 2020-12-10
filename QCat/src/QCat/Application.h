@@ -11,6 +11,7 @@
 
 #include "Renderer/Shader.h"
 #include "Renderer/Buffer.h"
+#include "Renderer/VertexArray.h"
 
 namespace QCat
 {
@@ -39,23 +40,18 @@ namespace QCat
 		LayerStack m_layerStack;
 
 		//temperary code for Testing
-	private:
-		Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> pIndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
-
-		//InputLayout
-		Microsoft::WRL::ComPtr<ID3D11InputLayout> pInputLayout;
-	
-		// for opengl
-		unsigned int m_vertexArray;
+	private:	
 		std::unique_ptr<Shader> m_Shader;
+		std::shared_ptr<VertexArray> m_VertexArray;
+
+		std::shared_ptr<Shader> m_BlueShader;
+		std::shared_ptr<VertexArray> m_SquareVA;
+
 		std::unique_ptr<Shader> m_vertexShader;
 		std::unique_ptr<Shader> m_pixelShader;
+
 		std::unique_ptr<VertexBuffer> m_VertexBuffer;
 		std::unique_ptr<IndexBuffer> m_IndexBuffer;
-		std::unique_ptr<BufferLayout> m_BufferLayout;
 
 
 	private:

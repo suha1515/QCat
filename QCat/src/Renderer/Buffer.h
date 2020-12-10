@@ -106,6 +106,9 @@ namespace QCat
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
 
+		virtual const std::shared_ptr<BufferLayout>& GetLayout() const = 0;
+		virtual void SetLayout(BufferLayout* layout) = 0;
+
 		static VertexBuffer* Create(float* vertices, unsigned int size,void * temp=nullptr);
 	};
 	class IndexBuffer

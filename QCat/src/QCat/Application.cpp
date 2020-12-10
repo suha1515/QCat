@@ -51,38 +51,57 @@ namespace QCat
 		unsigned int indices[3] = { 0,1,2 };
 
 		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices), &stride));
-		m_IndexBuffer.reset(IndexBuffer::Create(indices,sizeof(indices)));
-		m_BufferLayout.reset(BufferLayout::Create(
+		m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices)));
+		BufferLayout* buflayout = BufferLayout::Create(
 			{ { ShaderDataType::Float3, "Position" },
 			{ ShaderDataType::Float4, "Color" }, },
 			m_vertexShader->GetData().data(),
 			m_vertexShader->GetData().size()
-		));
+		);
+		m_VertexBuffer->SetLayout(buflayout);
 
-	/*	BufferLayout layout = {
-					{ ShaderDataType::Float3, "a_Position" },
-					{ ShaderDataType::Float4, "a_Color" }
-		}; */
-		
 #elif defined(QCAT_OPENGL)
-			glGenVertexArrays(1, &m_vertexArray);
-			glBindVertexArray(m_vertexArray);
+		m_VertexArray.reset(VertexArray::Create());
 
-			float vertices[3 * 7] = {
-			-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
-			 0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
-			 0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
-			};
+		float vertices[3 * 7] = {
+		-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+		 0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+		 0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
+		};
 
-			m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-			
-			m_BufferLayout.reset(BufferLayout::Create(
-				{ { ShaderDataType::Float3, "a_Position" },
-					{ ShaderDataType::Float4, "a_Color" } }
-			));
+		std::shared_ptr<VertexBuffer> vertexBuffer;
+		vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 
-			unsigned int indices[3] = { 0,1,2 };
-			m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
+		BufferLayout* buflayout = BufferLayout::Create(
+			{ { ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float4, "a_Color" } }
+		);
+		vertexBuffer->SetLayout(buflayout);
+		m_VertexArray->AddVertexBuffer(vertexBuffer);
+
+		unsigned int indices[3] = { 0,1,2 };
+		std::shared_ptr<IndexBuffer> indexbuffer;
+		indexbuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
+		m_VertexArray->SetIndexBuffer(indexbuffer);
+
+
+		m_SquareVA.reset(VertexArray::Create());
+		float squareVertices[3 * 4] = {
+		-0.75f, -0.75f, 0.0f,
+		 0.75f, -0.75f, 0.0f,
+		 0.75f,  0.75f, 0.0f,
+		-0.75f,  0.75f, 0.0f
+		};
+
+		std::shared_ptr<VertexBuffer> squareVB;
+		squareVB.reset(VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+		squareVB->SetLayout(BufferLayout::Create({ { ShaderDataType::Float3, "a_Position" } }));
+		m_SquareVA->AddVertexBuffer(squareVB);
+
+		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
+		std::shared_ptr<IndexBuffer> squareIB;
+		squareIB.reset(IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
+		m_SquareVA->SetIndexBuffer(squareIB);
 
 			std::string vertexSrc = R"(
 				#version 330 core
@@ -114,6 +133,35 @@ namespace QCat
 				}
 			)";
 			m_Shader.reset(new OpenGLShader(vertexSrc, fragmentSrc));
+
+			std::string blueShaderVertexSrc = R"(
+			#version 330 core
+			
+			layout(location = 0) in vec3 a_Position;
+
+			out vec3 v_Position;
+
+			void main()
+			{
+				v_Position = a_Position;
+				gl_Position = vec4(a_Position, 1.0);	
+			}
+		)";
+
+			std::string blueShaderFragmentSrc = R"(
+			#version 330 core
+			
+			layout(location = 0) out vec4 color;
+
+			in vec3 v_Position;
+
+			void main()
+			{
+				color = vec4(0.2, 0.3, 0.8, 1.0);
+			}
+		)";
+
+			m_BlueShader.reset(new OpenGLShader(blueShaderVertexSrc, blueShaderFragmentSrc));
 #endif
 	}
 
@@ -139,8 +187,6 @@ namespace QCat
 				m_IndexBuffer->Bind();
 
 				pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				//pGfx->GetContext()->IASetInputLayout(pInputLayout.Get());
-				m_BufferLayout->Bind();
 
 				m_vertexShader->Bind();
 				m_pixelShader->Bind();
@@ -154,9 +200,14 @@ namespace QCat
 				vp.TopLeftY = 0;
 				pGfx->GetContext()->RSSetViewports(1u, &vp);		
 #elif defined(QCAT_OPENGL)
+				m_BlueShader->Bind();
+				m_SquareVA->Bind();
+				glDrawElements(GL_TRIANGLES, m_SquareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+
 				m_Shader->Bind();
-				glBindVertexArray(m_vertexArray);
-				glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+				m_VertexArray->Bind();
+				glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+				
 #endif
 					
 				m_ImguiLayer->OnBegin();
