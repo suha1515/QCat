@@ -5,7 +5,7 @@
 #include "Input.h"
 
 #include <glad/glad.h>
-#include <API/DirectX11/DX11Shader.h>
+#include <API/DirectX11/DX11_Shader.h>
 #include <API/Opengl/OpenGLShader.h>
 
 namespace wrl = Microsoft::WRL;
@@ -19,26 +19,6 @@ namespace wrl = Microsoft::WRL;
 
 namespace QCat
 {
-	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
-	{
-		switch (type)
-		{
-		case QCat::ShaderDataType::Float:    return GL_FLOAT;
-		case QCat::ShaderDataType::Float2:   return GL_FLOAT;
-		case QCat::ShaderDataType::Float3:   return GL_FLOAT;
-		case QCat::ShaderDataType::Float4:   return GL_FLOAT;
-		case QCat::ShaderDataType::Mat3:     return GL_FLOAT;
-		case QCat::ShaderDataType::Mat4:     return GL_FLOAT;
-		case QCat::ShaderDataType::Int:      return GL_INT;
-		case QCat::ShaderDataType::Int2:     return GL_INT;
-		case QCat::ShaderDataType::Int3:     return GL_INT;
-		case QCat::ShaderDataType::Int4:     return GL_INT;
-		case QCat::ShaderDataType::Bool:     return GL_BOOL;
-		}
-
-		QCAT_CORE_ASSERT(false, "Unknown ShaderDataType!");
-		return 0;
-	}
 	Application* Application::instance = nullptr;
 	Application::Application()
 	{
@@ -62,26 +42,28 @@ namespace QCat
 		m_pixelShader.reset(new DX11PixelShader(*pGfx, "..\\bin\\Debug-windows-\\QCat\\Solid_PS.cso"));
 		//vertex Array
 		float vertices[] = {
-			 0.0f, 0.5f,0.0f,
-			 0.5f, -0.5f,0.0f,
-			 -0.5f,-0.5f,0.0f
+			 0.0f, 0.5f,0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+			0.5f, -0.5f,0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+			-0.5f,-0.5f,0.0f, 0.8f, 0.8f, 0.2f, 1.0f
 		};
-		unsigned int stride = sizeof(float) * 3;
+		unsigned int stride = sizeof(float) * 7;
 		//IndexArray
 		unsigned int indices[3] = { 0,1,2 };
 
 		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices), &stride));
 		m_IndexBuffer.reset(IndexBuffer::Create(indices,sizeof(indices)));
-
-		//InputLayout
-		D3D11_INPUT_ELEMENT_DESC desc[] =
-		{
-			{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0}
-		};
-		HRESULT result = pGfx->GetDevice()->CreateInputLayout(desc, 1,
+		m_BufferLayout.reset(BufferLayout::Create(
+			{ { ShaderDataType::Float3, "Position" },
+			{ ShaderDataType::Float4, "Color" }, },
 			m_vertexShader->GetData().data(),
-			m_vertexShader->GetData().size(),
-			&pInputLayout);
+			m_vertexShader->GetData().size()
+		));
+
+	/*	BufferLayout layout = {
+					{ ShaderDataType::Float3, "a_Position" },
+					{ ShaderDataType::Float4, "a_Color" }
+		}; */
+		
 #elif defined(QCAT_OPENGL)
 			glGenVertexArrays(1, &m_vertexArray);
 			glBindVertexArray(m_vertexArray);
@@ -93,29 +75,11 @@ namespace QCat
 			};
 
 			m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-
-			{
-				BufferLayout layout = {
-					{ ShaderDataType::Float3, "a_Position" },
-					{ ShaderDataType::Float4, "a_Color" }
-				};
-
-				m_VertexBuffer->SetLayout(layout);
-			}
-
-			uint32_t index = 0;
-			const auto& layout = m_VertexBuffer->GetLayout();
-			for (const auto& element : layout)
-			{
-				glEnableVertexAttribArray(index);
-				glVertexAttribPointer(index,
-					element.GetComponentCount(),
-					ShaderDataTypeToOpenGLBaseType(element.type),
-					element.normalized ? GL_TRUE : GL_FALSE,
-					layout.GetStride(),
-					(const void*)element.offset);
-				index++;
-			}
+			
+			m_BufferLayout.reset(BufferLayout::Create(
+				{ { ShaderDataType::Float3, "a_Position" },
+					{ ShaderDataType::Float4, "a_Color" } }
+			));
 
 			unsigned int indices[3] = { 0,1,2 };
 			m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
@@ -175,7 +139,8 @@ namespace QCat
 				m_IndexBuffer->Bind();
 
 				pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				pGfx->GetContext()->IASetInputLayout(pInputLayout.Get());
+				//pGfx->GetContext()->IASetInputLayout(pInputLayout.Get());
+				m_BufferLayout->Bind();
 
 				m_vertexShader->Bind();
 				m_pixelShader->Bind();
