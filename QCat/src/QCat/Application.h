@@ -53,7 +53,11 @@ namespace QCat
 		std::unique_ptr<VertexBuffer> m_VertexBuffer;
 		std::unique_ptr<IndexBuffer> m_IndexBuffer;
 
+		std::unique_ptr<VertexBuffer> m_SquareBuffer;
+		std::unique_ptr<IndexBuffer> m_SquareIndex;
 
+		std::unique_ptr<Shader> m_SquareVertexShader;
+		std::unique_ptr<Shader> m_SquarePixelShader;
 	private:
 		static Application* instance;
 	};

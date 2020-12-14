@@ -13,17 +13,17 @@ namespace QCat
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RenderAPI::None:		
+		case RenderAPI::API::None:		
 			{
 				QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
 				break;
 			}
-			case RenderAPI::OpenGL:	
+		case RenderAPI::API::OpenGL:	
 			{
 				return new OpenGLVertexBuffer(vertices, size);
 				break;
 			}
-			case RenderAPI::DirectX11:
+		case RenderAPI::API::DirectX11:
 				if(temp==nullptr)
 					QCAT_CORE_ASSERT(size < 0, "DirectX11 VertexBuffer Creation need stride Parameter : temp is nullptr");
 
@@ -37,17 +37,17 @@ namespace QCat
 	{
 		switch (Renderer::GetAPI())
 		{
-			case RenderAPI::None:		
+		case RenderAPI::API::None:		
 			{
 				QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
 				break;
 			}
-			case RenderAPI::OpenGL:		
+		case RenderAPI::API::OpenGL:		
 			{
 				return new OpenGLIndexBuffer(indices, size);
 				break;
 			}
-			case RenderAPI::DirectX11:
+		case RenderAPI::API::DirectX11:
 				return new DX11IndexBuffer(indices,size);
 				break;
 		}
@@ -58,17 +58,17 @@ namespace QCat
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RenderAPI::None:
+		case RenderAPI::API::None:
 		{
 			QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
 			break;
 		}
-		case RenderAPI::OpenGL:
+		case RenderAPI::API::OpenGL:
 		{
 			return new OpenGL_InputLayout(elements);
 			break;
 		}
-		case RenderAPI::DirectX11:
+		case RenderAPI::API::DirectX11:
 			if (vertexShaderCode == nullptr)
 			{
 				QCAT_CORE_ASSERT(false, "InputLayout Of DX11 need vertexShaderCode! : shadercode nullptr");

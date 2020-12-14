@@ -14,6 +14,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architexture}"
 IncludeDir = {}
 IncludeDir["ImGui"] = "QCat/3rdLib/Imgui"
 IncludeDir["DirectXMath"] = "QCat/3rdLib/DirectXMath"
+IncludeDir["Glm"] = "QCat/3rdLib/glm"
 IncludeDir["Glad"] = "QCat/3rdLib/Glad/Include"
 
 include "QCat/3rdLib/Imgui"
@@ -40,7 +41,9 @@ project "QCat"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/3rdLib/DirectXMath/**.h",
 		"%{prj.name}/3rdLib/DirectXMath/**.cpp",
-		"%{prj.name}/3rdLib/DirectXMath/**.inl"
+		"%{prj.name}/3rdLib/DirectXMath/**.inl",
+		"%{prj.name}/3rdLib/glm/glm/**.hpp",
+		"%{prj.name}/3rdLib/glm/glm/**.inl"
 	}
 
 	includedirs
@@ -49,7 +52,8 @@ project "QCat"
 		"%{prj.name}/3rdLib/spdlog/include",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.DirectXMath}",
-		"%{IncludeDir.Glad}"
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.Glm}"
 	}
 
 	links
@@ -110,7 +114,8 @@ project "SandBox"
 	{
 		"QCat/3rdLib/spdlog/include",
 		"QCat/src",
-		"%{IncludeDir.DirectXMath}"
+		"%{IncludeDir.DirectXMath}",
+		"%{IncludeDir.Glm}"
 	}
 
 	links

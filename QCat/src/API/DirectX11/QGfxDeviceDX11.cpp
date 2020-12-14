@@ -20,7 +20,7 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::Begin()
 	{
-		BeginFrame();
+		BeginFrame(DirectX::XMFLOAT4{ 0.1f, 0.1f, 0.1f, 1 });
 	}
 	void QGfxDeviceDX11::End()
 	{
@@ -223,10 +223,10 @@ namespace QCat {
 	{
 		Instance = nullptr;
 	}
-	void QGfxDeviceDX11::BeginFrame()
+	void QGfxDeviceDX11::BeginFrame(DirectX::XMFLOAT4& color)
 	{
-		std::array<float, 4> color = { 0.129f, 0.586f, 0.949f, 1.0f };
-		immediateContext->ClearRenderTargetView(renderTargetView.Get(), color.data());
+		std::array<float, 4> colorArray = { color.x, color.y,color.z, color.w};
+		immediateContext->ClearRenderTargetView(renderTargetView.Get(), colorArray.data());
 		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), NULL);
 		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}

@@ -18,6 +18,9 @@
 
 #include <wrl.h>
 
+#include<glm/glm.hpp>
+#include<DirectXMath.h>
+
 #include "QCatDefines.h"
 #include "QCat/Log.h"
 

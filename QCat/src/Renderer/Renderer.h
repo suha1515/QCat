@@ -1,16 +1,17 @@
 #pragma once
+#include "RenderCommand.h"
 
 namespace QCat
 {
-	enum class RenderAPI
-	{
-		None =0,OpenGL =1,DirectX11 = 2
-	};
 	class Renderer
 	{
 	public:
-		inline static RenderAPI GetAPI(){ return s_renderAPI; }
-	private:
-		static RenderAPI s_renderAPI;
+		static void BeginScene();
+		static void EndScene();
+
+		static void Submit(const std::shared_ptr<VertexArray>& vertexArray);
+		static void Submit(const unsigned int indexCount);
+		inline static RenderAPI::API GetAPI() { return RenderAPI::GetAPI(); }
+
 	};
 }

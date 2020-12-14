@@ -10,9 +10,9 @@ namespace QCat
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RenderAPI::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
-		case RenderAPI::OpenGL:			return new OpenGLVertexArray();
-		case RenderAPI::DirectX11:		return nullptr;
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:			return new OpenGLVertexArray();
+		case RenderAPI::API::DirectX11:		return nullptr;
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;

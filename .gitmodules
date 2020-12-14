@@ -7,3 +7,6 @@
 [submodule "QCat/3rdLib/DirectXMath"]
 	path = QCat/3rdLib/DirectXMath
 	url = https://github.com/microsoft/DirectXMath
+[submodule "QCat/3rdLib/glm"]
+	path = QCat/3rdLib/glm
+	url = https://github.com/g-truc/glm

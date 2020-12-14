@@ -4,7 +4,8 @@
 #include "Platform/Windows/WindowsWindow.h"
 #include "Input.h"
 
-#include <glad/glad.h>
+#include "Renderer/Renderer.h"
+
 #include <API/DirectX11/DX11_Shader.h>
 #include <API/Opengl/OpenGLShader.h>
 
@@ -59,6 +60,30 @@ namespace QCat
 			m_vertexShader->GetData().size()
 		);
 		m_VertexBuffer->SetLayout(buflayout);
+
+		float squareVertices[3 * 4] = {
+		-0.75f, -0.75f, 0.0f,
+		-0.75f,  0.75f, 0.0f,
+		 0.75f,  0.75f, 0.0f,
+		 0.75f, -0.75f, 0.0f
+		};
+		stride = sizeof(float) * 3;
+
+		unsigned squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
+
+		m_SquareBuffer.reset(VertexBuffer::Create(squareVertices, sizeof(squareVertices), &stride));
+		m_SquareIndex.reset(IndexBuffer::Create(squareIndices, sizeof(squareIndices)));
+		m_SquareVertexShader.reset(new DX11VertexShader(*pGfx, "..\\bin\\Debug-windows-\\QCat\\Square_VS.cso"));
+		m_SquarePixelShader.reset(new DX11PixelShader(*pGfx, "..\\bin\\Debug-windows-\\QCat\\Square_PS.cso"));
+
+
+		BufferLayout* squareLayout = BufferLayout::Create(
+			{{ShaderDataType::Float3,"Position"}},
+			m_SquareVertexShader->GetData().data(),
+			m_SquareVertexShader->GetData().size()
+		);
+
+		m_SquareBuffer->SetLayout(squareLayout);
 
 #elif defined(QCAT_OPENGL)
 		m_VertexArray.reset(VertexArray::Create());
@@ -179,18 +204,26 @@ namespace QCat
 				for (Layer* layer : m_layerStack)
 					layer->OnUpdate();
 				m_window->OnBegin();
+
 #if defined(QCAT_DX11)
 				WindowsWindow* pWindow = dynamic_cast<WindowsWindow*>(m_window.get());
 				QGfxDeviceDX11* pGfx = dynamic_cast<QGfxDeviceDX11*>(pWindow->Gfx());
-				//// Topology
+				pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				RenderCommand::SetClearColor(DirectX::XMFLOAT4{ 0.1f, 0.1f, 0.1f, 1 });
+				RenderCommand::Clear();
+				Renderer::BeginScene();
+				m_SquareBuffer->Bind();
+				m_SquareIndex->Bind();
+				m_SquareVertexShader->Bind();
+				m_SquarePixelShader->Bind();
+				Renderer::Submit(m_SquareIndex->GetCount());
 				m_VertexBuffer->Bind();
 				m_IndexBuffer->Bind();
-
-				pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 				m_vertexShader->Bind();
 				m_pixelShader->Bind();
-				pGfx->GetContext()->DrawIndexed(3u, 0u, 0u);
+				Renderer::Submit(m_IndexBuffer->GetCount());
+				Renderer::EndScene();
+
 				D3D11_VIEWPORT vp;
 				vp.Width = m_window->GetWidth();
 				vp.Height = m_window->GetHeight();
@@ -200,15 +233,18 @@ namespace QCat
 				vp.TopLeftY = 0;
 				pGfx->GetContext()->RSSetViewports(1u, &vp);		
 #elif defined(QCAT_OPENGL)
+				RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1 });
+				RenderCommand::Clear();
+
+				Renderer::BeginScene();
 				m_BlueShader->Bind();
-				m_SquareVA->Bind();
-				glDrawElements(GL_TRIANGLES, m_SquareVA->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+				Renderer::Submit(m_SquareVA);
 
 				m_Shader->Bind();
-				m_VertexArray->Bind();
-				glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+				Renderer::Submit(m_VertexArray);
 				
-#endif
+				Renderer::EndScene();
+#endif			
 					
 				m_ImguiLayer->OnBegin();
 				for (Layer* layer : m_layerStack)
