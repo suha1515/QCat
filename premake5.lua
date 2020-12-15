@@ -104,6 +104,7 @@ project "SandBox"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.hlsl",
 		"%{prj.name}/resource.h",
 		"%{prj.name}/SandBox.rc",
 		"%{prj.name}/SandBox.aps",
@@ -115,6 +116,7 @@ project "SandBox"
 		"QCat/3rdLib/spdlog/include",
 		"QCat/src",
 		"%{IncludeDir.DirectXMath}",
+		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Glm}"
 	}
 
@@ -143,4 +145,16 @@ project "SandBox"
 		defines "QCAT_DIST"
 		optimize "on"
 
+	filter { "files:**.hlsl" }
+		flags "ExcludeFromBuild"
+		shadermodel "5.0"
+	filter { "files:**_PS.hlsl" }
+		removeflags "ExcludeFromBuild"
+		shadertype "Pixel"
+		shaderentry "ForPixel"
+	filter { "files:**_VS.hlsl" }
+		removeflags "ExcludeFromBuild"
+		shadertype "Vertex"
+		shaderentry "ForVertex"
+	filter {}
 

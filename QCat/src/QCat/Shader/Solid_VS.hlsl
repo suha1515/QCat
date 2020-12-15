@@ -1,3 +1,8 @@
+cbuffer TransformCbuf : register(b0)
+{
+	matrix viewProj;
+}
+
 struct VSOut
 {
 	float4 color : COLOR;
@@ -7,7 +12,8 @@ struct VSOut
 VSOut main( float3 pos : Position, float4 color :Color)
 {
 	VSOut vso;
-	vso.pos = float4(pos.x,pos.y,0.0f,1.0f);
+
+	vso.pos = mul( viewProj, float4(pos, 1.0f));
 	vso.color = color;
 	return vso;
 }

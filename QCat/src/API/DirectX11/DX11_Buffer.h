@@ -25,7 +25,7 @@ namespace QCat
 	{
 	public:
 		DX11IndexBuffer(unsigned int* indices ,unsigned int size);
-		~DX11IndexBuffer() {};
+		~DX11IndexBuffer() {}
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
@@ -34,5 +34,53 @@ namespace QCat
 		std::string m_tag;
 		UINT m_count;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_pIndexBuffer;
+	};
+
+	class QCAT_API DX11ConstantBuffer
+	{
+	public:
+		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot ,const void* data,unsigned int size)
+			:slot(slot)
+		{
+			D3D11_BUFFER_DESC bd;
+			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			bd.Usage = D3D11_USAGE_DEFAULT;
+			bd.CPUAccessFlags = 0u;
+			bd.MiscFlags = 0u;
+			bd.ByteWidth = size;
+			bd.StructureByteStride = 0u;
+
+			D3D11_SUBRESOURCE_DATA sd = {};
+			sd.pSysMem = data;
+			HRESULT result = gfx.GetDevice()->CreateBuffer(&bd, &sd, &pConstantBuffer);
+			int a = 0;
+		}
+		void UpdateData(QGfxDeviceDX11& gfx,const void* data)
+		{
+			gfx.GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, data, 0u, 0u);
+		}
+		~DX11ConstantBuffer() {}
+	protected:
+		Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
+		unsigned int slot;
+	};
+	class QCAT_API DX11VertexConstantBuffer : public DX11ConstantBuffer
+	{
+	public:
+		using DX11ConstantBuffer::DX11ConstantBuffer;
+		void Bind(QGfxDeviceDX11& gfx) 
+		{
+			gfx.GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
+		}
+	};
+	template<typename T>
+	class QCAT_API DX11PixelConstantBuffer : public DX11ConstantBuffer
+	{
+	public:
+		using DX11ConstantBuffer::DX11ConstantBuffer;
+		void Bind(QGfxDeviceDX11& gfx)
+		{
+			gfx.GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
+		}
 	};
 }

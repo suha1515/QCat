@@ -6,32 +6,50 @@
 
 namespace QCat
 {
-	class DX11VertexShader : public Shader
+	class DX11VertexShader;
+	class DX11PixelShader;
+	class DX11Shader : public Shader
+	{
+	public:
+		DX11Shader(const std::string& vertexShaderPath, const std::string& pixelShaderPath);
+		~DX11Shader();
+	public:
+		virtual void Bind() override;
+		virtual void UnBind() override;
+
+		std::vector<char>& GetVerexData();
+	private:
+		DX11VertexShader* pvs;
+		DX11PixelShader* pps;
+	};
+	class DX11VertexShader
 	{
 	public:
 		DX11VertexShader(Graphics& gfx,const std::string& path);
 		~DX11VertexShader();
-
-		virtual void Bind() override;
-		virtual void UnBind() override;
-		virtual std::vector<char>& GetData() override;
+	public:
+		std::vector<char>& DX11VertexShader::GetData();
+	public:
+		 void Bind() ;
+		 void UnBind();
 	private:
 		//VertexShader
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
 		QGfxDeviceDX11* gfx;
+		std::vector<char> data;
 	};
-	class DX11PixelShader : public Shader
+	class DX11PixelShader
 	{
 	public:
 		DX11PixelShader(Graphics& gfx, const std::string& path);
 		~DX11PixelShader();
-
-		virtual void Bind() override;
-		virtual void UnBind() override;
-		virtual std::vector<char>& GetData() override;
+	public:
+		 void Bind() ;
+		 void UnBind();
 	private:
 		//PixelShader
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
 		QGfxDeviceDX11* gfx;
 	};
+
 }

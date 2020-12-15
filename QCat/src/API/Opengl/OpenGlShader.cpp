@@ -6,8 +6,64 @@ namespace QCat
 {
 	OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& pixelSrc)
 	{
+		OpenGLVertexShader vertexShader(vertexSrc);
+		OpenGLPixelShader pixelShader(pixelSrc);
+		
+		// Vertex and fragment shaders are successfully compiled.
+		// Now time to link them together into a program.
+		// Get a program object.
+		m_renderID = glCreateProgram();
+		GLuint program = m_renderID;
+
+		// Attach our shaders to our program
+		glAttachShader(program, vertexShader.GetVertexShader());
+		glAttachShader(program, pixelShader.GetPixelShader());
+
+		// Link our program
+		glLinkProgram(program);
+
+		// Note the different functions here: glGetProgram* instead of glGetShader*.
+		GLint isLinked = 0;
+		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		if (isLinked == GL_FALSE)
+		{
+			GLint maxLength = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+			// The maxLength includes the NULL character
+			std::vector<GLchar> infoLog(maxLength);
+			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+			// We don't need the program anymore.
+			glDeleteProgram(program);
+			// Don't leak shaders either.
+
+			QCAT_CORE_ERROR("{0}", infoLog.data());
+			QCAT_CORE_ASSERT(false, "Shader link failure!");
+			return;
+		}
+
+		// Always detach shaders after a successful link.
+		glDetachShader(program, vertexShader.GetVertexShader());
+		glDetachShader(program, pixelShader.GetPixelShader());
+	}
+	OpenGLShader::~OpenGLShader()
+	{
+		glDeleteProgram(m_renderID);
+	}
+	void OpenGLShader::Bind()
+	{
+		glUseProgram(m_renderID);
+	}
+	void OpenGLShader::UnBind()
+	{
+		glUseProgram(0);
+	}
+	// VertexShader
+	OpenGLVertexShader::OpenGLVertexShader(const std::string& vertexSrc)
+	{
 		// Create an empty vertex shader handle
-		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
 		// Send the vertex shader source code to GL
 		// Note that std::string's .c_str is NULL character terminated.
@@ -35,13 +91,21 @@ namespace QCat
 			QCAT_CORE_ASSERT(false, "Vertex shader compilation failure!");
 			return;
 		}
-
+	}
+	OpenGLVertexShader::~OpenGLVertexShader()
+	{
+		glDeleteShader(vertexShader);
+	}
+	// PixelShader
+	OpenGLPixelShader::OpenGLPixelShader(const std::string& pixelSrc)
+	{
+		GLint isCompiled = 0;
 		// Create an empty fragment shader handle
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
 		// Send the fragment shader source code to GL
 		// Note that std::string's .c_str is NULL character terminated.
-		source = pixelSrc.c_str();
+		const GLchar* source = pixelSrc.c_str();
 		glShaderSource(fragmentShader, 1, &source, 0);
 
 		// Compile the fragment shader
@@ -59,68 +123,14 @@ namespace QCat
 
 			// We don't need the shader anymore.
 			glDeleteShader(fragmentShader);
-			// Either of them. Don't leak shaders.
-			glDeleteShader(vertexShader);
 
 			QCAT_CORE_ERROR("{0}", infoLog.data());
 			QCAT_CORE_ASSERT(false, "Fragment shader compilation failure!");
 			return;
 		}
-
-		// Vertex and fragment shaders are successfully compiled.
-		// Now time to link them together into a program.
-		// Get a program object.
-		m_renderID = glCreateProgram();
-		GLuint program = m_renderID;
-
-		// Attach our shaders to our program
-		glAttachShader(program, vertexShader);
-		glAttachShader(program, fragmentShader);
-
-		// Link our program
-		glLinkProgram(program);
-
-		// Note the different functions here: glGetProgram* instead of glGetShader*.
-		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-
-			// We don't need the program anymore.
-			glDeleteProgram(program);
-			// Don't leak shaders either.
-			glDeleteShader(vertexShader);
-			glDeleteShader(fragmentShader);
-
-			QCAT_CORE_ERROR("{0}", infoLog.data());
-			QCAT_CORE_ASSERT(false, "Shader link failure!");
-			return;
-		}
-
-		// Always detach shaders after a successful link.
-		glDetachShader(program, vertexShader);
-		glDetachShader(program, fragmentShader);
 	}
-	OpenGLShader::~OpenGLShader()
+	OpenGLPixelShader::~OpenGLPixelShader()
 	{
-		glDeleteProgram(m_renderID);
-	}
-	void OpenGLShader::Bind()
-	{
-		glUseProgram(m_renderID);
-	}
-	void OpenGLShader::UnBind()
-	{
-		glUseProgram(0);
-	}
-	std::vector<char>& OpenGLShader::GetData()
-	{
-		return data;
+		glDeleteShader(fragmentShader);
 	}
 }

@@ -21,6 +21,8 @@
 #include<glm/glm.hpp>
 #include<DirectXMath.h>
 
+#include <glad/glad.h>
+
 #include "QCatDefines.h"
 #include "QCat/Log.h"
 
