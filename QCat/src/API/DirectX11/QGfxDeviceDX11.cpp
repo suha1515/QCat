@@ -20,7 +20,7 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::Begin()
 	{
-		BeginFrame(DirectX::XMFLOAT4{ 0.1f, 0.1f, 0.1f, 1 });
+		BeginFrame(glm::vec4(0.1f,0.1f,0.1f,1.0f));
 	}
 	void QGfxDeviceDX11::End()
 	{
@@ -223,7 +223,7 @@ namespace QCat {
 	{
 		Instance = nullptr;
 	}
-	void QGfxDeviceDX11::BeginFrame(DirectX::XMFLOAT4& color)
+	void QGfxDeviceDX11::BeginFrame(glm::vec4& color)
 	{
 		std::array<float, 4> colorArray = { color.x, color.y,color.z, color.w};
 		immediateContext->ClearRenderTargetView(renderTargetView.Get(), colorArray.data());

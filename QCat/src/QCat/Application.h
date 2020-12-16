@@ -34,41 +34,11 @@ namespace QCat
 		inline Window* GetWindow() { return m_window.get(); }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
-		bool OnKeyPress(KeyTypedEvent& e);
 	private:
 		std::unique_ptr<Window> m_window;
-		std::unique_ptr<Window> m_window2;
 		ImGuiLayer* m_ImguiLayer;
 		bool m_Running = true;
 		LayerStack m_layerStack;
-
-		//temperary code for Testing
-	private:	
-		std::shared_ptr<Shader> m_Shader;
-		std::shared_ptr<VertexArray> m_VertexArray;
-
-		std::shared_ptr<Shader> m_BlueShader;
-		std::shared_ptr<VertexArray> m_SquareVA;
-
-		std::unique_ptr<Shader> m_vertexShader;
-		std::unique_ptr<Shader> m_pixelShader;
-
-		std::unique_ptr<VertexBuffer> m_VertexBuffer;
-		std::unique_ptr<IndexBuffer> m_IndexBuffer;
-
-		std::unique_ptr<VertexBuffer> m_SquareBuffer;
-		std::unique_ptr<IndexBuffer> m_SquareIndex;
-
-		std::unique_ptr<Shader> m_SquareVertexShader;
-		std::unique_ptr<Shader> m_SquarePixelShader;
-
-		//dx11 buffer
-		std::unique_ptr<DX11VertexConstantBuffer> m_constantBuffer;
-
-		//camera
-		OrthographicCamera m_Camera;
-		// temp
-		float m_rotation=0;
 	private:
 		static Application* instance;
 	};

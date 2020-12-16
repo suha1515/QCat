@@ -18,6 +18,13 @@
 #define QCAT_MOUSE_BUTTON_RIGHT     QCAT_MOUSE_BUTTON_2
 #define QCAT_MOUSE_BUTTON_MIDDLE    QCAT_MOUSE_BUTTON_3
 
+#if defined (QCAT_PLATFORM_WINDOWS)
+
+
+#else
+
+#endif
+
 #define QCAT_DX11
 //#define QCAT_OPENGL
 

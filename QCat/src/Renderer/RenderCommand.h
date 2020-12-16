@@ -10,10 +10,6 @@ namespace QCat
 		{
 			s_renderAPI->SetClearColor(color);
 		}
-		inline static void SetClearColor(const DirectX::XMFLOAT4& color)
-		{
-			s_renderAPI->SetClearColor(color);
-		}
 		inline static void Clear()
 		{
 			s_renderAPI->Clear();

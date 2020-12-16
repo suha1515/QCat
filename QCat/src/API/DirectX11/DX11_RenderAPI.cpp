@@ -10,7 +10,7 @@ namespace QCat
 	DX11RenderAPI::~DX11RenderAPI()
 	{
 	}
-	void DX11RenderAPI::SetClearColor(const DirectX::XMFLOAT4& color)
+	void DX11RenderAPI::SetClearColor(const glm::vec4& color)
 	{
 		this->color = color;
 	}

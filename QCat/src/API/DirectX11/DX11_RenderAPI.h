@@ -9,11 +9,11 @@ namespace QCat
 		DX11RenderAPI();
 		~DX11RenderAPI();
 	public:
-		virtual void SetClearColor(const DirectX::XMFLOAT4& color) override;
+		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 		virtual void DrawIndexed(const unsigned int indexCount) override;
 	private:
 		QGfxDeviceDX11* pgfx;
-		DirectX::XMFLOAT4 color;
+		glm::vec4 color;
 	};
 }

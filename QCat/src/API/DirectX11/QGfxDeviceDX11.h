@@ -36,7 +36,7 @@ namespace QCat {
 
 		void Initialize(HWND hwnd, int width, int height, bool fullscreen = false);
 
-		void BeginFrame(DirectX::XMFLOAT4& color);
+		void BeginFrame(glm::vec4& color);
 		void EndFrame();
 	public:
 		void CleanRenderTarget();
