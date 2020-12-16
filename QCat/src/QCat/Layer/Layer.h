@@ -2,7 +2,7 @@
 
 #include "QCat/QCatCore.h"
 #include "QCat/Events/Event.h"
-
+#include "QCat/Uitiliy/Timestep.h"
 namespace QCat
 {
 	class QCAT_API Layer
@@ -13,7 +13,7 @@ namespace QCat
 
 		virtual void OnAttach(){}
 		virtual void OnDetach(){}
-		virtual void OnUpdate(){}
+		virtual void OnUpdate(Timestep ts){}
 		virtual void OnImGuiRender(){}
 		virtual void OnEvent(Event& event){}
 

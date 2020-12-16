@@ -23,6 +23,7 @@
 
 #include <glad/glad.h>
 
+#include "QCat/KeyCode.h"
 #include "QCatDefines.h"
 #include "QCat/Log.h"
 

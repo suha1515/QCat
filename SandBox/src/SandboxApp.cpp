@@ -168,22 +168,24 @@ public:
 		m_BlueShader.reset(new QCat::OpenGLShader(blueShaderVertexSrc, blueShaderFragmentSrc));
 #endif	
 	}
-	void OnUpdate() override
+	void OnUpdate(QCat::Timestep step) override
 	{
+		//QCAT_TRACE("Deltime: {0}s ({1}ms),", step.GetSeconds(), step.GetMilliseconds());
+
 		if (QCat::Input::IsKeyPressed(VK_LEFT))
-			m_CameraPosition.x -= m_CameraMoveSpeed;
+			m_CameraPosition.x -= m_CameraMoveSpeed * step;
 		else if (QCat::Input::IsKeyPressed(VK_RIGHT))
-			m_CameraPosition.x += m_CameraMoveSpeed;
+			m_CameraPosition.x += m_CameraMoveSpeed * step;
 
 		if (QCat::Input::IsKeyPressed(VK_UP))
-			m_CameraPosition.y += m_CameraMoveSpeed;
+			m_CameraPosition.y += m_CameraMoveSpeed * step;
 		else if (QCat::Input::IsKeyPressed(VK_DOWN))
-			m_CameraPosition.y -= m_CameraMoveSpeed;
+			m_CameraPosition.y -= m_CameraMoveSpeed * step;
 
 		if (QCat::Input::IsKeyPressed('A'))
-			m_CameraRoatation += m_CameraRoatationSpeed;
+			m_CameraRoatation += m_CameraRoatationSpeed * step;
 		if (QCat::Input::IsKeyPressed('D'))
-			m_CameraRoatation -= m_CameraRoatationSpeed;
+			m_CameraRoatation -= m_CameraRoatationSpeed * step;
 
 
 
@@ -245,9 +247,9 @@ private:
 	//camera
 	QCat::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;
-	float m_CameraMoveSpeed = 0.1f;
+	float m_CameraMoveSpeed = 2.0f;
 	float m_CameraRoatation = 0.0f;
-	float m_CameraRoatationSpeed = 0.1f;
+	float m_CameraRoatationSpeed = 180;
 };
 
 class Sandbox : public QCat::Application

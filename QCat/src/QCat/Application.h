@@ -7,13 +7,8 @@
 
 #include "QCat/ImGui/ImGuiLayer.h"
 #include <wrl.h>
-#include "API/DirectX11/QGfxDeviceDX11.h"
-#include "API/DirectX11/DX11_Buffer.h"
-
-#include "Renderer/Shader.h"
-#include "Renderer/Buffer.h"
-#include "Renderer/VertexArray.h"
-#include "Renderer/OrthographicCamera.h"
+#include "Uitiliy/Timestep.h"
+#include "Uitiliy/Timer.h"
 
 namespace QCat
 {
@@ -39,6 +34,8 @@ namespace QCat
 		ImGuiLayer* m_ImguiLayer;
 		bool m_Running = true;
 		LayerStack m_layerStack;
+		float m_lastFrameTime = 0.0f;
+		Timer timer;
 	private:
 		static Application* instance;
 	};

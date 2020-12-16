@@ -6,10 +6,6 @@
 
 #include "Renderer/Renderer.h"
 
-#include <API/DirectX11/DX11_Shader.h>
-#include <API/Opengl/OpenGLShader.h>
-#include <glm/glm.hpp>
-
 namespace wrl = Microsoft::WRL;
 
 std::wstring ToWide(const std::string& narrow)
@@ -50,12 +46,13 @@ namespace QCat
 	{
 		while (m_Running)
 		{
+			Timestep timestep = timer.Mark();
 			m_window->OnMessageUpdate();
 			if (m_Running)
 			{
 				m_window->OnBegin();
 				for (Layer* layer : m_layerStack)
-					layer->OnUpdate();
+					layer->OnUpdate(timestep);
 #if defined(QCAT_DX11)
 		
 #elif defined(QCAT_OPENGL)

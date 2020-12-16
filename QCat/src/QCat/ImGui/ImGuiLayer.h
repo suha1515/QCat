@@ -32,7 +32,6 @@ namespace QCat
 		bool OnKeyTypedEvent(KeyTypedEvent& e);
 		bool OnWindowResizedEvent(WindowResizeEvent& e);
 	private:
-		Timer timer;
 		INT64 g_Time = 0;
 		INT64 g_TicksPerSecond = 0;
 	};
