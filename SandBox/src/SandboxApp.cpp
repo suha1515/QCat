@@ -32,10 +32,10 @@ public:
 		m_VertexBuffer->SetLayout(buflayout);
 
 		float squareVertices[3 * 4] = {
-		-0.75f, -0.75f, 0.0f,
-		-0.75f,  0.75f, 0.0f,
-		 0.75f,  0.75f, 0.0f,
-		 0.75f, -0.75f, 0.0f
+		-0.5f, -0.5f, 0.0f,
+		-0.5f,  0.5f, 0.0f,
+		 0.5f,  0.5f, 0.0f,
+		 0.5f, -0.5f, 0.0f
 		};
 		stride = sizeof(float) * 3;
 
@@ -58,6 +58,8 @@ public:
 		const glm::mat4& matrix = m_Camera.GetViewProjectionMatrix();
 		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
 		m_constantBuffer.reset(new QCat::DX11VertexConstantBuffer(*pGfx, 0u, &matrix, sizeof(matrix)));
+		glm::mat4 identitymat = glm::mat4(1.0f);
+		m_transform.reset(new QCat::DX11VertexConstantBuffer(*pGfx, 1u, &identitymat, sizeof(identitymat)));
 
 #elif defined(QCAT_OPENGL)
 		m_VertexArray.reset(QCat::VertexArray::Create());
@@ -86,10 +88,10 @@ public:
 
 		m_SquareVA.reset(QCat::VertexArray::Create());
 		float squareVertices[3 * 4] = {
-		-0.75f, -0.75f, 0.0f,
-		 0.75f, -0.75f, 0.0f,
-		 0.75f,  0.75f, 0.0f,
-		-0.75f,  0.75f, 0.0f
+		-0.5f, -0.5f, 0.0f,
+		 0.5f, -0.5f, 0.0f,
+		 0.5f,  0.5f, 0.0f,
+		-0.5f,  0.5f, 0.0f
 		};
 
 		std::shared_ptr<QCat::VertexBuffer> squareVB;
@@ -109,6 +111,7 @@ public:
 				layout(location = 1) in vec4 a_Color;
 
 				uniform mat4 u_ViewProjection;
+				uniform mat4 u_Transform;
 
 				out vec3 v_Position;
 				out vec4 v_Color;	
@@ -117,7 +120,7 @@ public:
 				{
 					v_Position = a_Position;
 					v_Color = a_Color;
-					gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+					gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
 				}
 			)";
 
@@ -142,13 +145,14 @@ public:
 			layout(location = 0) in vec3 a_Position;
 	
 			uniform mat4 u_ViewProjection;
+			uniform mat4 u_Transform;
 
 			out vec3 v_Position;
 
 			void main()
 			{
 				v_Position = a_Position;
-				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);	
+				gl_Position = u_ViewProjection * u_Transform *  vec4(a_Position, 1.0);	
 			}
 		)";
 
@@ -187,8 +191,6 @@ public:
 		if (QCat::Input::IsKeyPressed('D'))
 			m_CameraRoatation -= m_CameraRoatationSpeed * step;
 
-
-
 		QCat::RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1 });
 		QCat::RenderCommand::Clear();
 
@@ -203,7 +205,20 @@ public:
 		m_constantBuffer->Bind(*pGfx);
 		m_SquareBuffer->Bind();
 		m_SquareIndex->Bind();
-		QCat::Renderer::Submit(m_BlueShader, m_SquareIndex->GetCount());
+		m_transform->Bind(*pGfx);
+		
+		for (int y = 0; y < 20; ++y)
+		{
+			for (int x = 0; x < 20; ++x)
+			{
+				glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+				glm::vec3 pos(0.11f*x, 0.11f*y, 0.0f);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
+				m_transform->UpdateData(*pGfx, &transform);
+				QCat::Renderer::Submit(m_BlueShader, m_SquareIndex->GetCount());
+			}
+		}
+
 		m_VertexBuffer->Bind();
 		m_IndexBuffer->Bind();
 		QCat::Renderer::Submit(m_Shader, m_IndexBuffer->GetCount());
@@ -216,7 +231,19 @@ public:
 		vp.TopLeftY = 0;
 		pGfx->GetContext()->RSSetViewports(1u, &vp);
 #elif defined(QCAT_OPENGL)
-		QCat::Renderer::Submit(m_BlueShader, m_SquareVA);
+
+	
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+		for (int y = 0; y < 20; ++y)
+		{
+			for (int x = 0;x < 20; ++x)
+			{
+				glm::vec3 pos(x * 0.11f, y*0.11f, 0.0f);
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
+				QCat::Renderer::Submit(m_BlueShader, m_SquareVA, transform);
+			}
+		}
+		
 		QCat::Renderer::Submit(m_Shader, m_VertexArray);
 #endif
 		QCat::Renderer::EndScene();
@@ -243,6 +270,8 @@ private:
 
 	//dx11 buffer
 	std::unique_ptr<QCat::DX11VertexConstantBuffer> m_constantBuffer;
+	std::unique_ptr<QCat::DX11VertexConstantBuffer> m_transform;
+
 
 	//camera
 	QCat::OrthographicCamera m_Camera;
@@ -250,6 +279,7 @@ private:
 	float m_CameraMoveSpeed = 2.0f;
 	float m_CameraRoatation = 0.0f;
 	float m_CameraRoatationSpeed = 180;
+
 };
 
 class Sandbox : public QCat::Application

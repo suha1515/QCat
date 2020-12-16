@@ -2,7 +2,13 @@ cbuffer TransformCbuf : register(b0)
 {
 	matrix viewProj;
 }
-float4 main( float3 pos : Position ) : SV_POSITION
+cbuffer transform : register(b1)
 {
-	return mul(viewProj,float4(pos,1.0f));
+	matrix transform;
+}
+
+float4 main(float3 pos : Position) : SV_POSITION
+{
+	matrix mat = mul(viewProj,transform);
+	return mul(mat,float4(pos,1.0f));
 }
