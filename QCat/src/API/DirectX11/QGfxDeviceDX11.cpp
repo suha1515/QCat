@@ -33,6 +33,8 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::Initialize(HWND hwnd, int width, int height,bool fullscreen)
 	{
+		this->width = width;
+		this->height = height;
 		UINT createDeviceFlags = 0;
 	#ifdef QCAT_DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;

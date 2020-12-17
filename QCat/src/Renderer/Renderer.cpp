@@ -1,6 +1,8 @@
 #include "qcpch.h"
 #include "Renderer.h"
 
+#include "API/Opengl/OpenGLShader.h"
+#include "API/DirectX11/DX11_Shader.h"
 namespace QCat
 {
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
@@ -15,15 +17,18 @@ namespace QCat
 	void Renderer::Submit(const std::shared_ptr<Shader>& shader,const std::shared_ptr<VertexArray>& vertexArray,const glm::mat4& transform)
 	{
 		shader->Bind();
-		shader->UploadeUniformMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
-		shader->UploadeUniformMat4("u_Transform", transform);
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix);
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 	}
-	void Renderer::Submit(const std::shared_ptr<Shader>& shader,const unsigned int indexCount)
+	void Renderer::Submit(const std::shared_ptr<Shader>& shader,const unsigned int indexCount, const glm::mat4& transform)
 	{
 		shader->Bind();
+		std::dynamic_pointer_cast<DX11Shader>(shader)->UpdateVertexConstantBuffer("u_ViewProjection", &m_SceneData->ViewProjectionMatrix);
+		std::dynamic_pointer_cast<DX11Shader>(shader)->UpdateVertexConstantBuffer("u_Transform", &transform);
+
 		RenderCommand::DrawIndexed(indexCount);
 	}
 }

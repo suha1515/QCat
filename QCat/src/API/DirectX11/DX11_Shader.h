@@ -4,6 +4,7 @@
 #include <string>
 #include <wrl.h>
 
+#include "API/DirectX11/DX11_Buffer.h"
 namespace QCat
 {
 	class DX11VertexShader;
@@ -14,13 +15,19 @@ namespace QCat
 		DX11Shader(const std::string& vertexShaderPath, const std::string& pixelShaderPath);
 		~DX11Shader();
 	public:
-		virtual void Bind() override;
-		virtual void UnBind() override;
-
+		virtual void Bind()const override;
+		virtual void UnBind()const override;
+	public:
+		void AddVertexConstantBuffer(const std::string& name, std::shared_ptr<VertexConstantBuffer>& pvertexConstantBuffer);
+		void AddPixelConstantBuffer(const std::string& name, std::shared_ptr<PixelConstantBuffer>& ppixelConstantBuffer);
+		void UpdateVertexConstantBuffer(const std::string& name,const void* data);
+		void UpdatePixelConstantBuffer(const std::string& name,const void* data);
 		std::vector<char>& GetVerexData();
 	private:
 		DX11VertexShader* pvs;
 		DX11PixelShader* pps;
+		std::unordered_map<std::string,std::shared_ptr<VertexConstantBuffer>> m_vertexConstantBuffers;
+		std::unordered_map<std::string, std::shared_ptr<PixelConstantBuffer>> m_pixelConstantBuffers;
 	};
 	class DX11VertexShader
 	{

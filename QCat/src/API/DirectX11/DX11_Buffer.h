@@ -42,12 +42,22 @@ namespace QCat
 		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot ,const void* data,unsigned int size)
 			:slot(slot)
 		{
+			unsigned int realSize = 0;
+			if (size % 16 == 0)
+				realSize = size;
+			else
+			{
+				int gap = size & 16;
+				gap = 16*(1+gap)-size;
+				realSize = size+gap;
+			}
+			
 			D3D11_BUFFER_DESC bd;
 			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 			bd.Usage = D3D11_USAGE_DEFAULT;
 			bd.CPUAccessFlags = 0u;
 			bd.MiscFlags = 0u;
-			bd.ByteWidth = size;
+			bd.ByteWidth = realSize;
 			bd.StructureByteStride = 0u;
 
 			D3D11_SUBRESOURCE_DATA sd = {};
@@ -64,7 +74,7 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
 		unsigned int slot;
 	};
-	class QCAT_API DX11VertexConstantBuffer : public DX11ConstantBuffer
+	class QCAT_API VertexConstantBuffer : public DX11ConstantBuffer
 	{
 	public:
 		using DX11ConstantBuffer::DX11ConstantBuffer;
@@ -73,8 +83,7 @@ namespace QCat
 			gfx.GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
-	template<typename T>
-	class QCAT_API DX11PixelConstantBuffer : public DX11ConstantBuffer
+	class QCAT_API PixelConstantBuffer : public DX11ConstantBuffer
 	{
 	public:
 		using DX11ConstantBuffer::DX11ConstantBuffer;

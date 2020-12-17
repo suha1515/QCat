@@ -1,5 +1,6 @@
 #include <QCat.h>
-
+#include "imgui.h"
+#include "API/Opengl/OpenGLShader.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -7,9 +8,14 @@ public:
 		:Layer("Example"),m_Camera(-1.6f,1.6f,-0.9f,0.9f)
 	{
 		m_CameraPosition = glm::vec3(0.0f);
+		std::string vertexSrc;
+		std::string fragmentSrc;
+		std::string flatColorShaderVertexSrc;
+		std::string flatColorShaderFragmentSrc;
 #if defined(QCAT_DX11)
-		QCat::DX11Shader* dxShader = new QCat::DX11Shader("..\\bin\\Debug-windows-\\QCat\\Solid_VS.cso", "..\\bin\\Debug-windows-\\QCat\\Solid_PS.cso");
-		m_Shader.reset(dxShader);
+		vertexSrc = "..\\bin\\Debug-windows-\\QCat\\Solid_VS.cso";
+		fragmentSrc = "..\\bin\\Debug-windows-\\QCat\\Solid_PS.cso";
+		m_Shader.reset(QCat::Shader::Create(vertexSrc, fragmentSrc));
 
 		//vertex Array
 		float vertices[] = {
@@ -26,8 +32,8 @@ public:
 		QCat::BufferLayout* buflayout = QCat::BufferLayout::Create(
 			{ { QCat::ShaderDataType::Float3, "Position" },
 			{ QCat::ShaderDataType::Float4, "Color" }, },
-			dxShader->GetVerexData().data(),
-			dxShader->GetVerexData().size()
+			std::dynamic_pointer_cast<QCat::DX11Shader>(m_Shader)->GetVerexData().data(),
+			std::dynamic_pointer_cast<QCat::DX11Shader>(m_Shader)->GetVerexData().size()
 		);
 		m_VertexBuffer->SetLayout(buflayout);
 
@@ -44,22 +50,32 @@ public:
 		m_SquareBuffer.reset(QCat::VertexBuffer::Create(squareVertices, sizeof(squareVertices), &stride));
 		m_SquareIndex.reset(QCat::IndexBuffer::Create(squareIndices, sizeof(squareIndices)));
 
-		QCat::DX11Shader* squareShader = new QCat::DX11Shader("..\\bin\\Debug-windows-\\QCat\\Square_VS.cso", "..\\bin\\Debug-windows-\\QCat\\Square_PS.cso");
-		m_BlueShader.reset(squareShader);
+		flatColorShaderVertexSrc = "..\\bin\\Debug-windows-\\QCat\\Square_VS.cso";
+		flatColorShaderFragmentSrc = "..\\bin\\Debug-windows-\\QCat\\Square_PS.cso";
+		m_FlatColorShader.reset(QCat::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
+
 
 		QCat::BufferLayout* squareLayout = QCat::BufferLayout::Create(
 			{ {QCat::ShaderDataType::Float3,"Position"} },
-			squareShader->GetVerexData().data(),
-			squareShader->GetVerexData().size()
+			std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->GetVerexData().data(),
+			std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->GetVerexData().size()
 		);
 
 		m_SquareBuffer->SetLayout(squareLayout);
 
 		const glm::mat4& matrix = m_Camera.GetViewProjectionMatrix();
 		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
-		m_constantBuffer.reset(new QCat::DX11VertexConstantBuffer(*pGfx, 0u, &matrix, sizeof(matrix)));
+		m_constantBuffer.reset(new QCat::VertexConstantBuffer(*pGfx, 0u, &matrix, sizeof(matrix)));
 		glm::mat4 identitymat = glm::mat4(1.0f);
-		m_transform.reset(new QCat::DX11VertexConstantBuffer(*pGfx, 1u, &identitymat, sizeof(identitymat)));
+		m_transform.reset(new QCat::VertexConstantBuffer(*pGfx, 1u, &identitymat, sizeof(identitymat)));
+
+		m_color.reset(new QCat::PixelConstantBuffer(*pGfx, 0u, &m_SquareColor, sizeof(m_SquareColor)));
+
+
+		std::dynamic_pointer_cast<QCat::DX11Shader>(m_Shader)->AddVertexConstantBuffer("u_ViewProjection", m_constantBuffer);
+		std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->AddVertexConstantBuffer("u_ViewProjection", m_constantBuffer);
+		std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->AddVertexConstantBuffer("u_Transform", m_transform);
+		std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->AddPixelConstantBuffer("u_Color", m_color);
 
 #elif defined(QCAT_OPENGL)
 		m_VertexArray.reset(QCat::VertexArray::Create());
@@ -104,7 +120,7 @@ public:
 		squareIB.reset(QCat::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
-		std::string vertexSrc = R"(
+		vertexSrc = R"(
 				#version 330 core
 
 				layout(location = 0) in vec3 a_Position;
@@ -124,7 +140,7 @@ public:
 				}
 			)";
 
-		std::string fragmentSrc = R"(
+		 fragmentSrc = R"(
 				#version 330 core
 
 				layout(location = 0) out vec4 color;
@@ -137,9 +153,9 @@ public:
 					color = v_Color;
 				}
 			)";
-		m_Shader.reset(new QCat::OpenGLShader(vertexSrc, fragmentSrc));
+		m_Shader.reset(QCat::Shader::Create(vertexSrc, fragmentSrc));
 
-		std::string blueShaderVertexSrc = R"(
+		flatColorShaderVertexSrc = R"(
 			#version 330 core
 			
 			layout(location = 0) in vec3 a_Position;
@@ -156,20 +172,20 @@ public:
 			}
 		)";
 
-		std::string blueShaderFragmentSrc = R"(
+		flatColorShaderFragmentSrc = R"(
 			#version 330 core
 			
 			layout(location = 0) out vec4 color;
 
 			in vec3 v_Position;
-
+			uniform vec3 u_Color;
 			void main()
 			{
-				color = vec4(0.2, 0.3, 0.8, 1.0);
+				color = vec4(u_Color, 1.0);
 			}
 		)";
 
-		m_BlueShader.reset(new QCat::OpenGLShader(blueShaderVertexSrc, blueShaderFragmentSrc));
+		m_FlatColorShader.reset(QCat::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
 #endif	
 	}
 	void OnUpdate(QCat::Timestep step) override
@@ -201,21 +217,20 @@ public:
 #ifdef QCAT_DX11
 		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
 		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		m_constantBuffer->UpdateData(*pGfx, &m_Camera.GetViewProjectionMatrix());
-		m_constantBuffer->Bind(*pGfx);
+		//m_constantBuffer->UpdateData(*pGfx, &m_Camera.GetViewProjectionMatrix());
+		//m_constantBuffer->Bind(*pGfx);
 		m_SquareBuffer->Bind();
 		m_SquareIndex->Bind();
-		m_transform->Bind(*pGfx);
-		
+		//m_transform->Bind(*pGfx);
+		std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->UpdatePixelConstantBuffer("u_Color", &m_SquareColor);
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 		for (int y = 0; y < 20; ++y)
 		{
 			for (int x = 0; x < 20; ++x)
 			{
-				glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 				glm::vec3 pos(0.11f*x, 0.11f*y, 0.0f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-				m_transform->UpdateData(*pGfx, &transform);
-				QCat::Renderer::Submit(m_BlueShader, m_SquareIndex->GetCount());
+				QCat::Renderer::Submit(m_FlatColorShader, m_SquareIndex->GetCount(),transform);
 			}
 		}
 
@@ -234,19 +249,28 @@ public:
 
 	
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
+		std::dynamic_pointer_cast<QCat::OpenGLShader>(m_FlatColorShader)->Bind();
+		std::dynamic_pointer_cast<QCat::OpenGLShader>(m_FlatColorShader)->UploadUniformFloat3("u_Color", m_SquareColor);
+
 		for (int y = 0; y < 20; ++y)
 		{
 			for (int x = 0;x < 20; ++x)
 			{
 				glm::vec3 pos(x * 0.11f, y*0.11f, 0.0f);
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
-				QCat::Renderer::Submit(m_BlueShader, m_SquareVA, transform);
+				QCat::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
 		
 		QCat::Renderer::Submit(m_Shader, m_VertexArray);
 #endif
 		QCat::Renderer::EndScene();
+	}
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("Settings");
+		ImGui::ColorEdit3("Square Color", glm::value_ptr(m_SquareColor));
+		ImGui::End();
 	}
 	void OnEvent(QCat::Event& event) override
 	{
@@ -258,7 +282,7 @@ private:
 	std::shared_ptr<QCat::Shader> m_Shader;
 	std::shared_ptr<QCat::VertexArray> m_VertexArray;
 
-	std::shared_ptr<QCat::Shader> m_BlueShader;
+	std::shared_ptr<QCat::Shader> m_FlatColorShader;
 	std::shared_ptr<QCat::VertexArray> m_SquareVA;
 
 	//DX11
@@ -269,9 +293,11 @@ private:
 	std::unique_ptr<QCat::IndexBuffer> m_SquareIndex;
 
 	//dx11 buffer
-	std::unique_ptr<QCat::DX11VertexConstantBuffer> m_constantBuffer;
-	std::unique_ptr<QCat::DX11VertexConstantBuffer> m_transform;
+	std::shared_ptr<QCat::VertexConstantBuffer> m_constantBuffer;
+	std::shared_ptr<QCat::VertexConstantBuffer> m_transform;
+	std::shared_ptr<QCat::PixelConstantBuffer> m_color;
 
+	glm::vec3 m_SquareColor = { 0.2f, 0.3f, 0.8f };
 
 	//camera
 	QCat::OrthographicCamera m_Camera;

@@ -7,36 +7,21 @@
 
 namespace QCat
 {
-
-	//VertexShader* VertexShader::Create(Graphics& gfx,const std::string& vertexSrc)
-	//{
-	//	switch (Renderer::GetAPI())
-	//	{
-	//	case RenderAPI::None:
-	//		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
-	//		break;
-	//	case RenderAPI::OpenGL:
-	//		break;
-	//	case RenderAPI::DirectX11:
-	//		return new DX11VertexShader(gfx, vertexSrc);
-	//		break;
-	//	}
-	//	return nullptr;
-	//}
-	//PixelShader* PixelShader::Create(Graphics& gfx,const std::string& pixlelSrc)
-	//{
-	//	switch (Renderer::GetAPI())
-	//	{
-	//	case RenderAPI::None:
-	//		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
-	//		break;
-	//	case RenderAPI::OpenGL:
-	//		break;
-	//	case RenderAPI::DirectX11:
-	//		return new DX11PixelShader(gfx, pixlelSrc);
-	//		break;
-	//	}
-	//	QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
-	//	return nullptr;
-	//}
+	Shader* Shader::Create(const std::string& vertexSrc, const std::string& pixelSrc)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:
+			QCAT_CORE_ASSERT(false, "RendererAPI is none!");
+			break;
+		case RenderAPI::API::OpenGL:
+			return new OpenGLShader(vertexSrc, pixelSrc);
+			break;
+		case RenderAPI::API::DirectX11:
+			return new DX11Shader(vertexSrc, pixelSrc);
+			break;
+		}
+		QCAT_CORE_ASSERT(false, "Unknown API!");
+		return nullptr;
+	}
 }

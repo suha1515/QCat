@@ -20,15 +20,58 @@ namespace QCat
 		delete pvs;
 		delete pps;
 	}
-	void DX11Shader::Bind()
+	void DX11Shader::Bind() const
 	{
 		pvs->Bind();
 		pps->Bind();
+
+		for (auto& iter : m_vertexConstantBuffers)
+			iter.second->Bind(*QGfxDeviceDX11::GetInstance());
+		for (auto& iter : m_pixelConstantBuffers)
+			iter.second->Bind(*QGfxDeviceDX11::GetInstance());
 	}
-	void DX11Shader::UnBind()
+	void DX11Shader::UnBind() const
 	{
 		pvs->UnBind();
 		pps->UnBind();
+	}
+	void DX11Shader::AddVertexConstantBuffer(const std::string& name, std::shared_ptr<VertexConstantBuffer>& pvertexConstantBuffer)
+	{
+		if (m_vertexConstantBuffers.size() > 15)
+		{
+			QCAT_CORE_ASSERT(false, "DX11 CosntantBuffer can't be set more than 16");
+			return;
+		}
+		m_vertexConstantBuffers.emplace(name, pvertexConstantBuffer);
+	}
+	void DX11Shader::AddPixelConstantBuffer(const std::string& name, std::shared_ptr<PixelConstantBuffer>& ppixelConstantBuffer)
+	{
+		if (m_pixelConstantBuffers.size() > 15)
+		{
+			QCAT_CORE_ASSERT(false, "DX11 CosntantBuffer can't be set more than 16");
+			return;
+		}
+		m_pixelConstantBuffers.emplace(name, ppixelConstantBuffer);
+	}
+	void DX11Shader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
+	{
+		auto& iter = m_vertexConstantBuffers.find(name);
+		if (iter == m_vertexConstantBuffers.end())
+		{
+			//QCAT_CORE_ERROR("Cant find vertexConstantBuffer! : Invalid name for buffer");
+			return;
+		}		
+		iter->second->UpdateData(*QGfxDeviceDX11::GetInstance(),data);
+	}
+	void DX11Shader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
+	{
+		auto& iter = m_pixelConstantBuffers.find(name);
+		if (iter == m_pixelConstantBuffers.end())
+		{
+			//QCAT_CORE_ERROR("Cant find pixelConstantBuffer! : Invalid name for buffer");
+			return;
+		}
+		iter->second->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
 	}
 	std::vector<char>& DX11Shader::GetVerexData()
 	{

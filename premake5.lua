@@ -117,7 +117,8 @@ project "SandBox"
 		"QCat/src",
 		"%{IncludeDir.DirectXMath}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.Glm}"
+		"%{IncludeDir.Glm}",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links
@@ -148,11 +149,11 @@ project "SandBox"
 	filter { "files:**.hlsl" }
 		flags "ExcludeFromBuild"
 		shadermodel "5.0"
-	filter { "files:**_PS.hlsl" }
+	filter { "files:**_ps.hlsl" }
 		removeflags "ExcludeFromBuild"
 		shadertype "Pixel"
 		shaderentry "ForPixel"
-	filter { "files:**_VS.hlsl" }
+	filter { "files:**_vs.hlsl" }
 		removeflags "ExcludeFromBuild"
 		shadertype "Vertex"
 		shaderentry "ForVertex"
