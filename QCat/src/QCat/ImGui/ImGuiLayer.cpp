@@ -17,8 +17,6 @@
 
 #include "QCat/Log.h"
 
-#define BIND_EVENT_FN(x) std::bind(&ImGuiLayer::x, this, std::placeholders::_1)
-
 namespace QCat
 {
 	ImGuiLayer::ImGuiLayer()
@@ -110,14 +108,14 @@ namespace QCat
 	void ImGuiLayer::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(OnMouseButtonPressEvent));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_EVENT_FN(OnMouseButtonReleaseEvent));
-		dispatcher.Dispatch<MouseMoveEvent>(BIND_EVENT_FN(OnMouseButtonMoveEvent));
-		dispatcher.Dispatch<MouseScrollEvent>(BIND_EVENT_FN(OnMouseButtonScrollEvent));
-		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(OnKeyPressedEvent));
-		dispatcher.Dispatch<KeyReleasedEvent>(BIND_EVENT_FN(OnKeyReleasedEvent));
-		dispatcher.Dispatch<KeyTypedEvent>(BIND_EVENT_FN(OnKeyTypedEvent));
-		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResizedEvent));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(ImGuiLayer::OnMouseButtonPressEvent));
+		dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_EVENT_FN(ImGuiLayer::OnMouseButtonReleaseEvent));
+		dispatcher.Dispatch<MouseMoveEvent>(BIND_EVENT_FN(ImGuiLayer::OnMouseButtonMoveEvent));
+		dispatcher.Dispatch<MouseScrollEvent>(BIND_EVENT_FN(ImGuiLayer::OnMouseButtonScrollEvent));
+		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(ImGuiLayer::OnKeyPressedEvent));
+		dispatcher.Dispatch<KeyReleasedEvent>(BIND_EVENT_FN(ImGuiLayer::OnKeyReleasedEvent));
+		dispatcher.Dispatch<KeyTypedEvent>(BIND_EVENT_FN(ImGuiLayer::OnKeyTypedEvent));
+		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(ImGuiLayer::OnWindowResizedEvent));
 	}
 	bool ImGuiLayer::OnMouseButtonPressEvent(MouseButtonPressedEvent& e)
 	{

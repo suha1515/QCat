@@ -24,6 +24,7 @@
 
 #include "Renderer/Buffer.h"
 #include "Renderer/Shader.h"
+#include "Renderer/Texture.h"
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Shader.h"
 #include "API/DirectX11/DX11_Buffer.h"

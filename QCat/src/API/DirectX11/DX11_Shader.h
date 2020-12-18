@@ -18,16 +18,16 @@ namespace QCat
 		virtual void Bind()const override;
 		virtual void UnBind()const override;
 	public:
-		void AddVertexConstantBuffer(const std::string& name, std::shared_ptr<VertexConstantBuffer>& pvertexConstantBuffer);
-		void AddPixelConstantBuffer(const std::string& name, std::shared_ptr<PixelConstantBuffer>& ppixelConstantBuffer);
+		void AddVertexConstantBuffer(const std::string& name, Ref<VertexConstantBuffer>& pvertexConstantBuffer);
+		void AddPixelConstantBuffer(const std::string& name, Ref<PixelConstantBuffer>& ppixelConstantBuffer);
 		void UpdateVertexConstantBuffer(const std::string& name,const void* data);
 		void UpdatePixelConstantBuffer(const std::string& name,const void* data);
 		std::vector<char>& GetVerexData();
 	private:
 		DX11VertexShader* pvs;
 		DX11PixelShader* pps;
-		std::unordered_map<std::string,std::shared_ptr<VertexConstantBuffer>> m_vertexConstantBuffers;
-		std::unordered_map<std::string, std::shared_ptr<PixelConstantBuffer>> m_pixelConstantBuffers;
+		std::unordered_map<std::string,Ref<VertexConstantBuffer>> m_vertexConstantBuffers;
+		std::unordered_map<std::string, Ref<PixelConstantBuffer>> m_pixelConstantBuffers;
 	};
 	class DX11VertexShader
 	{

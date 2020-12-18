@@ -16,6 +16,7 @@ IncludeDir["ImGui"] = "QCat/3rdLib/Imgui"
 IncludeDir["DirectXMath"] = "QCat/3rdLib/DirectXMath"
 IncludeDir["Glm"] = "QCat/3rdLib/glm"
 IncludeDir["Glad"] = "QCat/3rdLib/Glad/Include"
+IncludeDir["stb_image"] = "QCat/3rdLib/stb_image"
 
 include "QCat/3rdLib/Imgui"
 include "QCat/3rdLib/Glad"
@@ -39,6 +40,8 @@ project "QCat"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/3rdLib/stb_image/**.h",
+		"%{prj.name}/3rdLib/stb_image/**.cpp",
 		"%{prj.name}/3rdLib/DirectXMath/**.h",
 		"%{prj.name}/3rdLib/DirectXMath/**.cpp",
 		"%{prj.name}/3rdLib/DirectXMath/**.inl",
@@ -53,7 +56,8 @@ project "QCat"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.DirectXMath}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.Glm}"
+		"%{IncludeDir.Glm}",
+		"%{IncludeDir.stb_image}"
 	}
 
 	links

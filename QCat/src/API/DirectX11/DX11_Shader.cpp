@@ -35,7 +35,7 @@ namespace QCat
 		pvs->UnBind();
 		pps->UnBind();
 	}
-	void DX11Shader::AddVertexConstantBuffer(const std::string& name, std::shared_ptr<VertexConstantBuffer>& pvertexConstantBuffer)
+	void DX11Shader::AddVertexConstantBuffer(const std::string& name, Ref<VertexConstantBuffer>& pvertexConstantBuffer)
 	{
 		if (m_vertexConstantBuffers.size() > 15)
 		{
@@ -44,7 +44,7 @@ namespace QCat
 		}
 		m_vertexConstantBuffers.emplace(name, pvertexConstantBuffer);
 	}
-	void DX11Shader::AddPixelConstantBuffer(const std::string& name, std::shared_ptr<PixelConstantBuffer>& ppixelConstantBuffer)
+	void DX11Shader::AddPixelConstantBuffer(const std::string& name, Ref<PixelConstantBuffer>& ppixelConstantBuffer)
 	{
 		if (m_pixelConstantBuffers.size() > 15)
 		{

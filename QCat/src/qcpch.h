@@ -27,6 +27,7 @@
 #include "QCatDefines.h"
 #include "QCat/Log.h"
 
+
 #ifdef QCAT_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif
