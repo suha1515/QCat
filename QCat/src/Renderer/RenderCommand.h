@@ -6,6 +6,10 @@ namespace QCat
 	class RenderCommand
 	{
 	public:
+		inline static void Init()
+		{
+			s_renderAPI->Init();
+		}
 		inline static void SetClearColor(const glm::vec4& color)
 		{
 			s_renderAPI->SetClearColor(color);

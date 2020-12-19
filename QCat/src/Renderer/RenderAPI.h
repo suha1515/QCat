@@ -11,6 +11,7 @@ namespace QCat
 			None =0,OpenGL = 1,DirectX11 = 2
 		};
 	public:
+		virtual void Init()=0;
 		virtual void SetClearColor(const glm::vec4& color) {};
 		virtual void SetClearColor(const DirectX::XMFLOAT4& vec) {};
 		virtual void Clear() = 0;

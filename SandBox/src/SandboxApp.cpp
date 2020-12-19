@@ -1,6 +1,7 @@
 #include <QCat.h>
 #include "imgui.h"
 #include "API/Opengl/OpenGLShader.h"
+#include "API/DirectX11/DX11_Blender.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -86,8 +87,8 @@ public:
 		m_TextureShader.reset(QCat::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
 		std::dynamic_pointer_cast<QCat::DX11Shader>(m_TextureShader)->AddVertexConstantBuffer("u_ViewProjection", m_constantBuffer);
 		std::dynamic_pointer_cast<QCat::DX11Shader>(m_TextureShader)->AddVertexConstantBuffer("u_Transform", m_transform);
-		//m_Texture = (QCat::Texture2D::Create("Asset/textures/ranka.jpg"));
 		m_Texture = (QCat::Texture2D::Create("Asset/textures/Checkerboard.png"));
+		m_Texture2 = (QCat::Texture2D::Create("Asset/textures/sadcat.png"));
 		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
 		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -98,6 +99,7 @@ public:
 		samplerDesc.BorderColor[3] = 1.0f;
 
 		pGfx->GetDevice()->CreateSamplerState(&samplerDesc, &pSampler);
+		m_BlenderState = std::make_shared<QCat::DX11Blender>();
 
 #elif defined(QCAT_OPENGL)
 		m_VertexArray.reset(QCat::VertexArray::Create());
@@ -246,7 +248,8 @@ public:
 		)";
 
 		m_TextureShader.reset(QCat::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
-		m_Texture = (QCat::Texture2D::Create("Asset/textures/Checkerboard.png"));
+		m_Texture = QCat::Texture2D::Create("Asset/textures/Checkerboard.png");
+		m_Texture2 = QCat::Texture2D::Create("Asset/textures/sadcat.png");
 
 		std::dynamic_pointer_cast<QCat::OpenGLShader>(m_TextureShader)->Bind();
 		std::dynamic_pointer_cast<QCat::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
@@ -284,12 +287,13 @@ public:
 		pGfx->GetContext()->PSSetSamplers(0, 1, pSampler.GetAddressOf());
 		//m_constantBuffer->UpdateData(*pGfx, &m_Camera.GetViewProjectionMatrix());
 		//m_constantBuffer->Bind(*pGfx);
+		m_BlenderState->Bind();
 		m_SquareBuffer->Bind();
 		m_SquareIndex->Bind();
 		//m_transform->Bind(*pGfx);
 		std::dynamic_pointer_cast<QCat::DX11Shader>(m_FlatColorShader)->UpdatePixelConstantBuffer("u_Color", &m_SquareColor);
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
-		/*for (int y = 0; y < 20; ++y)
+		for (int y = 0; y < 20; ++y)
 		{
 			for (int x = 0; x < 20; ++x)
 			{
@@ -297,12 +301,13 @@ public:
 				glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos) * scale;
 				QCat::Renderer::Submit(m_FlatColorShader, m_SquareIndex->GetCount(),transform);
 			}
-		}*/
+		}
 		m_Texture->Bind();
 		QCat::Renderer::Submit(m_TextureShader, m_SquareIndex->GetCount(), glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
-		m_VertexBuffer->Bind();
-		m_IndexBuffer->Bind();
-		QCat::Renderer::Submit(m_Shader, m_SquareIndex->GetCount());
+
+		m_Texture2->Bind();
+		QCat::Renderer::Submit(m_TextureShader, m_SquareIndex->GetCount(), glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
 		D3D11_VIEWPORT vp;
 		vp.Width =1280;
 		vp.Height = 720;
@@ -329,6 +334,9 @@ public:
 		m_Texture->Bind();
 		QCat::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
+		m_Texture2->Bind();
+		QCat::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+
 		// Triangle
 		// QCat::Renderer::Submit(m_Shader, m_VertexArray);
 #endif
@@ -353,7 +361,7 @@ private:
 	QCat::Ref<QCat::Shader> m_FlatColorShader, m_TextureShader;
 	QCat::Ref<QCat::VertexArray> m_SquareVA;
 
-	QCat::Ref<QCat::Texture2D> m_Texture;
+	QCat::Ref<QCat::Texture2D> m_Texture,m_Texture2;
 
 	//DX11
 	QCat::Ref<QCat::VertexBuffer> m_VertexBuffer;
@@ -361,6 +369,8 @@ private:
 
 	QCat::Ref<QCat::VertexBuffer> m_SquareBuffer;
 	QCat::Ref<QCat::IndexBuffer> m_SquareIndex;
+
+	QCat::Ref<QCat::DX11Blender> m_BlenderState;
 
 	//dx11 buffer
 	QCat::Ref<QCat::VertexConstantBuffer> m_constantBuffer;
