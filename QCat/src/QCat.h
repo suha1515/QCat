@@ -13,7 +13,7 @@
 
 #include "QCat/Input.h"
 #include "QCat/KeyCode.h"
-
+#include "QCat/OrthographicCameraController.h"
 //defines
 #include "QCatDefines.h"
 

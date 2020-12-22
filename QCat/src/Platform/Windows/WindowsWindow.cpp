@@ -296,7 +296,7 @@ namespace QCat
 		}
 		case WM_MOUSEWHEEL:
 		{
-			MouseScrollEvent event((float)(-((SHORT)HIWORD(wParam) / (double)WHEEL_DELTA)), 0);
+			MouseScrollEvent event(0.0f, float((SHORT)HIWORD(wParam) / (double)WHEEL_DELTA));
 			m_data.EventCallback(event);
 			break;
 		}

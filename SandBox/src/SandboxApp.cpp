@@ -8,9 +8,8 @@ class ExamLayer : public QCat::Layer
 {
 public:
 	ExamLayer()
-		:Layer("Example"),m_Camera(-1.6f,1.6f,-0.9f,0.9f)
+		:Layer("Example"), m_CameraController(1280.0f/720.0f,true)
 	{
-		m_CameraPosition = glm::vec3(0.0f);
 		std::string vertexSrc;
 		std::string fragmentSrc;
 		std::string flatColorShaderVertexSrc;
@@ -73,7 +72,7 @@ public:
 
 		m_SquareBuffer->SetLayout(squareLayout);
 
-		const glm::mat4& matrix = m_Camera.GetViewProjectionMatrix();
+		const glm::mat4& matrix = m_CameraController.GetCamera().GetViewProjectionMatrix();
 		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
 		m_constantBuffer.reset(new QCat::VertexConstantBuffer(*pGfx, 0u, &matrix, sizeof(matrix)));
 		glm::mat4 identitymat = glm::mat4(1.0f);
@@ -272,30 +271,14 @@ public:
 	}
 	void OnUpdate(QCat::Timestep step) override
 	{
-		//QCAT_TRACE("Deltime: {0}s ({1}ms),", step.GetSeconds(), step.GetMilliseconds());
+		//Update
+		m_CameraController.OnUpdate(step);
 
-		if (QCat::Input::IsKeyPressed(VK_LEFT))
-			m_CameraPosition.x -= m_CameraMoveSpeed * step;
-		else if (QCat::Input::IsKeyPressed(VK_RIGHT))
-			m_CameraPosition.x += m_CameraMoveSpeed * step;
-
-		if (QCat::Input::IsKeyPressed(VK_UP))
-			m_CameraPosition.y += m_CameraMoveSpeed * step;
-		else if (QCat::Input::IsKeyPressed(VK_DOWN))
-			m_CameraPosition.y -= m_CameraMoveSpeed * step;
-
-		if (QCat::Input::IsKeyPressed('A'))
-			m_CameraRoatation += m_CameraRoatationSpeed * step;
-		if (QCat::Input::IsKeyPressed('D'))
-			m_CameraRoatation -= m_CameraRoatationSpeed * step;
-
+		//Render
 		QCat::RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1 });
 		QCat::RenderCommand::Clear();
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRoatation);
-
-		QCat::Renderer::BeginScene(m_Camera);
+		QCat::Renderer::BeginScene(m_CameraController.GetCamera());
 #ifdef QCAT_DX11
 		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
 		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -365,8 +348,9 @@ public:
 		ImGui::ColorEdit3("Square Color", glm::value_ptr(m_SquareColor));
 		ImGui::End();
 	}
-	void OnEvent(QCat::Event& event) override
+	void OnEvent(QCat::Event& e) override
 	{
+		m_CameraController.OnEvent(e);
 		//QCat::EventDispatcher dispatcher(event);
 		//dispatcher.Dispatch<QCat::KeyPressedEvent>(BIND_EVENT_FN(ExamLayer::OnKeyPress));
 	}
@@ -398,11 +382,7 @@ private:
 	glm::vec3 m_SquareColor = { 0.2f, 0.3f, 0.8f };
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> pSampler;
 	//camera
-	QCat::OrthographicCamera m_Camera;
-	glm::vec3 m_CameraPosition;
-	float m_CameraMoveSpeed = 2.0f;
-	float m_CameraRoatation = 0.0f;
-	float m_CameraRoatationSpeed = 180;
+	QCat::OrthographicCameraController m_CameraController;
 
 };
 
