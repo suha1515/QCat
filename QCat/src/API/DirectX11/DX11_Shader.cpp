@@ -9,11 +9,11 @@ namespace QCat
 		mbstowcs_s(nullptr, wide, narrow.c_str(), _TRUNCATE);
 		return wide;
 	}
-	DX11Shader::DX11Shader(const std::string& vertexShaderPath, const std::string& pixelShaderPath)
+	DX11Shader::DX11Shader(const std::string& vertexShaderPath, const std::string& pixelShaderPath, bool compile)
 	{
 		QGfxDeviceDX11* pgfx = QGfxDeviceDX11::GetInstance();
-		pvs = new DX11VertexShader(*pgfx,vertexShaderPath);
-		pps = new DX11PixelShader(*pgfx, pixelShaderPath);
+		pvs = new DX11VertexShader(*pgfx, vertexShaderPath, compile);
+		pps = new DX11PixelShader(*pgfx, pixelShaderPath, compile);
 	}
 	DX11Shader::~DX11Shader()
 	{
@@ -78,11 +78,26 @@ namespace QCat
 		// TODO: 여기에 반환 구문을 삽입합니다.
 		return pvs->GetData();
 	}
-	DX11VertexShader::DX11VertexShader(Graphics& graphics, const std::string& path)
+	DX11VertexShader::DX11VertexShader(Graphics& graphics, const std::string& path, bool compile)
 	{
 		this->gfx = dynamic_cast<QGfxDeviceDX11*>(&graphics);
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlobVertex;
-		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobVertex);
+		if (!compile)
+		{
+			D3DReadFileToBlob(ToWide(path).c_str(), &pBlobVertex);
+		}
+		else
+		{
+			char *errormsg=nullptr;
+			HRESULT hr = D3DCompile(path.c_str(), path.length(),errormsg,
+				nullptr, nullptr, "main", "vs_5_0",
+				D3DCOMPILE_ENABLE_STRICTNESS, 0, 
+				&pBlobVertex, nullptr);
+			if (FAILED(hr))
+			{
+				QCAT_CORE_ASSERT(false, errormsg);
+			}
+		}	
 		char* ptr = (char*)pBlobVertex->GetBufferPointer();
 		unsigned int size = pBlobVertex->GetBufferSize();
 		data.assign(size, 0);
@@ -110,14 +125,26 @@ namespace QCat
 	{
 		return data;
 	}
-	DX11PixelShader::DX11PixelShader(Graphics& graphics, const std::string& path)
+	DX11PixelShader::DX11PixelShader(Graphics& graphics, const std::string& path, bool compile)
 	{
 		this->gfx = dynamic_cast<QGfxDeviceDX11*>(&graphics);
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlobPixel;
-		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobPixel);
-		char* ptr = (char*)pBlobPixel->GetBufferPointer();
-		unsigned int size = pBlobPixel->GetBufferSize();
-
+		if (!compile)
+		{
+			D3DReadFileToBlob(ToWide(path).c_str(), &pBlobPixel);
+		}
+		else
+		{
+			char* errormsg = nullptr;
+			HRESULT hr = D3DCompile(path.c_str(), path.length(), errormsg,
+				nullptr, nullptr, "main", "ps_5_0",
+				D3DCOMPILE_ENABLE_STRICTNESS, 0,
+				&pBlobPixel, nullptr);
+			if (FAILED(hr))
+			{
+				QCAT_CORE_ASSERT(false, errormsg);
+			}
+		}
 		HRESULT result =gfx->GetDevice()->CreatePixelShader(pBlobPixel->GetBufferPointer(),
 			pBlobPixel->GetBufferSize(),
 			nullptr, &pPixelShader);

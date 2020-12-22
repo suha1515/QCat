@@ -81,10 +81,44 @@ public:
 
 		
 
-		std::string textureShaderVertexSrc = "..\\bin\\Debug-windows-\\QCat\\flatcolor_VS.cso";
-		std::string textureShaderFragmentSrc = "..\\bin\\Debug-windows-\\QCat\\flatcolor_PS.cso";
+		std::string textureShaderVertexSrc = R"(
+				cbuffer TransformCbuf : register(b0)
+				{
+					matrix viewProj;
+				}
+				cbuffer transform : register(b1)
+				{
+					matrix transform;
+				}
+				struct VSOut
+				{
+					float2 tc: Texcoord;
+					float4 pos :SV_Position;
+				};
+				
+				VSOut main(float3 pos : Position,float2 tc : Texcoord)
+				{
+					VSOut vso;
+					
+					matrix mat = mul(viewProj,transform);
+					vso.pos = mul(mat, float4(pos, 1.0f));
+					vso.tc = tc;
+					return vso;
+				})";
+		std::string textureShaderFragmentSrc = R"(
+				cbuffer color : register(b0)
+				{
+					float3 color;
+				}
+				
+				Texture2D tex : register(t0);
+				SamplerState splr : register(s0);
+				float4 main(float2 tc : Texcoord) : SV_TARGET
+				{
+					return float4(tex.Sample(splr,tc));
+				})";
 
-		m_TextureShader.reset(QCat::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
+		m_TextureShader.reset(QCat::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc,true));
 		std::dynamic_pointer_cast<QCat::DX11Shader>(m_TextureShader)->AddVertexConstantBuffer("u_ViewProjection", m_constantBuffer);
 		std::dynamic_pointer_cast<QCat::DX11Shader>(m_TextureShader)->AddVertexConstantBuffer("u_Transform", m_transform);
 		m_Texture = (QCat::Texture2D::Create("Asset/textures/Checkerboard.png"));
@@ -213,41 +247,8 @@ public:
 		)";
 
 		m_FlatColorShader.reset(QCat::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
+		m_TextureShader.reset(QCat::Shader::Create("Asset/shaders/glsl/Texture.glsl"));
 
-		std::string textureShaderVertexSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) in vec3 a_Position;
-			layout(location = 1) in vec2 a_TexCoord;
-	
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			out vec2 v_TexCoord;
-
-			void main()
-			{
-				v_TexCoord = a_TexCoord;
-				gl_Position = u_ViewProjection * u_Transform *  vec4(a_Position, 1.0);	
-			}
-		)";
-
-		std::string textureShaderFragmentSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) out vec4 color;
-
-			in vec2 v_TexCoord;
-
-			uniform sampler2D u_Texture;
-
-			void main()
-			{
-				color = texture(u_Texture,v_TexCoord);
-			}
-		)";
-
-		m_TextureShader.reset(QCat::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
 		m_Texture = QCat::Texture2D::Create("Asset/textures/Checkerboard.png");
 		m_Texture2 = QCat::Texture2D::Create("Asset/textures/sadcat.png");
 

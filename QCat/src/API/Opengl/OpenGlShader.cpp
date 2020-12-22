@@ -2,22 +2,130 @@
 #include "OpenGLShader.h"
 #include <glad/glad.h>
 
+#include <fstream>
 namespace QCat
 {
+	static GLenum ShaderTypeFromString(const std::string& type)
+	{
+		if (type == "vertex")
+			return GL_VERTEX_SHADER;
+		if (type == "fragment" || type == "pixel")
+			return GL_FRAGMENT_SHADER;
+
+		QCAT_CORE_ASSERT(false, "Unknown shader Type!");
+		return 0;
+	}
+
+	OpenGLShader::OpenGLShader(const std::string& filepath)
+	{
+		std::string source = ReadFile(filepath);
+		auto shaderSources = PreProcess(source);
+		Compile(shaderSources);
+	}
 	OpenGLShader::OpenGLShader(const std::string& vertexSrc, const std::string& pixelSrc)
 	{
-		OpenGLVertexShader vertexShader(vertexSrc);
-		OpenGLPixelShader pixelShader(pixelSrc);
-		
-		// Vertex and fragment shaders are successfully compiled.
-		// Now time to link them together into a program.
-		// Get a program object.
-		m_renderID = glCreateProgram();
-		GLuint program = m_renderID;
+		std::unordered_map<GLenum, std::string> sources;
+		sources[GL_VERTEX_SHADER] = vertexSrc;
+		sources[GL_FRAGMENT_SHADER] = pixelSrc;
+		Compile(sources);
+	}
+	OpenGLShader::~OpenGLShader()
+	{
+		glDeleteProgram(m_renderID);
+	}
+	// Read from Shader fild .glsl
+	std::string OpenGLShader::ReadFile(const std::string& filepath)
+	{
+		std::string result;
+		// ios::in means read mode, ios::binary means it will read data as binary
+		std::ifstream in(filepath, std::ios::in, std::ios::binary);
+		if (in)
+		{
+			// seekg is move the cursor ios::end means end of file 
+			// so based on end of file this func will move the cursor as first parameter value
+			in.seekg(0, std::ios::end);
+			result.resize(in.tellg());
+			in.seekg(0, std::ios::beg);
+			in.read(&result[0], result.size());
+			// after reading you have to call close function
+			in.close();
+		}
+		else
+		{
+			QCAT_CORE_ERROR("Could not open file '{0}'", filepath);
+		}
+		return result;
+	}
 
-		// Attach our shaders to our program
-		glAttachShader(program, vertexShader.GetVertexShader());
-		glAttachShader(program, pixelShader.GetPixelShader());
+	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
+	{
+		std::unordered_map<GLenum, std::string> shaderSources;
+
+		// To specify type find '#type' in file, and get position of that string
+		const char* typeToken = "#type";
+		size_t typeTokenLength = strlen(typeToken);
+		size_t pos = source.find(typeToken, 0);
+		while (pos != std::string::npos)
+		{
+			//find first end of the line in #type line , P.S in Windows platform all string end with '\r\n' in Linux end with '\n'
+			size_t eol = source.find_first_of("\r\n", pos);
+			QCAT_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			// without #type's length and space(+1) we can get first position of type info
+			size_t begin = pos + typeTokenLength + 1;
+			// and using substr can get us name of type 
+			std::string type = source.substr(begin, eol - begin);
+			QCAT_CORE_ASSERT(ShaderTypeFromString(type), "Invalid shader type specified!");
+
+			// find_first_not_of will find position without '\r\n' character so this will find first position of next line
+			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			// and find first position of typetoken(#type)
+			pos = source.find(typeToken, nextLinePos);
+			// and get string from nextLinePos as amount of pos - nextLinePos
+			shaderSources[ShaderTypeFromString(type)] =
+				source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+		}
+
+		return shaderSources;
+	}
+
+	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
+	{
+		GLuint program = glCreateProgram();
+		std::vector<GLenum> glShaderIDs(shaderSources.size());
+
+		for (auto& kv : shaderSources)
+		{
+			GLenum type = kv.first;
+			const std::string& source = kv.second;
+
+			GLuint shader = glCreateShader(type);
+
+			const GLchar* sourceCstr = source.c_str();
+			glShaderSource(shader, 1, &sourceCstr, 0);
+
+			glCompileShader(shader);
+
+			GLint isCompiled = 0;
+			glGetShaderiv(shader,GL_COMPILE_STATUS, &isCompiled);
+			if (isCompiled == GL_FALSE)
+			{
+				GLint maxLength = 0;
+				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+				std::vector<GLchar> infoLog(maxLength);
+				glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
+
+				glDeleteShader(shader);
+
+				QCAT_CORE_ERROR("{0}", infoLog.data());
+				QCAT_CORE_ASSERT(false, "Shader compilation failure!");
+				break;
+			}
+
+			glAttachShader(program, shader);
+			glShaderIDs.push_back(shader);
+		}
+		m_renderID = program;
 
 		// Link our program
 		glLinkProgram(program);
@@ -36,21 +144,19 @@ namespace QCat
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
-			// Don't leak shaders either.
+
+			for (auto id : glShaderIDs)
+				glDeleteShader(id);
 
 			QCAT_CORE_ERROR("{0}", infoLog.data());
 			QCAT_CORE_ASSERT(false, "Shader link failure!");
 			return;
 		}
 
-		// Always detach shaders after a successful link.
-		glDetachShader(program, vertexShader.GetVertexShader());
-		glDetachShader(program, pixelShader.GetPixelShader());
+		for (auto id : glShaderIDs)
+			glDetachShader(program, id);
 	}
-	OpenGLShader::~OpenGLShader()
-	{
-		glDeleteProgram(m_renderID);
-	}
+
 	void OpenGLShader::Bind() const
 	{
 		glUseProgram(m_renderID);

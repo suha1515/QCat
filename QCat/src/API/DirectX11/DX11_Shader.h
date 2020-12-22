@@ -12,7 +12,7 @@ namespace QCat
 	class DX11Shader : public Shader
 	{
 	public:
-		DX11Shader(const std::string& vertexShaderPath, const std::string& pixelShaderPath);
+		DX11Shader(const std::string& vertexShaderPath, const std::string& pixelShaderPath,bool compile = false);
 		~DX11Shader();
 	public:
 		virtual void Bind()const override;
@@ -32,7 +32,7 @@ namespace QCat
 	class DX11VertexShader
 	{
 	public:
-		DX11VertexShader(Graphics& gfx,const std::string& path);
+		DX11VertexShader(Graphics& gfx,const std::string& path,bool compile = false);
 		~DX11VertexShader();
 	public:
 		std::vector<char>& DX11VertexShader::GetData();
@@ -48,7 +48,7 @@ namespace QCat
 	class DX11PixelShader
 	{
 	public:
-		DX11PixelShader(Graphics& gfx, const std::string& path);
+		DX11PixelShader(Graphics& gfx, const std::string& path, bool compile = false);
 		~DX11PixelShader();
 	public:
 		 void Bind() ;
