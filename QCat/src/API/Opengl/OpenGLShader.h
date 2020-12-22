@@ -8,11 +8,13 @@ namespace QCat
 	{
 	public:
 		OpenGLShader(const std::string& filepath);
-		OpenGLShader(const std::string& vertexSrc, const std::string& pixelSrc);
+		OpenGLShader(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc);
 		virtual ~OpenGLShader();
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
+
+		virtual const std::string& GetName() const override { return m_name; }
 
 		void UploadUniformInt(const std::string& name, int value);
 
@@ -29,6 +31,7 @@ namespace QCat
 		void Compile(const std::unordered_map<GLenum, std::string>& shaderSrouces);
 	private:
 		uint32_t m_renderID;
+		std::string m_name;
 
 	};
 
