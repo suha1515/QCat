@@ -1,9 +1,15 @@
 #include <QCat.h>
+
+// ---- Entry Point----//
+#include "QCat/Core/EntryPoint.h"
+// --------------------//
 #include "imgui.h"
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Blender.h"
 
 #include "QCat/Renderer/Shader.h"
+
+#include "Sandbox2D.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -149,7 +155,7 @@ public:
 		m_BlenderState = std::make_shared<QCat::DX11Blender>();
 
 #elif defined(QCAT_OPENGL)
-		m_VertexArray.reset(QCat::VertexArray::Create());
+		m_VertexArray = QCat::VertexArray::Create();
 
 		float vertices[3 * 7] = {
 		-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
@@ -173,7 +179,7 @@ public:
 		m_VertexArray->SetIndexBuffer(indexbuffer);
 
 
-		m_SquareVA.reset(QCat::VertexArray::Create());
+		m_SquareVA = QCat::VertexArray::Create();
 		float squareVertices[5 * 4] = {
 		-0.5f, -0.5f, 0.0f,0.0f,0.0f,
 		 0.5f, -0.5f, 0.0f,1.0f,0.0f,
@@ -381,7 +387,8 @@ class Sandbox : public QCat::Application
 public:
 	Sandbox()
 	{
-		PushLayer(new ExamLayer());
+		//PushLayer(new ExamLayer());
+		PushLayer(new Sandbox2D());
 	}
 	~Sandbox()
 	{

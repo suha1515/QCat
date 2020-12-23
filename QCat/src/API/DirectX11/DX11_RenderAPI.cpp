@@ -13,6 +13,8 @@ namespace QCat
 	}
 	void DX11RenderAPI::Init()
 	{
+		QGfxDeviceDX11* gfx = QGfxDeviceDX11::GetInstance();
+		gfx->BlendStateEnable(true);
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -38,6 +40,10 @@ namespace QCat
 	{
 		if (pgfx == nullptr)
 			pgfx = QGfxDeviceDX11::GetInstance();
+		if (pgfx->GetBlendState())
+		{
+			pgfx->BindBlendState();
+		}
 		pgfx->GetContext()->DrawIndexed(indexCount,0u,0u);
 	}
 }

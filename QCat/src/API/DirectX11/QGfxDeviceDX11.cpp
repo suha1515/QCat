@@ -219,6 +219,13 @@ namespace QCat {
 		immediateContext->RSSetViewports(1u, &vp);
 
 		Instance = this;
+
+
+		//Blend State
+		D3D11_BLEND_DESC blendDesc = CD3D11_BLEND_DESC{ CD3D11_DEFAULT{} };
+		blendDesc.RenderTarget[0].BlendEnable = false;
+		device->CreateBlendState(&blendDesc, &m_BlenderState);
+
 	}
 
 	QGfxDeviceDX11::~QGfxDeviceDX11()
@@ -250,6 +257,21 @@ namespace QCat {
 		swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
 		if(renderTargetView==nullptr)
 			device->CreateRenderTargetView(pBackBuffer.Get(), NULL, &renderTargetView);
+	}
+	void QGfxDeviceDX11::BlendStateEnable(bool enable)
+	{
+		m_BlendEnable = enable;
+		m_BlenderState.Reset();
+		D3D11_BLEND_DESC blendDesc = CD3D11_BLEND_DESC{ CD3D11_DEFAULT{} };
+		blendDesc.RenderTarget[0].BlendEnable = m_BlendEnable;
+		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		device->CreateBlendState(&blendDesc, &m_BlenderState);
+	}
+	void QGfxDeviceDX11::BindBlendState()
+	{
+		QGfxDeviceDX11::GetInstance()->GetContext()->OMSetBlendState(m_BlenderState.Get(), nullptr, 0xFFFFFFFFu);
+
 	}
 	ComPtr<ID3D11Device>& QGfxDeviceDX11::GetDevice()
 	{

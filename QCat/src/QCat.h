@@ -28,11 +28,8 @@
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Shader.h"
 #include "API/DirectX11/DX11_Buffer.h"
+#include "API/DirectX11/DX11_Blender.h"
 #include "QCat/Renderer/VertexArray.h"
 
 #include "QCat/Renderer/OrthographicCamera.h"
 //--Renderer-----------------------------//
-
-// ---- Entry Point----//
-#include "QCat/Core/EntryPoint.h"
-// --------------------//

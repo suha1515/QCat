@@ -41,6 +41,10 @@ namespace QCat {
 	public:
 		void CleanRenderTarget();
 		void CreateRenderTarget();
+
+		bool GetBlendState() { return m_BlendEnable; }
+		void BlendStateEnable(bool enable);
+		void BindBlendState();
 	public:
 		ComPtr<ID3D11Device>& GetDevice();
 		ComPtr<ID3D11DeviceContext>& GetContext();
@@ -62,6 +66,9 @@ namespace QCat {
 
 		ComPtr<ID3D11RenderTargetView> renderTargetView;
 		ComPtr<ID3D11DepthStencilView> depthStencilView;
+
+		Microsoft::WRL::ComPtr<ID3D11BlendState> m_BlenderState;
+		bool m_BlendEnable = false;
 	private:
 		static QGfxDeviceDX11* Instance;
 	};

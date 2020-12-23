@@ -8,7 +8,7 @@ namespace QCat
 	{
 	public:
 		QCatOpengl() = default;
-		~QCatOpengl();
+		~QCatOpengl()  ;
 
 		void Initialize();
 		void MakeCurrent();
