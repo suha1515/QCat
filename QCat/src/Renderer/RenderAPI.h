@@ -12,6 +12,7 @@ namespace QCat
 		};
 	public:
 		virtual void Init()=0;
+		virtual void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) = 0;
 		virtual void SetClearColor(const glm::vec4& color) {};
 		virtual void SetClearColor(const DirectX::XMFLOAT4& vec) {};
 		virtual void Clear() = 0;

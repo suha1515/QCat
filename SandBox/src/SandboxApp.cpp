@@ -307,14 +307,6 @@ public:
 		m_Texture2->Bind();
 		QCat::Renderer::Submit(m_TextureShader, m_SquareIndex->GetCount(), glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
-		D3D11_VIEWPORT vp;
-		vp.Width =1280;
-		vp.Height = 720;
-		vp.MinDepth = 0;
-		vp.MaxDepth = 1;
-		vp.TopLeftX = 0;
-		vp.TopLeftY = 0;
-		pGfx->GetContext()->RSSetViewports(1u, &vp);
 #elif defined(QCAT_OPENGL)
 
 		std::dynamic_pointer_cast<QCat::OpenGLShader>(m_FlatColorShader)->Bind();
@@ -351,8 +343,6 @@ public:
 	void OnEvent(QCat::Event& e) override
 	{
 		m_CameraController.OnEvent(e);
-		//QCat::EventDispatcher dispatcher(event);
-		//dispatcher.Dispatch<QCat::KeyPressedEvent>(BIND_EVENT_FN(ExamLayer::OnKeyPress));
 	}
 
 private:

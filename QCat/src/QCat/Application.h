@@ -29,10 +29,12 @@ namespace QCat
 		inline Window* GetWindow() { return m_window.get(); }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
 	private:
 		std::unique_ptr<Window> m_window;
 		ImGuiLayer* m_ImguiLayer;
 		bool m_Running = true;
+		bool m_minimized = false;
 		LayerStack m_layerStack;
 		float m_lastFrameTime = 0.0f;
 		Timer timer;

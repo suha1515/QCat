@@ -52,18 +52,20 @@ namespace QCat
 			if (m_Running)
 			{
 				m_window->OnBegin();
-				for (Layer* layer : m_layerStack)
-					layer->OnUpdate(timestep);
+				if (!m_minimized)
+				{
+					for (Layer* layer : m_layerStack)
+						layer->OnUpdate(timestep);
+					m_ImguiLayer->OnBegin();
+					for (Layer* layer : m_layerStack)
+						layer->OnImGuiRender();
+					m_ImguiLayer->OnEnd();
+				}
 #if defined(QCAT_DX11)
 		
 #elif defined(QCAT_OPENGL)
 				
-#endif							
-				m_ImguiLayer->OnBegin();
-				for (Layer* layer : m_layerStack)
-					layer->OnImGuiRender();
-				m_ImguiLayer->OnEnd();
-				
+#endif									
 				m_window->OnEnd();
 			//	m_window2->OnBegin();
 
@@ -75,6 +77,7 @@ namespace QCat
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 		
 		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 		{
@@ -96,6 +99,18 @@ namespace QCat
 	{
 		m_Running = false;
 		return true;
+	}
+
+	bool Application::OnWindowResize(WindowResizeEvent& e)
+	{
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
+			m_minimized = true;
+			return false;
+		}
+		m_minimized = false;
+		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		return false;
 	}
 	
 }

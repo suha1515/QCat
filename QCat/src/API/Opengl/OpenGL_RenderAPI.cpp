@@ -9,6 +9,10 @@ namespace QCat
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
+	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
+	{
+		glViewport(x, y, width, height);
+	}
 	void OpenGLRenderAPI::SetClearColor(const glm::vec4& color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);

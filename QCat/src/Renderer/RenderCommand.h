@@ -10,6 +10,10 @@ namespace QCat
 		{
 			s_renderAPI->Init();
 		}
+		inline static void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
+		{
+			s_renderAPI->SetViewport(x, y, width, height);
+		}
 		inline static void SetClearColor(const glm::vec4& color)
 		{
 			s_renderAPI->SetClearColor(color);
@@ -26,6 +30,7 @@ namespace QCat
 		{
 			s_renderAPI->DrawIndexed(indexCount);
 		}
+		
 	private:
 		static RenderAPI* s_renderAPI;
 	};

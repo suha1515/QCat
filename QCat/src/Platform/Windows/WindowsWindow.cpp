@@ -143,8 +143,6 @@ namespace QCat
 		}
 			// 윈도우 포커스를 잃었을때
 		case WM_KILLFOCUS:
-			/************************	키보드 메시지	************************/
-			//  WM_KEY 관련 메시지일경우 wParam에 해당 키보드의 코드가 있다.
 			break;
 		case WM_SIZE:
 		{
@@ -152,18 +150,18 @@ namespace QCat
 			{
 				UINT width = LOWORD(lParam);
 				UINT height = HIWORD(lParam);
-				if (pGfx != nullptr)
-				{
-					SetWindowSize(width, height);
-				}
+				SetWindowSize(width, height);
 				if (m_data.EventCallback)
 				{
+
 					WindowResizeEvent event(width, height);
 					m_data.EventCallback(event);
 				}
 			}
 			break;
 		}
+			/************************	키보드 메시지	************************/
+			//  WM_KEY 관련 메시지일경우 wParam에 해당 키보드의 코드가 있다.
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
 		case WM_KEYUP:
@@ -360,15 +358,6 @@ namespace QCat
 
 		this->width = width;
 		this->height = height;
-#if defined(QCAT_DX11)
-		QGfxDeviceDX11* gfx = dynamic_cast<QGfxDeviceDX11*>(pGfx.get());
-		QCAT_CORE_ASSERT(gfx != nullptr, "cast Error!");
-
-		gfx->CleanRenderTarget();
-		gfx->GetSwapChain()->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-		gfx->CreateRenderTarget();
-		gfx->SetViewPort(width, height);
-#endif  
 	}
 	bool WindowsWindow::IsVSync() const
 	{
