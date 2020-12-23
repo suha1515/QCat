@@ -1,6 +1,6 @@
 #include "qcpch.h"
 #include "QCatOpengl.h"
-#include "QCat/Log.h"
+#include "QCat/Core/Log.h"
 //#include <gl/GL.h>
 #include "wgl/wglext.h"
 

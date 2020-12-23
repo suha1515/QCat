@@ -1,5 +1,5 @@
 #pragma once
-#include "QCat/Input.h"
+#include "QCat/Core/Input.h"
 
 namespace QCat
 {

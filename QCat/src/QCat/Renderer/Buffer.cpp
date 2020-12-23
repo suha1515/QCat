@@ -24,11 +24,12 @@ namespace QCat
 				break;
 			}
 		case RenderAPI::API::DirectX11:
-				if(temp==nullptr)
-					QCAT_CORE_ASSERT(size < 0, "DirectX11 VertexBuffer Creation need stride Parameter : temp is nullptr");
-
-				return new DX11VertexBuffer(vertices,size, *(unsigned int*)temp);
-				break;
+			if (temp == nullptr)
+			{
+				QCAT_CORE_ASSERT(size < 0, "DirectX11 VertexBuffer Creation need stride Parameter : temp is nullptr");
+			}
+			return new DX11VertexBuffer(vertices,size, *(unsigned int*)temp);
+			break;
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
@@ -73,8 +74,10 @@ namespace QCat
 			{
 				QCAT_CORE_ASSERT(false, "InputLayout Of DX11 need vertexShaderCode! : shadercode nullptr");
 			}
-			else if(codeSize<=0)
+			else if (codeSize <= 0)
+			{
 				QCAT_CORE_ASSERT(false, "InputLayout Of DX11 need codeSize!! : code size<=0");
+			}
 			return new DX11_InputLayout(elements,vertexShaderCode,codeSize);
 			break;
 

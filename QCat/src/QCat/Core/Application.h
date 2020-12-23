@@ -1,14 +1,14 @@
 #pragma once
 #include "QCatCore.h"
 #include "Window.h"
-#include "Events/Event.h"
+#include "QCat/Events/Event.h"
 #include "QCat/Layer/LayerStack.h"
 #include "QCat/Events/ApplicationEvent.h"
 
 #include "QCat/ImGui/ImGuiLayer.h"
 #include <wrl.h>
-#include "Uitiliy/Timestep.h"
-#include "Uitiliy/Timer.h"
+#include "QCat/Uitiliy/Timestep.h"
+#include "QCat/Uitiliy/Timer.h"
 
 namespace QCat
 {

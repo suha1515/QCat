@@ -1,5 +1,5 @@
 #pragma once
-#include <Renderer/Graphics.h>
+#include <QCat/Renderer/Graphics.h>
 #include <glad/glad.h>
 
 namespace QCat
@@ -19,6 +19,6 @@ namespace QCat
 	public:
 		static HGLRC rc;
 	private:
-		HDC dc;
+		HDC dc = NULL;
 	};
 }

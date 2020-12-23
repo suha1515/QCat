@@ -1,6 +1,6 @@
 #include "qcpch.h"
 #include "QGfxDeviceDX11.h"
-#include "QCat/Log.h"
+#include "QCat/Core/Log.h"
 
 
 namespace QCat {

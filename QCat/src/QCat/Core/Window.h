@@ -1,6 +1,6 @@
 #pragma once
 #include "qcpch.h"
-#include "QCat/QCatCore.h"
+#include "QCat/Core/QCatCore.h"
 #include "QCat/Events/Event.h"
 
 namespace QCat

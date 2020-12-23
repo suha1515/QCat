@@ -1,5 +1,5 @@
 #pragma once
-#include <Renderer/Shader.h>
+#include <QCat/Renderer/Shader.h>
 #include <string>
 
 namespace QCat

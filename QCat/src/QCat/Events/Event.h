@@ -1,7 +1,7 @@
 #pragma once
 
 #include "qcpch.h"
-#include "QCat/QCatCore.h"
+#include "QCat/Core/QCatCore.h"
 
 namespace QCat
 {

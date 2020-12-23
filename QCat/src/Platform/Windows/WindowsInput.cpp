@@ -2,7 +2,7 @@
 #include "WindowsInput.h"
 #include "WindowsWindow.h"
 
-#include "QCat/Application.h"
+#include "QCat/Core/Application.h"
 
 
 namespace QCat

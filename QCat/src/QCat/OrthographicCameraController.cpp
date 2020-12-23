@@ -1,7 +1,7 @@
 #include "qcpch.h"
 #include "OrthographicCameraController.h"
 
-#include "Input.h"
+#include "QCat/Core/Input.h"
 
 
 namespace QCat

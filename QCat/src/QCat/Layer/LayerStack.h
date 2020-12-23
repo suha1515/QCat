@@ -1,6 +1,6 @@
 #pragma once
 
-#include "QCat/QCatCore.h"
+#include "QCat/Core/QCatCore.h"
 #include "Layer.h"
 
 #include <vector>

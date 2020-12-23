@@ -2,7 +2,7 @@
 #include "ImGuiLayer.h"
 #include "imgui.h"
 
-#include "QCat/Application.h"
+#include "QCat/Core/Application.h"
 #include "backends/imgui_impl_dx11.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -15,7 +15,7 @@
 //#define IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 
 
-#include "QCat/Log.h"
+#include "QCat/Core/Log.h"
 
 namespace QCat
 {

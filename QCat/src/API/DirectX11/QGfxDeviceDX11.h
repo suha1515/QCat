@@ -1,6 +1,6 @@
 #pragma once
-#include <QCat/QCatCore.h>
-#include <Renderer/Graphics.h>
+#include <QCat/Core/QCatCore.h>
+#include <QCat/Renderer/Graphics.h>
 #include <d3d11_3.h>
 #include <dxgi1_3.h>
 #include <d3dcompiler.h>

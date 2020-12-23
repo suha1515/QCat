@@ -210,7 +210,7 @@ namespace QCat
 		char* ptr = (char*)pBlobVertex->GetBufferPointer();
 		unsigned int size = pBlobVertex->GetBufferSize();
 		data.assign(size, 0);
-		for (int i = 0; i < size; ++i)
+		for (unsigned int i = 0; i < size; ++i)
 		{
 			data[i] = *(ptr + i);
 		}
@@ -226,7 +226,7 @@ namespace QCat
 		char* ptr = (char*)pBlob->GetBufferPointer();
 		unsigned int size = pBlob->GetBufferSize();
 		data.assign(size, 0);
-		for (int i = 0; i < size; ++i)
+		for (unsigned int i = 0; i < size; ++i)
 		{
 			data[i] = *(ptr + i);
 		}

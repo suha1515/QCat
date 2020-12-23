@@ -24,9 +24,9 @@
 #include <glad/glad.h>
 
 
-#include "QCat/KeyCode.h"
+#include "QCat/Core/KeyCode.h"
 #include "QCatDefines.h"
-#include "QCat/Log.h"
+#include "QCat/Core/Log.h"
 
 
 #ifdef QCAT_PLATFORM_WINDOWS

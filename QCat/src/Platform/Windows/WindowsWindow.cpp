@@ -9,7 +9,7 @@
 #include "QCat/Events/KeyboardEvent.h"
 
 #include "backends/imgui_impl_win32.h"
-#include "QCat/Log.h"
+#include "QCat/Core/Log.h"
 
 namespace QCat
 {
@@ -65,7 +65,7 @@ namespace QCat
 		// 에러체크
 		if (hWnd == nullptr)
 		{
-		
+			QCAT_CORE_ASSERT(false, "Create Window Failed!");
 		}
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
 		UpdateWindow(hWnd);

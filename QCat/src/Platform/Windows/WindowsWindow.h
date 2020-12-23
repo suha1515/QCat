@@ -1,9 +1,9 @@
 #pragma once
-#include "QCat/Window.h"
+#include "QCat/Core/Window.h"
 #include "QCat/InputDevice/KeyBoard/KeyBoard.h"
 #include "QCat/InputDevice/Mouse/Mouse.h"
 
-#include "Renderer/Graphics.h"
+#include "QCat/Renderer/Graphics.h"
 
 
 namespace QCat

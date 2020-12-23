@@ -1,5 +1,5 @@
 #pragma once
-#include <Renderer/Buffer.h>
+#include <QCat/Renderer/Buffer.h>
 #include <API/DirectX11/QGfxDeviceDX11.h>
 
 namespace QCat

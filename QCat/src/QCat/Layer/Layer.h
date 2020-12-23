@@ -1,6 +1,6 @@
 #pragma once
 
-#include "QCat/QCatCore.h"
+#include "QCat/Core/QCatCore.h"
 #include "QCat/Events/Event.h"
 #include "QCat/Uitiliy/Timestep.h"
 namespace QCat

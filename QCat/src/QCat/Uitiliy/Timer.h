@@ -1,5 +1,5 @@
 #pragma once
-#include "QCat/QCatCore.h"
+#include "QCat/Core/QCatCore.h"
 #include <chrono>
 
 namespace QCat

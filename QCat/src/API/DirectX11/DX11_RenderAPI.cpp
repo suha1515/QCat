@@ -4,6 +4,7 @@
 namespace QCat
 {
 	DX11RenderAPI::DX11RenderAPI()
+		:color(glm::vec4(0.0f))
 	{
 		pgfx = nullptr;
 	}
