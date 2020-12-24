@@ -125,6 +125,12 @@ namespace QCat
 		//pvs = new DX11VertexShader(vertexShaderPath, compile);
 		//pps = new DX11PixelShader(pixelShaderPath, compile);
 	}
+	DX11Shader::DX11Shader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
+		:m_name(name)
+	{
+		pvs = CreateVertexShaderFromFile(vertexFile);
+		pps = CreatePixelShaderFromFile(pixelFile);
+	}
 	DX11Shader::DX11Shader(const std::string& name ,const std::string& vertexName,const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc, bool compile )
 		:m_name(name)
 	{
@@ -148,9 +154,9 @@ namespace QCat
 		pps->Bind();
 
 		for (auto& iter : m_vertexConstantBuffers)
-			iter.second->Bind(*QGfxDeviceDX11::GetInstance());
+			iter.second->Bind();
 		for (auto& iter : m_pixelConstantBuffers)
-			iter.second->Bind(*QGfxDeviceDX11::GetInstance());
+			iter.second->Bind();
 	}
 	void DX11Shader::UnBind() const
 	{

@@ -3,6 +3,8 @@
 
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Shader.h"
+
+#include "Renderer2D.h"
 namespace QCat
 {
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
@@ -10,6 +12,7 @@ namespace QCat
 	void Renderer::Init()
 	{
 		RenderCommand::Init();
+		Renderer2D::Init();
 	}
 
 	void Renderer::OnWindowResize(unsigned int width, unsigned int height)

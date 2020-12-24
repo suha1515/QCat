@@ -108,7 +108,7 @@ namespace QCat
 		virtual const Ref<BufferLayout>& GetLayout() const = 0;
 		virtual void SetLayout(BufferLayout* layout) = 0;
 
-		static VertexBuffer* Create(float* vertices, unsigned int size,void * temp=nullptr);
+		static VertexBuffer* Create(float* vertices, unsigned int size);
 	};
 	class IndexBuffer
 	{

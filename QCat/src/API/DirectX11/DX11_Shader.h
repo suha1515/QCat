@@ -28,6 +28,7 @@ namespace QCat
 		
 	public:
 		DX11Shader(const std::string& name ,const Ref<Shader>& vertexShader,const Ref<Shader>& pixelShader);
+		DX11Shader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile);
 		DX11Shader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc,bool compile=false);
 		~DX11Shader();
 	public:

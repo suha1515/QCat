@@ -38,7 +38,7 @@ public:
 		//IndexArray
 		unsigned int indices[3] = { 0,1,2 };
 
-		m_VertexBuffer.reset(QCat::VertexBuffer::Create(vertices, sizeof(vertices), &stride));
+		m_VertexBuffer.reset(QCat::VertexBuffer::Create(vertices, sizeof(vertices)));
 		m_IndexBuffer.reset(QCat::IndexBuffer::Create(indices, sizeof(indices)));
 		QCat::BufferLayout* buflayout = QCat::BufferLayout::Create(
 			{ { QCat::ShaderDataType::Float3, "Position" },
@@ -58,7 +58,7 @@ public:
 
 		unsigned squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
 
-		m_SquareBuffer.reset(QCat::VertexBuffer::Create(squareVertices, sizeof(squareVertices), &stride));
+		m_SquareBuffer.reset(QCat::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 		m_SquareIndex.reset(QCat::IndexBuffer::Create(squareIndices, sizeof(squareIndices)));
 
 		flatColorShaderVertexSrc = "..\\bin\\Debug-windows-\\QCat\\Square_VS.cso";

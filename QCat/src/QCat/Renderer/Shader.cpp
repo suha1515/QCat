@@ -32,7 +32,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<Shader> Shader::Create(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc,bool compile )
+	Ref<Shader> Shader::Create(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc )
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -44,7 +44,7 @@ namespace QCat
 			break;
 		case RenderAPI::API::DirectX11:
 			{
-			//return std::make_shared<DX11Shader>(vertexSrc, pixelSrc, compile);
+			return std::make_shared<DX11Shader>(name,vertexSrc, pixelSrc);
 			break;
 
 			}	

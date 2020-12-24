@@ -220,12 +220,18 @@ namespace QCat {
 
 		Instance = this;
 
-
 		//Blend State
 		D3D11_BLEND_DESC blendDesc = CD3D11_BLEND_DESC{ CD3D11_DEFAULT{} };
 		blendDesc.RenderTarget[0].BlendEnable = false;
 		device->CreateBlendState(&blendDesc, &m_BlenderState);
 
+		//Rasterizer
+		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
+		rasterDesc.CullMode = D3D11_CULL_BACK;
+		rasterDesc.FrontCounterClockwise = true;
+
+		device->CreateRasterizerState(&rasterDesc, &pRasterizer);
+		immediateContext->RSSetState(pRasterizer.Get());
 	}
 
 	QGfxDeviceDX11::~QGfxDeviceDX11()

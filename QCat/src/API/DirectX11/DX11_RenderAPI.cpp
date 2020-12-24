@@ -1,5 +1,6 @@
 #include "qcpch.h"
 #include "DX11_RenderAPI.h"
+#include "API/DirectX11/QGfxDeviceDX11.h"
 
 namespace QCat
 {
@@ -45,5 +46,9 @@ namespace QCat
 			pgfx->BindBlendState();
 		}
 		pgfx->GetContext()->DrawIndexed(indexCount,0u,0u);
+	}
+	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray)
+	{
+		DrawIndexed(vertexArray->GetIndexBuffer()->GetCount());
 	}
 }

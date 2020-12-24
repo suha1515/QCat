@@ -20,6 +20,7 @@
 
 //--Renderer-----------------------------//
 #include "QCat/Renderer/Renderer.h"
+#include "QCat/Renderer/Renderer2D.h"
 #include "QCat/Renderer/RenderCommand.h"
 
 #include "QCat/Renderer/Buffer.h"

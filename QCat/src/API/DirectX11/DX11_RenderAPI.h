@@ -1,8 +1,10 @@
 #pragma once
 #include "QCat/Renderer/RenderAPI.h"
-#include "QGfxDeviceDX11.h"
+
+
 namespace QCat
 {
+	class QGfxDeviceDX11;
 	class DX11RenderAPI : public RenderAPI
 	{
 	public:
@@ -15,6 +17,7 @@ namespace QCat
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 		virtual void DrawIndexed(const unsigned int indexCount) override;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) override;
 	private:
 		QGfxDeviceDX11* pgfx;
 		glm::vec4 color;

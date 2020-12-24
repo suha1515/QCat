@@ -24,7 +24,8 @@ namespace QCat
 	void DX11VertexBuffer::Bind() const
 	{
 		const UINT offset = 0u;
-		QGfxDeviceDX11::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1u, m_pVertexBuffer.GetAddressOf(), &m_stride, &offset);
+		const UINT stride = m_pbufferLayout->GetStride();
+		QGfxDeviceDX11::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1u, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
 		QCAT_CORE_ASSERT(m_pbufferLayout != nullptr, "InputLayout is nullptr! : VertexBuffer Binding Error");
 		m_pbufferLayout->Bind();
 
@@ -34,13 +35,13 @@ namespace QCat
 	}
 	DX11IndexBuffer::DX11IndexBuffer(unsigned int* indices,unsigned int size)
 	{
-		m_count = size / sizeof(unsigned int);
+		m_count = size;
 		D3D11_BUFFER_DESC ibd = {};
 		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		ibd.Usage = D3D11_USAGE_DEFAULT;
 		ibd.CPUAccessFlags = 0u;
 		ibd.MiscFlags = 0u;
-		ibd.ByteWidth = size;
+		ibd.ByteWidth = m_count * sizeof(unsigned int);
 		ibd.StructureByteStride = sizeof(unsigned int);
 		D3D11_SUBRESOURCE_DATA isd = {};
 		isd.pSysMem = indices;

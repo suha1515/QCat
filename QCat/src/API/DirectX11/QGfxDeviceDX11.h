@@ -68,6 +68,7 @@ namespace QCat {
 		ComPtr<ID3D11DepthStencilView> depthStencilView;
 
 		Microsoft::WRL::ComPtr<ID3D11BlendState> m_BlenderState;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
 		bool m_BlendEnable = false;
 	private:
 		static QGfxDeviceDX11* Instance;
