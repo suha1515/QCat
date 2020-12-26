@@ -9,7 +9,7 @@ namespace QCat
 		mbstowcs_s(nullptr, wide, narrow.c_str(), _TRUNCATE);
 		return wide;
 	}
-	std::string DX11Shader::GetShaderName(const std::string& path)
+	std::string DXShader::GetShaderName(const std::string& path)
 	{
 		// assets/shaders/hlsl/Solid_PS.hlsl
 		auto lastSlash = path.find_last_of("/\\");
@@ -20,70 +20,70 @@ namespace QCat
 		auto name = path.substr(lastSlash, count);
 		return name;
 	}
-	Ref<Shader> DX11Shader::CreateShaderFromNative(const std::string& name, const std::string& src)
-	{
-		Ref<Shader> shader;
-		auto lastUnderbar = name.find_last_of('_');
-		std::string type = name.substr(lastUnderbar + 1, std::string::npos);
-		if (type == "PS")
-			shader = CreatePixelShaderFromNative(name, src);
-		else if (type == "VS")
-			shader = CreateVertexShaderFromNative(name, src);
-		else
-		{
-			QCAT_CORE_ASSERT(false, "Undefined hlsl shader type!");
-		}
-		return shader;
-	}
-	Ref<Shader> DX11Shader::CreateShaderFromFile(const std::string& path)
-	{
-		// assets/shaders/hlsl/Solid_PS.hlsl
-		Ref<Shader> shader;
-		auto lastUnderbar = path.rfind('_');
-		auto type = path.substr(lastUnderbar + 1, 2);
-		if (type == "PS")
-			shader = CreatePixelShaderFromFile(path);
-		else if (type == "VS")
-			shader = CreateVertexShaderFromFile(path);
-		else
-		{
-			QCAT_CORE_ASSERT(false, "Undefined hlsl shader type!");
-			return shader;
-		}
-		return shader;
-	}
-	Ref<DX11VertexShader> DX11Shader::CreateVertexShaderFromNative(const std::string& name, const std::string& src)
+	//Ref<Shader> DXShader::CreateShaderFromNative(const std::string& name, const std::string& src)
+	//{
+	//	Ref<Shader> shader;
+	//	auto lastUnderbar = name.find_last_of('_');
+	//	std::string type = name.substr(lastUnderbar + 1, std::string::npos);
+	//	if (type == "PS")
+	//		shader = CreatePixelShaderFromNative(name, src);
+	//	else if (type == "VS")
+	//		shader = CreateVertexShaderFromNative(name, src);
+	//	else
+	//	{
+	//		QCAT_CORE_ASSERT(false, "Undefined hlsl shader type!");
+	//	}
+	//	return shader;
+	//}
+	//Ref<Shader> DXShader::CreateShaderFromFile(const std::string& path)
+	//{
+	//	// assets/shaders/hlsl/Solid_PS.hlsl
+	//	Ref<Shader> shader;
+	//	auto lastUnderbar = path.rfind('_');
+	//	auto type = path.substr(lastUnderbar + 1, 2);
+	//	if (type == "PS")
+	//		shader = CreatePixelShaderFromFile(path);
+	//	else if (type == "VS")
+	//		shader = CreateVertexShaderFromFile(path);
+	//	else
+	//	{
+	//		QCAT_CORE_ASSERT(false, "Undefined hlsl shader type!");
+	//		return shader;
+	//	}
+	//	return shader;
+	//}
+	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromNative(const std::string& name, const std::string& src)
 	{
 		//auto lastUnderbar = name.find_last_of('_');
 		//std::string type = name.substr(lastUnderbar + 1, std::string::npos);
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
-		pBlob = Compile(shaderType::VS, src);
+		pBlob = Compile(DXshaderType::VS, src);
 		return std::make_shared<DX11VertexShader>(name, pBlob);
 	}
-	Ref<DX11PixelShader> DX11Shader::CreatePixelShaderFromNative(const std::string& name, const std::string& src)
+	Ref<DX11PixelShader> DXShader::CreatePixelShaderFromNative(const std::string& name, const std::string& src)
 	{
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
-		pBlob = Compile(shaderType::PS, src);
+		pBlob = Compile(DXshaderType::PS, src);
 		return std::make_shared<DX11PixelShader>(name, pBlob);
 	}
-	Ref<DX11VertexShader> DX11Shader::CreateVertexShaderFromFile(const std::string& path)
+	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromFile(const std::string& path)
 	{
 		const std::string name = GetShaderName(path);
 		return std::make_shared<DX11VertexShader>(name, path);
 	}
-	Ref<DX11PixelShader> DX11Shader::CreatePixelShaderFromFile(const std::string& path)
+	Ref<DX11PixelShader> DXShader::CreatePixelShaderFromFile(const std::string& path)
 	{
 		auto name = GetShaderName(path);
 		return std::make_shared<DX11PixelShader>(name, path);
 	}
-	Microsoft::WRL::ComPtr<ID3DBlob> DX11Shader::Compile(const shaderType& type, const std::string& src)
+	Microsoft::WRL::ComPtr<ID3DBlob> DXShader::Compile(const DXshaderType& type, const std::string& src)
 	{
 		{
 			char* errormsg = nullptr;
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 			switch (type)
 			{
-			case shaderType::VS:
+			case DXshaderType::VS:
 			{
 				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
 					nullptr, nullptr, "main", "vs_5_0",
@@ -96,7 +96,7 @@ namespace QCat
 				return pBlob;
 				break;
 			}
-			case shaderType::PS:
+			case DXshaderType::PS:
 			{
 				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
 					nullptr, nullptr, "main", "ps_5_0",
@@ -109,30 +109,22 @@ namespace QCat
 				return pBlob;
 				break;
 			}
-			case shaderType::GS:
+			case DXshaderType::GS:
 				break;
 			}
 			QCAT_CORE_ASSERT(false, "Compile Faile!");
 			return pBlob;
 		}
 	}
-	DX11Shader::DX11Shader(const std::string& name ,const Ref<Shader>& vertexShader, const Ref<Shader>& pixelShader)
-		:m_name(name)
-	{
-		QGfxDeviceDX11* pgfx = QGfxDeviceDX11::GetInstance();
-		pvs = std::dynamic_pointer_cast<DX11VertexShader>(vertexShader);
-		pps = std::dynamic_pointer_cast<DX11PixelShader>(pixelShader);
-		//pvs = new DX11VertexShader(vertexShaderPath, compile);
-		//pps = new DX11PixelShader(pixelShaderPath, compile);
-	}
-	DX11Shader::DX11Shader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
+
+	DXShader::DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
 		:m_name(name)
 	{
 		pvs = CreateVertexShaderFromFile(vertexFile);
 		pps = CreatePixelShaderFromFile(pixelFile);
 	}
-	DX11Shader::DX11Shader(const std::string& name ,const std::string& vertexName,const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc, bool compile )
-		:m_name(name)
+	DXShader::DXShader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc, bool compile)
+		: m_name(name)
 	{
 		if (compile)
 		{
@@ -145,74 +137,85 @@ namespace QCat
 			pps = CreatePixelShaderFromFile(pixelSrc);
 		}
 	}
-	DX11Shader::~DX11Shader()
+	DXShader::~DXShader()
 	{
 	}
-	void DX11Shader::Bind() const
+	void DXShader::Bind() const
 	{
 		pvs->Bind();
 		pps->Bind();
-
-		for (auto& iter : m_vertexConstantBuffers)
-			iter.second->Bind();
-		for (auto& iter : m_pixelConstantBuffers)
-			iter.second->Bind();
 	}
-	void DX11Shader::UnBind() const
+	void DXShader::UnBind() const
 	{
 		pvs->UnBind();
 		pps->UnBind();
 	}
-	void DX11Shader::AddVertexConstantBuffer(const std::string& name, Ref<VertexConstantBuffer>& pvertexConstantBuffer)
+	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
-		if (m_vertexConstantBuffers.size() > 15)
-		{
-			QCAT_CORE_ASSERT(false, "DX11 CosntantBuffer can't be set more than 16");
-			return;
-		}
-		m_vertexConstantBuffers.emplace(name, pvertexConstantBuffer);
+		UpdateConstantBuffer(name, &value);
 	}
-	void DX11Shader::AddPixelConstantBuffer(const std::string& name, Ref<PixelConstantBuffer>& ppixelConstantBuffer)
+	void DXShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
-		if (m_pixelConstantBuffers.size() > 15)
-		{
-			QCAT_CORE_ASSERT(false, "DX11 CosntantBuffer can't be set more than 16");
-			return;
-		}
-		m_pixelConstantBuffers.emplace(name, ppixelConstantBuffer);
+		UpdateConstantBuffer(name, &value);
 	}
-	void DX11Shader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
+	void DXShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		auto& iter = m_vertexConstantBuffers.find(name);
-		if (iter == m_vertexConstantBuffers.end())
-		{
-			//QCAT_CORE_ERROR("Cant find vertexConstantBuffer! : Invalid name for buffer");
-			return;
-		}		
-		iter->second->UpdateData(*QGfxDeviceDX11::GetInstance(),data);
+		UpdateConstantBuffer(name, &value);
 	}
-	void DX11Shader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
+	void DXShader::SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value)
 	{
-		auto& iter = m_pixelConstantBuffers.find(name);
-		if (iter == m_pixelConstantBuffers.end())
-		{
-			//QCAT_CORE_ERROR("Cant find pixelConstantBuffer! : Invalid name for buffer");
-			return;
-		}
-		iter->second->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
+		UpdateConstantBuffer(uniformname, valuename, &value);
 	}
-	std::vector<char>& DX11Shader::GetVerexData()
+	void DXShader::SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value)
+	{
+		UpdateConstantBuffer(uniformname, valuename, &value);
+	}
+	void DXShader::SetMat4u(const std::string& uniformname, const std::string& valuename, const glm::mat4& value)
+	{
+		UpdateConstantBuffer(uniformname, valuename, &value);
+	}
+	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
+	{
+		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(uniformname);
+		if (constantbuf)
+			constantbuf->UpdateElement(valuename, pdata);
+
+		constantbuf = pps->GetConstantBuffer(uniformname);
+		if (constantbuf)
+			constantbuf->UpdateElement(valuename, pdata);
+	}
+	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const void* pdata)
+	{
+		UpdateVertexConstantBuffer(uniformname, pdata);
+		UpdatePixelConstantBuffer(uniformname, pdata);
+	}
+	void DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
+	{
+		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(name);
+		if (constantbuf)
+			constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
+	}
+	void DXShader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
+	{
+		Ref<DX11ConstantBuffer>& constantbuf = pps->GetConstantBuffer(name);
+		if (constantbuf)
+			constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
+	}
+	std::vector<char>& DXShader::GetVerexData()
 	{
 		// TODO: 여기에 반환 구문을 삽입합니다.
 		return pvs->GetData();
 	}
 	DX11VertexShader::DX11VertexShader(const std::string& name, const std::string& path)
-		:m_name(name)
 	{
+		type = DXshaderType::VS;
+		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlobVertex;
 		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobVertex);
 
+		D3DReflect(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		MakeBufferElement();
 		char* ptr = (char*)pBlobVertex->GetBufferPointer();
 		unsigned int size = pBlobVertex->GetBufferSize();
 		data.assign(size, 0);
@@ -226,9 +229,12 @@ namespace QCat
 
 	}
 	DX11VertexShader::DX11VertexShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob)
-		:m_name(name)
 	{
+		type = DXshaderType::VS;
+		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
+		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		MakeBufferElement();
 		char* ptr = (char*)pBlob->GetBufferPointer();
 		unsigned int size = pBlob->GetBufferSize();
 		data.assign(size, 0);
@@ -243,8 +249,11 @@ namespace QCat
 	DX11VertexShader::~DX11VertexShader()
 	{
 	}
+	
 	void DX11VertexShader::Bind() const
 	{
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->Bind();
 		gfx->GetContext()->VSSetShader(pVertexShader.Get(), nullptr, 0u);
 	}
 	void DX11VertexShader::UnBind() const
@@ -256,20 +265,25 @@ namespace QCat
 		return data;
 	}
 	DX11PixelShader::DX11PixelShader(const std::string& name, const std::string& path)
-		:m_name(name)
 	{
+		type = DXshaderType::PS;
+		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlobPixel;
 		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobPixel);
-		
-		HRESULT result =gfx->GetDevice()->CreatePixelShader(pBlobPixel->GetBufferPointer(),
+		D3DReflect(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		MakeBufferElement();
+		HRESULT result = gfx->GetDevice()->CreatePixelShader(pBlobPixel->GetBufferPointer(),
 			pBlobPixel->GetBufferSize(),
 			nullptr, &pPixelShader);
 	}
 	DX11PixelShader::DX11PixelShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob)
-		:m_name(name)
 	{
+		type = DXshaderType::PS;
+		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
+		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		MakeBufferElement();
 		HRESULT result = gfx->GetDevice()->CreatePixelShader(pBlob->GetBufferPointer(),
 			pBlob->GetBufferSize(),
 			nullptr, &pPixelShader);
@@ -279,10 +293,89 @@ namespace QCat
 	}
 	void DX11PixelShader::Bind() const
 	{
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->Bind();
 		gfx->GetContext()->PSSetShader(pPixelShader.Get(), nullptr, 0u);
 	}
 	void DX11PixelShader::UnBind() const
 	{
 		gfx->GetContext()->PSSetShader(nullptr, nullptr, 0u);
 	}
+
+	void DX11Shader::MakeBufferElement()
+	{
+		//======= Make Shader Element Buffer=========
+		D3D11_SHADER_DESC desc;
+		pReflector->GetDesc(&desc);
+		UINT countConstantBuffer = desc.ConstantBuffers;
+		for (UINT i = 0; i < countConstantBuffer; ++i)
+		{
+			std::vector<BufferElement> elements;
+			std::string constantbuffername;
+			D3D11_SHADER_BUFFER_DESC shaderdesc;
+			// this is not com object dont worry about release
+			ID3D11ShaderReflectionConstantBuffer* constantbuffer = pReflector->GetConstantBufferByIndex(i);
+			constantbuffer->GetDesc(&shaderdesc);
+			constantbuffername = shaderdesc.Name;
+			for (UINT j = 0; j < shaderdesc.Variables; ++j)
+			{
+				// this is not com object dont worry about release
+				ID3D11ShaderReflectionVariable* value = constantbuffer->GetVariableByIndex(j);
+				D3D11_SHADER_VARIABLE_DESC valueDesc;
+				value->GetDesc(&valueDesc);
+				ID3D11ShaderReflectionType* type = value->GetType();
+				D3D11_SHADER_TYPE_DESC typedesc;
+				type->GetDesc(&typedesc);
+
+				unsigned int offset = valueDesc.StartOffset;
+				unsigned int size = valueDesc.Size;
+				const std::string& name = valueDesc.Name;
+				ShaderDataType datatype = DXShaderDataConvert(typedesc);
+				BufferElement element(datatype, name, offset);
+				elements.push_back(element);
+			}
+			Ref<DX11ConstantBuffer> pConstantBuffer;
+			switch (type)
+			{
+			case DXshaderType::VS:
+				pConstantBuffer = std::make_shared<VertexConstantBuffer>(elements, i);
+				break;
+			case DXshaderType::PS:
+				pConstantBuffer = std::make_shared<PixelConstantBuffer>(elements, i);
+				break;
+			case DXshaderType::GS:
+				break;
+			}
+			AddConstantBuffer(constantbuffername, pConstantBuffer);
+		}
+		//===========================================
+	}
+
+	void DX11Shader::AddConstantBuffer(const std::string& name, Ref<DX11ConstantBuffer>& pConstantBuffer)
+	{
+		if (m_ConstantBuffers.size() > 15)
+		{
+			std::string error;
+			if (type == DXshaderType::VS)
+				error = "VertexShader";
+			else if (type == DXshaderType::PS)
+				error = "PixelShader";
+			QCAT_CORE_ERROR("{0} exceeds constantBuffer count", error);
+			QCAT_CORE_ASSERT(false, "DX11 CosntantBuffer can't be set more than 16");
+			return;
+		}
+		m_ConstantBuffers.emplace(name, pConstantBuffer);
+	}
+
+	Ref<DX11ConstantBuffer> DX11Shader::GetConstantBuffer(const std::string name)
+	{
+		auto& iter = m_ConstantBuffers.find(name);
+		if (iter == m_ConstantBuffers.end())
+		{
+			//QCAT_CORE_ERROR("Cant find vertexConstantBuffer! : Invalid name for buffer");
+			return nullptr;
+		}
+		return iter->second;
+	}
+
 }

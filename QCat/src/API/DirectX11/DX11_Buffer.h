@@ -4,6 +4,52 @@
 
 namespace QCat
 {
+	static ShaderDataType DXShaderDataConvert(const D3D11_SHADER_TYPE_DESC& info)
+	{
+
+		if (info.Class == D3D_SVC_SCALAR)
+		{
+			if (info.Type == D3D_SVT_FLOAT)
+				return ShaderDataType::Float;
+			else if (info.Type == D3D_SVT_INT)
+				return ShaderDataType::Int;
+			else if (info.Type == D3D_SVT_BOOL)
+			{
+				return ShaderDataType::Bool;
+			}
+		}
+		else if (info.Class == D3D_SVC_VECTOR)
+		{
+			if (info.Type == D3D_SVT_FLOAT)
+			{
+				if (info.Columns == 2)
+					return ShaderDataType::Float2;
+				else if (info.Columns == 3)
+					return ShaderDataType::Float3;
+				else if (info.Columns == 4)
+					return ShaderDataType::Float4;
+			}
+			else if (info.Type == D3D_SVT_INT)
+			{
+				if (info.Columns == 2)
+					return ShaderDataType::Int2;
+				else if (info.Columns == 3)
+					return ShaderDataType::Int3;
+				else if (info.Columns == 4)
+					return ShaderDataType::Int4;
+			}
+		}
+		else if (info.Class == D3D_SVC_MATRIX_COLUMNS)
+		{
+			if (info.Type == D3D_SVT_FLOAT)
+			{
+				if (info.Columns == 4)
+					return ShaderDataType::Mat4;
+				else if(info.Columns==3)
+					return ShaderDataType::Mat3;
+			}
+		}
+	}
 	class QCAT_API DX11VertexBuffer : public VertexBuffer
 	{
 	public:
@@ -38,6 +84,28 @@ namespace QCat
 	class QCAT_API DX11ConstantBuffer
 	{
 	public:
+		bool CrossBoundary(unsigned int offset, unsigned int size) noexcept
+		{
+			const auto end = offset + size;
+			const auto pageStart = offset / 16u;
+			const auto pageEnd = end / 16u;
+			return (pageStart != pageEnd && end % 16u != 0) || size > 16u;
+		}
+		void CalculatePadding()
+		{
+			unsigned int nextoffset = 0;
+			for (auto& element : bufferElements)
+			{
+				if (CrossBoundary(nextoffset, element.size))
+				{
+					nextoffset = nextoffset + (16u - nextoffset % 16u) % 16u;;
+				}
+				element.offset = nextoffset;
+				nextoffset += element.size;
+			}
+			nextoffset = CalculateSize(nextoffset);
+			data.resize(nextoffset);
+		}
 		unsigned int CalculateSize(unsigned int size)
 		{
 			unsigned int realSize = 0;
@@ -45,16 +113,14 @@ namespace QCat
 				realSize = size;
 			else
 			{
-				int gap = size & 16;
-				gap = 16 * (1 + gap) - size;
-				realSize = size + gap;
+				realSize = size + (16u - size % 16u) % 16u;;
 			}
 			return realSize;
 		}
 		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot ,const void* data,unsigned int size)
 			:slot(slot)
 		{
-			this->gfx = &gfx;
+			this->pgfx = &gfx;
 		
 			D3D11_BUFFER_DESC bd;
 			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -72,7 +138,7 @@ namespace QCat
 		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size)
 			:slot(slot)
 		{
-			this->gfx = &gfx;
+			this->pgfx = &gfx;
 
 			D3D11_BUFFER_DESC bd;
 			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -82,34 +148,78 @@ namespace QCat
 			bd.ByteWidth = CalculateSize(size);
 			bd.StructureByteStride = 0u;
 
-			gfx.GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
+			pgfx->GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
 		}
-		void UpdateData(QGfxDeviceDX11& gfx,const void* data)
+		DX11ConstantBuffer(std::vector<BufferElement>& bufferElement, unsigned int slot)
+			:slot(slot), bufferElements(bufferElement)
 		{
-			gfx.GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, data, 0u, 0u);
+			this->pgfx = QGfxDeviceDX11::GetInstance();
+			CalculatePadding();
+			D3D11_BUFFER_DESC bd;
+			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			bd.Usage = D3D11_USAGE_DEFAULT;
+			bd.CPUAccessFlags = 0u;
+			bd.MiscFlags = 0u;
+			bd.ByteWidth = data.size();
+			bd.StructureByteStride = 0u;
+
+			pgfx->GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
 		}
-		~DX11ConstantBuffer() {}
+		void UpdateData(QGfxDeviceDX11& gfx,const void* pdata)
+		{
+			gfx.GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, pdata, 0u, 0u);
+			memcpy(data.data(), pdata, data.size());
+		}
+		void UpdateElement(const std::string& name, const void* pdata)
+		{
+			for (auto& element : bufferElements)
+			{
+				if (element.name == name)
+				{
+					// TODO : Check the type we have to make own dataType for type check
+					ShaderDataType type = element.type;
+					unsigned int size = element.size;
+					memcpy(data.data(), pdata, size);
+					pgfx->GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, data.data(), 0u, 0u);
+					return;
+				}
+			}
+		}
+		~DX11ConstantBuffer() 
+		{
+		}
+		virtual void Bind()
+		{
+			/*switch (type) 
+			{
+				case Type::None: QCAT_CORE_ASSERT(false,"ConstantBuffer type error : type is none")break;
+				case Type::Pixel: gfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf()); break;
+				case Type::Vertex: gfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf()); break;
+			}*/
+		}
 	protected:
-		QGfxDeviceDX11* gfx;
+		QGfxDeviceDX11* pgfx;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
+		std::vector<BufferElement> bufferElements;
+		std::vector<char> data;
 		unsigned int slot;
 	};
 	class QCAT_API VertexConstantBuffer : public DX11ConstantBuffer
 	{
 	public:
 		using DX11ConstantBuffer::DX11ConstantBuffer;
-		void Bind() 
+		virtual void Bind() override
 		{
-			gfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
+			pgfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
 	class QCAT_API PixelConstantBuffer : public DX11ConstantBuffer
 	{
 	public:
 		using DX11ConstantBuffer::DX11ConstantBuffer;
-		void Bind()
+		virtual void Bind() override
 		{
-			gfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
+			pgfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
 }

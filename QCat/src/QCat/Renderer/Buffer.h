@@ -6,7 +6,6 @@ namespace QCat
 	{
 		None =0,Float,Float2,Float3,Float4,Mat3,Mat4,Int,Int2,Int3,Int4,Bool
 	};
-
 	static unsigned int ShaderDataTypeSize(ShaderDataType type)
 	{
 		switch (type)
@@ -35,8 +34,8 @@ namespace QCat
 		unsigned int offset;
 		bool normalized;
 
-		BufferElement(ShaderDataType type,const std::string& name,bool normalized = false)
-			:name(name),type(type),size(ShaderDataTypeSize(type)),offset(0),normalized(normalized)
+		BufferElement(ShaderDataType type,const std::string& name,bool normalized = false, unsigned int offset = 0)
+			:name(name),type(type),size(ShaderDataTypeSize(type)),offset(offset),normalized(normalized)
 		{}
 
 		unsigned int GetComponentCount() const

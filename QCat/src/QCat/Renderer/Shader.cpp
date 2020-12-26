@@ -13,7 +13,8 @@ namespace QCat
 		{
 		case RenderAPI::API::None:    QCAT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RenderAPI::API::OpenGL:  return std::make_shared<OpenGLShader>(filepath);
-		case RenderAPI::API::DirectX11: return DX11Shader::CreateShaderFromFile(filepath);
+		case RenderAPI::API::DirectX11: //return DXShader::CreateShaderFromFile(filepath);
+			break;
 		}
 
 		QCAT_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -26,7 +27,8 @@ namespace QCat
 		case RenderAPI::API::None:    QCAT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		// TODO : Split vertex and pixel shader from intergrated shader in opengl
 		//case RenderAPI::API::OpenGL: return std::make_shared<OpenGLShader>(shaderSrc);
-		case RenderAPI::API::DirectX11: return DX11Shader::CreateShaderFromNative(name, shaderSrc);
+		case RenderAPI::API::DirectX11: //return DXShader::CreateShaderFromNative(name, shaderSrc);
+			break;
 		}
 
 		QCAT_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -44,7 +46,7 @@ namespace QCat
 			break;
 		case RenderAPI::API::DirectX11:
 			{
-			return std::make_shared<DX11Shader>(name,vertexSrc, pixelSrc);
+			return std::make_shared<DXShader>(name,vertexSrc, pixelSrc);
 			break;
 
 			}	

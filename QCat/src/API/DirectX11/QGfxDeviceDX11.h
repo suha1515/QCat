@@ -6,6 +6,9 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <wrl.h>
+#include <d3d11shader.h>
+
+#pragma comment(lib, "dxguid.lib")
 
 using namespace Microsoft::WRL;
 

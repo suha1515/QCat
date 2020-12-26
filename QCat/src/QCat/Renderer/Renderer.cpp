@@ -39,8 +39,8 @@ namespace QCat
 	void Renderer::Submit(const Ref<Shader>& shader,const unsigned int indexCount, const glm::mat4& transform)
 	{
 		shader->Bind();
-		std::dynamic_pointer_cast<DX11Shader>(shader)->UpdateVertexConstantBuffer("u_ViewProjection", &m_SceneData->ViewProjectionMatrix);
-		std::dynamic_pointer_cast<DX11Shader>(shader)->UpdateVertexConstantBuffer("u_Transform", &transform);
+		//std::dynamic_pointer_cast<DXShader>(shader)->UpdateVertexConstantBuffer("u_ViewProjection", &m_SceneData->ViewProjectionMatrix);
+		//std::dynamic_pointer_cast<DXShader>(shader)->UpdateVertexConstantBuffer("u_Transform", &transform);
 
 		RenderCommand::DrawIndexed(indexCount);
 	}
