@@ -13,6 +13,7 @@ Sandbox2D::Sandbox2D()
 
 void Sandbox2D::OnAttach()
 {
+	m_Texture = QCat::Texture2D::Create("Asset/textures/Checkerboard.png");
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
 #endif
@@ -22,7 +23,6 @@ void Sandbox2D::OnDetach()
 {
 
 }
-
 void Sandbox2D::OnUpdate(QCat::Timestep ts)
 {
 	// Update
@@ -34,10 +34,15 @@ void Sandbox2D::OnUpdate(QCat::Timestep ts)
 
 	QCat::Renderer2D::BeginScene(m_CameraController.GetCamera());
 #if defined(QCAT_DX11)
-#elif defined(QCAT_OPENGL)
-#endif
+	QCat::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.999f }, { 10.0f, 10.0f }, m_Texture);
 	QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
 	QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
+#elif defined(QCAT_OPENGL)
+	QCat::Renderer2D::DrawQuad({ 0.0f, 0.0f,-0.1f }, { 10.0f, 10.0f }, m_Texture);
+	QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
+	QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
+#endif
+	
 
 	QCat::Renderer2D::EndScene();
 }

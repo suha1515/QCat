@@ -25,5 +25,5 @@ private:
 
 	QCat::Ref<QCat::VertexBuffer> m_VertexBuffer;
 	QCat::Ref<QCat::IndexBuffer> m_IndexBuffer;
-
+	QCat::Ref<QCat::Texture2D> m_Texture;
 };

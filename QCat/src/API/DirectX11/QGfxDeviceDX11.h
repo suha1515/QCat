@@ -48,6 +48,9 @@ namespace QCat {
 		bool GetBlendState() { return m_BlendEnable; }
 		void BlendStateEnable(bool enable);
 		void BindBlendState();
+
+		void SetSamplerState(D3D11_SAMPLER_DESC& samplerDesc);
+		void BindSamplerState();
 	public:
 		ComPtr<ID3D11Device>& GetDevice();
 		ComPtr<ID3D11DeviceContext>& GetContext();
@@ -72,6 +75,8 @@ namespace QCat {
 
 		Microsoft::WRL::ComPtr<ID3D11BlendState> m_BlenderState;
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
+		Microsoft::WRL::ComPtr<ID3D11SamplerState> pSamplerState;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState;
 		bool m_BlendEnable = false;
 	private:
 		static QGfxDeviceDX11* Instance;

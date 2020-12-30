@@ -15,7 +15,18 @@ namespace QCat
 	void DX11RenderAPI::Init()
 	{
 		QGfxDeviceDX11* gfx = QGfxDeviceDX11::GetInstance();
+		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
+		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.BorderColor[0] = 1.0f;
+		samplerDesc.BorderColor[1] = 0.0f;
+		samplerDesc.BorderColor[2] = 1.0f;
+		samplerDesc.BorderColor[3] = 1.0f;
+
 		gfx->BlendStateEnable(true);
+		gfx->SetSamplerState(samplerDesc);
+		gfx->BindSamplerState();
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{

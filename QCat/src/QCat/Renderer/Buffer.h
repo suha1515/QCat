@@ -1,4 +1,5 @@
 #pragma once
+#include "Shader.h"
 
 namespace QCat
 {
@@ -80,7 +81,7 @@ namespace QCat
 		std::vector<BufferElement>::const_iterator begin() const { return m_elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return m_elements.end(); }
 
-		static BufferLayout* Create(const std::initializer_list<BufferElement>& elements, void* vertexShaderCode = nullptr, unsigned int codeSize = 0);
+		static BufferLayout* Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader = nullptr);
 	protected:
 		void CalculateOffsetAndStride()
 		{

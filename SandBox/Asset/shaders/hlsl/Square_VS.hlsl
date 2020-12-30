@@ -1,17 +1,17 @@
-cbuffer TransformCbuf : register(b0)
+cbuffer u_ViewProjection : register(b0)
 {
 	matrix viewProj;
 }
-cbuffer transform : register(b1)
+cbuffer u_Transform : register(b1)
 {
 	matrix transform;
 }
 struct VSOut
 {
-	float4 pos :SV_Position;
 	float2 tc: Texcoord;
+	float4 pos :SV_Position;
 };
-VSOut main(float3 pos : Position, float2 tc : Texcoord)
+VSOut main(float3 pos : a_Position, float2 tc : a_Texture)
 {
 	VSOut vso;
 

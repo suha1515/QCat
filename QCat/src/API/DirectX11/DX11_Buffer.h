@@ -203,6 +203,7 @@ namespace QCat
 		std::vector<BufferElement> bufferElements;
 		std::vector<char> data;
 		unsigned int slot;
+		std::string name;
 	};
 	class QCAT_API VertexConstantBuffer : public DX11ConstantBuffer
 	{

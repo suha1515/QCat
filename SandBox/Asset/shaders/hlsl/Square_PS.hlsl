@@ -1,9 +1,10 @@
-cbuffer color : register(b0)
+cbuffer u_Color : register(b0)
 {
 	float3 color;
 }
-
-float4 main() : SV_TARGET
+Texture2D tex : register(t0);
+SamplerState splr : register(s0);
+float4 main(float2 tc: Texcoord) : SV_TARGET
 {
-	return float4(color.r, color.g, color.b, 1.0f);
+	return tex.Sample(splr,tc);
 }

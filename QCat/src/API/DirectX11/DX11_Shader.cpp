@@ -150,6 +150,9 @@ namespace QCat
 		pvs->UnBind();
 		pps->UnBind();
 	}
+	void DXShader::SetInt(const std::string& name, int value)
+	{
+	}
 	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
 		UpdateConstantBuffer(name, &value);
@@ -176,30 +179,53 @@ namespace QCat
 	}
 	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
 	{
+		bool suceed = true;
 		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(uniformname);
 		if (constantbuf)
+		{
+			suceed = true;
 			constantbuf->UpdateElement(valuename, pdata);
+		}
+		else
+			suceed = false;
 
 		constantbuf = pps->GetConstantBuffer(uniformname);
 		if (constantbuf)
+		{
+			suceed = true;
 			constantbuf->UpdateElement(valuename, pdata);
+		}
+		else
+			suceed = false;
+		if (!suceed)
+		{
+			QCAT_CORE_ERROR("{0} cant be find from all of {1}'s {2} constantbuffer", valuename,m_name, uniformname);
+		}
 	}
 	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const void* pdata)
 	{
 		UpdateVertexConstantBuffer(uniformname, pdata);
 		UpdatePixelConstantBuffer(uniformname, pdata);
 	}
-	void DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
+	bool DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
 	{
 		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(name);
 		if (constantbuf)
+		{
 			constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
+			return true;
+		}
+		return false;
 	}
-	void DXShader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
+	bool DXShader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
 	{
 		Ref<DX11ConstantBuffer>& constantbuf = pps->GetConstantBuffer(name);
 		if (constantbuf)
+		{
 			constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
+			return true;
+		}
+			return false;		
 	}
 	std::vector<char>& DXShader::GetVerexData()
 	{

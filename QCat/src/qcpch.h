@@ -1,4 +1,6 @@
 #pragma once
+
+
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -18,15 +20,16 @@
 
 #include <wrl.h>
 
+#include "QCatDefines.h"
+#include "QCat/Core/KeyCode.h"
+#include "QCat/Core/Log.h"
+
 #include<glm/glm.hpp>
 #include<DirectXMath.h>
 
 #include <glad/glad.h>
 
 
-#include "QCat/Core/KeyCode.h"
-#include "QCatDefines.h"
-#include "QCat/Core/Log.h"
 
 
 #ifdef QCAT_PLATFORM_WINDOWS

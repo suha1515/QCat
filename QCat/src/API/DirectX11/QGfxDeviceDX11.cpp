@@ -174,6 +174,35 @@ namespace QCat {
 		}
 		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), 0);
 
+		//Depth-StencilState
+		D3D11_DEPTH_STENCIL_DESC dsDesc;
+
+		// Depth test parameters
+		dsDesc.DepthEnable = true;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+		// Stencil test parameters
+		dsDesc.StencilEnable = true;
+		dsDesc.StencilReadMask = 0xFF;
+		dsDesc.StencilWriteMask = 0xFF;
+
+		// Stencil operations if pixel is front-facing
+		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Stencil operations if pixel is back-facing
+		dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Create depth stencil state
+		
+		device->CreateDepthStencilState(&dsDesc, &pDSState);
+
 		// Create Depth-Stencil Buffer
 		D3D11_TEXTURE2D_DESC descDepth = {};
 		descDepth.Width = width;
@@ -242,8 +271,9 @@ namespace QCat {
 	{
 		std::array<float, 4> colorArray = { color.x, color.y,color.z, color.w};
 		immediateContext->ClearRenderTargetView(renderTargetView.Get(), colorArray.data());
-		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), NULL);
+		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		//immediateContext->OMSetDepthStencilState(pDSState.Get(), 1);
 	}
 	void QGfxDeviceDX11::EndFrame()
 	{
@@ -278,6 +308,16 @@ namespace QCat {
 	{
 		QGfxDeviceDX11::GetInstance()->GetContext()->OMSetBlendState(m_BlenderState.Get(), nullptr, 0xFFFFFFFFu);
 
+	}
+	void QGfxDeviceDX11::SetSamplerState(D3D11_SAMPLER_DESC&samplerDesc)
+	{
+		if(pSamplerState)
+			pSamplerState.Reset();
+		device->CreateSamplerState(&samplerDesc, &pSamplerState);
+	}
+	void QGfxDeviceDX11::BindSamplerState()
+	{
+		immediateContext->PSSetSamplers(0u, 1u, pSamplerState.GetAddressOf());
 	}
 	ComPtr<ID3D11Device>& QGfxDeviceDX11::GetDevice()
 	{

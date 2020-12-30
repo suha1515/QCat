@@ -35,7 +35,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(false, "Unknown ShaderDataType!");
 		return DXGI_FORMAT_UNKNOWN;
 	}
-	DX11_InputLayout::DX11_InputLayout(const std::initializer_list<BufferElement>& elements,void* vertexShaderCode, unsigned int codeSize)
+	DX11_InputLayout::DX11_InputLayout(const std::initializer_list<BufferElement>& elements, Ref<DXShader> vertexShader)
 		:BufferLayout(elements)
 	{
 		for (auto& element : m_elements)
@@ -45,7 +45,7 @@ namespace QCat
 				0,element.offset,D3D11_INPUT_PER_VERTEX_DATA,0 });
 		}
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateInputLayout(inputLayoutDesc.data(), m_elements.size()
-			, vertexShaderCode, codeSize, &pInputLayout
+			, vertexShader->GetVerexData().data(), vertexShader->GetVerexData().size(), &pInputLayout
 		);
 	}
 	DX11_InputLayout::~DX11_InputLayout()

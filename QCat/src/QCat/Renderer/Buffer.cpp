@@ -51,7 +51,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
-	BufferLayout* BufferLayout::Create(const std::initializer_list<BufferElement>& elements, void* vertexShaderCode, unsigned int codeSize)
+	BufferLayout* BufferLayout::Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -66,15 +66,8 @@ namespace QCat
 			break;
 		}
 		case RenderAPI::API::DirectX11:
-			if (vertexShaderCode == nullptr)
-			{
-				QCAT_CORE_ASSERT(false, "InputLayout Of DX11 need vertexShaderCode! : shadercode nullptr");
-			}
-			else if (codeSize <= 0)
-			{
-				QCAT_CORE_ASSERT(false, "InputLayout Of DX11 need codeSize!! : code size<=0");
-			}
-			return new DX11_InputLayout(elements,vertexShaderCode,codeSize);
+			
+			return new DX11_InputLayout(elements, std::dynamic_pointer_cast<DXShader>(vertexShader));
 			break;
 
 		}
