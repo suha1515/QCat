@@ -1,7 +1,6 @@
 #include "qcpch.h"
 #include "OpenGLTexture.h"
 
-#include <glad/glad.h> 
 #include "stb_image.h"
 
 namespace QCat
@@ -28,6 +27,8 @@ namespace QCat
 			dataformat = GL_RGB;
 			break;
 		}
+		m_InternalFormat = imageformat;
+		m_DataFormat = dataformat;
 		QCAT_CORE_ASSERT(imageformat & dataformat, "Format is not supported!");
 
 		// Texture Create
@@ -45,9 +46,28 @@ namespace QCat
 		stbi_image_free(data);
 
 	}
+	OpenGLTexture2D::OpenGLTexture2D(unsigned int width, unsigned int height)
+		:m_width(width),m_height(height)
+	{
+		m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
+
+		// Texture Create
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
+		glTextureStorage2D(m_renderID, 1, m_InternalFormat, m_width, m_height);
+
+		// Texture Filtering
+		glTextureParameteri(m_renderID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_renderID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		glDeleteTextures(1, &m_renderID);
+	}
+	void OpenGLTexture2D::SetData(void* pData, unsigned int size)
+	{
+		unsigned int bpc = m_DataFormat == GL_RGBA ? 4 : 3;
+		QCAT_CORE_ASSERT(size == m_width * m_height * bpc,"Data must be entire texture!");
+		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_DataFormat, GL_UNSIGNED_BYTE, pData);
 	}
 	void OpenGLTexture2D::Bind(unsigned int slot) const
 	{
