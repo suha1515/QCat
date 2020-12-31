@@ -166,6 +166,15 @@ namespace QCat
 	}
 	void DXShader::SetInt(const std::string& name, int value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
+		UpdateConstantBuffer(name, &value);
+	}
+	void DXShader::SetFloat(const std::string& name, const float& value)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		UpdateConstantBuffer(name, &value);
 	}
 	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
@@ -233,8 +242,10 @@ namespace QCat
 	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const void* pdata)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		UpdateVertexConstantBuffer(uniformname, pdata);
+		bool succeed = false;
+		succeed = UpdateVertexConstantBuffer(uniformname, pdata);
+		if (succeed)
+			return;
 		UpdatePixelConstantBuffer(uniformname, pdata);
 	}
 	bool DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
