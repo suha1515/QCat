@@ -19,7 +19,6 @@ namespace QCat
 		virtual void OnDetach()	override;
 		virtual void OnEvent(Event& event) override;
 
-		virtual void OnImGuiRender() override;
 		void OnBegin();
 		void OnEnd();
 	private:

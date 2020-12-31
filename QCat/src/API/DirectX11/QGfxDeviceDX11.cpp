@@ -33,6 +33,8 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::Initialize(HWND hwnd, int width, int height,bool fullscreen)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		this->width = width;
 		this->height = height;
 		UINT createDeviceFlags = 0;
@@ -277,6 +279,8 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::EndFrame()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		swapchain->Present(1u,0);
 	}
 	void QGfxDeviceDX11::CleanRenderTarget()

@@ -54,6 +54,7 @@ namespace QCat
 	//}
 	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromNative(const std::string& name, const std::string& src)
 	{
+		QCAT_PROFILE_FUNCTION();
 		//auto lastUnderbar = name.find_last_of('_');
 		//std::string type = name.substr(lastUnderbar + 1, std::string::npos);
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
@@ -62,23 +63,29 @@ namespace QCat
 	}
 	Ref<DX11PixelShader> DXShader::CreatePixelShaderFromNative(const std::string& name, const std::string& src)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 		pBlob = Compile(DXshaderType::PS, src);
 		return std::make_shared<DX11PixelShader>(name, pBlob);
 	}
 	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromFile(const std::string& path)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		const std::string name = GetShaderName(path);
 		return std::make_shared<DX11VertexShader>(name, path);
 	}
 	Ref<DX11PixelShader> DXShader::CreatePixelShaderFromFile(const std::string& path)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		auto name = GetShaderName(path);
 		return std::make_shared<DX11PixelShader>(name, path);
 	}
 	Microsoft::WRL::ComPtr<ID3DBlob> DXShader::Compile(const DXshaderType& type, const std::string& src)
 	{
-		{
+		QCAT_PROFILE_FUNCTION();
 			char* errormsg = nullptr;
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 			switch (type)
@@ -114,18 +121,21 @@ namespace QCat
 			}
 			QCAT_CORE_ASSERT(false, "Compile Faile!");
 			return pBlob;
-		}
 	}
 
 	DXShader::DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
 		:m_name(name)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		pvs = CreateVertexShaderFromFile(vertexFile);
 		pps = CreatePixelShaderFromFile(pixelFile);
 	}
 	DXShader::DXShader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc, bool compile)
 		: m_name(name)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		if (compile)
 		{
 			pvs = CreateVertexShaderFromNative(vertexName, vertexSrc);
@@ -142,11 +152,15 @@ namespace QCat
 	}
 	void DXShader::Bind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		pvs->Bind();
 		pps->Bind();
 	}
 	void DXShader::UnBind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		pvs->UnBind();
 		pps->UnBind();
 	}
@@ -155,30 +169,44 @@ namespace QCat
 	}
 	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateConstantBuffer(name, &value);
 	}
 	void DXShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateConstantBuffer(name, &value);
 	}
 	void DXShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateConstantBuffer(name, &value);
 	}
 	void DXShader::SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateConstantBuffer(uniformname, valuename, &value);
 	}
 	void DXShader::SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateConstantBuffer(uniformname, valuename, &value);
 	}
 	void DXShader::SetMat4u(const std::string& uniformname, const std::string& valuename, const glm::mat4& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateConstantBuffer(uniformname, valuename, &value);
 	}
 	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		bool suceed = true;
 		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(uniformname);
 		if (constantbuf)
@@ -204,11 +232,15 @@ namespace QCat
 	}
 	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const void* pdata)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UpdateVertexConstantBuffer(uniformname, pdata);
 		UpdatePixelConstantBuffer(uniformname, pdata);
 	}
 	bool DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(name);
 		if (constantbuf)
 		{
@@ -219,6 +251,8 @@ namespace QCat
 	}
 	bool DXShader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		Ref<DX11ConstantBuffer>& constantbuf = pps->GetConstantBuffer(name);
 		if (constantbuf)
 		{
@@ -234,6 +268,8 @@ namespace QCat
 	}
 	DX11VertexShader::DX11VertexShader(const std::string& name, const std::string& path)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		type = DXshaderType::VS;
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
@@ -256,6 +292,8 @@ namespace QCat
 	}
 	DX11VertexShader::DX11VertexShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		type = DXshaderType::VS;
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
@@ -292,6 +330,8 @@ namespace QCat
 	}
 	DX11PixelShader::DX11PixelShader(const std::string& name, const std::string& path)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		type = DXshaderType::PS;
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
@@ -305,6 +345,8 @@ namespace QCat
 	}
 	DX11PixelShader::DX11PixelShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		type = DXshaderType::PS;
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
@@ -330,6 +372,8 @@ namespace QCat
 
 	void DX11Shader::MakeBufferElement()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		//======= Make Shader Element Buffer=========
 		D3D11_SHADER_DESC desc;
 		pReflector->GetDesc(&desc);
@@ -379,6 +423,8 @@ namespace QCat
 
 	void DX11Shader::AddConstantBuffer(const std::string& name, Ref<DX11ConstantBuffer>& pConstantBuffer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		if (m_ConstantBuffers.size() > 15)
 		{
 			std::string error;
@@ -395,6 +441,8 @@ namespace QCat
 
 	Ref<DX11ConstantBuffer> DX11Shader::GetConstantBuffer(const std::string name)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		auto& iter = m_ConstantBuffers.find(name);
 		if (iter == m_ConstantBuffers.end())
 		{

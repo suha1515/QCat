@@ -18,6 +18,8 @@ namespace QCat
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		std::string source = ReadFile(filepath);
 		auto shaderSources = PreProcess(source);
 		Compile(shaderSources);
@@ -32,6 +34,8 @@ namespace QCat
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& pixelSrc)
 		:m_name(name)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		std::unordered_map<GLenum, std::string> sources;
 		sources[GL_VERTEX_SHADER] = vertexSrc;
 		sources[GL_FRAGMENT_SHADER] = pixelSrc;
@@ -39,11 +43,15 @@ namespace QCat
 	}
 	OpenGLShader::~OpenGLShader()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glDeleteProgram(m_renderID);
 	}
 	// Read from Shader fild .glsl
 	std::string OpenGLShader::ReadFile(const std::string& filepath)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		std::string result;
 		// ios::in means read mode, ios::binary means it will read data as binary
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
@@ -67,6 +75,8 @@ namespace QCat
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		std::unordered_map<GLenum, std::string> shaderSources;
 
 		// To specify type find '#type' in file, and get position of that string
@@ -98,6 +108,8 @@ namespace QCat
 
 	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		GLuint program = glCreateProgram();
 		QCAT_CORE_ASSERT(shaderSources.size() <= 2, "we only support 2 shaders");
 		std::array<GLenum,2> glShaderIDs;
@@ -168,26 +180,38 @@ namespace QCat
 
 	void OpenGLShader::Bind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glUseProgram(m_renderID);
 	}
 	void OpenGLShader::UnBind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glUseProgram(0);
 	}
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UploadUniformInt(name, value);
 	}
 	void OpenGLShader::SetFloat3(const std::string& name,const glm::vec3& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UploadUniformFloat3(name, value);
 	}
 	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UploadUniformFloat4(name, value);
 	}
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		UploadUniformMat4(name, value);
 	}
 	void OpenGLShader::SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value)

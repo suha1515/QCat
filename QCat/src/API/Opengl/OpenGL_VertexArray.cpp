@@ -7,22 +7,32 @@ namespace QCat
 {
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glCreateVertexArrays(1, &m_rendererID);
 	}
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glDeleteVertexArrays(1, &m_rendererID);
 	}
 	void OpenGLVertexArray::Bind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glBindVertexArray(m_rendererID);
 	}
 	void OpenGLVertexArray::UnBind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glBindVertexArray(0);
 	}
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glBindVertexArray(m_rendererID);
 		vertexBuffer->Bind();
 		vertexBuffer->GetLayout()->Bind();
@@ -31,6 +41,8 @@ namespace QCat
 	}
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glBindVertexArray(m_rendererID);
 		indexBuffer->Bind();
 

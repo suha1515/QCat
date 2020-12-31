@@ -39,6 +39,7 @@ namespace QCat
 	}
 	void QCatOpengl::Initialize()
 	{
+		QCAT_PROFILE_FUNCTION();
 		HWND fakeWND = CreateWindow(
 			"QCat Engine", "QCat Engine",		 // window class, title
 			WS_CLIPSIBLINGS | WS_CLIPCHILDREN,	 // style
@@ -165,6 +166,7 @@ namespace QCat
 	}
 	void QCatOpengl::End()
 	{
+		QCAT_PROFILE_FUNCTION();
 		SwapBuffers(dc);
 	}
 }

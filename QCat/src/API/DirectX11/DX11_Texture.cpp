@@ -6,6 +6,8 @@ namespace QCat
 	DX11Texture2D::DX11Texture2D(unsigned int width, unsigned int height)
 		:m_width(width),m_height(height)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		// Texture Description
 		D3D11_TEXTURE2D_DESC textureDesc = {};
@@ -40,6 +42,8 @@ namespace QCat
 	}
 	DX11Texture2D::DX11Texture2D(const std::string& path)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		int width, height, channels;
 		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		QCAT_CORE_ASSERT(data, "Failed to load Image!");
@@ -86,12 +90,16 @@ namespace QCat
 	}
 	void DX11Texture2D::SetData(void* data, unsigned int size)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		unsigned int bpc = m_dataFormat == DXGI_FORMAT_R8G8B8A8_UNORM ? 4 : 3;
 		QCAT_CORE_ASSERT(size == m_width * m_height * bpc, "Data must be entire texture!");
 		QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, size * sizeof(unsigned int), 0u);
 	}
 	void DX11Texture2D::Bind(unsigned int slot) const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
 	}
 }

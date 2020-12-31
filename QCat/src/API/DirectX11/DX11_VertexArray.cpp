@@ -5,12 +5,16 @@ namespace QCat
 {
 	DX11VertexArray::DX11VertexArray()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 	}
 	DX11VertexArray::~DX11VertexArray()
 	{
 	}
 	void DX11VertexArray::Bind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		for (auto& ref : m_vertexBuffers)
 			ref->Bind();
 
@@ -21,10 +25,14 @@ namespace QCat
 	}
 	void DX11VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_vertexBuffers.push_back(vertexBuffer);
 	}
 	void DX11VertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_indexBuffer = indexBuffer;
 	}
 }

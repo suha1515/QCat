@@ -14,6 +14,8 @@ namespace QCat
 	}
 	void DX11RenderAPI::Init()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		QGfxDeviceDX11* gfx = QGfxDeviceDX11::GetInstance();
 		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;

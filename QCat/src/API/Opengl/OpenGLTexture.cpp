@@ -8,9 +8,16 @@ namespace QCat
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		:m_path(path)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		stbi_uc* data = nullptr;
+		{
+			QCAT_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
+			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		}
+		
 		QCAT_CORE_ASSERT(data, "Failed to load Image!");
 		m_width = width;
 		m_height = height;
@@ -49,6 +56,8 @@ namespace QCat
 	OpenGLTexture2D::OpenGLTexture2D(unsigned int width, unsigned int height)
 		:m_width(width),m_height(height)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
 
 		// Texture Create
@@ -61,16 +70,22 @@ namespace QCat
 	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glDeleteTextures(1, &m_renderID);
 	}
 	void OpenGLTexture2D::SetData(void* pData, unsigned int size)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		unsigned int bpc = m_DataFormat == GL_RGBA ? 4 : 3;
 		QCAT_CORE_ASSERT(size == m_width * m_height * bpc,"Data must be entire texture!");
 		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_DataFormat, GL_UNSIGNED_BYTE, pData);
 	}
 	void OpenGLTexture2D::Bind(unsigned int slot) const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		// 1st parameter is for slot
 		glBindTextureUnit(slot, m_renderID);
 	}

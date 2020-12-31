@@ -21,7 +21,6 @@ private:
 	QCat::Ref<QCat::VertexArray> m_SquareVA;
 
 	glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
-	
 
 	QCat::Ref<QCat::VertexBuffer> m_VertexBuffer;
 	QCat::Ref<QCat::IndexBuffer> m_IndexBuffer;

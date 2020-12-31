@@ -18,12 +18,13 @@ namespace QCat
 		int width = props.Width;
 		int height = props.Height;
 		const char* title = props.Title.c_str();
-		return new WindowsWindow(width,height,title);
+		return new WindowsWindow(width, height, title);
 	}
 
 	WindowsWindow::WindowsWindow(int width, int height, const char* pWndName)
 		:wndClassName(pWndName), wndName(pWndName), width(width), height(height), windowOpen(true)
 	{
+		QCAT_PROFILE_FUNCTION();
 		Window::m_data.Height = height;
 		Window::m_data.Width = width;
 		Window::m_data.Title = pWndName;
@@ -47,21 +48,25 @@ namespace QCat
 
 		// 윈도우 사이즈를 기준으로하여 클라이언트 영역을 계산한다.
 		RECT wr;
+		//현재 적용된 스타일을 참고하여 RECT 로 새로적용된 크기를 계산한다.
+
 		wr.left = 0;
 		wr.right = width + wr.left;
 		wr.top = 0;
 		wr.bottom = height + wr.top;
-		//현재 적용된 스타일을 참고하여 RECT 로 새로적용된 크기를 계산한다.
 		if ((AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE) == 0))
 		{
-			
+
 		}
 		//윈도우 생성
-		hWnd = CreateWindow(wndClassName, wndName,
-			WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
-			nullptr, nullptr, hInstance, this
-		);
+		{
+			QCAT_PROFILE_SCOPE("CreateWindow");
+			hWnd = CreateWindow(wndClassName, wndName,
+				WS_OVERLAPPEDWINDOW,
+				CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
+				nullptr, nullptr, hInstance, this
+			);
+		}
 		// 에러체크
 		if (hWnd == nullptr)
 		{
@@ -88,11 +93,12 @@ namespace QCat
 		//장치등록
 		if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE)
 		{
-		
+
 		}
 	}
 	WindowsWindow::~WindowsWindow()
 	{
+		QCAT_PROFILE_FUNCTION();
 		// DLL의 경우 꼭 등록취소를 해야한다.
 		UnregisterClass(wndClassName, hInstance);
 		// 핸들을 파괴한다.
@@ -105,7 +111,7 @@ namespace QCat
 	LRESULT WindowsWindow::MsgSetUp(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 	{
 		// 초기 윈도우가 생성될때
-		if (msg == WM_NCCREATE )
+		if (msg == WM_NCCREATE)
 		{
 			// CreateWindow 함수에서 전달한 마지막 파라매터 정보를 사용하기위해 형변환을 한다.
 			const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
@@ -141,7 +147,7 @@ namespace QCat
 			PostQuitMessage(0);
 			break;
 		}
-			// 윈도우 포커스를 잃었을때
+		// 윈도우 포커스를 잃었을때
 		case WM_KILLFOCUS:
 			break;
 		case WM_SIZE:
@@ -160,8 +166,8 @@ namespace QCat
 			}
 			break;
 		}
-			/************************	키보드 메시지	************************/
-			//  WM_KEY 관련 메시지일경우 wParam에 해당 키보드의 코드가 있다.
+		/************************	키보드 메시지	************************/
+		//  WM_KEY 관련 메시지일경우 wParam에 해당 키보드의 코드가 있다.
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
 		case WM_KEYUP:
@@ -189,12 +195,12 @@ namespace QCat
 				key = extended ? VK_RMENU : VK_LMENU;
 				break;
 			}
-			const int action = keyboard.OnKeyInput(key,((lParam >> 31) & 1) ? QCAT_RELEASE : QCAT_PRESS);
-			
+			const int action = keyboard.OnKeyInput(key, ((lParam >> 31) & 1) ? QCAT_RELEASE : QCAT_PRESS);
+
 			switch (action)
 			{
-			if (m_data.EventCallback)
-			{
+				if (m_data.EventCallback)
+				{
 			case QCAT_PRESS:
 			{
 				KeyPressedEvent event(key, 0);
@@ -211,19 +217,19 @@ namespace QCat
 				KeyPressedEvent event(key, 1);
 				m_data.EventCallback(event);
 				break;
+				}
 			}
-			}	
 			break;
 		}
-			//  WM_CHAR 일경우 해당 키보드에 해당하는 문자열이 wParam에 있다.
+		//  WM_CHAR 일경우 해당 키보드에 해당하는 문자열이 wParam에 있다.
 		case WM_CHAR:
 		{
 			KeyTypedEvent event((int)wParam);
 			m_data.EventCallback(event);
 			break;
 		}
-			/*******************************************************************/
-			/************************	마우스 메시지	************************/
+		/*******************************************************************/
+		/************************	마우스 메시지	************************/
 		case WM_MOUSEMOVE:
 		{
 			const POINTS pt = MAKEPOINTS(lParam);
@@ -237,7 +243,7 @@ namespace QCat
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
 		{
-			int i,button, action;
+			int i, button, action;
 			if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP)
 				button = QCAT_MOUSE_BUTTON_LEFT;
 			else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP)
@@ -353,7 +359,7 @@ namespace QCat
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 	}
-	void WindowsWindow::SetWindowSize(unsigned int width,unsigned  int height) 
+	void WindowsWindow::SetWindowSize(unsigned int width, unsigned  int height)
 	{
 
 		this->width = width;

@@ -29,6 +29,8 @@ namespace QCat
 	}
 	void ImGuiLayer::OnAttach()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
@@ -61,6 +63,8 @@ namespace QCat
 	}
 	void ImGuiLayer::OnDetach()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 #if defined(QCAT_DX11)
 		ImGui_ImplDX11_Shutdown();
 #elif defined(QCAT_OPENGL)
@@ -69,13 +73,10 @@ namespace QCat
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
-	void ImGuiLayer::OnImGuiRender()
-	{
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
-	}
 	void ImGuiLayer::OnBegin()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 #if defined(QCAT_DX11)
 		ImGui_ImplDX11_NewFrame();
 #elif defined(QCAT_OPENGL)
@@ -86,6 +87,8 @@ namespace QCat
 	}
 	void ImGuiLayer::OnEnd()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		ImGui::Render();
 		ImGuiIO& io = ImGui::GetIO();
 #if defined(QCAT_DX11)

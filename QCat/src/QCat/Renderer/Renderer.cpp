@@ -11,8 +11,15 @@ namespace QCat
 
 	void Renderer::Init()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		RenderCommand::Init();
 		Renderer2D::Init();
+	}
+
+	void Renderer::Shutdown()
+	{
+		Renderer2D::Shutdown();
 	}
 
 	void Renderer::OnWindowResize(unsigned int width, unsigned int height)

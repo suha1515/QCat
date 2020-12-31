@@ -6,6 +6,8 @@ namespace QCat
 	DX11VertexBuffer::DX11VertexBuffer(float* vertices,unsigned int size,unsigned int stride)
 		:m_stride(stride)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		//vertex Bufferf
 		D3D11_BUFFER_DESC bd = {};
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -23,6 +25,8 @@ namespace QCat
 	}
 	void DX11VertexBuffer::Bind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		const UINT offset = 0u;
 		const UINT stride = m_pbufferLayout->GetStride();
 		QGfxDeviceDX11::GetInstance()->GetContext()->IASetVertexBuffers(0u, 1u, m_pVertexBuffer.GetAddressOf(), &stride, &offset);
@@ -35,6 +39,8 @@ namespace QCat
 	}
 	DX11IndexBuffer::DX11IndexBuffer(unsigned int* indices,unsigned int size)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_count = size;
 		D3D11_BUFFER_DESC ibd = {};
 		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -52,6 +58,8 @@ namespace QCat
 	}
 	void DX11IndexBuffer::Bind() const
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		QGfxDeviceDX11::GetInstance()->GetContext()->IASetIndexBuffer(m_pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0u);
 	}
 	void DX11IndexBuffer::UnBind() const

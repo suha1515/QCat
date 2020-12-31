@@ -13,6 +13,8 @@ namespace QCat
 	}
 	void OrthographicCameraController::OnUpdate(Timestep ts)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		if (Input::IsKeyPressed(QCAT_KEY_A))
 			m_CameraPosition.x -= m_CameraTranslationSpeed * ts;
 		else if (QCat::Input::IsKeyPressed(QCAT_KEY_D))
@@ -38,12 +40,16 @@ namespace QCat
 	}
 	void OrthographicCameraController::OnEvent(Event& e)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<MouseScrollEvent>(BIND_EVENT_FN(OrthographicCameraController::OnMouseScrolled));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OrthographicCameraController::OnWindowResized));
 	}
 	bool OrthographicCameraController::OnMouseScrolled(MouseScrollEvent& e)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_zoomLevel -=e.GetOffsetY()*0.25f;
 		m_zoomLevel = std::max(m_zoomLevel, 0.25f);
 		m_Camera.SetProjection(-m_aspectRatio * m_zoomLevel, m_aspectRatio * m_zoomLevel,-m_zoomLevel, m_zoomLevel);
@@ -51,6 +57,8 @@ namespace QCat
 	}
 	bool OrthographicCameraController::OnWindowResized(WindowResizeEvent& e)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_aspectRatio = (float)e.GetWidth()/(float)e.GetHeight();
 		m_Camera.SetProjection(-m_aspectRatio * m_zoomLevel, m_aspectRatio * m_zoomLevel, -m_zoomLevel, m_zoomLevel);
 		return false;

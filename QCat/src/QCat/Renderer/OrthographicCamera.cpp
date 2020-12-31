@@ -8,6 +8,8 @@ namespace QCat
 	OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
 		:m_ViewMatrix(1.0f),m_Position(glm::vec3(0.0f)),m_Rotation(0.0f)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		RenderAPI::API api = RenderAPI::GetAPI();
 		switch (api)
 		{
@@ -33,6 +35,8 @@ namespace QCat
 	}
 	void OrthographicCamera::SetProjection(float left, float right, float bottom, float top)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		RenderAPI::API api = RenderAPI::GetAPI();
 		switch (api)
 		{
@@ -43,6 +47,8 @@ namespace QCat
 	}
 	void OrthographicCamera::RecalculateViewMatrix()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		RenderAPI::API api  = RenderAPI::GetAPI();
 		switch (api)
 		{

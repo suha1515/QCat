@@ -19,6 +19,7 @@ namespace QCat
 	static Renderer2DStorage* s_data;
 	void Renderer2D::Init()
 	{
+		QCAT_PROFILE_FUNCTION();
 		int bias = 0;
 #if defined(QCAT_OPENGL)
 		//bias = -1;
@@ -63,10 +64,14 @@ namespace QCat
 	}
 	void Renderer2D::Shutdown()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		delete s_data;
 	}
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{	
+		QCAT_PROFILE_FUNCTION();
+
 		s_data->TextureShader->Bind();
 #if defined(QCAT_DX11)
 		s_data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
@@ -78,6 +83,8 @@ namespace QCat
 	}
 	void Renderer2D::EndScene()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 	}
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
@@ -85,6 +92,8 @@ namespace QCat
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x,size.y,1.0f });
 #if defined(QCAT_DX11)
 		s_data->TextureShader->SetFloat4("u_Color", color);
@@ -100,13 +109,16 @@ namespace QCat
 	}
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture)
 	{
+		
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture);
 	}
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+		s_data->TextureShader->SetFloat4("u_Color", glm::vec4(1.0f) /*{ 0.2f,0.3f,0.8f,0.5f }*/);
 		s_data->TextureShader->SetMat4("u_Transform", transform);
-		s_data->TextureShader->SetFloat4("u_Color",{ 0.2f,0.3f,0.8f,0.5f });
 		texture->Bind();
 
 		s_data->QuadVertexArray->Bind();

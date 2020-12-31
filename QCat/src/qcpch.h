@@ -23,6 +23,8 @@
 #include "QCatDefines.h"
 #include "QCat/Core/KeyCode.h"
 #include "QCat/Core/Log.h"
+#include "QCat/Debug/Instrumentor.h"
+
 
 #include<glm/glm.hpp>
 #include<DirectXMath.h>

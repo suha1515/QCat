@@ -19,6 +19,8 @@ namespace QCat
 	Application* Application::instance = nullptr;
 	Application::Application()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		QCAT_CORE_ASSERT(!instance, "Application already exsists! ");
 		instance = this;
 
@@ -41,12 +43,18 @@ namespace QCat
 
 	Application::~Application()
 	{
-	
+		QCAT_PROFILE_FUNCTION();
+
+		Renderer::Shutdown();
 	}
 	void Application::Run()
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		while (m_Running)
 		{
+			QCAT_PROFILE_SCOPE("RunLoop");
+
 			Timestep timestep = timer.Mark();
 			m_window->OnMessageUpdate();
 			if (m_Running)
@@ -54,13 +62,20 @@ namespace QCat
 				m_window->OnBegin();
 				if (!m_minimized)
 				{
-					for (Layer* layer : m_layerStack)
-						layer->OnUpdate(timestep);
+					{
+						QCAT_PROFILE_SCOPE("LayerStack OnUpdate");
+						for (Layer* layer : m_layerStack)
+							layer->OnUpdate(timestep);
+					}
 					m_ImguiLayer->OnBegin();
-					for (Layer* layer : m_layerStack)
-						layer->OnImGuiRender();
+					{
+						QCAT_PROFILE_SCOPE("LayerStack OnImguiRender");
+						for (Layer* layer : m_layerStack)
+							layer->OnImGuiRender();
+					}
+					
 					m_ImguiLayer->OnEnd();
-				}
+				}	
 #if defined(QCAT_DX11)
 		
 #elif defined(QCAT_OPENGL)
@@ -75,6 +90,8 @@ namespace QCat
 	}
 	void Application::OnEvent(Event& e)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
@@ -89,11 +106,17 @@ namespace QCat
 	}
 	void Application::PushLayer(Layer* layer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_layerStack.PushLayer(layer);
+		layer->OnAttach();
 	}
 	void Application::PushOverlay(Layer* layer)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		m_layerStack.PushOverlay(layer);
+		layer->OnAttach();
 	}
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
@@ -103,6 +126,8 @@ namespace QCat
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
+		QCAT_PROFILE_FUNCTION();
+
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			m_minimized = true;

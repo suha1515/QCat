@@ -120,6 +120,8 @@ namespace QCat
 		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot ,const void* data,unsigned int size)
 			:slot(slot)
 		{
+			QCAT_PROFILE_FUNCTION();
+
 			this->pgfx = &gfx;
 		
 			D3D11_BUFFER_DESC bd;
@@ -138,6 +140,8 @@ namespace QCat
 		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size)
 			:slot(slot)
 		{
+			QCAT_PROFILE_FUNCTION();
+
 			this->pgfx = &gfx;
 
 			D3D11_BUFFER_DESC bd;
@@ -153,6 +157,8 @@ namespace QCat
 		DX11ConstantBuffer(std::vector<BufferElement>& bufferElement, unsigned int slot)
 			:slot(slot), bufferElements(bufferElement)
 		{
+			QCAT_PROFILE_FUNCTION();
+
 			this->pgfx = QGfxDeviceDX11::GetInstance();
 			CalculatePadding();
 			D3D11_BUFFER_DESC bd;
@@ -167,6 +173,8 @@ namespace QCat
 		}
 		void UpdateData(QGfxDeviceDX11& gfx,const void* pdata)
 		{
+			QCAT_PROFILE_FUNCTION();
+
 			gfx.GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, pdata, 0u, 0u);
 			memcpy(data.data(), pdata, data.size());
 		}
@@ -211,6 +219,8 @@ namespace QCat
 		using DX11ConstantBuffer::DX11ConstantBuffer;
 		virtual void Bind() override
 		{
+			QCAT_PROFILE_FUNCTION();
+
 			pgfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
@@ -220,6 +230,8 @@ namespace QCat
 		using DX11ConstantBuffer::DX11ConstantBuffer;
 		virtual void Bind() override
 		{
+			QCAT_PROFILE_FUNCTION();
+
 			pgfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
