@@ -53,14 +53,16 @@ namespace QCat
 	class QCAT_API DX11VertexBuffer : public VertexBuffer
 	{
 	public:
+		DX11VertexBuffer(unsigned int size);
 		DX11VertexBuffer(float* vertices, unsigned int size,unsigned int stride=0);
 		~DX11VertexBuffer(){}
 
 		virtual void Bind() const override ;
 		virtual void UnBind() const override ;
+		virtual void SetData(void* data, unsigned int size) override;
 
 		virtual const Ref<BufferLayout>& GetLayout() const override { return m_pbufferLayout; };
-		virtual void SetLayout(BufferLayout* layout) override { m_pbufferLayout.reset(layout); };
+		virtual void SetLayout(Ref<BufferLayout> layout) override { m_pbufferLayout = layout; };
 	private:
 		std::string m_tag;
 		UINT m_stride;

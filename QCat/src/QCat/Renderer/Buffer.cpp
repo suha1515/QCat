@@ -8,50 +8,40 @@
 
 namespace QCat
 {
-
-	VertexBuffer* VertexBuffer::Create(float* vertices, unsigned int size)
+	Ref<VertexBuffer> VertexBuffer::Create(unsigned int size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RenderAPI::API::None:		
-			{
-				QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
-				break;
-			}
-		case RenderAPI::API::OpenGL:	
-			{
-				return new OpenGLVertexBuffer(vertices, size);
-				break;
-			}
-		case RenderAPI::API::DirectX11:
-			return new DX11VertexBuffer(vertices,size);
-			break;
+		case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
+		case RenderAPI::API::OpenGL:	return CreateRef<OpenGLVertexBuffer>(size); break;
+		case RenderAPI::API::DirectX11: return CreateRef<DX11VertexBuffer>(size); break;
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
-	IndexBuffer* IndexBuffer::Create(unsigned int* indices, unsigned int size)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned int size)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RenderAPI::API::None:		
-			{
-				QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr;
-				break;
-			}
-		case RenderAPI::API::OpenGL:		
-			{
-				return new OpenGLIndexBuffer(indices, size);
-				break;
-			}
-		case RenderAPI::API::DirectX11:
-				return new DX11IndexBuffer(indices,size);
-				break;
+			case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
+			case RenderAPI::API::OpenGL:	return CreateRef<OpenGLVertexBuffer>(vertices, size); break;
+			case RenderAPI::API::DirectX11: return  CreateRef<DX11VertexBuffer>(vertices, size); break;
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
-	BufferLayout* BufferLayout::Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader)
+	Ref<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int size)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
+			case RenderAPI::API::OpenGL:	return  CreateRef<OpenGLIndexBuffer>(indices, size); break;
+			case RenderAPI::API::DirectX11: return CreateRef<DX11IndexBuffer>(indices, size); break;
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+	Ref<BufferLayout> BufferLayout::Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -62,12 +52,12 @@ namespace QCat
 		}
 		case RenderAPI::API::OpenGL:
 		{
-			return new OpenGL_InputLayout(elements);
+			return CreateRef<OpenGL_InputLayout>(elements);
 			break;
 		}
 		case RenderAPI::API::DirectX11:
 			
-			return new DX11_InputLayout(elements, std::dynamic_pointer_cast<DXShader>(vertexShader));
+			return CreateRef<DX11_InputLayout>(elements, std::dynamic_pointer_cast<DXShader>(vertexShader));
 			break;
 
 		}

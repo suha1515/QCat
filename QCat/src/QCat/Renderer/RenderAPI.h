@@ -17,8 +17,7 @@ namespace QCat
 		virtual void SetClearColor(const DirectX::XMFLOAT4& vec) {};
 		virtual void Clear() = 0;
 
-		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) {};
-		virtual void DrawIndexed(const unsigned int indexCount) {};
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0)=0;
 
 
 		inline static API GetAPI() { return s_api; }

@@ -22,13 +22,9 @@ namespace QCat
 		{
 			s_renderAPI->Clear();
 		}
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray)
+		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray,unsigned int count =0)
 		{
-			s_renderAPI->DrawIndexed(vertexArray);
-		}
-		inline static void DrawIndexed(const unsigned int indexCount)
-		{
-			s_renderAPI->DrawIndexed(indexCount);
+			s_renderAPI->DrawIndexed(vertexArray, count);
 		}
 		
 	private:

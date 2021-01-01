@@ -6,14 +6,16 @@ namespace QCat
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
+		OpenGLVertexBuffer(unsigned int size);
 		OpenGLVertexBuffer(float* vertices, unsigned int size);
 		virtual ~OpenGLVertexBuffer();
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
+		virtual void SetData(void* data, unsigned int size) override;
 
 		virtual const Ref<BufferLayout>& GetLayout() const {return m_pBufferLayout;}
-		virtual void SetLayout(BufferLayout* layout) { m_pBufferLayout.reset(layout); }
+		virtual void SetLayout(Ref<BufferLayout> layout) { m_pBufferLayout = layout; }
  	private:
 		unsigned int m_renderID;
 		Ref<BufferLayout> m_pBufferLayout;

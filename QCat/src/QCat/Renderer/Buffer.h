@@ -81,7 +81,7 @@ namespace QCat
 		std::vector<BufferElement>::const_iterator begin() const { return m_elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return m_elements.end(); }
 
-		static BufferLayout* Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader = nullptr);
+		static Ref<BufferLayout> Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader = nullptr);
 	protected:
 		void CalculateOffsetAndStride()
 		{
@@ -104,12 +104,17 @@ namespace QCat
 		virtual ~VertexBuffer() {}
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
+		virtual void SetData(void* data, unsigned int size) = 0;
 
 		virtual const Ref<BufferLayout>& GetLayout() const = 0;
-		virtual void SetLayout(BufferLayout* layout) = 0;
+		virtual void SetLayout(Ref<BufferLayout> layout) = 0;
 
-		static VertexBuffer* Create(float* vertices, unsigned int size);
+
+		static Ref<VertexBuffer> Create(unsigned int size);
+		static Ref<VertexBuffer> Create(float* vertices, unsigned int size);
+
 	};
+	// Currently QCat Only supoort 32-bit index buffer
 	class IndexBuffer
 	{
 	public:
@@ -119,6 +124,6 @@ namespace QCat
 		virtual void UnBind() const = 0;
 
 		virtual unsigned int GetCount() const = 0;
-		static IndexBuffer* Create(unsigned int* indices, unsigned int size=0);
+		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int size=0);
 	};
 }

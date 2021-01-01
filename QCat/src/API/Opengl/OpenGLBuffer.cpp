@@ -5,6 +5,15 @@
 
 namespace QCat
 {
+	//VertexBuffer without initial data
+	OpenGLVertexBuffer::OpenGLVertexBuffer(unsigned int size)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		glCreateBuffers(1, &m_renderID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_renderID);
+		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	}
 	//VertexBuffer//
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned int size)
 	{
@@ -31,6 +40,11 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	void OpenGLVertexBuffer::SetData(void* data, unsigned int size)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, m_renderID);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 	}
 	//IndexBuffer//
 	OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, unsigned int count)

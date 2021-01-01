@@ -164,9 +164,9 @@ public:
 		};
 
 		QCat::Ref<QCat::VertexBuffer> vertexBuffer;
-		vertexBuffer.reset(QCat::VertexBuffer::Create(vertices, sizeof(vertices)));
+		vertexBuffer = QCat::VertexBuffer::Create(vertices, sizeof(vertices));
 
-		QCat::BufferLayout* buflayout = QCat::BufferLayout::Create(
+		QCat::Ref<QCat::BufferLayout> buflayout = QCat::BufferLayout::Create(
 			{ { QCat::ShaderDataType::Float3, "a_Position" },
 				{ QCat::ShaderDataType::Float4, "a_Color" } }
 		);
@@ -175,7 +175,7 @@ public:
 
 		unsigned int indices[3] = { 0,1,2 };
 		QCat::Ref<QCat::IndexBuffer> indexbuffer;
-		indexbuffer.reset(QCat::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
+		indexbuffer = (QCat::IndexBuffer::Create(indices, sizeof(indices) / sizeof(unsigned int)));
 		m_VertexArray->SetIndexBuffer(indexbuffer);
 
 
@@ -188,7 +188,7 @@ public:
 		};
 
 		QCat::Ref<QCat::VertexBuffer> squareVB;
-		squareVB.reset(QCat::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+		squareVB = (QCat::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 		squareVB->SetLayout(QCat::BufferLayout::Create({ 
 			{ QCat::ShaderDataType::Float3, "a_Position" },
 			{ QCat::ShaderDataType::Float2, "a_TexCoord" }
@@ -197,7 +197,7 @@ public:
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
 		QCat::Ref<QCat::IndexBuffer> squareIB;
-		squareIB.reset(QCat::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
+		squareIB = (QCat::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
 		vertexSrc = R"(

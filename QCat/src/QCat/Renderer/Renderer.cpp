@@ -49,6 +49,6 @@ namespace QCat
 		//std::dynamic_pointer_cast<DXShader>(shader)->UpdateVertexConstantBuffer("u_ViewProjection", &m_SceneData->ViewProjectionMatrix);
 		//std::dynamic_pointer_cast<DXShader>(shader)->UpdateVertexConstantBuffer("u_Transform", &transform);
 
-		RenderCommand::DrawIndexed(indexCount);
+		//RenderCommand::DrawIndexed(indexCount);
 	}
 }

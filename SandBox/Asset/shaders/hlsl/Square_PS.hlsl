@@ -1,6 +1,6 @@
 cbuffer u_Color : register(b0)
 {
-	float4 color;
+	float4 u_color;
 }
 cbuffer u_TilingFactor : register(b1)
 {
@@ -8,7 +8,8 @@ cbuffer u_TilingFactor : register(b1)
 }
 Texture2D tex : register(t0);
 SamplerState splr : register(s0);
-float4 main(float2 tc: Texcoord) : SV_TARGET
+float4 main(float2 tc: Texcoord, float4 color : Color) : SV_TARGET
 {
-	return tex.Sample(splr,tc * factor)* color;
+	//return tex.Sample(splr,tc * factor)* color;
+	return color;
 }
