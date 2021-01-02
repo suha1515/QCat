@@ -14,6 +14,8 @@ namespace QCat
 		virtual void SetData(void* data, unsigned int size) = 0;
 
 		virtual void Bind(unsigned int slot =0) const = 0;
+
+		virtual bool operator==(const Texture& other) const = 0;
 	};
 
 	class Texture2D : public Texture

@@ -170,6 +170,9 @@ namespace QCat
 
 		UpdateConstantBuffer(name, &value);
 	}
+	void DXShader::SetIntArray(const std::string& name, int* values, unsigned int count)
+	{
+	}
 	void DXShader::SetFloat(const std::string& name, const float& value)
 	{
 		QCAT_PROFILE_FUNCTION();

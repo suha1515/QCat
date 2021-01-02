@@ -44,17 +44,18 @@ void Sandbox2D::OnUpdate(QCat::Timestep ts)
 		QCAT_PROFILE_SCOPE("Renderer Draw");
 		QCat::Renderer2D::BeginScene(m_CameraController.GetCamera());
 #if defined(QCAT_DX11)
-		//QCat::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.999f }, { 10.0f, 10.0f }, m_Texture,10.0f);
-		//QCat::Renderer2D::DrawRotatedQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, glm::radians(-45.0f), { 0.8f,0.2f,0.3f,1.0f });
-		//QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
+		QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
+		QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
+		QCat::Renderer2D::DrawQuad({ -5.0f, -5.0f, 0.2f }, { 10.0f, 10.0f }, m_Texture, 10.0f);
+		QCat::Renderer2D::DrawQuad({ -0.5f, -0.5f, 0.1f }, { 1.0f, 1.0f }, m_Texture, 20.0f);
 #elif defined(QCAT_OPENGL)
 		//QCat::Renderer2D::DrawQuad({ 0.0f, 0.0f,0.1f }, { 10.0f, 10.0f }, m_Texture,10.0f);
 		//QCat::Renderer2D::DrawRotatedQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, glm::radians(-45.0f), { 0.8f,0.2f,0.3f,1.0f });
 		QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
 		QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
+		QCat::Renderer2D::DrawQuad({ -5.0f, -5.0f, 0.2f }, { 10.0f, 10.0f }, m_Texture, 10.0f);
+		QCat::Renderer2D::DrawQuad({ -0.5f, -0.5f, 0.1f }, { 1.0f, 1.0f }, m_Texture, 20.0f);
 #endif
-		QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
-		QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
 		QCat::Renderer2D::EndScene();
 	}
 

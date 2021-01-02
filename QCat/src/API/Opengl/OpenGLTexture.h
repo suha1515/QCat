@@ -17,6 +17,11 @@ namespace QCat
 		virtual void SetData(void* pData, unsigned int size) override;
 
 		virtual void Bind(unsigned int slot=0) const override;
+
+		virtual bool operator==(const Texture& other) const override
+		{
+			return m_renderID == ((OpenGLTexture2D&)other).m_renderID;
+		}
 	private:
 		std::string m_path;
 		unsigned int m_width,m_height;
