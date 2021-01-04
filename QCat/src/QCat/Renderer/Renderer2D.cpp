@@ -22,9 +22,9 @@ namespace QCat
 
 	struct Renderer2DData
 	{
-		const unsigned int MaxQuads = 10000;
-		const unsigned int MaxVertices = MaxQuads * 4;
-		const unsigned int MaxIndices = MaxQuads * 6;
+		static const unsigned int MaxQuads = 20000;
+		static const unsigned int MaxVertices = MaxQuads * 4;
+		static const unsigned int MaxIndices = MaxQuads * 6;
 		static const unsigned int MaxTextureSlot = 32; // TODO : textureSlot depends on which device use
 
 		Ref<VertexArray>  QuadVertexArray;
@@ -40,6 +40,8 @@ namespace QCat
 		unsigned int TextureSlotIndex = 1;
 
 		glm::vec4 QuadVertexPosition[4];
+
+		Renderer2D::Statistics Stats;
 	};
 	static Renderer2DData s_data;
 
@@ -159,7 +161,20 @@ namespace QCat
 		for (uint32_t i = 0; i < s_data.TextureSlotIndex; ++i)
 			s_data.TextureSlots[i]->Bind(i);
 		RenderCommand::DrawIndexed(s_data.QuadVertexArray,s_data.QuadIndexCount);
+
+		s_data.Stats.DrawCalls++;
 	}
+
+	 void Renderer2D::FlushAndReset()
+	{
+		 EndScene();
+
+		s_data.QuadIndexCount = 0;
+		s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
+
+		s_data.TextureSlotIndex = 1;
+	}
+
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		DrawQuad({ position.x,position.y,0.0f }, size, color);
@@ -167,6 +182,11 @@ namespace QCat
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		{
+			FlushAndReset();
+		}
 
 		const float texIndex = 0.0f; //White Texture
 		const float tilingFactor = 1.0f;
@@ -205,6 +225,7 @@ namespace QCat
 		s_data.QuadIndexCount += 6;
 		s_data.QuadVertexArray->Bind();
 
+		s_data.Stats.QuadCount++;
 	}
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture,  float tilingFactor, const glm::vec4& tintColor )
 	{
@@ -213,6 +234,11 @@ namespace QCat
 	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture,  float tilingFactor, const glm::vec4& tintColor)
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		{
+			FlushAndReset();
+		}
 
 		constexpr glm::vec4 color = { 1.0f,1.0f,1.0f,1.0f };
 
@@ -266,6 +292,8 @@ namespace QCat
 
 		s_data.QuadIndexCount += 6;
 		s_data.QuadVertexArray->Bind();
+
+		s_data.Stats.QuadCount++;
 	}
 	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
@@ -274,6 +302,11 @@ namespace QCat
 	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		{
+			FlushAndReset();
+		}
 
 		float textureIndex = 0.f;
 		float tilingFactor = 1.0f;
@@ -312,6 +345,8 @@ namespace QCat
 
 		s_data.QuadIndexCount += 6;
 		s_data.QuadVertexArray->Bind();
+
+		s_data.Stats.QuadCount++;
 	}
 	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
 	{
@@ -320,6 +355,11 @@ namespace QCat
 	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		{
+			FlushAndReset();
+		}
 
 		constexpr glm::vec4 color = { 1.0f,1.0f,1.0f,1.0f };
 
@@ -374,6 +414,16 @@ namespace QCat
 
 		s_data.QuadIndexCount += 6;
 		s_data.QuadVertexArray->Bind();
+
+		s_data.Stats.QuadCount++;
+	}
+	Renderer2D::Statistics Renderer2D::GetStats()
+	{
+		return s_data.Stats;
+	}
+	void Renderer2D::ResetStats()
+	{
+		memset(&s_data.Stats, 0, sizeof(Statistics));
 	}
 }
 
