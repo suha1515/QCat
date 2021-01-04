@@ -3,6 +3,7 @@
 
 namespace QCat
 {
+
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
