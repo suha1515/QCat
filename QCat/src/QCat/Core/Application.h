@@ -27,6 +27,8 @@ namespace QCat
 
 		inline static Application& GetInstance() { return *instance; }
 		inline Window* GetWindow() { return m_window.get(); }
+
+		void Close() { m_Running = false; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);

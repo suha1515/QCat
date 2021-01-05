@@ -45,6 +45,7 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 		int width, height, channels;
+		stbi_set_flip_vertically_on_load(1);
 		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		QCAT_CORE_ASSERT(data, "Failed to load Image!");
 		m_width = width;
@@ -54,7 +55,7 @@ namespace QCat
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
-		textureDesc.MipLevels = 0;
+		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
 		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		textureDesc.SampleDesc.Count = 1;
@@ -65,15 +66,19 @@ namespace QCat
 		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
 		// Create Texture and update it
-		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
-		QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, m_width *sizeof(unsigned int), 0u);
+		D3D11_SUBRESOURCE_DATA subResource;
+		subResource.pSysMem = data;
+		subResource.SysMemPitch = textureDesc.Width * 4;
+		subResource.SysMemSlicePitch = 0;
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, &subResource, &pTexture);
+		//QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, m_width *sizeof(unsigned int), 0u);
 		
 		// Texture resource view
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MostDetailedMip = 0; // mip level
-		srvDesc.Texture2D.MipLevels = -1;
+		srvDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(

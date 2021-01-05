@@ -13,6 +13,7 @@ namespace QCat
 
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override {return m_height;}
+		virtual void*       GetTexture() const override { return (void*)m_renderID; }
 
 		virtual void SetData(void* pData, unsigned int size) override;
 
