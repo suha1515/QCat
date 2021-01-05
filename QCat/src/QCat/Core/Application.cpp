@@ -96,11 +96,11 @@ namespace QCat
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 		
-		for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
+		for (auto it = m_layerStack.rbegin(); it != m_layerStack.rend();++it)
 		{
-			(*--it)->OnEvent(e);
 			if (e.Handled)
 				break;
+			(*it)->OnEvent(e);
 		}
 		//QCAT_CORE_INFO("{0}", e);
 	}

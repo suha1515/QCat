@@ -27,7 +27,7 @@ namespace QCat
 	}
 	void OpenGLRenderAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount)
 	{
-		unsigned int count = indexCount ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+		unsigned int count = indexCount ?  indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(GL_TRIANGLES, count,GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
