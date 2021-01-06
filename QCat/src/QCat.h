@@ -26,11 +26,15 @@
 #include "QCat/Renderer/Buffer.h"
 #include "QCat/Renderer/Shader.h"
 #include "QCat/Renderer/Texture.h"
+#include "QCat/Renderer/FrameBuffer.h"
+#include "QCat/Renderer/VertexArray.h"
+#include "QCat/Renderer/OrthographicCamera.h"
+//--Renderer-----------------------------//
+//--API----------------------------------//
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Shader.h"
 #include "API/DirectX11/DX11_Buffer.h"
 #include "API/DirectX11/DX11_Blender.h"
-#include "QCat/Renderer/VertexArray.h"
+//---------------------------------------//
 
-#include "QCat/Renderer/OrthographicCamera.h"
-//--Renderer-----------------------------//
+

@@ -17,12 +17,9 @@ public:
 private:
 	//camera
 	QCat::OrthographicCameraController m_CameraController;
-	QCat::Ref<QCat::Shader> m_FlatColorShader;
-	QCat::Ref<QCat::VertexArray> m_SquareVA;
+	QCat::Ref<QCat::FrameBuffer> m_Framebuffer;
 
 	glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 
-	QCat::Ref<QCat::VertexBuffer> m_VertexBuffer;
-	QCat::Ref<QCat::IndexBuffer> m_IndexBuffer;
 	QCat::Ref<QCat::Texture2D> m_Texture;
 };

@@ -7,6 +7,8 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include "QCat/Renderer/RenderCommand.h"
+
 #include "Platform/Windows/WindowsWindow.h"
 
 #include "API/DirectX11/QGfxDeviceDX11.h"
@@ -76,7 +78,6 @@ namespace QCat
 	void ImGuiLayer::OnBegin()
 	{
 		QCAT_PROFILE_FUNCTION();
-
 #if defined(QCAT_DX11)
 		ImGui_ImplDX11_NewFrame();
 #elif defined(QCAT_OPENGL)

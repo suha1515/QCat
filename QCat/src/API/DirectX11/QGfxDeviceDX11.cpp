@@ -2,7 +2,7 @@
 #include "QGfxDeviceDX11.h"
 #include "QCat/Core/Log.h"
 
-
+#include <glm/gtc/type_ptr.hpp>
 namespace QCat {
 	QGfxDeviceDX11* QGfxDeviceDX11::Instance = nullptr;
 	void QGfxDeviceDX11::Init(void* pHandle)
@@ -127,7 +127,7 @@ namespace QCat {
 		DXGI_SWAP_CHAIN_DESC1 sd = {};
 		sd.Width = width;
 		sd.Height = height;
-		sd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.Stereo = false;
 		sd.SampleDesc.Count =  1;
 		sd.SampleDesc.Quality = 0;
@@ -271,10 +271,8 @@ namespace QCat {
 	}
 	void QGfxDeviceDX11::BeginFrame(glm::vec4& color)
 	{
-		std::array<float, 4> colorArray = { color.x, color.y,color.z, color.w};
-		immediateContext->ClearRenderTargetView(renderTargetView.Get(), colorArray.data());
-		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
-		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		SetRenderTarget();
+		Clear(color);
 		//immediateContext->OMSetDepthStencilState(pDSState.Get(), 1);
 	}
 	void QGfxDeviceDX11::EndFrame()
@@ -282,6 +280,11 @@ namespace QCat {
 		QCAT_PROFILE_FUNCTION();
 
 		swapchain->Present(1u,0);
+	}
+	void QGfxDeviceDX11::Clear(glm::vec4& color)
+	{
+		immediateContext->ClearRenderTargetView(renderTargetView.Get(), glm::value_ptr(color));
+		immediateContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 	void QGfxDeviceDX11::CleanRenderTarget()
 	{
@@ -297,6 +300,10 @@ namespace QCat {
 		swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
 		if(renderTargetView==nullptr)
 			device->CreateRenderTargetView(pBackBuffer.Get(), NULL, &renderTargetView);
+	}
+	void QGfxDeviceDX11::SetRenderTarget()
+	{
+		immediateContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 	}
 	void QGfxDeviceDX11::BlendStateEnable(bool enable)
 	{

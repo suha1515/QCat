@@ -18,6 +18,11 @@ void Sandbox2D::OnAttach()
 	QCAT_PROFILE_FUNCTION();
 
 	m_Texture = QCat::Texture2D::Create("Asset/textures/Checkerboard.png");
+
+	QCat::FrameBufferSpecification fbSpec;
+	fbSpec.Width = 1280;
+	fbSpec.Height = 720;
+	m_Framebuffer = QCat::FrameBuffer::Create(fbSpec);
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
 #endif
@@ -38,10 +43,11 @@ void Sandbox2D::OnUpdate(QCat::Timestep ts)
 	QCat::Renderer2D::ResetStats();
 	{
 		QCAT_PROFILE_SCOPE("Renderer Prep");
+	
+		m_Framebuffer->Bind();
 		QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		QCat::RenderCommand::Clear();
 	}
-	
 	{
 		QCAT_PROFILE_SCOPE("Renderer Draw");
 		QCat::Renderer2D::BeginScene(m_CameraController.GetCamera());
@@ -68,6 +74,12 @@ void Sandbox2D::OnUpdate(QCat::Timestep ts)
 			}
 		}
 		QCat::Renderer2D::EndScene();
+		//if (QCat::Input::IsKeyPressed(QCAT_KEY_SPACE))
+		//{
+		//	m_Framebuffer->SaveColorBuffer();
+		//}
+		m_Framebuffer->UnBind();
+		QCat::RenderCommand::SetDefaultFrameBuffer();
 	}
 
 }
@@ -151,7 +163,9 @@ void Sandbox2D::OnImGuiRender()
 
 	ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
 
-	ImGui::Image(m_Texture->GetTexture(), ImVec2(256.0f, 256.0f));
+	ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(1280.f,720.f));
+	//ImGui::Image(m_Texture->GetTexture(), ImVec2(256.f, 256.f));
+
 	ImGui::End();
 
 	ImGui::End();

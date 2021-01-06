@@ -14,6 +14,10 @@ namespace QCat
 		{
 			s_renderAPI->SetViewport(x, y, width, height);
 		}
+		inline static void SetDefaultFrameBuffer()
+		{
+			s_renderAPI->SetDefaultFrameBuffer();
+		}
 		inline static void SetClearColor(const glm::vec4& color)
 		{
 			s_renderAPI->SetClearColor(color);

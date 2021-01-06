@@ -1,0 +1,26 @@
+#pragma once
+#include "QCat/Core/QCatCore.h"
+
+namespace QCat
+{
+	struct FrameBufferSpecification
+	{
+		uint32_t Width,Height;
+		//FrameBufferFormat Format = ;
+		uint32_t Samples = 1;
+
+		bool SwapChainTarget = false;
+	};
+	class FrameBuffer
+	{
+	public:
+		virtual void Bind() =0;
+		virtual void UnBind()=0;
+
+		virtual void* GetColorAttachmentRendererID() const = 0;
+		virtual void SaveColorBuffer() const = 0;
+		//virtual FrameBufferSpecification& GetSpecification() = 0;
+		virtual const FrameBufferSpecification& GetSpecification() const = 0;
+		static Ref <FrameBuffer> Create(const FrameBufferSpecification& spec);
+	};
+} 

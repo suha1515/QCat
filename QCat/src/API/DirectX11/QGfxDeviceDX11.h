@@ -41,9 +41,12 @@ namespace QCat {
 
 		void BeginFrame(glm::vec4& color);
 		void EndFrame();
+		void Clear(glm::vec4& color);
 	public:
 		void CleanRenderTarget();
 		void CreateRenderTarget();
+
+		void SetRenderTarget();
 
 		bool GetBlendState() { return m_BlendEnable; }
 		void BlendStateEnable(bool enable);
