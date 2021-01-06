@@ -132,14 +132,12 @@ namespace QCat
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{	
 		QCAT_PROFILE_FUNCTION();
-
 		s_data.TextureShader->Bind();
-#if defined(QCAT_DX11)
 		s_data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+#if defined(QCAT_DX11)
 		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
 		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 #elif defined(QCAT_OPENGL)
-		s_data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 #endif
 		s_data.QuadIndexCount = 0;
 		s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;

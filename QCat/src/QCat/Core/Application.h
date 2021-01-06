@@ -15,7 +15,7 @@ namespace QCat
 	class QCAT_API Application
 	{
 	public:
-		Application();
+		Application(const std::string& name="QCat App");
 		virtual ~Application();
 
 		void Run();

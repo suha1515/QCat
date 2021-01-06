@@ -9,8 +9,10 @@
 #include "QCat/Events/KeyboardEvent.h"
 
 #include "backends/imgui_impl_win32.h"
+
 #include "QCat/Core/Log.h"
 
+IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 namespace QCat
 {
 	Window* Window::Create(const WindowProps& props)
@@ -24,6 +26,7 @@ namespace QCat
 	WindowsWindow::WindowsWindow(int width, int height, const char* pWndName)
 		:wndClassName(pWndName), wndName(pWndName), width(width), height(height), windowOpen(true)
 	{
+
 		QCAT_PROFILE_FUNCTION();
 		Window::m_data.Height = height;
 		Window::m_data.Width = width;
@@ -136,6 +139,7 @@ namespace QCat
 	}
 	LRESULT WindowsWindow::MsgHandle(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 	{
+		ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);
 		//메시지를 처리한다. 각 클래스마다 다른 처리방식을 가진다.
 		switch (msg)
 		{
@@ -348,11 +352,11 @@ namespace QCat
 	{
 		pGfx->End();
 	}
-	unsigned int WindowsWindow::GetWidth() const
+	uint32_t WindowsWindow::GetWidth() const
 	{
 		return width;
 	}
-	unsigned int WindowsWindow::GetHeight() const
+	uint32_t WindowsWindow::GetHeight() const
 	{
 		return height;
 	}

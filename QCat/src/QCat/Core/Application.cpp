@@ -17,14 +17,14 @@ std::wstring ToWide(const std::string& narrow)
 namespace QCat
 {
 	Application* Application::instance = nullptr;
-	Application::Application()
+	Application::Application(const std::string& name)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		QCAT_CORE_ASSERT(!instance, "Application already exsists! ");
 		instance = this;
 
-		m_window = std::unique_ptr<Window>(Window::Create());
+		m_window = std::unique_ptr<Window>(Window::Create(WindowProps(name)));
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
@@ -54,9 +54,7 @@ namespace QCat
 		while (m_Running)
 		{
 			QCAT_PROFILE_SCOPE("RunLoop");
-
 			Timestep timestep = timer.Mark();
-			m_window->OnMessageUpdate();
 			if (m_Running)
 			{
 				m_window->OnBegin();
@@ -64,27 +62,22 @@ namespace QCat
 				{
 					{
 						QCAT_PROFILE_SCOPE("LayerStack OnUpdate");
-						for (Layer* layer : m_layerStack)
+ 						for (Layer* layer : m_layerStack)
 							layer->OnUpdate(timestep);
 					}
-					m_ImguiLayer->OnBegin();
+					/*m_ImguiLayer->OnBegin();
 					{
 						QCAT_PROFILE_SCOPE("LayerStack OnImguiRender");
 						for (Layer* layer : m_layerStack)
 							layer->OnImGuiRender();
 					}
-					
-					m_ImguiLayer->OnEnd();
+					m_ImguiLayer->OnEnd();*/
 				}	
 #if defined(QCAT_DX11)
-		
-#elif defined(QCAT_OPENGL)
-				
-#endif									
+#elif defined(QCAT_OPENGL)	
+#endif								
+				m_window->OnMessageUpdate();
 				m_window->OnEnd();
-			//	m_window2->OnBegin();
-
-			//	m_window2->OnEnd();
 			}
 		}
 	}

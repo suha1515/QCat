@@ -1,6 +1,6 @@
 workspace "QCat"
 	architecture "x64"
-
+	startproject "SandBox"
 	configurations
 	{
 		"Debug",
@@ -18,8 +18,10 @@ IncludeDir["Glm"] = "QCat/3rdLib/glm"
 IncludeDir["Glad"] = "QCat/3rdLib/Glad/Include"
 IncludeDir["stb_image"] = "QCat/3rdLib/stb_image"
 
-include "QCat/3rdLib/Imgui"
-include "QCat/3rdLib/Glad"
+group "Dependencies"
+	include "QCat/3rdLib/Glad"
+	include "QCat/3rdLib/ImGui"
+group""
 
 project "QCat"
 	location "QCat"
@@ -150,16 +152,57 @@ project "SandBox"
 		defines "QCAT_DIST"
 		optimize "on"
 
-	filter { "files:**.hlsl" }
-		flags "ExcludeFromBuild"
-		shadermodel "5.0"
-	filter { "files:**_ps.hlsl" }
-		removeflags "ExcludeFromBuild"
-		shadertype "Pixel"
-		shaderentry "ForPixel"
-	filter { "files:**_vs.hlsl" }
-		removeflags "ExcludeFromBuild"
-		shadertype "Vertex"
-		shaderentry "ForVertex"
-	filter {}
+	
+project "QCat_Editor"
+	location "QCat_Editor"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++latest"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .."/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .."/%{prj.name}")
+
+	disablewarnings{"4819"}
+	characterset ("MBCS")
+
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp",
+	}
+
+	includedirs
+	{
+		"QCat/3rdLib/spdlog/include",
+		"QCat/src",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.Glm}",
+		"%{IncludeDir.ImGui}"
+	}
+
+	links
+	{
+		"QCat"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+		defines
+		{
+			"QCAT_PLATFORM_WINDOWS",
+		}
+
+	filter "configurations:Debug"
+		defines "QCAT_DEBUG"
+		symbols "on"
+
+	filter "configurations:Release"
+		defines "QCAT_RELEASE"
+		optimize "on"
+
+	filter "configurations:Dist"
+		defines "QCAT_DIST"
+		optimize "on"
 

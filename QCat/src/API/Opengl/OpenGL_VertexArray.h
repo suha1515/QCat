@@ -18,7 +18,8 @@ namespace QCat
 		virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_vertexBuffers; }
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const { return m_indexBuffer; }
 	private:
-		unsigned int m_rendererID;
+		uint32_t m_rendererID;
+		uint32_t m_VertexBufferIndex = 0;
 		std::vector<Ref<VertexBuffer>> m_vertexBuffers;
 		Ref<IndexBuffer> m_indexBuffer;
 	};

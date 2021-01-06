@@ -22,15 +22,6 @@ namespace QCat
 		void OnBegin();
 		void OnEnd();
 	private:
-		bool OnMouseButtonPressEvent(MouseButtonPressedEvent& e);
-		bool OnMouseButtonReleaseEvent(MouseButtonReleasedEvent& e);
-		bool OnMouseButtonMoveEvent(MouseMoveEvent& e);
-		bool OnMouseButtonScrollEvent(MouseScrollEvent& e);
-		bool OnKeyPressedEvent(KeyPressedEvent& e);
-		bool OnKeyReleasedEvent(KeyReleasedEvent& e);
-		bool OnKeyTypedEvent(KeyTypedEvent& e);
-		bool OnWindowResizedEvent(WindowResizeEvent& e);
-	private:
 		INT64 g_Time = 0;
 		INT64 g_TicksPerSecond = 0;
 	};

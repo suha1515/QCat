@@ -38,14 +38,57 @@ namespace QCat
 		uint32_t index = 0;
 		for (const auto& element : m_elements)
 		{
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.type),
-				element.normalized ? GL_TRUE : GL_FALSE,
-				GetStride(),
-				(const void*)element.offset);
-			index++;
+			//glEnableVertexAttribArray(index);
+			//glVertexAttribPointer(index,
+			//	element.GetComponentCount(),
+			//	ShaderDataTypeToOpenGLBaseType(element.type),
+			//	element.normalized ? GL_TRUE : GL_FALSE,
+			//	GetStride(),
+			//	(const void*)element.offset);
+			//index++;
+			switch (element.type)
+			{
+			case ShaderDataType::Float:
+			case ShaderDataType::Float2:
+			case ShaderDataType::Float3:
+			case ShaderDataType::Float4:
+			case ShaderDataType::Int:
+			case ShaderDataType::Int2:
+			case ShaderDataType::Int3:
+			case ShaderDataType::Int4:
+			case ShaderDataType::Bool:
+			{
+				glEnableVertexAttribArray(index);
+				glVertexAttribPointer(index,
+					element.GetComponentCount(),
+					ShaderDataTypeToOpenGLBaseType(element.type),
+					element.normalized ? GL_TRUE : GL_FALSE,
+					GetStride(),
+					(const void*)element.offset);
+				index++;
+				break;
+			}
+			case ShaderDataType::Mat3:
+			case ShaderDataType::Mat4:
+			{
+				uint8_t count = element.GetComponentCount();
+				for (uint8_t i = 0; i < count; i++)
+				{
+					glEnableVertexAttribArray(index);
+					glVertexAttribPointer(index,
+						count,
+						ShaderDataTypeToOpenGLBaseType(element.type),
+						element.normalized ? GL_TRUE : GL_FALSE,
+						GetStride(),
+						(const void*)(sizeof(float) * count * i));
+					glVertexAttribDivisor(index, 1);
+					index++;
+				}
+				break;
+			}
+			default:
+				QCAT_CORE_ASSERT(false, "Unknown ShaderDataType!");
+			}
 		}
 	}
 	void OpenGL_InputLayout::UnBind() const

@@ -70,17 +70,16 @@ namespace QCat
 		{
 			CalculateOffsetAndStride();
 		}
-		inline uint32_t GetStride() const { return m_stride; }
-		inline const std::vector<BufferElement>& GetElements() const { return m_elements; }
-	public:
-		virtual void Bind()const=0;
-		virtual void UnBind()const=0;
+	    uint32_t GetStride() const { return m_stride; }
+	    const std::vector<BufferElement>& GetElements() const { return m_elements; }
 
 		std::vector<BufferElement>::iterator begin() { return m_elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return m_elements.end(); }
 		std::vector<BufferElement>::const_iterator begin() const { return m_elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return m_elements.end(); }
-
+	public:
+		virtual void Bind()const=0;
+		virtual void UnBind()const=0;
 		static Ref<BufferLayout> Create(const std::initializer_list<BufferElement>& elements, Ref<Shader> vertexShader = nullptr);
 	protected:
 		void CalculateOffsetAndStride()

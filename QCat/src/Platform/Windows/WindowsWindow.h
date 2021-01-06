@@ -11,6 +11,13 @@ namespace QCat
 	class WindowsWindow :public Window
 	{
 	public:
+		struct WindowMessage
+		{
+			HWND hwnd;
+			UINT msg; 
+			WPARAM wParam; 
+			LPARAM lParam;
+		};
 		WindowsWindow(int width, int height, const char* pWndName);
 		WindowsWindow(const WindowsWindow&) = delete;
 		WindowsWindow& operator=(const WindowsWindow&) = delete;
@@ -31,6 +38,7 @@ namespace QCat
 		int GetKeyState(int keycode) noexcept { return keyboard.GetKey(keycode); }
 		int GetMouseState(int button) noexcept { return mouse.GetButton(button);}
 		std::pair<int, int> GetMousePos() noexcept { return mouse.GetMousePos(); } ;
+		WindowMessage GetMessage();
 	public:
 		void SetICon(HICON ico);
 
@@ -38,14 +46,16 @@ namespace QCat
 		virtual void OnBegin() override;
 		virtual void OnEnd() override;
 
- 		virtual unsigned int GetWidth() const override;
-		virtual unsigned int GetHeight() const override;
+ 		virtual uint32_t GetWidth() const override;
+		virtual uint32_t GetHeight() const override;
 		inline virtual void* GetNativeWindow() { return this; };
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_data.EventCallback = callback; }
 		virtual void SetVSync(bool enabled) override;
 		virtual void SetWindowSize(unsigned int width, unsigned int hieght);
 		virtual bool IsVSync() const override;
+
+
 	private:
 		Keyboard keyboard;
 		Mouse mouse;

@@ -2,7 +2,7 @@
 #include "QCatOpengl.h"
 #include "QCat/Core/Log.h"
 //#include <gl/GL.h>
-#include "wgl/wglext.h"
+
 
 namespace QCat
 {
@@ -37,11 +37,14 @@ namespace QCat
 		if (rc)
 			wglDeleteContext(rc);
 	}
-	void QCatOpengl::Initialize()
+	void QCatOpengl::Initialize(HWND hwnd)
 	{
 		QCAT_PROFILE_FUNCTION();
+		TCHAR className[255];
+		GetClassName(hwnd, className, _countof(className));
+
 		HWND fakeWND = CreateWindow(
-			"QCat Engine", "QCat Engine",		 // window class, title
+			className, className,		 // window class, title
 			WS_CLIPSIBLINGS | WS_CLIPCHILDREN,	 // style
 			0, 0,								 // position x, y
 			1, 1,								 // width, height
@@ -129,6 +132,8 @@ namespace QCat
 			QCAT_CORE_ASSERT(rc != NULL, "wglCreateContextAttribsARB failed");
 			Set_Proc();
 			int statuss = gladLoadGLLoader(&Get_Proc);
+			wgl.wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)Get_Proc("wglSwapIntervalEXT");
+			wgl.wglSwapIntervalEXT(1);
 		}
 		wglMakeCurrent(NULL, NULL);
 		wglDeleteContext(fakeRc);
@@ -144,11 +149,7 @@ namespace QCat
 	void QCatOpengl::MakeCurrent()
 	{
 		bool suceed = wglMakeCurrent(dc, rc);
-		//if (!suceed)
-		//{
-		//	DWORD errorcode = GetLastError();
-		//	QCAT_CORE_ASSERT(suceed != false, "MakeCurrent() failed");
-		//}	
+
 	}
 
 	void QCatOpengl::Init(void* pHandle)
@@ -157,7 +158,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(hwnd != NULL, "window handle is NULL!");
 
 		dc = GetDC(hwnd);
-		Initialize();
+		Initialize(hwnd);
 	}
 	void QCatOpengl::Begin()
 	{
