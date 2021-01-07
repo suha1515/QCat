@@ -4,13 +4,25 @@
 namespace QCat
 {
 	DX11DepthStencil::DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, DXGI_FORMAT format)
-		:m_width(width), m_height(height)
+		:m_width(width), m_height(height),format(format)
 	{
+		Initialize(gfx);
+	}
+	DX11DepthStencil::~DX11DepthStencil()
+	{
+	}
+	void DX11DepthStencil::Initialize(QGfxDeviceDX11& gfx)
+	{
+		if (pDepthStencilView)
+		{
+			pDepthStencilView.Reset();
+			pShaderResourceView.Reset();
+		}
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
 		// Create Depth-Stencil Buffer
 		D3D11_TEXTURE2D_DESC descDepth = {};
-		descDepth.Width = width;
-		descDepth.Height = height;
+		descDepth.Width = m_width;
+		descDepth.Height = m_height;
 		descDepth.MipLevels = 1u;
 		descDepth.ArraySize = 1u;
 		descDepth.Format = format;
@@ -28,13 +40,27 @@ namespace QCat
 		descView.Texture2D.MipSlice = 0;
 		gfx.GetDevice()->CreateDepthStencilView(pDepthStencil.Get(), &descView, &pDepthStencilView);
 
-	}
-	DX11DepthStencil::~DX11DepthStencil()
-	{
+		// ShaderResorceView for DepthStencilView
+		Microsoft::WRL::ComPtr<ID3D11Resource> pRes;
+		pDepthStencilView->GetResource(&pRes);
+
+		// TODO: split Format for usage
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+		gfx.GetDevice()->CreateShaderResourceView(pRes.Get(), &srvDesc, &pShaderResourceView);
 	}
 	void DX11DepthStencil::Bind(QGfxDeviceDX11& gfx) const
 	{
 		gfx.GetContext()->OMSetRenderTargets(0, nullptr, pDepthStencilView.Get());
+	}
+	void DX11DepthStencil::Resize(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height)
+	{
+		m_width = width;
+		m_height = height;
+		Initialize(gfx);
 	}
 	void DX11DepthStencil::Clear(QGfxDeviceDX11& gfx)
 	{

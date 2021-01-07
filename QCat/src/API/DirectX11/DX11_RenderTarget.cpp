@@ -5,12 +5,23 @@
 namespace QCat
 {
 	DX11RenderTarget::DX11RenderTarget(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, DXGI_FORMAT format)
-		:m_width(width),m_height(height)
+		:m_width(width),m_height(height),format(format)
 	{
-
+		Initialize(gfx);
+	}
+	DX11RenderTarget::~DX11RenderTarget()
+	{
+	}
+	void DX11RenderTarget::Initialize(QGfxDeviceDX11& gfx)
+	{
+		if (pTargetView)
+		{
+			pTargetView.Reset();
+			pShaderResourceView.Reset();
+		}
 		D3D11_TEXTURE2D_DESC textureDesc = {};
-		textureDesc.Width = width;
-		textureDesc.Height = height;
+		textureDesc.Width = m_width;
+		textureDesc.Height = m_height;
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
 		textureDesc.Format = format;
@@ -39,28 +50,31 @@ namespace QCat
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = 1;
-		gfx.GetDevice()->CreateShaderResourceView(pRes.Get(), &srvDesc,&pShaderResourceView);
-	}
-	DX11RenderTarget::~DX11RenderTarget()
-	{
+		gfx.GetDevice()->CreateShaderResourceView(pRes.Get(), &srvDesc, &pShaderResourceView);
 	}
 	void DX11RenderTarget::Bind(QGfxDeviceDX11& gfx,ID3D11DepthStencilView* pDepthStencilView) const
 	{
 		gfx.GetContext()->OMSetRenderTargets(1, pTargetView.GetAddressOf(), pDepthStencilView);
 
 		// configure viewport
-	/*	D3D11_VIEWPORT vp;
+		D3D11_VIEWPORT vp;
 		vp.Width = (float)m_width;
 		vp.Height = (float)m_height;
 		vp.MinDepth = 0.0f;
 		vp.MaxDepth = 1.0f;
 		vp.TopLeftX = 0.0f;
 		vp.TopLeftY = 0.0f;
-		gfx.GetContext()->RSSetViewports(1u, &vp);*/
+		gfx.GetContext()->RSSetViewports(1u, &vp);
 	}
 	void DX11RenderTarget::UnBind(QGfxDeviceDX11& gfx) const
 	{
 		gfx.GetContext()->OMSetRenderTargets(0, nullptr, nullptr);
+	}
+	void DX11RenderTarget::Resize(QGfxDeviceDX11& gfx,uint32_t width, uint32_t height)
+	{
+		m_width = width;
+		m_height = height;
+		Initialize(gfx);
 	}
 	void DX11RenderTarget::Clear(QGfxDeviceDX11& gfx,const glm::vec4& color)
 	{

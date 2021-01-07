@@ -20,9 +20,9 @@ namespace QCat
 		//camera
 		OrthographicCameraController m_CameraController;
 		Ref<QCat::FrameBuffer> m_Framebuffer;
+		Ref<QCat::Texture2D> m_Texture;
 
 		glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
-
-		Ref<QCat::Texture2D> m_Texture;
+		glm::vec2 m_ViewPortSize = { 0.0f,0.0f };
 	};
 }

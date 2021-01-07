@@ -46,6 +46,11 @@ namespace QCat
 		dispatcher.Dispatch<MouseScrollEvent>(BIND_EVENT_FN(OrthographicCameraController::OnMouseScrolled));
 		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OrthographicCameraController::OnWindowResized));
 	}
+	void OrthographicCameraController::OnResize(float width, float height)
+	{
+		m_aspectRatio = width / height;
+		m_Camera.SetProjection(-m_aspectRatio * m_zoomLevel, m_aspectRatio * m_zoomLevel, -m_zoomLevel, m_zoomLevel);
+	}
 	bool OrthographicCameraController::OnMouseScrolled(MouseScrollEvent& e)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -59,8 +64,7 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		m_aspectRatio = (float)e.GetWidth()/(float)e.GetHeight();
-		m_Camera.SetProjection(-m_aspectRatio * m_zoomLevel, m_aspectRatio * m_zoomLevel, -m_zoomLevel, m_zoomLevel);
+		OnResize((float)e.GetWidth(),(float)e.GetHeight());
 		return false;
 	}
 }

@@ -32,4 +32,10 @@ namespace QCat
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 		m_renderTarget->UnBind(gfx);
 	}
+	void DX11FrameBuffer::Resize(uint32_t width, uint32_t height)
+	{
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		m_renderTarget->Resize(gfx,width, height);
+		m_depthStencil->Resize(gfx,width, height);
+	}
 }

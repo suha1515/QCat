@@ -1,6 +1,6 @@
 workspace "QCat"
 	architecture "x64"
-	startproject "SandBox"
+	startproject "QCat_Editor"
 	configurations
 	{
 		"Debug",

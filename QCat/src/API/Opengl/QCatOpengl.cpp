@@ -118,7 +118,7 @@ namespace QCat
 		DescribePixelFormat(dc, pixelFormatID, sizeof(PFD), &PFD);
 		SetPixelFormat(dc, pixelFormatID, &PFD);
 
-		const int major_min = 4, minor_min = 5;
+		const int major_min = 4, minor_min = 6;
 		int  contextAttribs[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, major_min,
 			WGL_CONTEXT_MINOR_VERSION_ARB, minor_min,
