@@ -65,19 +65,19 @@ namespace QCat
  						for (Layer* layer : m_layerStack)
 							layer->OnUpdate(timestep);
 					}
-					/*m_ImguiLayer->OnBegin();
+					m_ImguiLayer->OnBegin();
 					{
 						QCAT_PROFILE_SCOPE("LayerStack OnImguiRender");
 						for (Layer* layer : m_layerStack)
 							layer->OnImGuiRender();
 					}
-					m_ImguiLayer->OnEnd();*/
+					m_ImguiLayer->OnEnd();
 				}	
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)	
 #endif								
-				m_window->OnMessageUpdate();
 				m_window->OnEnd();
+				m_window->OnMessageUpdate();
 			}
 		}
 	}
