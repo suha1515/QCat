@@ -29,6 +29,8 @@ namespace QCat
 		inline Window* GetWindow() { return m_window.get(); }
 
 		void Close() { m_Running = false; }
+
+		ImGuiLayer* GetImguiLayer() { return m_ImguiLayer; }
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);

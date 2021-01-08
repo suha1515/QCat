@@ -21,7 +21,10 @@ namespace QCat
 
 		void OnBegin();
 		void OnEnd();
+
+		void BlockEvents(bool block) { m_BlockEvent = block; }
 	private:
+		bool m_BlockEvent = true;
 		INT64 g_Time = 0;
 		INT64 g_TicksPerSecond = 0;
 	};

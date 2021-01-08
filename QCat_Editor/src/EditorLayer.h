@@ -22,6 +22,8 @@ namespace QCat
 		Ref<QCat::FrameBuffer> m_Framebuffer;
 		Ref<QCat::Texture2D> m_Texture;
 
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
 		glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 		glm::vec2 m_ViewPortSize = { 0.0f,0.0f };
 	};

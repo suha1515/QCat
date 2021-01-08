@@ -39,7 +39,8 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 		// Update
-		m_CameraController.OnUpdate(ts);
+		if(m_ViewportFocused)
+			m_CameraController.OnUpdate(ts);
 		// Render
 		// Reset stats here
 		QCat::Renderer2D::ResetStats();
@@ -170,6 +171,12 @@ namespace QCat
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 
 		ImGui::Begin("ViewPort");
+
+		m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportHovered = ImGui::IsWindowHovered();
+
+		Application::GetInstance().GetImguiLayer()->BlockEvents(!m_ViewportFocused||!m_ViewportHovered);
+
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
 		if (m_ViewPortSize != *((glm::vec2*) & viewportPanelsize))
 		{

@@ -1,41 +1,39 @@
 #include "qcpch.h"
-#include "WindowsInput.h"
-#include "WindowsWindow.h"
-
+#include "QCat/Core/Input.h"
 #include "QCat/Core/Application.h"
 
+#include "WindowsWindow.h"
 
 namespace QCat
 {
-	Input* Input::s_Instance = new WindowsInput();
-	bool WindowsInput::IsKeyPressedImpl(int keycode)
+	bool Input::IsKeyPressed(int keycode)
 	{
 		auto window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
 		auto state = window->GetKeyState(keycode);
 		return state == QCAT_PRESS || state == QCAT_REPEAT;
 	}
 
-	bool WindowsInput::IsMouseButtonPressedImpl(int button)
+	bool Input::IsMouseButtonPressed(int button)
 	{
 		auto window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
 		auto state = window->GetMouseState(button);
 		return state == QCAT_PRESS;
 	}
 
-	std::pair<float, float> WindowsInput::GetMousePosImpl()
+	std::pair<float, float> Input::GetMousePos()
 	{
 		auto window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
 		return window->GetMousePos();
 	}
-	float WindowsInput::GetMouseXImpl()
+	float Input::GetMouseX()
 	{
-		auto [x, y] = GetMousePosImpl();
+		auto [x, y] = GetMousePos();
 		return x;
 	}
 
-	float WindowsInput::GetMouseYImpl()
+	float Input::GetMouseY()
 	{
-		auto [x, y] = GetMousePosImpl();
+		auto [x, y] = GetMousePos();
 		return y;
 	}
 }
