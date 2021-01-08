@@ -178,7 +178,7 @@ namespace QCat
 		Application::GetInstance().GetImguiLayer()->BlockEvents(!m_ViewportFocused||!m_ViewportHovered);
 
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
-		if (m_ViewPortSize != *((glm::vec2*) & viewportPanelsize))
+		if (m_ViewPortSize != *((glm::vec2*) & viewportPanelsize)&& viewportPanelsize.x>0 && viewportPanelsize.y >0)
 		{
 			m_Framebuffer->Resize((uint32_t)viewportPanelsize.x, (uint32_t)viewportPanelsize.y);
 			m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
