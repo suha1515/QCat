@@ -18,6 +18,7 @@
 
 #include "QCat/ImGui/ImGuiLayer.h"
 #include "QCat/Scene/Scene.h"
+#include "QCat/Scene/Entity.h"
 #include "QCat/Scene/Components.h"
 
 //--Renderer-----------------------------//

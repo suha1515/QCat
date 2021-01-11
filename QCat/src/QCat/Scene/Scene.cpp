@@ -4,6 +4,9 @@
 
 #include "QCat/Renderer/Renderer2D.h"
 
+#include "Components.h"
+#include "Entity.h"
+
 namespace QCat
 {
 	static void DoMath(const glm::mat4& transform)
@@ -46,9 +49,14 @@ namespace QCat
 	Scene::~Scene()
 	{
 	}
-	entt::entity Scene::CreateEntity()
+	Entity Scene::CreateEntity(const std::string& name)
 	{
-		return  m_Registry.create();
+		Entity  entity = { m_Registry.create(), this };
+		entity.AddComponent<TransformComponent>();
+		auto& tag = entity.AddComponent<TagComponent>();
+		tag.Tag = name.empty() ? "empty" : name;
+	
+		return  entity;
 	}
 	void Scene::OnUpdate(Timestep ts)
 	{

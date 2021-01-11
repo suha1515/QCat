@@ -1,17 +1,19 @@
 #pragma once
 #include "entt.hpp"
-#include "Components.h"
+
 #include "QCat/Uitiliy/Timestep.h"
 
 namespace QCat
 {
+	class Entity;
 	class Scene
 	{
+		friend class Entity;
 	public:
 		Scene();
 		~Scene();
 
-		entt::entity CreateEntity();
+		Entity CreateEntity(const std::string& name = std::string());
 
 		void OnUpdate(Timestep ts);
 		// Temporary
@@ -20,5 +22,4 @@ namespace QCat
 		entt::registry m_Registry;		// container for all component (identifier)
 
 	};
-
 }
