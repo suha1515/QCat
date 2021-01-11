@@ -18,13 +18,13 @@ namespace QCat
 			break;
 		case RenderAPI::API::OpenGL:
 		{
-			m_ProjectionMatrix = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f);
+			m_ProjectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 1.0f);
 			m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 			break;
 		}
 		case RenderAPI::API::DirectX11:
 		{
-			m_ProjectionMatrix = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f);
+			m_ProjectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 1.0f);
 			//DirectX::XMMATRIX mat;
 			//mat = DirectX::XMMatrixOrthographicLH(right - left ,bottom - top,0.0f,1.0f);
 			//mat =  DirectX::XMMatrixOrthographicOffCenterLH(left, right, bottom, top, 0.0f, 1.0f);
@@ -40,8 +40,8 @@ namespace QCat
 		RenderAPI::API api = RenderAPI::GetAPI();
 		switch (api)
 		{
-		case RenderAPI::API::OpenGL: m_ProjectionMatrix = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f);  break;
-		case RenderAPI::API::DirectX11: m_ProjectionMatrix = glm::orthoLH(left, right, bottom, top, 0.0f, 1.0f); break;
+		case RenderAPI::API::OpenGL: m_ProjectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 1.0f);  break;
+		case RenderAPI::API::DirectX11: m_ProjectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 1.0f); break;
 		}
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}

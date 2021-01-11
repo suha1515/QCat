@@ -60,13 +60,34 @@ namespace QCat
 	}
 	void Scene::OnUpdate(Timestep ts)
 	{
-		// for multipleComponent you can you group
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-
-		for (auto& entity : group)
+		// Render 2D sprites
+		Camera* maincamera = nullptr;
+		glm::mat4* cameraTransform = nullptr;
 		{
-			auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawQuad(transform, sprite.Color);
+			auto& group = m_Registry.view<TransformComponent,CameraComponent>();
+			for (auto& entity : group)
+			{
+				auto& [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
+				if (camera.Primary)
+				{
+					maincamera = &camera.Camera;
+					cameraTransform = &transform.Transform;
+					break;
+				}
+			}
+		}
+		if (maincamera)
+		{
+			Renderer2D::BeginScene(maincamera->GetProjection(), *cameraTransform);
+
+			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+
+			for (auto& entity : group)
+			{
+				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+				Renderer2D::DrawQuad(transform, sprite.Color);
+			}
+			Renderer2D::EndScene();
 		}
 	}
 }
