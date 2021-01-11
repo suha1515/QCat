@@ -27,9 +27,8 @@
 
 
 #include<glm/glm.hpp>
-#include<DirectXMath.h>
 
-#include <glad/glad.h>
+
 
 
 

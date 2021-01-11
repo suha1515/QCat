@@ -19,12 +19,20 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		m_Texture = QCat::Texture2D::Create("Asset/textures/Checkerboard.png");
+		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png");
 
-		QCat::FrameBufferSpecification fbSpec;
+		FrameBufferSpecification fbSpec;
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = QCat::FrameBuffer::Create(fbSpec);
+		m_Framebuffer = FrameBuffer::Create(fbSpec);
+
+		m_ActiveScene = CreateRef<Scene>();
+		auto square = m_ActiveScene->CreateEntity();
+		m_ActiveScene->Reg().emplace<TransformComponent>(square);
+		m_ActiveScene->Reg().emplace<SpriteRendererComponent>(square, glm::vec4{ 0.0f,1.0f,0.0f,1.0f });
+
+		m_SquareEntity = square;
+
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
 #endif
@@ -35,55 +43,30 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 	}
-	void EditorLayer::OnUpdate(QCat::Timestep ts)
+	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		QCAT_PROFILE_FUNCTION();
 		// Update
-		if(m_ViewportFocused)
+		if (m_ViewportFocused)
 			m_CameraController.OnUpdate(ts);
 		// Render
 		// Reset stats here
-		QCat::Renderer2D::ResetStats();
-		{
-			QCAT_PROFILE_SCOPE("Renderer Prep");
+		Renderer2D::ResetStats();
+		m_Framebuffer->Bind();
+		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+		RenderCommand::Clear();
 
-			m_Framebuffer->Bind();
-			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-			QCat::RenderCommand::Clear();
-		}
-		{
-			QCAT_PROFILE_SCOPE("Renderer Draw");
-			QCat::Renderer2D::BeginScene(m_CameraController.GetCamera());
-			static float rotation = 0.0f;
-			rotation += ts * 50.0f;
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
 #endif
-			QCat::Renderer2D::DrawRotatedQuad({ 1.0f,0.0f }, { 0.8f,0.8f }, -45.0f, { 0.8f,0.2f,0.3f,1.0f });
-			QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
-			QCat::Renderer2D::DrawQuad({ 0.5f,-0.5f }, { 0.5f,0.75f }, { 0.2f,0.3f,0.8f,1.0f });
-			QCat::Renderer2D::DrawQuad({ 0.0f,0.0f,0.1f }, { 20.0f, 20.0f }, m_Texture, 10.0f);
-			QCat::Renderer2D::DrawRotatedQuad({ -2.0f,0.0f,0.0f }, { 0.8f,0.8f }, rotation, m_Texture, 20.0f);
-			QCat::Renderer2D::EndScene();
+		Renderer2D::BeginScene(m_CameraController.GetCamera());
+		// Update Scene
+		m_ActiveScene->OnUpdate(ts);
 
-			QCat::Renderer2D::BeginScene(m_CameraController.GetCamera());
-			for (float y = -5.0f; y < 5.0f; y += 0.5f)
-			{
-				for (float x = -5.0f; x < 5.0f; x += 0.5f)
-				{
-					glm::vec4 color = { (x + 5.0f) / 10.0f,0.4f,(y + 5.0f) / 10.0f,0.7f };
-					QCat::Renderer2D::DrawQuad({ x,y }, { 0.45f,0.45f }, color);
+		Renderer2D::EndScene();
 
-				}
-			}
-			QCat::Renderer2D::EndScene();
-			//if (QCat::Input::IsKeyPressed(QCAT_KEY_SPACE))
-			//{
-			//	m_Framebuffer->SaveColorBuffer();
-			//}
-			m_Framebuffer->UnBind();
-			QCat::RenderCommand::SetDefaultFrameBuffer();
-		}
+		m_Framebuffer->UnBind();
+		RenderCommand::SetDefaultFrameBuffer();
 
 	}
 
@@ -149,7 +132,7 @@ namespace QCat
 			{
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
 				// which we can't undo at the moment without finer window depth/z control.
-				if (ImGui::MenuItem("Exit")) QCat::Application::GetInstance().Close();
+				if (ImGui::MenuItem("Exit")) Application::GetInstance().Close();
 				ImGui::EndMenu();
 			}
 
@@ -158,14 +141,15 @@ namespace QCat
 
 		ImGui::Begin("Settings");
 
-		auto stats = QCat::Renderer2D::GetStats();
+		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
 		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 		ImGui::Text("Quads: %d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
-		ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
+		auto& ref = m_ActiveScene->Reg().get<SpriteRendererComponent>(m_SquareEntity).Color;
+		ImGui::ColorEdit4("Square Color", glm::value_ptr(ref));
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
@@ -175,10 +159,10 @@ namespace QCat
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
 
-		Application::GetInstance().GetImguiLayer()->BlockEvents(!m_ViewportFocused||!m_ViewportHovered);
+		Application::GetInstance().GetImguiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
-		if (m_ViewPortSize != *((glm::vec2*) & viewportPanelsize)&& viewportPanelsize.x>0 && viewportPanelsize.y >0)
+		if (m_ViewPortSize != *((glm::vec2*) & viewportPanelsize) && viewportPanelsize.x > 0 && viewportPanelsize.y > 0)
 		{
 			m_Framebuffer->Resize((uint32_t)viewportPanelsize.x, (uint32_t)viewportPanelsize.y);
 			m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
@@ -193,7 +177,7 @@ namespace QCat
 
 	}
 
-	void EditorLayer::OnEvent(QCat::Event& e)
+	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
 	}

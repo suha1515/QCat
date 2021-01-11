@@ -13,10 +13,10 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architexture}"
 -- Include directories
 IncludeDir = {}
 IncludeDir["ImGui"] = "QCat/3rdLib/Imgui"
-IncludeDir["DirectXMath"] = "QCat/3rdLib/DirectXMath"
 IncludeDir["Glm"] = "QCat/3rdLib/glm"
 IncludeDir["Glad"] = "QCat/3rdLib/Glad/Include"
 IncludeDir["stb_image"] = "QCat/3rdLib/stb_image"
+IncludeDir["entt"] = "QCat/3rdLib/entt/Include"
 
 group "Dependencies"
 	include "QCat/3rdLib/Glad"
@@ -44,9 +44,6 @@ project "QCat"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/3rdLib/stb_image/**.h",
 		"%{prj.name}/3rdLib/stb_image/**.cpp",
-		"%{prj.name}/3rdLib/DirectXMath/**.h",
-		"%{prj.name}/3rdLib/DirectXMath/**.cpp",
-		"%{prj.name}/3rdLib/DirectXMath/**.inl",
 		"%{prj.name}/3rdLib/glm/glm/**.hpp",
 		"%{prj.name}/3rdLib/glm/glm/**.inl"
 	}
@@ -56,10 +53,10 @@ project "QCat"
 		"%{prj.name}/src",
 		"%{prj.name}/3rdLib/spdlog/include",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.DirectXMath}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Glm}",
-		"%{IncludeDir.stb_image}"
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.entt}"
 	}
 
 	links
@@ -110,21 +107,19 @@ project "SandBox"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/src/**.hlsl",
-		"%{prj.name}/resource.h",
-		"%{prj.name}/SandBox.rc",
-		"%{prj.name}/SandBox.aps",
-		"%{prj.name}/Resource/**.ico"
+		"%{prj.name}/src/**.hlsl"
 	}
 
 	includedirs
 	{
 		"QCat/3rdLib/spdlog/include",
 		"QCat/src",
-		"%{IncludeDir.DirectXMath}",
+		"QCat/3rdLib",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Glm}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.entt}"
+		
 	}
 
 	links
@@ -176,9 +171,11 @@ project "QCat_Editor"
 	{
 		"QCat/3rdLib/spdlog/include",
 		"QCat/src",
+		"QCat/3rdLib",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.Glm}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.entt}"
 	}
 
 	links

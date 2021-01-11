@@ -19,8 +19,11 @@ namespace QCat
 	private:
 		//camera
 		OrthographicCameraController m_CameraController;
-		Ref<QCat::FrameBuffer> m_Framebuffer;
-		Ref<QCat::Texture2D> m_Texture;
+		Ref<FrameBuffer> m_Framebuffer;
+		Ref<Texture2D> m_Texture;
+
+		Ref<Scene> m_ActiveScene;
+		entt::entity m_SquareEntity;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

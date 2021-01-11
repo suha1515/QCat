@@ -7,7 +7,6 @@
 #include "QCat/Core/Input.h"
 #include "QCat/Layer/Layer.h"
 #include "QCat/Core/Log.h"
-#include "QCat/ImGui/ImGuiLayer.h"
 
 #include "QCat/Uitiliy/Timestep.h"
 
@@ -17,6 +16,9 @@
 //defines
 #include "QCatDefines.h"
 
+#include "QCat/ImGui/ImGuiLayer.h"
+#include "QCat/Scene/Scene.h"
+#include "QCat/Scene/Components.h"
 
 //--Renderer-----------------------------//
 #include "QCat/Renderer/Renderer.h"
