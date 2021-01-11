@@ -40,3 +40,4 @@ namespace QCat
 		Scene* m_pScene=nullptr;
 	};
 }
+
