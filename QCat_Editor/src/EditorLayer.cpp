@@ -68,6 +68,7 @@ namespace QCat
 		};
 
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
 
 #if defined(QCAT_DX11)
