@@ -70,6 +70,7 @@ namespace QCat
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
@@ -184,6 +185,8 @@ namespace QCat
 
 			ImGui::EndMenuBar();
 		}
+
+		m_SceneHierarchyPanel.OnImguiRender();
 
 		ImGui::Begin("Settings");
 

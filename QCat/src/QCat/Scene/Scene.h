@@ -9,6 +9,7 @@ namespace QCat
 	class Scene
 	{
 		friend class Entity;
+		friend class SceneHierarchyPanel;
 	public:
 		Scene();
 		~Scene();
