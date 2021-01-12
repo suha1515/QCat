@@ -31,6 +31,7 @@ namespace QCat
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
+		pgfx->SetWidthHeight(width, height);
 		pgfx->CleanRenderTarget();
 		pgfx->GetSwapChain()->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
 		pgfx->CreateRenderTarget();

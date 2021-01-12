@@ -163,7 +163,6 @@ namespace QCat
 				SetWindowSize(width, height);
 				if (m_data.EventCallback)
 				{
-
 					WindowResizeEvent event(width, height);
 					m_data.EventCallback(event);
 				}

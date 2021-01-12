@@ -289,9 +289,9 @@ namespace QCat {
 	void QGfxDeviceDX11::CleanRenderTarget()
 	{
 		if (renderTargetView)
-		{
 			renderTargetView.Reset();
-		}
+		if(depthStencilView)
+			depthStencilView.Reset();
 	}
 	void QGfxDeviceDX11::CreateRenderTarget()
 	{
@@ -300,6 +300,28 @@ namespace QCat {
 		swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(pBackBuffer.GetAddressOf()));
 		if(renderTargetView==nullptr)
 			device->CreateRenderTargetView(pBackBuffer.Get(), NULL, &renderTargetView);
+
+		// Create Depth-Stencil Buffer
+		D3D11_TEXTURE2D_DESC descDepth = {};
+		descDepth.Width = width;
+		descDepth.Height = height;
+		descDepth.MipLevels = 1u;
+		descDepth.ArraySize = 1u;
+		descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		descDepth.SampleDesc.Count = 1u;
+		descDepth.SampleDesc.Quality = 0u;
+		descDepth.Usage = D3D11_USAGE_DEFAULT;
+		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+		device->CreateTexture2D(&descDepth, nullptr, &depthStencil);
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC descView = {};
+		descView.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		descView.Flags = 0;
+		descView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+		descView.Texture2D.MipSlice = 0;
+
+		device->CreateDepthStencilView(depthStencil.Get(), nullptr, &depthStencilView);
 	}
 	void QGfxDeviceDX11::SetRenderTarget()
 	{
@@ -352,6 +374,11 @@ namespace QCat {
 		vp.TopLeftX = 0.0f;
 		vp.TopLeftY = 0.0f;
 		immediateContext->RSSetViewports(1u, &vp);
+	}
+	void QGfxDeviceDX11::SetWidthHeight(uint32_t width, uint32_t height)
+	{
+		this->width = width;
+		this->height = height;
 	}
 }
 

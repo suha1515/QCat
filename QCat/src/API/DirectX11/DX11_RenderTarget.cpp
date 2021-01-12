@@ -55,16 +55,6 @@ namespace QCat
 	void DX11RenderTarget::Bind(QGfxDeviceDX11& gfx,ID3D11DepthStencilView* pDepthStencilView) const
 	{
 		gfx.GetContext()->OMSetRenderTargets(1, pTargetView.GetAddressOf(), pDepthStencilView);
-
-		// configure viewport
-		D3D11_VIEWPORT vp;
-		vp.Width = (float)m_width;
-		vp.Height = (float)m_height;
-		vp.MinDepth = 0.0f;
-		vp.MaxDepth = 1.0f;
-		vp.TopLeftX = 0.0f;
-		vp.TopLeftY = 0.0f;
-		gfx.GetContext()->RSSetViewports(1u, &vp);
 	}
 	void DX11RenderTarget::UnBind(QGfxDeviceDX11& gfx) const
 	{

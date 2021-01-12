@@ -60,10 +60,10 @@ namespace QCat {
 		ComPtr<IDXGISwapChain1>& GetSwapChain();
 	public:
 		void SetViewPort(int width, int height);
-		
+		void SetWidthHeight(uint32_t width, uint32_t height);
 	private:
-		UINT width;
-		UINT height;
+		uint32_t width;
+		uint32_t height;
 	private:
 		D3D_FEATURE_LEVEL fetureLevel;
 		ComPtr<ID3D11Device> device;
