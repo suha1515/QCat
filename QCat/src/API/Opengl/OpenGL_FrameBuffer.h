@@ -16,7 +16,7 @@ namespace QCat
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		virtual void* GetColorAttachmentRendererID() const override { return (void*)m_ColorAttachment; }
+		virtual void* GetColorAttachmentRendererID() const override { return reinterpret_cast<void*>(m_ColorAttachment); }
 		virtual void SaveColorBuffer() const override {}
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 	private:

@@ -1,5 +1,6 @@
 #pragma once
 #include "Event.h"
+#include "QCat/Core/MouseCode.h"
 #include <sstream>
 
 namespace QCat
@@ -7,7 +8,7 @@ namespace QCat
 	class QCAT_API MouseMoveEvent : public Event
 	{
 	public:
-		MouseMoveEvent(float x, float y)
+		MouseMoveEvent(const float x,const float y)
 			:m_mouseX(x), m_mouseY(y) {}
 
 		inline float GetX() const { return m_mouseX; }
@@ -29,7 +30,7 @@ namespace QCat
 	class QCAT_API MouseScrollEvent : public Event
 	{
 	public:
-		MouseScrollEvent(float offsetX, float offsetY)
+		MouseScrollEvent(const float offsetX, const float offsetY)
 			:m_offsetX(offsetX), m_offsetY(offsetY) {}
 
 		inline float GetOffsetX() const { return m_offsetX; }
@@ -55,16 +56,16 @@ namespace QCat
 	
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	protected:
-		MouseButtonEvent(int button)
+		MouseButtonEvent(const MouseCode button)
 			:m_button(button){}
 
-		int m_button;
+		MouseCode m_button;
 	};
 
 	class QCAT_API MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonPressedEvent(int button)
+		MouseButtonPressedEvent(const MouseCode button)
 			:MouseButtonEvent(button) {}
 
 		std::string ToString() const override
@@ -80,7 +81,7 @@ namespace QCat
 	class QCAT_API MouseButtonReleasedEvent : public MouseButtonEvent
 	{
 	public:
-		MouseButtonReleasedEvent(int button)
+		MouseButtonReleasedEvent(const MouseCode button)
 			:MouseButtonEvent(button) {}
 
 		std::string ToString() const override

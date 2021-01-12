@@ -249,15 +249,15 @@ namespace QCat
 		{
 			int i, button, action;
 			if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP)
-				button = QCAT_MOUSE_BUTTON_LEFT;
+				button = Mouse::ButtonLeft;
 			else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP)
-				button = QCAT_MOUSE_BUTTON_RIGHT;
+				button = Mouse::ButtonRight;
 			else if (msg == WM_MBUTTONDOWN || msg == WM_MBUTTONUP)
-				button = QCAT_MOUSE_BUTTON_MIDDLE;
+				button = Mouse::ButtonMiddle;
 			else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-				button = QCAT_MOUSE_BUTTON_4;
+				button = Mouse::Button3;
 			else
-				button = QCAT_MOUSE_BUTTON_5;
+				button = Mouse::Button4;
 
 			if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN ||
 				msg == WM_MBUTTONDOWN || msg == WM_XBUTTONDOWN)
@@ -267,22 +267,22 @@ namespace QCat
 			else
 				action = QCAT_RELEASE;
 
-			for (i = 0; i <= QCAT_MOUSE_BUTTON_LAST; i++)
+			for (i = 0; i <= Mouse::ButtonLast; i++)
 			{
 				if (mouse.mouseButtons[i] == QCAT_PRESS)
 					break;
 			}
-			if (i > QCAT_MOUSE_BUTTON_LAST)
+			if (i > Mouse::ButtonLast)
 				SetCapture(hWnd);
 
 			mouse.InputMouseClick(button, action);
 
-			for (i = 0; i <= QCAT_MOUSE_BUTTON_LAST; i++)
+			for (i = 0; i <= Mouse::ButtonLast; i++)
 			{
 				if (mouse.mouseButtons[i] == QCAT_PRESS)
 					break;
 			}
-			if (i > QCAT_MOUSE_BUTTON_LAST)
+			if (i > Mouse::ButtonLast)
 				ReleaseCapture();
 
 			switch (action)

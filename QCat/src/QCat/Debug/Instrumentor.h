@@ -6,6 +6,10 @@
 #include <iomanip>
 #include <string>
 #include <thread>
+#include <mutex>
+#include <sstream>
+
+#include "QCat/Core/Log.h"
 
 namespace QCat {
 	using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;

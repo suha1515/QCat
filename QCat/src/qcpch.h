@@ -1,5 +1,11 @@
 #pragma once
+#include "QCat/Core/PlatformDetection.h"
 
+#ifdef QCAT_PLATFORM_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
 
 #include <iostream>
 #include <memory>
@@ -17,20 +23,15 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
-
 #include <wrl.h>
 
+#include "QCat/Core/QCatCore.h"
 #include "QCatDefines.h"
-#include "QCat/Core/KeyCode.h"
 #include "QCat/Core/Log.h"
 #include "QCat/Debug/Instrumentor.h"
 
 
 #include<glm/glm.hpp>
-
-
-
-
 
 
 #ifdef QCAT_PLATFORM_WINDOWS

@@ -1,5 +1,6 @@
 #pragma once
 #include "Event.h"
+#include "QCat/Core/KeyCode.h"
 #include <sstream>
 
 namespace QCat
@@ -11,19 +12,19 @@ namespace QCat
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyboardEvent(int keycode)
+		KeyboardEvent(const KeyCode keycode)
 			:m_keycode(keycode){}
 
-		int m_keycode;
+		KeyCode m_keycode;
 	};
 
 	class QCAT_API KeyPressedEvent : public KeyboardEvent
 	{
 	public:
-		KeyPressedEvent(int keycode , int repeatCount)
+		KeyPressedEvent(const KeyCode keycode , const uint16_t repeatCount)
 			: KeyboardEvent(keycode),m_repeatCount(repeatCount){}
 
-		inline int GetRepeatCount() const { return m_repeatCount; }
+		uint16_t GetRepeatCount() const { return m_repeatCount; }
 
 		std::string ToString() const override
 		{
@@ -34,13 +35,13 @@ namespace QCat
 
 		EVENT_CLASS_TYPE(KeyPressed)
 	private:
-		int m_repeatCount;
+		uint16_t m_repeatCount;
 	};
 
 	class QCAT_API KeyReleasedEvent : public KeyboardEvent
 	{
 	public:
-		KeyReleasedEvent(int keycode)
+		KeyReleasedEvent(const KeyCode keycode)
 			:KeyboardEvent(keycode){}
 
 		std::string ToString() const override
@@ -56,7 +57,7 @@ namespace QCat
 	class QCAT_API KeyTypedEvent : public KeyboardEvent
 	{
 	public:
-		KeyTypedEvent(int keycode)
+		KeyTypedEvent(const KeyCode keycode)
 			: KeyboardEvent(keycode) {}
 
 		std::string ToString() const override

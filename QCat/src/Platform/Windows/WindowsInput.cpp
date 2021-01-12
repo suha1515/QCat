@@ -6,35 +6,37 @@
 
 namespace QCat
 {
-	bool Input::IsKeyPressed(int keycode)
+	bool Input::IsKeyPressed(const KeyCode keycode)
 	{
-		auto window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
+		auto* window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
 		auto state = window->GetKeyState(keycode);
 		return state == QCAT_PRESS || state == QCAT_REPEAT;
 	}
 
-	bool Input::IsMouseButtonPressed(int button)
+	bool Input::IsMouseButtonPressed(const MouseCode button)
 	{
-		auto window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
+		auto* window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
 		auto state = window->GetMouseState(button);
 		return state == QCAT_PRESS;
 	}
 
-	std::pair<float, float> Input::GetMousePos()
+	glm::vec2 Input::GetMousePos()
 	{
-		auto window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
-		return window->GetMousePos();
+		auto* window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
+		double xpos, ypos;
+		std::pair<int, int> pair = window->GetMousePos();
+		xpos = pair.first;
+		ypos = pair.second;
+		return { (float)xpos,(float)ypos };
 	}
 	float Input::GetMouseX()
 	{
-		auto [x, y] = GetMousePos();
-		return x;
+		return  GetMousePos().x;
 	}
 
 	float Input::GetMouseY()
 	{
-		auto [x, y] = GetMousePos();
-		return y;
+		return  GetMousePos().y;
 	}
 }
 

@@ -1,24 +1,24 @@
 #include "qcpch.h"
 #include "Mouse.h"
 
-
+#include "QCat/Core/MouseCode.h"
 namespace QCat
 {
-	Mouse::Mouse()
+	MouseDevice::MouseDevice()
 	{
-		mouseButtons.assign(QCAT_MOUSE_BUTTON_LAST+1,QCAT_RELEASE);
+		mouseButtons.assign(Mouse::ButtonLast+1,QCAT_RELEASE);
 	}
 
-	void Mouse::InputMouseClick(int button, int action)
+	void MouseDevice::InputMouseClick(int button, int action)
 	{
-		if (button <0 || button>QCAT_MOUSE_BUTTON_LAST)
+		if (button <0 || button>Mouse::ButtonLast)
 			return;
 
 		mouseButtons[button] = (char)action;
  	}
-	int Mouse::GetButton(int button)
+	int MouseDevice::GetButton(int button)
 	{
-		if (button<0 || button>QCAT_MOUSE_BUTTON_LAST)
+		if (button<0 || button>Mouse::ButtonLast)
 			return QCAT_FAIL;
 		
 		return mouseButtons[button];

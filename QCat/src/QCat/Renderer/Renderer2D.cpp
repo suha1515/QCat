@@ -244,7 +244,7 @@ namespace QCat
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x,size.y,1.0f });
 
-		DrawQuad(transform, texture, tilingFactor);
+		DrawQuad(transform, texture, tilingFactor,tintColor);
 
 	}
 	void Renderer2D::DrawQuad(const glm::mat4& transform,  const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
@@ -260,7 +260,7 @@ namespace QCat
 		float textureIndex = 0.f;
 		for (uint32_t i = 1; i < s_data.TextureSlotIndex; ++i)
 		{
-			if (*s_data.TextureSlots[i].get() == *texture.get())
+			if (*s_data.TextureSlots[i] == *texture)
 			{
 				textureIndex = (float)i;
 				break;

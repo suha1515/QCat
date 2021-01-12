@@ -54,7 +54,7 @@ namespace QCat
 
 		std::string result;
 		// ios::in means read mode, ios::binary means it will read data as binary
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
+		std::ifstream in(filepath, std::ios::in | std::ios::binary);// ifstream closes itself due to RAII
 		if (in)
 		{
 			// seekg is move the cursor ios::end means end of file 
@@ -64,7 +64,6 @@ namespace QCat
 			in.seekg(0, std::ios::beg);
 			in.read(&result[0], result.size());
 			// after reading you have to call close function
-			in.close();
 		}
 		else
 		{

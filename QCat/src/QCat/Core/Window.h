@@ -1,5 +1,5 @@
 #pragma once
-#include "qcpch.h"
+#include <sstream>
 #include "QCat/Core/QCatCore.h"
 #include "QCat/Events/Event.h"
 
@@ -16,22 +16,22 @@ namespace QCat
 			uint32_t height = 720)
 			: Title(title), Width(width), Height(height)
 		{
- 		}
+		}
 	};
 	class QCAT_API Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
 
-		virtual ~Window(){}
+		virtual ~Window() {}
 
 		virtual void OnBegin() = 0;
 		virtual void OnEnd() = 0;
-		virtual bool OnMessageUpdate()=0;
+		virtual bool OnMessageUpdate() = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual void* GetNativeWindow()=0;
+		virtual void* GetNativeWindow() = 0;
 
 		//  Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
@@ -39,7 +39,7 @@ namespace QCat
 		virtual void SetWindowSize(unsigned int width, unsigned int hieght) = 0;
 		virtual bool IsVSync() const = 0;
 
-		
+
 		static Window* Create(const WindowProps& props = WindowProps());
 
 		struct WindowData

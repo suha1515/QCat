@@ -58,7 +58,7 @@ namespace QCat
 
 	private:
 		Keyboard keyboard;
-		Mouse mouse;
+		MouseDevice mouse;
 	private:
 		uint32_t width = 1280;
 		uint32_t height = 720;

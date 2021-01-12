@@ -80,7 +80,7 @@ namespace QCat
 						ShaderDataTypeToOpenGLBaseType(element.type),
 						element.normalized ? GL_TRUE : GL_FALSE,
 						GetStride(),
-						(const void*)(sizeof(float) * count * i));
+						(const void*)(element.offset + sizeof(float) * count * i));
 					glVertexAttribDivisor(index, 1);
 					index++;
 				}

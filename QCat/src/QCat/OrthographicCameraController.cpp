@@ -15,21 +15,21 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		if (Input::IsKeyPressed(QCAT_KEY_A))
+		if (Input::IsKeyPressed(Key::A))
 			m_CameraPosition.x -= m_CameraTranslationSpeed * ts;
-		else if (QCat::Input::IsKeyPressed(QCAT_KEY_D))
+		else if (QCat::Input::IsKeyPressed(Key::D))
 			m_CameraPosition.x += m_CameraTranslationSpeed * ts;
 
-		if (Input::IsKeyPressed(QCAT_KEY_W))
+		if (Input::IsKeyPressed(Key::W))
 			m_CameraPosition.y += m_CameraTranslationSpeed * ts;
-		else if (Input::IsKeyPressed(QCAT_KEY_S))
+		else if (Input::IsKeyPressed(Key::S))
 			m_CameraPosition.y -= m_CameraTranslationSpeed * ts;
 
 		if (m_rotation)
 		{
-			if (Input::IsKeyPressed(QCAT_KEY_Q))
+			if (Input::IsKeyPressed(Key::Q))
 				m_CameraRoatation += m_CameraRotationSpeed * ts;
-			if (Input::IsKeyPressed(QCAT_KEY_E))
+			if (Input::IsKeyPressed(Key::E))
 				m_CameraRoatation -= m_CameraRotationSpeed * ts;
 
 			m_Camera.SetRotation(m_CameraRoatation);

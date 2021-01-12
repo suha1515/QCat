@@ -1,6 +1,6 @@
 #pragma once
-
-#include "qcpch.h"
+#include <functional>
+#include "QCat/Debug/Instrumentor.h"
 #include "QCat/Core/QCatCore.h"
 
 namespace QCat

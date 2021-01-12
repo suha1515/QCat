@@ -3,11 +3,11 @@
 
 namespace QCat
 {
-	class QCAT_API Mouse
+	class QCAT_API MouseDevice
 	{
 	public:
-		Mouse();
-		~Mouse() = default;
+		MouseDevice();
+		~MouseDevice() = default;
 
 		void InputMouseClick(int button, int action);
 		void SetPos(int x, int y) { this->x = x, this->y = y; };
