@@ -7,6 +7,7 @@
 #include "QCat/Core/Input.h"
 #include "QCat/Layer/Layer.h"
 #include "QCat/Core/Log.h"
+#include "QCat/Core/Assert.h"
 
 #include "QCat/Uitiliy/Timestep.h"
 

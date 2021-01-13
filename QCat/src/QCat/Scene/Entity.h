@@ -1,6 +1,7 @@
 #pragma once
 #include "Scene.h"
 #include "entt.hpp"
+#include "QCat/Core/Assert.h"
 
 namespace QCat
 {

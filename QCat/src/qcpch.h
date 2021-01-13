@@ -26,8 +26,10 @@
 #include <wrl.h>
 
 #include "QCat/Core/QCatCore.h"
-#include "QCatDefines.h"
 #include "QCat/Core/Log.h"
+#include "QCat/Core/Assert.h"
+#include "QCatDefines.h"
+
 #include "QCat/Debug/Instrumentor.h"
 
 

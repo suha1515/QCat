@@ -1,6 +1,5 @@
 #pragma once
 #include <QCat/Scene/Scene.h>
-#include <QCat/Core/Log.h>
 #include <QCat/Scene/Entity.h>
 #include <QCat/Core/QCatCore.h>
 

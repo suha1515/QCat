@@ -3,15 +3,21 @@
 #include "PlatformDetection.h"
 
 #ifdef QCAT_DEBUG
-	#define QCAT_ENABLE_ASSERTS
-#endif
-#ifdef QCAT_ENABLE_ASSERTS
-#define QCAT_ASSERT(x, ...) { if(!(x)) { QCAT_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
-#define QCAT_CORE_ASSERT(x, ...) { if(!(x)) { QCAT_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#if defined(QCAT_PLATFORM_WINDOWS)
+#define QCAT_DEBUGBREAK() __debugbreak()
+#elif defined(QCAT_PLATFORM_LINUX)
+#include <signal.h>
+#define QCAT_DEBUGBREAK() raise(SIGTRAP)
 #else
-#define QCAT_ASSERT(x, ...)
-#define QCAT_CORE_ASSERT(x, ...)
+#error "Platform doesn't support debugbreak yet!"
 #endif
+#define QCAT_ENABLE_ASSERTS
+#else
+#define QCAT_DEBUGBREAK()
+#endif
+
+#define QCAT_EXPAND_MACRO(x) x
+#define QCAT_STRINGFY_MACRO(x) #x
 
 #define BIT(x) (1<<x)
 
