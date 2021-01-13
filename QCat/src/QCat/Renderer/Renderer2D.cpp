@@ -48,18 +48,6 @@ namespace QCat
 	void Renderer2D::Init()
 	{
 		QCAT_PROFILE_FUNCTION();
-		int bias = 0;
-#if defined(QCAT_OPENGL)
-		//bias = -1;
-#elif defined(QCAT_DX11)
-		//vertices
-		//float squareVertices[5 * 4] = {
-		//	-0.5f, -0.5f, 0.0f,0.0f, 1.0f + bias,
-		//	 0.5f, -0.5f, 0.0f,1.0f, 1.0f + bias,
-		//	 0.5f,  0.5f, 0.0f,1.0f, 0.0f - bias,
-		//	-0.5f,  0.5f, 0.0f,0.0f, 0.0f - bias
-		//};
-#endif
 		s_data.QuadVertexArray = VertexArray::Create();
 
 		const void* extraData = nullptr;
@@ -158,10 +146,6 @@ namespace QCat
 	void Renderer2D::EndScene()
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		//upload data to gpu
-		uint32_t datasize = (uint32_t)((uint8_t*)s_data.QuadVertexBufferPtr - (unsigned char*)s_data.QuadVertexBufferBase);
-		s_data.QuadVertexBuffer->SetData(s_data.QuadVertexBufferBase, datasize);
 
 		Flush();
 	}

@@ -89,7 +89,6 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 		// Resize
-				// Resize
 		if (FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
 			m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
 			(spec.Width != m_ViewPortSize.x || spec.Height != m_ViewPortSize.y))
