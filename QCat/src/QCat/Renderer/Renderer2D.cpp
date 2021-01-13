@@ -141,10 +141,7 @@ namespace QCat
 		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 #elif defined(QCAT_OPENGL)
 #endif
-		s_data.QuadIndexCount = 0;
-		s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
-
-		s_data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{	
@@ -156,10 +153,7 @@ namespace QCat
 		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 #elif defined(QCAT_OPENGL)
 #endif
-		s_data.QuadIndexCount = 0;
-		s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
-
-		s_data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 	void Renderer2D::EndScene()
 	{
@@ -175,22 +169,14 @@ namespace QCat
 	{
 		if (s_data.QuadIndexCount == 0)
 			return;
+		uint32_t dataSize = (uint32_t)((uint8_t*)s_data.QuadVertexBufferPtr - (uint8_t*)s_data.QuadVertexBufferBase);
+		s_data.QuadVertexBuffer->SetData(s_data.QuadVertexBufferBase, dataSize);
 		//Bind Texture
 		for (uint32_t i = 0; i < s_data.TextureSlotIndex; ++i)
 			s_data.TextureSlots[i]->Bind(i);
 		RenderCommand::DrawIndexed(s_data.QuadVertexArray,s_data.QuadIndexCount);
 
 		s_data.Stats.DrawCalls++;
-	}
-
-	 void Renderer2D::FlushAndReset()
-	{
-		 EndScene();
-
-		s_data.QuadIndexCount = 0;
-		s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
-
-		s_data.TextureSlotIndex = 1;
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -216,7 +202,7 @@ namespace QCat
 		const float tilingFactor = 1.0f;
 
 		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			FlushAndReset();
+			NextBatch();
 
 		for (size_t i = 0; i < quadVertexCount; i++)
 		{
@@ -255,7 +241,7 @@ namespace QCat
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
 		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)
-			FlushAndReset();
+			NextBatch();
 
 		float textureIndex = 0.f;
 		for (uint32_t i = 1; i < s_data.TextureSlotIndex; ++i)
@@ -270,7 +256,7 @@ namespace QCat
 		if (textureIndex == 0.0f)
 		{
 			if (s_data.TextureSlotIndex >= Renderer2DData::MaxTextureSlot)
-				FlushAndReset();
+				NextBatch();
 			textureIndex = (float)s_data.TextureSlotIndex;
 			s_data.TextureSlots[s_data.TextureSlotIndex] = texture;
 			s_data.TextureSlotIndex++;
@@ -325,6 +311,18 @@ namespace QCat
 	void Renderer2D::ResetStats()
 	{
 		memset(&s_data.Stats, 0, sizeof(Statistics));
+	}
+	void Renderer2D::StartBatch()
+	{
+		s_data.QuadIndexCount = 0;
+		s_data.QuadVertexBufferPtr = s_data.QuadVertexBufferBase;
+
+		s_data.TextureSlotIndex = 1;
+	}
+	void Renderer2D::NextBatch()
+	{
+		Flush();
+		StartBatch();
 	}
 }
 
