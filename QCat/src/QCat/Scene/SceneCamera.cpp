@@ -18,6 +18,15 @@ namespace QCat
 
 		RecalculateProjection();
 	}
+	void SceneCamera::SetPerspective(float verticalFov, float nearClip, float farClip)
+	{
+		m_ProjectionType = ProjectionType::Perspective;
+		m_PerspectiveFov = verticalFov;
+		m_PerspectiveNear = nearClip;
+		m_PerspectiveFar = farClip;
+
+		RecalculateProjection();
+	}
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_AspectRatio = (float)width / (float)height;
@@ -25,12 +34,19 @@ namespace QCat
 	}
 	void SceneCamera::RecalculateProjection()
 	{
-		float orthoLeft = -m_OrthoGraphicSize * 0.5f * m_AspectRatio;
-		float orthoRight = +m_OrthoGraphicSize * 0.5f * m_AspectRatio;
-		float orthoBottom = -m_OrthoGraphicSize * 0.5f;
-		float orthoTop = m_OrthoGraphicSize * 0.5f;
+		if (m_ProjectionType == ProjectionType::Perspective)
+		{
+			m_Projection = glm::perspective(m_PerspectiveFov, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+		}
+		else
+		{
+			float orthoLeft = -m_OrthoGraphicSize * 0.5f * m_AspectRatio;
+			float orthoRight = +m_OrthoGraphicSize * 0.5f * m_AspectRatio;
+			float orthoBottom = -m_OrthoGraphicSize * 0.5f;
+			float orthoTop = m_OrthoGraphicSize * 0.5f;
 
-		m_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop,
-			m_OrthoGraphicNear, m_OrthoGraphicfar);
+			m_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop,
+				m_OrthoGraphicNear, m_OrthoGraphicfar);
+		}
 	}
 }
