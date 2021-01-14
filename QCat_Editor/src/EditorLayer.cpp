@@ -1,12 +1,10 @@
 #include "EditorLayer.h"
+#include <Imgui/imgui.h>
 
-#include "imgui.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-#include "API/Opengl/OpenGLShader.h"
-#include "API/DirectX11/DX11_Shader.h"
-#include "API/DirectX11/DX11_Blender.h"
-
-#include <chrono>
+#include <QCat/Scene/SceneSerializer.h>
 
 namespace QCat
 {
@@ -29,52 +27,51 @@ namespace QCat
 		m_ActiveScene = CreateRef<Scene>();
 
 		
-		auto square = m_ActiveScene->CreateEntity("Green Square");
-		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });
+		//auto square = m_ActiveScene->CreateEntity("Green Square");
+		//square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });
 
-		auto Redsquare = m_ActiveScene->CreateEntity("Red Square");
-		Redsquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f,0.0f,0.0f,1.0f });
+		//auto Redsquare = m_ActiveScene->CreateEntity("Red Square");
+		//Redsquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f,0.0f,0.0f,1.0f });
 
-		m_SquareEntity = square;
+		//m_SquareEntity = square;
 
-		m_CameraEntity = m_ActiveScene->CreateEntity("CameraA Entity");
-		m_CameraEntity.AddComponent<CameraComponent>();
+		//m_CameraEntity = m_ActiveScene->CreateEntity("CameraA Entity");
+		//m_CameraEntity.AddComponent<CameraComponent>();
 
-		m_SecondCamera = m_ActiveScene->CreateEntity("CameraB Entity");
-		auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
-		cc.Primary = false;
+		//m_SecondCamera = m_ActiveScene->CreateEntity("CameraB Entity");
+		//auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
+		//cc.Primary = false;
 
-		class CameraController : public ScriptableEntity
-		{
-		public:
-			void OnCreate()
-			{
-				
-			}
-			void OnDestroy()
-			{
+		//class CameraController : public ScriptableEntity
+		//{
+		//public:
+		//	void OnCreate()
+		//	{
+		//		
+		//	}
+		//	void OnDestroy()
+		//	{
 
-			}
-			void OnUpdate(Timestep ts)
-			{
-				auto& translation = GetComponent<TransformComponent>().Translation;
-				float speed = 5.0f;
-				if (Input::IsKeyPressed(Key::A))
-					translation.x -= speed * ts;
-				if (Input::IsKeyPressed(Key::D))
-					translation.x += speed * ts;
-				if (Input::IsKeyPressed(Key::W))
-					translation.y += speed * ts;
-				if (Input::IsKeyPressed(Key::S))
-					translation.y -= speed * ts;
-			}
-		};
+		//	}
+		//	void OnUpdate(Timestep ts)
+		//	{
+		//		auto& translation = GetComponent<TransformComponent>().Translation;
+		//		float speed = 5.0f;
+		//		if (Input::IsKeyPressed(Key::A))
+		//			translation.x -= speed * ts;
+		//		if (Input::IsKeyPressed(Key::D))
+		//			translation.x += speed * ts;
+		//		if (Input::IsKeyPressed(Key::W))
+		//			translation.y += speed * ts;
+		//		if (Input::IsKeyPressed(Key::S))
+		//			translation.y -= speed * ts;
+		//	}
+		//};
 
-		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		//m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		//m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
 #endif
@@ -186,7 +183,20 @@ namespace QCat
 			if (ImGui::BeginMenu("File"))
 			{
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
-				// which we can't undo at the moment without finer window depth/z control.
+				// which we can't undo at the moment without finer window depth/z control
+				
+				if (ImGui::MenuItem("Serialize"))
+				{
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.Serialize("Asset/scenes/Example.QScene");
+				}
+				if (ImGui::MenuItem("DeSerialize"))
+				{
+					SceneSerializer serializer(m_ActiveScene);
+					serializer.DeSerialize("Asset/scenes/Example.QScene");
+				}
+				
+
 				if (ImGui::MenuItem("Exit")) Application::GetInstance().Close();
 				ImGui::EndMenu();
 			}

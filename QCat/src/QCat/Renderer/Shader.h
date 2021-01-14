@@ -1,8 +1,6 @@
 #pragma once
 #include "Graphics.h"
 #include <glm/glm.hpp>
-#include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
 
 namespace QCat
 {

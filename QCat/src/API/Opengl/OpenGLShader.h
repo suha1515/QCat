@@ -2,6 +2,7 @@
 #include <QCat/Renderer/Shader.h>
 #include <string>
 
+typedef unsigned int GLenum;
 namespace QCat
 {
 	class OpenGLShader : public Shader

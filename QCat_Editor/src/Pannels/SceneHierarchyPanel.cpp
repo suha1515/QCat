@@ -1,6 +1,6 @@
 #include "SceneHierarchyPanel.h"
-#include <imgui.h>
-#include <imgui_internal.h>
+#include "Imgui/imgui.h"
+#include "Imgui/imgui_internal.h"
 #include <glm/gtc/type_ptr.hpp>
 #include<QCat/Scene/Components.h>
 

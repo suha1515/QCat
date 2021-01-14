@@ -10,3 +10,6 @@
 [submodule "QCat/3rdLib/glm"]
 	path = QCat/3rdLib/glm
 	url = https://github.com/g-truc/glm
+[submodule "QCat/3rdLib/yaml-cpp"]
+	path = QCat/3rdLib/yaml-cpp
+	url = https://github.com/suha1515/yaml-cpp

@@ -4,7 +4,6 @@
 #include "Camera.h"
 
 #include "Texture.h"
-#include "API/DirectX11/QGfxDeviceDX11.h"
 
 namespace QCat
 {

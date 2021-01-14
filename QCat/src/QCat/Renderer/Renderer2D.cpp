@@ -3,10 +3,11 @@
 
 #include "VertexArray.h"
 #include "Shader.h"
-
-#include "API/Opengl/OpenGLShader.h"
-#include "API/DirectX11/DX11_Shader.h"
 #include "RenderCommand.h"
+
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "API/DirectX11/QGfxDeviceDX11.h"
 
 namespace QCat
 {
