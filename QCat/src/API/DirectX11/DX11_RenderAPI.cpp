@@ -59,7 +59,7 @@ namespace QCat
 	}
 	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount)
 	{
-		unsigned int count = indexCount ? vertexArray->GetIndexBuffer()->GetCount() : indexCount;
+		unsigned int count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		DrawIndexed(count);
 		//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullSRV =  nullptr;
 		//pgfx->GetContext()->PSSetShaderResources(0u, 1u, nullSRV.GetAddressOf());
