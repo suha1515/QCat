@@ -23,6 +23,8 @@ namespace QCat
 		void OnEnd();
 
 		void BlockEvents(bool block) { m_BlockEvent = block; }
+		void SetDarkThemeColors();
+		void SetNatrueThemeColors();
 	private:
 		bool m_BlockEvent = true;
 		INT64 g_Time = 0;
