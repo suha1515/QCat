@@ -15,7 +15,7 @@ namespace QCat
 	public:
 		unsigned int GetKey(unsigned int keycode) noexcept;
 	private:
-		static constexpr unsigned int nKeys = 256u;
+		static constexpr unsigned int nKeys = 348u;
 		std::bitset<nKeys> keystates;
 		std::vector<char> keys;
 		std::queue<char> charbuffer;
