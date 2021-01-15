@@ -16,6 +16,13 @@ namespace QCat
 		void OnUpdate(QCat::Timestep ts) override;
 		virtual void OnImGuiRender() override;
 		void OnEvent(QCat::Event& e) override;
+
+	private:
+		bool OnKeyPressed(KeyPressedEvent& e);
+
+		void NewScene();
+		void OpenScene();
+		void SaveSceneAs();
 	private:
 		//camera
 		OrthographicCameraController m_CameraController;

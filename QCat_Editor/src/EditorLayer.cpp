@@ -6,6 +6,10 @@
 
 #include <QCat/Scene/SceneSerializer.h>
 
+#include <QCat/Renderer/RenderAPI.h>
+
+#include <QCat/Uitiliy/PlatformUtils.h>
+
 namespace QCat
 {
 	EditorLayer::EditorLayer()
@@ -185,17 +189,13 @@ namespace QCat
 				// Disabling fullscreen would allow the window to be moved to the front of other windows,
 				// which we can't undo at the moment without finer window depth/z control
 				
-				if (ImGui::MenuItem("Serialize"))
-				{
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.Serialize("Asset/scenes/Example.QScene");
-				}
-				if (ImGui::MenuItem("DeSerialize"))
-				{
-					SceneSerializer serializer(m_ActiveScene);
-					serializer.DeSerialize("Asset/scenes/Example.QScene");
-				}
-				
+				if (ImGui::MenuItem("New", "Ctrl+N"))
+					NewScene();
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+					OpenScene();
+				if (ImGui::MenuItem("Save as...", "Crtl+Shift+S"))
+					SaveSceneAs();
+
 
 				if (ImGui::MenuItem("Exit")) Application::GetInstance().Close();
 				ImGui::EndMenu();
@@ -228,7 +228,14 @@ namespace QCat
 
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
-		ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+		}
 		ImGui::End();
 		ImGui::PopStyleVar();
 
@@ -239,6 +246,75 @@ namespace QCat
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		/*if (e.GetEventType() == EventType::KeyPressed)
+		{
+			QCAT_CORE_TRACE("key : {0}", e);
+		}*/
+	}
+	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
+	{
+		// Shortscuts
+		if (e.GetRepeatCount() > 0)
+			return false;
+
+		bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		switch (e.GetKeyCode())
+		{
+		case Key::N:
+		{
+			if (control)
+				NewScene();
+
+			break;
+		}
+		case Key::O:
+		{
+			if (control)
+				OpenScene();
+			break;
+		}
+		case Key::S:
+		{
+			if (control && shift)
+				SaveSceneAs();
+			break;
+		}
+		}
+		return false;
 	}
 
+	void EditorLayer::NewScene()
+	{
+		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		std::string filepath = FileDialogs::OpenFile("QCat Scene (*.QScene)\0*.QScene\0");
+		if (!filepath.empty())
+		{
+			m_ActiveScene = CreateRef<Scene>();
+			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.DeSerialize(filepath);
+		}
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		std::string filepath = FileDialogs::SaveFile("QCat Scene (*.QScene)\0*.QScene\0");
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.Serialize(filepath);
+		}
+	}
 }
