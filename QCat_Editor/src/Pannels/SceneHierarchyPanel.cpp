@@ -193,7 +193,7 @@ namespace QCat
 			
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer,sizeof(buffer), tag.c_str());
+			std::strncpy(buffer, tag.c_str(), sizeof(buffer));
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 			{
 				tag = std::string(buffer);
@@ -210,12 +210,19 @@ namespace QCat
 		{
 			if (ImGui::MenuItem("Camera"))
 			{
-				m_SelectionContext.AddComponent<CameraComponent>();
+				if (!m_SelectionContext.HasComponent<CameraComponent>())
+					m_SelectionContext.AddComponent<CameraComponent>();
+				else
+					QCAT_CORE_WARN("This Entity already has Camera Component");
 				ImGui::CloseCurrentPopup();
 			}
 			if (ImGui::MenuItem("SpriteRenderer"))
 			{
-				m_SelectionContext.AddComponent<SpriteRendererComponent>();
+				if (!m_SelectionContext.HasComponent<SpriteRendererComponent>())
+					m_SelectionContext.AddComponent<SpriteRendererComponent>();
+				else
+					QCAT_CORE_WARN("This Entity already has SpriteRendererComponent");
+
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

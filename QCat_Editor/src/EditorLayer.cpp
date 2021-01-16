@@ -296,25 +296,25 @@ namespace QCat
 
 	void EditorLayer::OpenScene()
 	{
-		std::string filepath = FileDialogs::OpenFile("QCat Scene (*.QScene)\0*.QScene\0");
-		if (!filepath.empty())
+		std::optional<std::string> filepath = FileDialogs::OpenFile("QCat Scene (*.QScene)\0*.QScene\0");
+		if (filepath)
 		{
 			m_ActiveScene = CreateRef<Scene>();
 			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 			SceneSerializer serializer(m_ActiveScene);
-			serializer.DeSerialize(filepath);
+			serializer.DeSerialize(*filepath);
 		}
 	}
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = FileDialogs::SaveFile("QCat Scene (*.QScene)\0*.QScene\0");
-		if (!filepath.empty())
+		std::optional<std::string> filepath = FileDialogs::SaveFile("QCat Scene (*.QScene)\0*.QScene\0");
+		if (filepath)
 		{
 			SceneSerializer serializer(m_ActiveScene);
-			serializer.Serialize(filepath);
+			serializer.Serialize(*filepath);
 		}
 	}
 }

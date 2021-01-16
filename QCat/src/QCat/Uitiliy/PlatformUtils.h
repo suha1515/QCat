@@ -1,6 +1,7 @@
 #pragma once
 
 #include<string>
+#include<optional>
 
 namespace QCat
 {
@@ -8,8 +9,8 @@ namespace QCat
 	{
 	public:
 		// Return empty string if cancelled
-		static std::string OpenFile(const char* filter);
-		static std::string SaveFile(const char* filter);
+		static std::optional<std::string> OpenFile(const char* filter);
+		static std::optional<std::string> SaveFile(const char* filter);
 
 	};
 }
