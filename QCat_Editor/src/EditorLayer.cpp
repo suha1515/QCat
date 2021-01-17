@@ -1,5 +1,6 @@
 #include "EditorLayer.h"
 #include <Imgui/imgui.h>
+#include <ImGuizmo/ImGuizmo.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,6 +10,8 @@
 #include <QCat/Renderer/RenderAPI.h>
 
 #include <QCat/Uitiliy/PlatformUtils.h>
+
+#include <QCat/Math/Math.h>
 
 namespace QCat
 {
@@ -29,52 +32,6 @@ namespace QCat
 		m_Framebuffer = FrameBuffer::Create(fbSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
-
-		
-		//auto square = m_ActiveScene->CreateEntity("Green Square");
-		//square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f,1.0f,0.0f,1.0f });
-
-		//auto Redsquare = m_ActiveScene->CreateEntity("Red Square");
-		//Redsquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f,0.0f,0.0f,1.0f });
-
-		//m_SquareEntity = square;
-
-		//m_CameraEntity = m_ActiveScene->CreateEntity("CameraA Entity");
-		//m_CameraEntity.AddComponent<CameraComponent>();
-
-		//m_SecondCamera = m_ActiveScene->CreateEntity("CameraB Entity");
-		//auto& cc = m_SecondCamera.AddComponent<CameraComponent>();
-		//cc.Primary = false;
-
-		//class CameraController : public ScriptableEntity
-		//{
-		//public:
-		//	void OnCreate()
-		//	{
-		//		
-		//	}
-		//	void OnDestroy()
-		//	{
-
-		//	}
-		//	void OnUpdate(Timestep ts)
-		//	{
-		//		auto& translation = GetComponent<TransformComponent>().Translation;
-		//		float speed = 5.0f;
-		//		if (Input::IsKeyPressed(Key::A))
-		//			translation.x -= speed * ts;
-		//		if (Input::IsKeyPressed(Key::D))
-		//			translation.x += speed * ts;
-		//		if (Input::IsKeyPressed(Key::W))
-		//			translation.y += speed * ts;
-		//		if (Input::IsKeyPressed(Key::S))
-		//			translation.y -= speed * ts;
-		//	}
-		//};
-
-		//m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		//m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
@@ -224,7 +181,7 @@ namespace QCat
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
 
-		Application::GetInstance().GetImguiLayer()->BlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+		Application::GetInstance().GetImguiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
@@ -236,6 +193,52 @@ namespace QCat
 		{
 			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 		}
+
+		// Gizmos
+		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+		if (selectedEntity && m_GizmoType != -1)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			float windowWidth = (float)ImGui::GetWindowWidth();
+			float windowHeight = (float)ImGui::GetWindowHeight();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth,windowHeight);
+
+			// Camera
+			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			const glm::mat4& cameraProjection = camera.GetProjection();
+			glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+
+			// Entity transform
+			auto& tc = selectedEntity.GetComponent<TransformComponent>();
+			glm::mat4 transform = tc.GetTransform();
+
+			// Sanapping
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = 0.5f;
+			// snap to 45 degrees for rotation
+			if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f;
+
+			float snapValues[3] = { snapValue,snapValue,snapValue };
+
+			// use all data
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),nullptr,snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform,translation, rotation, scale);
+
+				glm::vec3 deltaRotation = rotation -  tc.Rotation;
+				tc.Translation = translation;
+				tc.Rotation += deltaRotation;
+				tc.Scale = scale;
+			}
+		}
+
 		ImGui::End();
 		ImGui::PopStyleVar();
 
@@ -283,6 +286,20 @@ namespace QCat
 				SaveSceneAs();
 			break;
 		}
+		
+		// Gizmo
+		case Key::Q:
+			m_GizmoType = -1;
+			break;
+		case Key::W:
+			m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			break;
+		case Key::E:
+			m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			break;
+		case Key::R:
+			m_GizmoType = ImGuizmo::OPERATION::SCALE;
+			break;
 		}
 		return false;
 	}

@@ -1,7 +1,9 @@
 #include "qcpch.h"
 #include "ImGuiLayer.h"
 #include "imgui.h"
+#include "ImGuizmo.h"
 
+#include "QCat/Renderer/RenderAPI.h"
 #include "QCat/Core/Application.h"
 #include "backends/imgui_impl_dx11.h"
 #include "backends/imgui_impl_win32.h"
@@ -60,36 +62,47 @@ namespace QCat
 		//SetDarkThemeColors();
 		SetNatrueThemeColors();
 		ImGui_ImplWin32_Init(hwnd);
-#if defined(QCAT_DX11)
-		QGfxDeviceDX11* pgfx = dynamic_cast<QGfxDeviceDX11*>(window->Gfx());
-		ImGui_ImplDX11_Init(pgfx->GetDevice().Get(), pgfx->GetContext().Get());
-#elif defined(QCAT_OPENGL)
-		ImGui_ImplOpenGL3_Init("#version 450");
-#endif  
-	
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			QGfxDeviceDX11* pgfx = dynamic_cast<QGfxDeviceDX11*>(window->Gfx());
+			ImGui_ImplDX11_Init(pgfx->GetDevice().Get(), pgfx->GetContext().Get());
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			ImGui_ImplOpenGL3_Init("#version 450");
+		}
 	}
 	void ImGuiLayer::OnDetach()
 	{
 		QCAT_PROFILE_FUNCTION();
-
-#if defined(QCAT_DX11)
-		ImGui_ImplDX11_Shutdown();
-#elif defined(QCAT_OPENGL)
-		ImGui_ImplOpenGL3_Shutdown();
-#endif  
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			ImGui_ImplDX11_Shutdown();
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			ImGui_ImplOpenGL3_Shutdown();
+		}
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
 	}
 	void ImGuiLayer::OnBegin()
 	{
 		QCAT_PROFILE_FUNCTION();
-#if defined(QCAT_DX11)
-		ImGui_ImplDX11_NewFrame();
-#elif defined(QCAT_OPENGL)
-		ImGui_ImplOpenGL3_NewFrame();
-#endif  
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			ImGui_ImplDX11_NewFrame();
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			ImGui_ImplOpenGL3_NewFrame();
+		}
+
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+
+		ImGuizmo::BeginFrame();
 	}
 	void ImGuiLayer::OnEnd()
 	{
@@ -97,21 +110,26 @@ namespace QCat
 
 		ImGui::Render();
 		ImGuiIO& io = ImGui::GetIO();
-#if defined(QCAT_DX11)
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#elif defined(QCAT_OPENGL)
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-#endif  
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		}
+
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-#if defined(QCAT_OPENGL)
-			WindowsWindow* window = dynamic_cast<WindowsWindow*>(Application::GetInstance().GetWindow());
-			QCatOpengl* pgfx = dynamic_cast<QCatOpengl*>(window->Gfx());
-			pgfx->MakeCurrent();
-#endif  	
+			if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+			{
+				WindowsWindow* window = dynamic_cast<WindowsWindow*>(Application::GetInstance().GetWindow());
+				QCatOpengl* pgfx = dynamic_cast<QCatOpengl*>(window->Gfx());
+				pgfx->MakeCurrent();
+			}	
 		}
 	}
 	void ImGuiLayer::SetDarkThemeColors()

@@ -21,6 +21,8 @@ project "QCat"
 		"3rdLib/stb_image/**.cpp",
 		"3rdLib/glm/glm/**.hpp",
 		"3rdLib/glm/glm/**.inl",
+		"3rdLib/ImGuizmo/ImGuizmo.h",
+		"3rdLib/ImGuizmo/ImGuizmo.cpp"
 	}
 	defines
 	{
@@ -36,7 +38,8 @@ project "QCat"
 		"%{IncludeDir.Glm}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.yaml_cpp}"
+		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links
@@ -47,6 +50,8 @@ project "QCat"
 		"Glad",
 		"yaml-cpp"
 	}
+	filter "files:3rdLib/ImGuizmo/**.cpp"
+	flags {"NoPCH"}
 
 	filter "system:windows"
 		systemversion "latest"

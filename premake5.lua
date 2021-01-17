@@ -28,6 +28,8 @@ IncludeDir["Glad"] = "%{wks.location}/QCat/3rdLib/Glad/Include"
 IncludeDir["stb_image"] = "%{wks.location}/QCat/3rdLib/stb_image"
 IncludeDir["entt"] = "%{wks.location}/QCat/3rdLib/entt/Include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/QCat/3rdLib/yaml-cpp/Include"
+IncludeDir["ImGuizmo"] = "%{wks.location}/QCat/3rdLib/ImGuizmo"
+
 
 group "Dependencies"
 	include "3rdLib/premake"

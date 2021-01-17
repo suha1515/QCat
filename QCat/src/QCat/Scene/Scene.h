@@ -19,8 +19,8 @@ namespace QCat
 
 		void OnUpdate(Timestep ts);
 		void OnViewportReSize(uint32_t width, uint32_t height);
-		// Temporary
-		entt::registry& Reg() { return m_Registry; }
+		
+		Entity GetPrimaryCameraEntity();
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);

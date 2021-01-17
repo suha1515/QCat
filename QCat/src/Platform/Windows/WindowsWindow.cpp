@@ -208,12 +208,14 @@ namespace QCat
 			{
 				KeyPressedEvent event(key, 0);
 				m_data.EventCallback(event);
+				std::cout << event.GetKeyCode()<<" key Pressed" << std::endl;
 				break;
 			}
 			case QCAT_RELEASE:
 			{
 				KeyReleasedEvent event(key);
 				m_data.EventCallback(event);
+				std::cout << event.GetKeyCode() << " key Released " << std::endl;
 				break;
 			}
 			case QCAT_REPEAT:

@@ -13,3 +13,6 @@
 [submodule "QCat/3rdLib/yaml-cpp"]
 	path = QCat/3rdLib/yaml-cpp
 	url = https://github.com/suha1515/yaml-cpp
+[submodule "QCat/3rdLib/ImGuizmo"]
+	path = QCat/3rdLib/ImGuizmo
+	url = https://github.com/suha1515/ImGuizmo
