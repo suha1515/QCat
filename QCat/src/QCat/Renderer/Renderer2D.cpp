@@ -125,11 +125,16 @@ namespace QCat
 		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 		s_data.TextureShader->Bind();
 		s_data.TextureShader->SetMat4("u_ViewProjection", viewProj);
-#if defined(QCAT_DX11)
-		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
-		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-#elif defined(QCAT_OPENGL)
-#endif
+		StartBatch();
+	}
+	void Renderer2D::BeginScene(const EditorCamera& camera)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		glm::mat4 viewProj = camera.GetViewProjection();
+
+		s_data.TextureShader->Bind();
+		s_data.TextureShader->SetMat4("u_ViewProjection", viewProj);
 		StartBatch();
 	}
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
@@ -137,11 +142,6 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 		s_data.TextureShader->Bind();
 		s_data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
-#if defined(QCAT_DX11)
-		QCat::QGfxDeviceDX11* pGfx = QCat::QGfxDeviceDX11::GetInstance();
-		pGfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-#elif defined(QCAT_OPENGL)
-#endif
 		StartBatch();
 	}
 	void Renderer2D::EndScene()

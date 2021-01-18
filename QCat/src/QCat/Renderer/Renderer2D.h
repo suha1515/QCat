@@ -4,6 +4,7 @@
 #include "Camera.h"
 
 #include "Texture.h"
+#include "EditorCamera.h"
 
 namespace QCat
 {
@@ -14,6 +15,7 @@ namespace QCat
 		static void Shutdown();
 
 		static void BeginScene(const Camera& camera,const glm::mat4& transform);
+		static void BeginScene(const EditorCamera& camera);
 		static void BeginScene(const OrthographicCamera& camera); // TODO : REMOVE
 
 		static void EndScene();

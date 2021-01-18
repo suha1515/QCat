@@ -208,14 +208,14 @@ namespace QCat
 			{
 				KeyPressedEvent event(key, 0);
 				m_data.EventCallback(event);
-				std::cout << event.GetKeyCode()<<" key Pressed" << std::endl;
+				//std::cout << event.GetKeyCode()<<" key Pressed" << std::endl;
 				break;
 			}
 			case QCAT_RELEASE:
 			{
 				KeyReleasedEvent event(key);
 				m_data.EventCallback(event);
-				std::cout << event.GetKeyCode() << " key Released " << std::endl;
+				//std::cout << event.GetKeyCode() << " key Released " << std::endl;
 				break;
 			}
 			case QCAT_REPEAT:
@@ -245,6 +245,8 @@ namespace QCat
 		}
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
 		{
@@ -292,12 +294,14 @@ namespace QCat
 			{
 				MouseButtonPressedEvent event(button);
 				m_data.EventCallback(event);
+				//std::cout << event.GetMouseButton() << " key Pressed" << std::endl;
 				break;
 			}
 			case QCAT_RELEASE:
 			{
 				MouseButtonReleasedEvent event(button);
 				m_data.EventCallback(event);
+				//std::cout << event.GetMouseButton() << " key Released" << std::endl;
 				break;
 			}
 			}

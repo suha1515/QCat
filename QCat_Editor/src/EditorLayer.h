@@ -2,6 +2,8 @@
 
 #include "QCat.h"
 #include "Pannels/SceneHierarchyPanel.h"
+#include <QCat/Renderer/EditorCamera.h>
+
 namespace QCat
 {
 	class EditorLayer : public Layer
@@ -35,6 +37,7 @@ namespace QCat
 		Entity m_SecondCamera;
 
 		bool m_PrimaryCamera = true;
+		EditorCamera m_EditorCamera;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;

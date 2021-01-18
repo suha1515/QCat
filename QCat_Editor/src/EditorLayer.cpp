@@ -33,9 +33,8 @@ namespace QCat
 
 		m_ActiveScene = CreateRef<Scene>();
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-#if defined(QCAT_DX11)
-#elif defined(QCAT_OPENGL)
-#endif
+
+		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 	}
 
 	void EditorLayer::OnDetach()
@@ -53,12 +52,16 @@ namespace QCat
 		{
 			m_Framebuffer->Resize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
-
+			m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
 			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 		}
 		// Update
 		if (m_ViewportFocused)
-			m_CameraController.OnUpdate(ts);
+		{
+			m_CameraController.OnUpdate(ts);	
+		}
+
+		m_EditorCamera.OnUpdate(ts);
 		// Render
 		// Reset stats here
 		Renderer2D::ResetStats();
@@ -66,11 +69,9 @@ namespace QCat
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		RenderCommand::Clear();
 
-#if defined(QCAT_DX11)
-#elif defined(QCAT_OPENGL)
-#endif
 		// Update Scene
-		m_ActiveScene->OnUpdate(ts);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		m_Framebuffer->UnBind();
 		RenderCommand::SetDefaultFrameBuffer();
@@ -205,10 +206,16 @@ namespace QCat
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth,windowHeight);
 
 			// Camera
-			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			// Runtime Camera for entity
+			/*auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
 			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
 			const glm::mat4& cameraProjection = camera.GetProjection();
 			glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			*/
+
+			// Editor Camera
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			// Entity transform
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -249,6 +256,8 @@ namespace QCat
 	void EditorLayer::OnEvent(Event& e)
 	{
 		m_CameraController.OnEvent(e);
+		m_EditorCamera.OnEvent(e);
+
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
 		/*if (e.GetEventType() == EventType::KeyPressed)

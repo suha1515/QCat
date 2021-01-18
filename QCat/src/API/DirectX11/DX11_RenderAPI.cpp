@@ -28,6 +28,8 @@ namespace QCat
 		pgfx->BlendStateEnable(true);
 		pgfx->SetSamplerState(samplerDesc);
 		pgfx->BindSamplerState();
+
+		pgfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
