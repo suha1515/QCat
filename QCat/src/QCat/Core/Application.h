@@ -35,7 +35,7 @@ namespace QCat
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
-		std::unique_ptr<Window> m_window;
+		Scope<Window> m_window;
 		ImGuiLayer* m_ImguiLayer;
 		bool m_Running = true;
 		bool m_minimized = false;
