@@ -47,9 +47,7 @@ void Sandbox2D::OnUpdate(QCat::Timestep ts)
 		QCAT_PROFILE_SCOPE("Renderer Draw");
 		static float rotation = 0.0f;
 		rotation += ts * 50.0f;
-//#if defined(QCAT_DX11)
-//#elif defined(QCAT_OPENGL)
-//#endif
+
 		QCat::Renderer2D::BeginScene(m_CameraController.GetCamera());
 		QCat::Renderer2D::DrawRotatedQuad({ 1.0f,0.0f }, { 0.8f,0.8f }, -45.0f, { 0.8f,0.2f,0.3f,1.0f });
 		QCat::Renderer2D::DrawQuad({ -1.0f,0.0f }, { 0.8f,0.8f }, { 0.8f,0.2f,0.3f,1.0f });
