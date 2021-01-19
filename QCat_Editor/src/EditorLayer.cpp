@@ -70,8 +70,8 @@ namespace QCat
 		RenderCommand::Clear();
 
 		// Update Scene
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
-		//m_ActiveScene->OnUpdateRuntime(ts);
+		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+		m_ActiveScene->OnUpdateRuntime(ts);
 
 		m_Framebuffer->UnBind();
 		RenderCommand::SetDefaultFrameBuffer();
@@ -172,6 +172,7 @@ namespace QCat
 		ImGui::Text("Quads: %d", stats.QuadCount);
 		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+
 		
 		ImGui::End();
 

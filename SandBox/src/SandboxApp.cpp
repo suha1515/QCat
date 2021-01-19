@@ -81,7 +81,7 @@ public:
 	Sandbox()
 	{
 		//PushLayer(new ExamLayer());
-		PushLayer(new Sandbox2D());
+		PushLayer(new QCat::Sandbox2D());
 	}
 	~Sandbox()
 	{
