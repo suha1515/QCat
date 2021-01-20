@@ -3,6 +3,7 @@
 #define GLM_FORCE_LEFT_HANDED
 #include "QCat.h"
 #include "Geometry/Cube.h"
+#include "Geometry/Sphere.h"
 
 namespace QCat
 {
@@ -25,6 +26,7 @@ namespace QCat
 		Entity m_Cube;
 
 		Ref<Cube> cube;
+		Ref<Sphere> sphere;
 
 		Ref<Scene> m_ActiveScene;
 		glm::vec3 m_CameraPosition = { 0.0f,0.0f,-2.0f };

@@ -95,6 +95,7 @@ namespace QCat
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
+		m_VertexArray->UnBind();
 	}
 	void Cube::SetScale(const glm::vec3& scale)
 	{
