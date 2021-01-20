@@ -4,6 +4,7 @@
 #include "QCat.h"
 #include "Geometry/Cube.h"
 #include "Geometry/Sphere.h"
+#include "Light/Light.h"
 
 namespace QCat
 {
@@ -27,6 +28,7 @@ namespace QCat
 
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
+		Ref<Light> light;
 
 		Ref<Scene> m_ActiveScene;
 		glm::vec3 m_CameraPosition = { 0.0f,0.0f,-2.0f };

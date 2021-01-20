@@ -6,19 +6,16 @@ namespace QCat
 	struct Vertex
 	{
 		glm::vec3 Position;
-		glm::vec4 Color;
+		glm::vec3 Noemral;
 		glm::vec2 TexCoord;
-		float tilingFactor;
 	};
-	Cube::Cube(Scene* activeScene , const char* name,const glm::vec3& position, const char* texturePath)
+	Cube::Cube(const glm::vec3& position, const char* texturePath)
+		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
 	{
-		entity = activeScene->CreateEntity(name);
-		auto& tc = entity.GetComponent<TransformComponent>();
-		tc.Translation = position;
-		
+
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			shader = Shader::Create("Asset/shaders/glsl/Solid.glsl");
+			shader = Shader::Create("Asset/shaders/glsl/FlatShader.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
@@ -27,6 +24,12 @@ namespace QCat
 		
 		if(texturePath != "")
 			m_Texture = QCat::Texture2D::Create(texturePath);
+		else
+		{
+			m_Texture = Texture2D::Create(1, 1);
+			unsigned int whiteTextureData = 0xffffffff;
+			m_Texture->SetData(&whiteTextureData, sizeof(unsigned int));
+		}
 
 		shader->Bind();
 		shader->SetInt("u_Texture", 0);
@@ -38,35 +41,35 @@ namespace QCat
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(24 * sizeof(Vertex));
 
 		Vertex vertex[24];
-		vertex[0] = { {-0.5f,-0.5f,-0.5f},{1.0f,0.0f,0.0f,1.0f},{0.0f,0.0f},1.0f };
-		vertex[1] = { { 0.5f,-0.5f,-0.5f},{0.0f,1.0f,0.0f,1.0f},{1.0f,0.0f},1.0f };
-		vertex[2] = { { 0.5f, 0.5f,-0.5f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f},1.0f };
-		vertex[3] = { {-0.5f, 0.5f,-0.5f},{1.0f,0.0f,1.0f,1.0f},{0.0f,1.0f},1.0f };
+		vertex[0] = { {-0.5f,-0.5f,-0.5f},{0.0f,0.0f,-1.0f},{0.0f,0.0f}};
+		vertex[1] = { { 0.5f,-0.5f,-0.5f},{0.0f,1.0f,-1.0f},{1.0f,0.0f}};
+		vertex[2] = { { 0.5f, 0.5f,-0.5f},{0.0f,0.0f,-1.0f},{1.0f,1.0f}};
+		vertex[3] = { {-0.5f, 0.5f,-0.5f},{1.0f,0.0f,-1.0f},{0.0f,1.0f}};
 
-		vertex[4] = { { 0.5f,-0.5f,-0.5f},{1.0f,0.0f,0.0f,1.0f},{0.0f,0.0f},1.0f };
-		vertex[5] = { { 0.5f,-0.5f, 0.5f},{0.0f,1.0f,0.0f,1.0f},{1.0f,0.0f},1.0f };
-		vertex[6] = { { 0.5f, 0.5f, 0.5f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f},1.0f };
-		vertex[7] = { { 0.5f, 0.5f,-0.5f},{1.0f,1.0f,0.0f,1.0f},{0.0f,1.0f},1.0f };
+		vertex[4] = { { 0.5f,-0.5f,-0.5f},{1.0f,0.0f,0.0f},{0.0f,0.0f}};
+		vertex[5] = { { 0.5f,-0.5f, 0.5f},{1.0f,0.0f,0.0f},{1.0f,0.0f}};
+		vertex[6] = { { 0.5f, 0.5f, 0.5f},{1.0f,0.0f,0.0f},{1.0f,1.0f}};
+		vertex[7] = { { 0.5f, 0.5f,-0.5f},{1.0f,1.0f,0.0f},{0.0f,1.0f}};
 
-		vertex[8] = { { 0.5f,-0.5f, 0.5f},{1.0f,0.0f,0.0f,1.0f},{0.0f,0.0f},1.0f };
-		vertex[9] = { {-0.5f,-0.5f, 0.5f},{0.0f,1.0f,0.0f,1.0f},{1.0f,0.0f},1.0f };
-		vertex[10] = { {-0.5f, 0.5f, 0.5f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f},1.0f };
-		vertex[11] = { { 0.5f, 0.5f, 0.5f},{1.0f,0.0f,1.0f,1.0f},{0.0f,1.0f},1.0f };
+		vertex[8] = { { 0.5f,-0.5f, 0.5f},{0.0f,0.0f,1.0f},{0.0f,0.0f}};
+		vertex[9] = { {-0.5f,-0.5f, 0.5f},{0.0f,0.0f,1.0f},{1.0f,0.0f}};
+		vertex[10]= { {-0.5f, 0.5f, 0.5f},{0.0f,0.0f,1.0f},{1.0f,1.0f}};
+		vertex[11]= { { 0.5f, 0.5f, 0.5f},{0.0f,0.0f,1.0f},{0.0f,1.0f}};
 
-		vertex[12] = { {-0.5f,-0.5f, 0.5f},{1.0f,0.0f,0.0f,1.0f},{0.0f,0.0f},1.0f };
-		vertex[13] = { {-0.5f,-0.5f,-0.5f},{0.0f,1.0f,0.0f,1.0f},{1.0f,0.0f},1.0f };
-		vertex[14] = { {-0.5f, 0.5f,-0.5f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f},1.0f };
-		vertex[15] = { {-0.5f, 0.5f, 0.5f},{1.0f,1.0f,0.0f,1.0f},{0.0f,1.0f},1.0f };
-
-		vertex[16] = { {-0.5f, 0.5f,-0.5f},{1.0f,0.0f,0.0f,1.0f},{0.0f,0.0f},1.0f };
-		vertex[17] = { { 0.5f, 0.5f,-0.5f},{0.0f,1.0f,0.0f,1.0f},{1.0f,0.0f},1.0f };
-		vertex[18] = { { 0.5f, 0.5f, 0.5f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f},1.0f };
-		vertex[19] = { {-0.5f, 0.5f, 0.5f},{1.0f,0.0f,1.0f,1.0f},{0.0f,1.0f},1.0f };
-
-		vertex[20] = { {-0.5f,-0.5f, 0.5f},{1.0f,0.0f,0.0f,1.0f},{0.0f,0.0f},1.0f };
-		vertex[21] = { { 0.5f,-0.5f, 0.5f},{0.0f,1.0f,0.0f,1.0f},{1.0f,0.0f},1.0f };
-		vertex[22] = { { 0.5f,-0.5f,-0.5f},{0.0f,0.0f,1.0f,1.0f},{1.0f,1.0f},1.0f };
-		vertex[23] = { {-0.5f,-0.5f,-0.5f},{1.0f,1.0f,0.0f,1.0f},{0.0f,1.0f},1.0f };
+		vertex[12]= { {-0.5f,-0.5f, 0.5f},{-1.0f,0.0f,0.0f},{0.0f,0.0f}};
+		vertex[13]= { {-0.5f,-0.5f,-0.5f},{-1.0f,0.0f,0.0f},{1.0f,0.0f}};
+		vertex[14]= { {-0.5f, 0.5f,-0.5f},{-1.0f,0.0f,0.0f},{1.0f,1.0f}};
+		vertex[15]= { {-0.5f, 0.5f, 0.5f},{-1.0f,0.0f,0.0f},{0.0f,1.0f}};
+				  
+		vertex[16]= { {-0.5f, 0.5f,-0.5f},{0.0f,1.0f,0.0f},{0.0f,0.0f}};
+		vertex[17]= { { 0.5f, 0.5f,-0.5f},{0.0f,1.0f,0.0f},{1.0f,0.0f}};
+		vertex[18]= { { 0.5f, 0.5f, 0.5f},{0.0f,1.0f,0.0f},{1.0f,1.0f}};
+		vertex[19]= { {-0.5f, 0.5f, 0.5f},{0.0f,1.0f,0.0f},{0.0f,1.0f}};
+				  
+		vertex[20]= { {-0.5f,-0.5f, 0.5f},{0.0f,-1.0f,0.0f},{0.0f,0.0f}};
+		vertex[21]= { { 0.5f,-0.5f, 0.5f},{0.0f,-1.0f,0.0f},{1.0f,0.0f}};
+		vertex[22]= { { 0.5f,-0.5f,-0.5f},{0.0f,-1.0f,0.0f},{1.0f,1.0f}};
+		vertex[23]= { {-0.5f,-0.5f,-0.5f},{0.0f,-1.0f,0.0f},{0.0f,1.0f}};
 
 
 		vertexBuffer->SetData(vertex, sizeof(vertex));
@@ -86,9 +89,8 @@ namespace QCat
 
 		vertexBuffer->SetLayout(BufferLayout::Create(
 			{ { ShaderDataType::Float3, "a_Position"},
-			  { ShaderDataType::Float4, "a_Color"   },
+			  { ShaderDataType::Float3, "a_Normal"   },
 			  { ShaderDataType::Float2, "a_TexCoord"},
-			  { ShaderDataType::Float,  "a_TilingFactor"}
 			}, shader
 		));
 
@@ -99,21 +101,19 @@ namespace QCat
 	}
 	void Cube::SetScale(const glm::vec3& scale)
 	{
-		auto& tc = entity.GetComponent<TransformComponent>();
-		tc.Scale = scale;
+		this->scale = scale;
 	}
 	void Cube::SetRotation(const glm::vec3& rotation)
 	{
-		auto& tc = entity.GetComponent<TransformComponent>();
-		tc.Rotation= rotation;
+		this->rotation = rotation;
 	}
-	void Cube::Draw(Entity& camera)
+	void Cube::Draw(const glm::mat4& viewProj, const glm::vec3 lightcolor)
 	{
 		shader->Bind();
-		auto& transform = camera.GetComponent<TransformComponent>().GetTransform();
-		auto& viewProj = camera.GetComponent<CameraComponent>().Camera.GetProjection() * glm::inverse(transform);
 		shader->SetMat4("u_ViewProjection", viewProj);
-		shader->SetMat4("u_Transform", entity.GetComponent<TransformComponent>().GetTransform());
+		glm::mat4 transform= glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+		shader->SetMat4("u_Transform", transform);
+		shader->SetFloat3("lightColor", lightcolor);
 
 		m_Texture->Bind(0);
 
@@ -124,10 +124,9 @@ namespace QCat
 	{
 		ImGui::Begin(name);
 		
-		auto& tc = entity.GetComponent<TransformComponent>();
-		ImGui::DragFloat3("Position", glm::value_ptr(tc.Translation), 0.1f);
-		ImGui::DragFloat3("Rotation", glm::value_ptr(tc.Rotation), 0.1f);
-		ImGui::DragFloat3("Scale", glm::value_ptr(tc.Scale), 0.1f);
+		ImGui::DragFloat3("Position", glm::value_ptr(translation), 0.1f);
+		ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f);
+		ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.1f);
 		
 		ImGui::End();
 	}

@@ -29,8 +29,9 @@ namespace QCat
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.001f, 1000.0f);
 
-		cube = CreateRef<Cube>(m_ActiveScene.get(), "Cube", glm::vec3(0.0f, 0.0f, 3.0f), "Asset/textures/Checkerboard.png");
-		sphere = CreateRef<Sphere>(m_ActiveScene.get(), "Sphere", glm::vec3(-3.0f, 0.0f, 3.0f), "Asset/textures/Checkerboard.png");
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 3.0f), "Asset/textures/Checkerboard.png");
+		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f), "Asset/textures/Checkerboard.png");
+		light = CreateRef<Light>(glm::vec3(2.0f, 0.0f, 5.0f));
 		//RenderCommand::SetWireFrameMode();
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
@@ -57,9 +58,10 @@ namespace QCat
 		}
 		{
 			QCAT_PROFILE_SCOPE("Renderer Draw");
-			cube->Draw(m_Camera);
-			sphere->Draw(m_Camera);
-		
+			glm::mat4& viewProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection() * glm::inverse(m_Camera.GetComponent<TransformComponent>().GetTransform());
+			cube->Draw(viewProj,light->GetColor());
+			sphere->Draw(viewProj, light->GetColor());
+			light->Draw(viewProj);
 		}
 	}
 
@@ -94,6 +96,7 @@ namespace QCat
 
 		cube->ImguiRender("Cube 1");
 		sphere->ImguiRender("Spehere 1");
+		light->ImGuiRender("light 1");
 	}
 
 	void Sandbox2D::OnEvent(QCat::Event& e)

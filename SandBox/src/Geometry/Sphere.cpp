@@ -13,22 +13,25 @@ namespace QCat
 		glm::vec2 TexCoord;
 	};
 
-	Sphere::Sphere(Scene* activeScene, const char* name, const glm::vec3& position, const char* texturePath, float radius, int sectorCount, int stackCount)
+	Sphere::Sphere(const glm::vec3& position, const char* texturePath, float radius, int sectorCount, int stackCount)
+		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
 	{
-		entity = activeScene->CreateEntity(name);
-		auto& tc = entity.GetComponent<TransformComponent>();
-		tc.Translation = position;
-
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			shader = Shader::Create("Asset/shaders/glsl/Sphere.glsl");
+			shader = Shader::Create("Asset/shaders/glsl/FlatShader.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			shader = Shader::Create("SphereShader", "Asset/shaders/hlsl/Sphere_VS.hlsl", "Asset/shaders/hlsl/Sphere_PS.hlsl");
+			shader = Shader::Create("SphereShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/Solid_PS.hlsl");
 		}
 		if (texturePath != "")
-			m_Texture = QCat::Texture2D::Create(texturePath);
+			m_Texture = Texture2D::Create(texturePath);
+		else
+		{
+			m_Texture = Texture2D::Create(1, 1);
+			unsigned int whiteTextureData = 0xffffffff;
+			m_Texture->SetData(&whiteTextureData, sizeof(unsigned int));
+		}
 
 		shader->Bind();
 		shader->SetInt("u_Texture", 0);
@@ -143,24 +146,22 @@ namespace QCat
 
 	void Sphere::SetScale(const glm::vec3& scale)
 	{
-		auto& tc = entity.GetComponent<TransformComponent>();
-		tc.Scale = scale;
+		this->scale = scale;
 	}
 
 	void Sphere::SetRotation(const glm::vec3& rotation)
 	{
-		auto& tc = entity.GetComponent<TransformComponent>();
-		tc.Rotation = rotation;
+		this->rotation = rotation;
 	}
 
-	void Sphere::Draw(Entity& camera)
+	void Sphere::Draw(const glm::mat4& viewProj,const glm::vec3 lightcolor)
 	{
 		shader->Bind();
-		auto& transform = camera.GetComponent<TransformComponent>().GetTransform();
-		auto& viewProj = camera.GetComponent<CameraComponent>().Camera.GetProjection() * glm::inverse(transform);
 		shader->SetMat4("u_ViewProjection", viewProj);
-		shader->SetMat4("u_Transform", entity.GetComponent<TransformComponent>().GetTransform());
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 
+		shader->SetMat4("u_Transform", transform);
+		shader->SetFloat3("lightColor", lightcolor);
 		m_Texture->Bind(0);
 
 		m_VertexArray->Bind();
@@ -170,10 +171,9 @@ namespace QCat
 	{
 		ImGui::Begin(name);
 
-		auto& tc = entity.GetComponent<TransformComponent>();
-		ImGui::DragFloat3("Position", glm::value_ptr(tc.Translation), 0.1f);
-		ImGui::DragFloat3("Rotation", glm::value_ptr(tc.Rotation), 0.1f);
-		ImGui::DragFloat3("Scale", glm::value_ptr(tc.Scale), 0.1f);
+		ImGui::DragFloat3("Position", glm::value_ptr(translation), 0.1f);
+		ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f);
+		ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.1f);
 
 		ImGui::End();
 	}
