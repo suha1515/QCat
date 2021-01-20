@@ -4,6 +4,7 @@
 
 namespace QCat
 {
+	struct LightInfo;
 	class Sphere
 	{
 	public:
@@ -13,7 +14,7 @@ namespace QCat
 		void SetRotation(const glm::vec3& rotation);
 		void SetTranslation(const glm::vec3 translation) { this->translation = translation; }
 
-		void Draw(const glm::mat4& viewProj, const glm::vec3 lightcolor = { 1.0f,1.0f,1.0f });
+		void Draw(const glm::mat4& cameraTransform, const glm::mat4& proj, LightInfo info);
 
 		Shader* GetShader() { return shader.get(); }
 		void SetShader(const Ref<Shader>& shader)

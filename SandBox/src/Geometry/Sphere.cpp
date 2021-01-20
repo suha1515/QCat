@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/ext/scalar_constants.hpp>
-
+#include "../Light/Light.h"
 namespace QCat
 {
 	struct Vertex
@@ -154,14 +154,21 @@ namespace QCat
 		this->rotation = rotation;
 	}
 
-	void Sphere::Draw(const glm::mat4& viewProj,const glm::vec3 lightcolor)
+	void Sphere::Draw(const glm::mat4& cameraTransform,const glm::mat4& proj, LightInfo info)
 	{
 		shader->Bind();
-		shader->SetMat4("u_ViewProjection", viewProj);
+		shader->SetMat4("u_ViewProjection", proj*glm::inverse(cameraTransform));
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 
 		shader->SetMat4("u_Transform", transform);
-		shader->SetFloat3("lightColor", lightcolor);
+		shader->SetFloat3("lightColor", info.lightColor);
+		shader->SetFloat3("lightAmbient", info.lightAmbient);
+		shader->SetFloat3("lightPos", info.lightPos);
+		glm::vec3 viewpos = cameraTransform[3];
+		shader->SetFloat3("viewPos", viewpos);
+		shader->SetFloat("specularstrength", info.specularStrength);
+		shader->SetInt("shininess", info.shininess);
+	;
 		m_Texture->Bind(0);
 
 		m_VertexArray->Bind();

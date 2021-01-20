@@ -21,7 +21,6 @@ namespace QCat
 
 		m_ActiveScene = CreateRef<Scene>();
 		m_Camera = m_ActiveScene->CreateEntity("Camera");
-		m_Cube = m_ActiveScene->CreateEntity("Cube");
 		
 		auto& tc = m_Camera.GetComponent<TransformComponent>();
 		tc.Translation = glm::vec3(0.0f, 0.0f, -5.0f);
@@ -58,10 +57,11 @@ namespace QCat
 		}
 		{
 			QCAT_PROFILE_SCOPE("Renderer Draw");
-			glm::mat4& viewProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection() * glm::inverse(m_Camera.GetComponent<TransformComponent>().GetTransform());
-			cube->Draw(viewProj,light->GetColor());
-			sphere->Draw(viewProj, light->GetColor());
-			light->Draw(viewProj);
+			glm::mat4 camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
+			glm::mat4& camTransform = m_Camera.GetComponent<TransformComponent>().GetTransform();
+			cube->Draw(camTransform, camProj,light->Getinfo());
+			sphere->Draw(camTransform, camProj,light->Getinfo());
+			light->Draw(camTransform, camProj);
 		}
 	}
 
@@ -71,7 +71,6 @@ namespace QCat
 
 		ImGui::Begin("Settings");
 		auto& transformCamera = m_Camera.GetComponent<TransformComponent>();
-		auto& transformCube = m_Cube.GetComponent<TransformComponent>();
 
 		if (ImGui::DragFloat3("CameraPosition", glm::value_ptr(transformCamera.Translation), 0.1f))
 		{
@@ -87,10 +86,7 @@ namespace QCat
 		{
 			sceneCamera->SetPerspectiveVerticalFov(fov);
 		}
-		
-		ImGui::DragFloat3("Cube Position", glm::value_ptr(transformCube.Translation), 0.1f);
-		ImGui::DragFloat3("Cube Rotation", glm::value_ptr(transformCube.Rotation), 0.1f);
-		ImGui::DragFloat3("Cube Scale", glm::value_ptr(transformCube.Scale), 0.1f);
+
 
 		ImGui::End();
 

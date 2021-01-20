@@ -24,7 +24,6 @@ namespace QCat
 	private:
 		//camera
 		Entity m_Camera;
-		Entity m_Cube;
 
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;

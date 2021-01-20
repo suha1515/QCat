@@ -4,6 +4,7 @@
 
 namespace QCat
 {
+	struct LightInfo;
 	class Cube
 	{
 	public:
@@ -12,7 +13,7 @@ namespace QCat
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);
 
-		void Draw(const glm::mat4& viewProj, const glm::vec3 lightcolor = { 1.0f,1.0f,1.0f });
+		void Draw(const glm::mat4& cameraTransform, const glm::mat4& proj, LightInfo info);
 	public:
 		void ImguiRender(const char* name);
 	private:
