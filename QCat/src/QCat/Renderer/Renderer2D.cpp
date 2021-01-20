@@ -86,7 +86,7 @@ namespace QCat
 			samplers[i] = i;
 
 #if defined(QCAT_DX11)
-		s_data.TextureShader = Shader::Create("Texture", "..\\bin\\Debug-windows-\\SandBox\\Square_VS.cso", "..\\bin\\Debug-windows-\\SandBox\\Square_PS.cso");
+		s_data.TextureShader = Shader::Create("Texture", "Asset/shaders/hlsl/Square_VS.hlsl", "Asset/shaders/hlsl/Square_PS.hlsl");
 #elif defined(QCAT_OPENGL)
 		s_data.TextureShader = Shader::Create("Asset/shaders/glsl/Texture.glsl");
 		s_data.TextureShader->Bind();

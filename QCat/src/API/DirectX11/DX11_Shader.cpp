@@ -3,6 +3,29 @@
 
 namespace QCat
 {
+	std::string ReadFile(const std::string& filepath)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		std::string result;
+		// ios::in means read mode, ios::binary means it will read data as binary
+		std::ifstream in(filepath, std::ios::in | std::ios::binary);// ifstream closes itself due to RAII
+		if (in)
+		{
+			// seekg is move the cursor ios::end means end of file 
+			// so based on end of file this func will move the cursor as first parameter value
+			in.seekg(0, std::ios::end);
+			result.resize(in.tellg());
+			in.seekg(0, std::ios::beg);
+			in.read(&result[0], result.size());
+			// after reading you have to call close function
+		}
+		else
+		{
+			QCAT_CORE_ERROR("Could not open file '{0}'", filepath);
+		}
+		return result;
+	}
 	std::wstring ToWide(const std::string& narrow)
 	{
 		wchar_t wide[512];
@@ -20,38 +43,6 @@ namespace QCat
 		auto name = path.substr(lastSlash, count);
 		return name;
 	}
-	//Ref<Shader> DXShader::CreateShaderFromNative(const std::string& name, const std::string& src)
-	//{
-	//	Ref<Shader> shader;
-	//	auto lastUnderbar = name.find_last_of('_');
-	//	std::string type = name.substr(lastUnderbar + 1, std::string::npos);
-	//	if (type == "PS")
-	//		shader = CreatePixelShaderFromNative(name, src);
-	//	else if (type == "VS")
-	//		shader = CreateVertexShaderFromNative(name, src);
-	//	else
-	//	{
-	//		QCAT_CORE_ASSERT(false, "Undefined hlsl shader type!");
-	//	}
-	//	return shader;
-	//}
-	//Ref<Shader> DXShader::CreateShaderFromFile(const std::string& path)
-	//{
-	//	// assets/shaders/hlsl/Solid_PS.hlsl
-	//	Ref<Shader> shader;
-	//	auto lastUnderbar = path.rfind('_');
-	//	auto type = path.substr(lastUnderbar + 1, 2);
-	//	if (type == "PS")
-	//		shader = CreatePixelShaderFromFile(path);
-	//	else if (type == "VS")
-	//		shader = CreateVertexShaderFromFile(path);
-	//	else
-	//	{
-	//		QCAT_CORE_ASSERT(false, "Undefined hlsl shader type!");
-	//		return shader;
-	//	}
-	//	return shader;
-	//}
 	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromNative(const std::string& name, const std::string& src)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -122,14 +113,36 @@ namespace QCat
 			QCAT_CORE_ASSERT(false, "Compile Faile!");
 			return pBlob;
 	}
-
 	DXShader::DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
 		:m_name(name)
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		pvs = CreateVertexShaderFromFile(vertexFile);
-		pps = CreatePixelShaderFromFile(pixelFile);
+		auto begin = vertexFile.find_last_of('.');
+
+		std::string extension1 = vertexFile.substr(begin+1, vertexFile.length());
+			begin = pixelFile.find_last_of('.');
+		std::string extension2 = pixelFile.substr(begin+1, pixelFile.length());
+		if (extension1 == "hlsl" && extension2 == "hlsl")
+		{
+			std::string vertexSrc = ReadFile(vertexFile);
+			std::string pixelSrc = ReadFile(pixelFile);
+
+			std::string vertexName = GetShaderName(vertexFile);
+			std::string pixelName = GetShaderName(pixelFile);
+			pvs = CreateVertexShaderFromNative(vertexName, vertexSrc);
+			pps = CreatePixelShaderFromNative(pixelName, pixelSrc);
+		}
+		else if(extension1 == "cso" && extension2 == "cso")
+		{
+			pvs = CreateVertexShaderFromFile(vertexFile);
+			pps = CreatePixelShaderFromFile(pixelFile);
+		}
+		else
+		{
+			QCAT_CORE_ASSERT(false, "Wrong extension! Shader Compile Error");
+		}
+		
 	}
 	DXShader::DXShader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc, bool compile)
 		: m_name(name)

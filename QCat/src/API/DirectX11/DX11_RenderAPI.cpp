@@ -66,4 +66,24 @@ namespace QCat
 		//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullSRV =  nullptr;
 		//pgfx->GetContext()->PSSetShaderResources(0u, 1u, nullSRV.GetAddressOf());
 	}
+	void DX11RenderAPI::SetWireFrameMode()
+	{
+		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
+		rasterDesc.CullMode = D3D11_CULL_BACK;
+		rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+		rasterDesc.FrontCounterClockwise = true;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
+		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
+		pgfx->GetContext()->RSSetState(pRasterizer.Get());
+	}
+	void DX11RenderAPI::SetFillMode()
+	{
+		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
+		rasterDesc.CullMode = D3D11_CULL_BACK;
+		rasterDesc.FillMode = D3D11_FILL_SOLID;
+		rasterDesc.FrontCounterClockwise = true;
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
+		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
+		pgfx->GetContext()->RSSetState(pRasterizer.Get());
+	}
 }

@@ -30,7 +30,14 @@ namespace QCat
 		{
 			s_renderAPI->DrawIndexed(vertexArray, count);
 		}
-		
+		inline static void SetWireFrameMode()
+		{
+			s_renderAPI->SetWireFrameMode();
+		}
+		inline static void SetFillMode()
+		{
+			s_renderAPI->SetFillMode();
+		}
 	private:
 		static RenderAPI* s_renderAPI;
 	};

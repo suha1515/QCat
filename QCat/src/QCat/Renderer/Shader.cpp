@@ -20,20 +20,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<Shader> Shader::Create(const std::string& name, const std::string shaderSrc)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RenderAPI::API::None:    QCAT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		// TODO : Split vertex and pixel shader from intergrated shader in opengl
-		//case RenderAPI::API::OpenGL: return std::make_shared<OpenGLShader>(shaderSrc);
-		case RenderAPI::API::DirectX11: //return DXShader::CreateShaderFromNative(name, shaderSrc);
-			break;
-		}
 
-		QCAT_CORE_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
 	Ref<Shader> Shader::Create(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc )
 	{
 		switch (Renderer::GetAPI())

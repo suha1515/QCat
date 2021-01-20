@@ -19,6 +19,8 @@ namespace QCat
 		virtual void Clear() override;
 		virtual void DrawIndexed(const unsigned int indexCount);
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0) override;
+		virtual void SetWireFrameMode() override;
+		virtual void SetFillMode()override;
 	private:
 		QGfxDeviceDX11* pgfx;
 		glm::vec4 color;
