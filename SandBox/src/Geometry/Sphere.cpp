@@ -14,7 +14,8 @@ namespace QCat
 	};
 
 	Sphere::Sphere(const glm::vec3& position, const char* texturePath, float radius, int sectorCount, int stackCount)
-		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
+		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f)),
+		material(glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f)
 	{
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
@@ -159,16 +160,22 @@ namespace QCat
 		shader->Bind();
 		shader->SetMat4("u_ViewProjection", proj*glm::inverse(cameraTransform));
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
-
-		shader->SetMat4("u_Transform", transform);
-		shader->SetFloat3("lightColor", info.lightColor);
-		shader->SetFloat3("lightAmbient", info.lightAmbient);
-		shader->SetFloat3("lightPos", info.lightPos);
 		glm::vec3 viewpos = cameraTransform[3];
-		shader->SetFloat3("viewPos", viewpos);
-		shader->SetFloat("specularstrength", info.specularStrength);
-		shader->SetInt("shininess", info.shininess);
-	;
+		shader->SetMat4("u_Transform", transform);
+		shader->SetMat4("u_invTransform", glm::inverse(transform));
+		shader->SetFloat3("viewPosition", viewpos);
+
+		// light
+		shader->SetFloat3("light.diffuse", info.lightColor);
+		shader->SetFloat3("light.ambient", info.lightAmbient);
+		shader->SetFloat3("light.position", info.lightPos);
+		shader->SetFloat3("light.specular", info.lightSpecular);
+
+		// material
+		shader->SetFloat3("material.ambient", material.ambient);
+		shader->SetFloat3("material.diffuse", material.diffuse);
+		shader->SetFloat3("material.specular", material.specular);
+		shader->SetFloat("material.shininess", material.shininess);
 		m_Texture->Bind(0);
 
 		m_VertexArray->Bind();
@@ -181,6 +188,14 @@ namespace QCat
 		ImGui::DragFloat3("Position", glm::value_ptr(translation), 0.1f);
 		ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f);
 		ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.1f);
+
+		ImGui::Text("Material");
+
+		ImGui::ColorEdit3("ambient", glm::value_ptr(material.ambient));
+		ImGui::ColorEdit3("diffuse", glm::value_ptr(material.diffuse));
+		ImGui::ColorEdit3("specular", glm::value_ptr(material.specular));
+		ImGui::DragFloat("shininess", &material.shininess, 0.03f, 0.1f);
+
 
 		ImGui::End();
 	}

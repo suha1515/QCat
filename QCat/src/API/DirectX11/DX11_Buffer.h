@@ -1,22 +1,21 @@
 #pragma once
 #include "QCat/Renderer/Buffer.h"
+#include "DX11_BufferLayout.h"
 #include "QGfxDeviceDX11.h"
 
 namespace QCat
 {
 	static ShaderDataType DXShaderDataConvert(const D3D11_SHADER_TYPE_DESC& info)
 	{
-
 		if (info.Class == D3D_SVC_SCALAR)
 		{
 			if (info.Type == D3D_SVT_FLOAT)
 				return ShaderDataType::Float;
-			else if (info.Type == D3D_SVT_INT)
+			else if (info.Type == D3D_SVT_INT )
 				return ShaderDataType::Int;
 			else if (info.Type == D3D_SVT_BOOL)
-			{
 				return ShaderDataType::Bool;
-			}
+			
 		}
 		else if (info.Class == D3D_SVC_VECTOR)
 		{
@@ -28,6 +27,7 @@ namespace QCat
 					return ShaderDataType::Float3;
 				else if (info.Columns == 4)
 					return ShaderDataType::Float4;
+				
 			}
 			else if (info.Type == D3D_SVT_INT)
 			{
@@ -49,7 +49,14 @@ namespace QCat
 					return ShaderDataType::Mat3;
 			}
 		}
+		else if (info.Class == D3D_SVC_STRUCT)
+		{
+			return ShaderDataType::Struct;
+		}
+		
 	}
+	
+	
 	class QCAT_API DX11VertexBuffer : public VertexBuffer
 	{
 	public:
@@ -86,28 +93,6 @@ namespace QCat
 	class QCAT_API DX11ConstantBuffer
 	{
 	public:
-		bool CrossBoundary(unsigned int offset, unsigned int size) noexcept
-		{
-			const auto end = offset + size;
-			const auto pageStart = offset / 16u;
-			const auto pageEnd = end / 16u;
-			return (pageStart != pageEnd && end % 16u != 0) || size > 16u;
-		}
-		void CalculatePadding()
-		{
-			unsigned int nextoffset = 0;
-			for (auto& element : bufferElements)
-			{
-				if (CrossBoundary(nextoffset, element.size))
-				{
-					nextoffset = nextoffset + (16u - nextoffset % 16u) % 16u;;
-				}
-				element.offset = nextoffset;
-				nextoffset += element.size;
-			}
-			nextoffset = CalculateSize(nextoffset);
-			data.resize(nextoffset);
-		}
 		unsigned int CalculateSize(unsigned int size)
 		{
 			unsigned int realSize = 0;
@@ -119,101 +104,49 @@ namespace QCat
 			}
 			return realSize;
 		}
-		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot ,const void* data,unsigned int size)
-			:slot(slot)
-		{
-			QCAT_PROFILE_FUNCTION();
-
-			this->pgfx = &gfx;
+		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, const void* data, unsigned int size);
+		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size);
+		DX11ConstantBuffer(ElementLayout& layout, unsigned int slot,bool dynamic=false);
 		
-			D3D11_BUFFER_DESC bd;
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.CPUAccessFlags = 0u;
-			bd.MiscFlags = 0u;
-			bd.ByteWidth = CalculateSize(size);
-			bd.StructureByteStride = 0u;
-
-			D3D11_SUBRESOURCE_DATA sd = {};
-			sd.pSysMem = data;
-			HRESULT result = gfx.GetDevice()->CreateBuffer(&bd, &sd, &pConstantBuffer);
-			int a = 0;
-		}
-		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size)
-			:slot(slot)
+		ElementRef FindVariable(const std::string& name)
 		{
-			QCAT_PROFILE_FUNCTION();
-
-			this->pgfx = &gfx;
-
-			D3D11_BUFFER_DESC bd;
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.CPUAccessFlags = 0u;
-			bd.MiscFlags = 0u;
-			bd.ByteWidth = CalculateSize(size);
-			bd.StructureByteStride = 0u;
-
-			pgfx->GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
+			ElementRef ref;
+			ref = AccessElement(name);
+			return ref;
 		}
-		DX11ConstantBuffer(std::vector<BufferElement>& bufferElement, unsigned int slot)
-			:slot(slot), bufferElements(bufferElement)
+		void UpdateData();
+		void UpdateElements(const void* pData)
 		{
-			QCAT_PROFILE_FUNCTION();
-
-			this->pgfx = QGfxDeviceDX11::GetInstance();
-			CalculatePadding();
-			D3D11_BUFFER_DESC bd;
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.CPUAccessFlags = 0u;
-			bd.MiscFlags = 0u;
-			bd.ByteWidth = data.size();
-			bd.StructureByteStride = 0u;
-
-			pgfx->GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
+			memcpy(bufferElements.GetData(), pData, bufferElements.GetSizeInBytes());
 		}
-		void UpdateData(QGfxDeviceDX11& gfx,const void* pdata)
+		template<typename T>
+		void UpdateElement(const std::string& name, const T& pdata )
 		{
-			QCAT_PROFILE_FUNCTION();
+			ElementRef ref;
+			ref = AccessElement(name);
+			if (ref.GetDataType() == ShaderDataType::None)
+				return;
+			ref = pdata;
 
-			gfx.GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, pdata, 0u, 0u);
-			memcpy(data.data(), pdata, data.size());
+			IsDataChanged = true;
+			//bufferElements[name] = pdata;
 		}
-		void UpdateElement(const std::string& name, const void* pdata)
-		{
-			for (auto& element : bufferElements)
-			{
-				if (element.name == name)
-				{
-					// TODO : Check the type we have to make own dataType for type check
-					ShaderDataType type = element.type;
-					unsigned int size = element.size;
-					memcpy(data.data(), pdata, size);
-					pgfx->GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, data.data(), 0u, 0u);
-					return;
-				}
-			}
-		}
+		ElementRef AccessElement(const std::string& name);
 		~DX11ConstantBuffer() 
 		{
 		}
 		virtual void Bind()
-		{
-			/*switch (type) 
-			{
-				case Type::None: QCAT_CORE_ASSERT(false,"ConstantBuffer type error : type is none")break;
-				case Type::Pixel: gfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf()); break;
-				case Type::Vertex: gfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf()); break;
-			}*/
+		{			
 		}
+	public:
+		bool IsDataChanged = false;
 	protected:
 		QGfxDeviceDX11* pgfx;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
-		std::vector<BufferElement> bufferElements;
-		std::vector<char> data;
+		Buffer bufferElements;
 		unsigned int slot;
 		std::string name;
+		bool IsDynaimc = false;
 	};
 	class QCAT_API VertexConstantBuffer : public DX11ConstantBuffer
 	{
@@ -222,7 +155,11 @@ namespace QCat
 		virtual void Bind() override
 		{
 			QCAT_PROFILE_FUNCTION();
-
+			if (IsDataChanged)
+			{
+				UpdateData();
+				IsDataChanged = false;
+			}
 			pgfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
@@ -233,7 +170,11 @@ namespace QCat
 		virtual void Bind() override
 		{
 			QCAT_PROFILE_FUNCTION();
-
+			if (IsDataChanged)
+			{
+				UpdateData();
+				IsDataChanged = false;
+			}
 			pgfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};

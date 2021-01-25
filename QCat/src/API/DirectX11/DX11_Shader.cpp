@@ -1,5 +1,6 @@
 #include "qcpch.h"
 #include "DX11_Shader.h"
+#include "DX11_BufferLayout.h"
 
 namespace QCat
 {
@@ -180,8 +181,11 @@ namespace QCat
 	void DXShader::SetInt(const std::string& name, int value)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		UpdateConstantBuffer(name, &value);
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
 	}
 	void DXShader::SetIntArray(const std::string& name, int* values, unsigned int count)
 	{
@@ -189,96 +193,134 @@ namespace QCat
 	void DXShader::SetFloat(const std::string& name, const float& value)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		UpdateConstantBuffer(name, &value);
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
+	}
+	void DXShader::SetFloatArray(const std::string name, float* values, unsigned int count)
+	{
+		QCAT_PROFILE_FUNCTION();
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		for (int i = 0; i < count; ++i)
+		{
+			ref.second[i] = values[i];
+		}
 	}
 	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		UpdateConstantBuffer(name, &value);
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
 	}
 	void DXShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		UpdateConstantBuffer(name, &value);
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
 	}
 	void DXShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		UpdateConstantBuffer(name, &value);
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
 	}
 	void DXShader::SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value)
 	{
-		QCAT_PROFILE_FUNCTION();
+		/*QCAT_PROFILE_FUNCTION();
 
-		UpdateConstantBuffer(uniformname, valuename, &value);
+		UpdateConstantBuffer(uniformname, valuename, &value);*/
 	}
 	void DXShader::SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value)
 	{
-		QCAT_PROFILE_FUNCTION();
+		/*QCAT_PROFILE_FUNCTION();
 
-		UpdateConstantBuffer(uniformname, valuename, &value);
+		UpdateConstantBuffer(uniformname, valuename, &value);*/
 	}
 	void DXShader::SetMat4u(const std::string& uniformname, const std::string& valuename, const glm::mat4& value)
 	{
-		QCAT_PROFILE_FUNCTION();
+		/*QCAT_PROFILE_FUNCTION();
 
-		UpdateConstantBuffer(uniformname, valuename, &value);
+		UpdateConstantBuffer(uniformname, valuename, &value);*/
 	}
-	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
+	std::pair<Ref<DX11ConstantBuffer>, ElementRef> DXShader::FindVariable(const std::string& name)
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		bool suceed = true;
-		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(uniformname);
-		if (constantbuf)
+		auto& vsConstantBuffers = pvs->GetConstantBuffers();
+		std::pair<Ref<DX11ConstantBuffer>, ElementRef> pair;
+		for (auto& iter : vsConstantBuffers)
 		{
-			suceed = true;
-			constantbuf->UpdateElement(valuename, pdata);
+			auto ref = iter.second->FindVariable(name);
+			if (ref.Exists())
+				return { iter.second,ref };
 		}
-		else
-			suceed = false;
+		auto& psConstantBuffers = pps->GetConstantBuffers();
+		for (auto& iter : psConstantBuffers)
+		{
+			auto ref = iter.second->FindVariable(name);
+			if (ref.Exists())
+				return { iter.second,ref };
+		}
+		return{ nullptr, ElementRef{} };
+	}
+	//void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
+	//{
+	//	/*QCAT_PROFILE_FUNCTION();
 
-		constantbuf = pps->GetConstantBuffer(uniformname);
-		if (constantbuf)
-		{
-			suceed = true;
-			constantbuf->UpdateElement(valuename, pdata);
-		}
-		else
-			suceed = false;
-		if (!suceed)
-		{
-			QCAT_CORE_ERROR("{0} cant be find from all of {1}'s {2} constantbuffer", valuename,m_name, uniformname);
-		}
-	}
-	void DXShader::UpdateConstantBuffer(const std::string& uniformname, const void* pdata)
-	{
-		QCAT_PROFILE_FUNCTION();
-		bool succeed = false;
-		succeed = UpdateVertexConstantBuffer(uniformname, pdata);
-		if (succeed)
-			return;
-		UpdatePixelConstantBuffer(uniformname, pdata);
-	}
+	//	bool suceed = true;
+	//	Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(uniformname);
+	//	if (constantbuf)
+	//	{
+	//		suceed = true;
+	//		constantbuf->UpdateElement(valuename, pdata);
+	//	}
+	//	else
+	//		suceed = false;
+
+	//	constantbuf = pps->GetConstantBuffer(uniformname);
+	//	if (constantbuf)
+	//	{
+	//		suceed = true;
+	//		constantbuf->UpdateElement(valuename, pdata);
+	//	}
+	//	else
+	//		suceed = false;
+	//	if (!suceed)
+	//	{
+	//		QCAT_CORE_ERROR("{0} cant be find from all of {1}'s {2} constantbuffer", valuename,m_name, uniformname);
+	//	}*/
+	//}
+	
 	bool DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
 	{
-		QCAT_PROFILE_FUNCTION();
+		//QCAT_PROFILE_FUNCTION();
 
-		Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(name);
-		if (constantbuf)
-		{
-			constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
-			return true;
-		}
+		//Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(name);
+		//if (constantbuf)
+		//{
+		//	constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
+		//	return true;
+		//}
+		//return false;
 		return false;
 	}
 	bool DXShader::UpdatePixelConstantBuffer(const std::string& name, const void* data)
 	{
-		QCAT_PROFILE_FUNCTION();
+		/*QCAT_PROFILE_FUNCTION();
 
 		Ref<DX11ConstantBuffer>& constantbuf = pps->GetConstantBuffer(name);
 		if (constantbuf)
@@ -286,7 +328,9 @@ namespace QCat
 			constantbuf->UpdateData(*QGfxDeviceDX11::GetInstance(), data);
 			return true;
 		}
-			return false;		
+			return false;	*/	
+		return false;
+
 	}
 	std::vector<char>& DXShader::GetVerexData()
 	{
@@ -397,17 +441,55 @@ namespace QCat
 		gfx->GetContext()->PSSetShader(nullptr, nullptr, 0u);
 	}
 
+	void ShaderDataStructAdd(ElementLayout* layout,ID3D11ShaderReflectionType* type, D3D11_SHADER_TYPE_DESC typedesc)
+	{
+
+		for (UINT k = 0; k < typedesc.Members; ++k)
+		{
+			ID3D11ShaderReflectionType* memberType = type->GetMemberTypeByIndex(k);
+			D3D11_SHADER_TYPE_DESC memberTypedesc;
+			memberType->GetDesc(&memberTypedesc);
+			uint32_t memberOffset = memberTypedesc.Offset;
+			std::string memberName = type->GetMemberTypeName(k);
+
+			ShaderDataType memberDataType = DXShaderDataConvert(memberTypedesc);
+			ShaderDataType  memberclassType = ShaderDataType::None;
+
+			if (memberTypedesc.Elements > 0)
+				memberclassType = ShaderDataType::Array;
+			else if (memberTypedesc.Members > 0)
+				memberclassType = ShaderDataType::Struct;
+
+			if (memberclassType == ShaderDataType::Struct)
+			{
+				(*layout).Add(memberclassType, memberName, memberOffset);
+				ShaderDataStructAdd(&(*layout)[memberName], memberType, memberTypedesc);
+			}
+			else if (memberclassType == ShaderDataType::Array)
+			{
+				(*layout).Add(memberclassType, memberName, memberOffset);
+				(*layout)[memberName].Set(memberDataType, memberTypedesc.Elements);
+				if (memberDataType == ShaderDataType::Struct)
+					ShaderDataStructAdd(&(*layout)[memberName].Array(), memberType, memberTypedesc);
+			}
+			else
+			{
+				(*layout).Add(memberDataType, memberName, memberOffset);
+			}
+		}
+	}
+
 	void DX11Shader::MakeBufferElement()
 	{
 		QCAT_PROFILE_FUNCTION();
-
 		//======= Make Shader Element Buffer=========
 		D3D11_SHADER_DESC desc;
 		pReflector->GetDesc(&desc);
 		UINT countConstantBuffer = desc.ConstantBuffers;
 		for (UINT i = 0; i < countConstantBuffer; ++i)
 		{
-			std::vector<BufferElement> elements;
+			ElementLayout layout(ShaderDataType::Struct);
+			//std::vector<BufferElement> elements;
 			std::string constantbuffername;
 			D3D11_SHADER_BUFFER_DESC shaderdesc;
 			// this is not com object dont worry about release
@@ -420,6 +502,7 @@ namespace QCat
 				ID3D11ShaderReflectionVariable* value = constantbuffer->GetVariableByIndex(j);
 				D3D11_SHADER_VARIABLE_DESC valueDesc;
 				value->GetDesc(&valueDesc);
+
 				ID3D11ShaderReflectionType* type = value->GetType();
 				D3D11_SHADER_TYPE_DESC typedesc;
 				type->GetDesc(&typedesc);
@@ -427,18 +510,40 @@ namespace QCat
 				unsigned int offset = valueDesc.StartOffset;
 				unsigned int size = valueDesc.Size;
 				const std::string& name = valueDesc.Name;
+				
 				ShaderDataType datatype = DXShaderDataConvert(typedesc);
-				BufferElement element(datatype, name, offset);
-				elements.push_back(element);
+				ShaderDataType classType = ShaderDataType::None;
+				if (typedesc.Elements > 0)
+					classType = ShaderDataType::Array;
+				else if(typedesc.Members>0)
+					classType = ShaderDataType::Struct;
+			
+				if (classType == ShaderDataType::Struct)
+				{
+					layout.Add(classType, name, offset, size);
+					ShaderDataStructAdd(&layout[name], type, typedesc);
+				}
+				else if (classType == ShaderDataType::Array)
+				{
+					layout.Add(classType, name, offset, size);
+					layout[name].Set(datatype, typedesc.Elements);
+					if(datatype == ShaderDataType::Struct)
+						ShaderDataStructAdd(&layout[name].Array(), type, typedesc);
+				}
+				else
+				{
+					layout.Add(datatype, name, offset,size);
+				}
 			}
 			Ref<DX11ConstantBuffer> pConstantBuffer;
+			layout.CalculateSize(0);
 			switch (type)
 			{
 			case DXshaderType::VS:
-				pConstantBuffer = std::make_shared<VertexConstantBuffer>(elements, i);
+				pConstantBuffer = std::make_shared<VertexConstantBuffer>(layout, i);
 				break;
 			case DXshaderType::PS:
-				pConstantBuffer = std::make_shared<PixelConstantBuffer>(elements, i);
+				pConstantBuffer = std::make_shared<PixelConstantBuffer>(layout, i);
 				break;
 			case DXshaderType::GS:
 				break;

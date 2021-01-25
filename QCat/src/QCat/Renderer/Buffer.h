@@ -5,7 +5,7 @@ namespace QCat
 {
 	enum class ShaderDataType
 	{
-		None =0,Float,Float2,Float3,Float4,Mat3,Mat4,Int,Int2,Int3,Int4,Bool
+		None =0,Float,Float2,Float3,Float4,Mat3,Mat4,Int,Int2,Int3,Int4,Bool,Struct,Array
 	};
 	static unsigned int ShaderDataTypeSize(ShaderDataType type)
 	{
@@ -60,7 +60,7 @@ namespace QCat
 			return 0;
 		}
 	};
-
+	
 	class BufferLayout
 	{
 	public:
@@ -97,6 +97,7 @@ namespace QCat
 		std::vector<BufferElement> m_elements;
 		unsigned int m_stride;
 	};
+	
 	class VertexBuffer
 	{
 	public:

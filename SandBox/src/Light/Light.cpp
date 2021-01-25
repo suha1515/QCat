@@ -32,8 +32,7 @@ namespace QCat
 		}
 		ImGui::ColorEdit3("Light Color", glm::value_ptr(info.lightColor));
 		ImGui::ColorEdit3("Light Ambient", glm::value_ptr(info.lightAmbient));
-		ImGui::DragFloat("Specular Strength", &info.specularStrength,0.05f,0.1f,1.0f);
-		ImGui::DragInt("Shininess", &info.shininess,1.0f,1,64);
+		ImGui::ColorEdit3("Specular Color", glm::value_ptr(info.lightSpecular),0.1f);
 
 
 		ImGui::End();

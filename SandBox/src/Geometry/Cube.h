@@ -1,7 +1,7 @@
 #pragma once
 
 #include "QCat.h"
-
+#include "../Material/Material.h"
 namespace QCat
 {
 	struct LightInfo;
@@ -24,6 +24,8 @@ namespace QCat
 		glm::vec3 translation;
 		glm::vec3 rotation;
 		glm::vec3 scale;
+
+		Material material;
 
 	};
 }

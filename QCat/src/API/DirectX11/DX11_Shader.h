@@ -10,6 +10,7 @@ namespace QCat
 	
 	class DX11VertexShader;
 	class DX11PixelShader;
+	struct ElementRef;
 	enum class DXshaderType
 	{
 		VS = 0, PS, GS
@@ -39,6 +40,7 @@ namespace QCat
 		virtual void SetIntArray(const std::string& name, int* values, unsigned int count) override;
 
 		virtual void SetFloat(const std::string& name, const float& value) override;
+		virtual void SetFloatArray(const std::string name, float* values, unsigned int count) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
@@ -49,8 +51,25 @@ namespace QCat
 
 		virtual const std::string& GetName()const override { return m_name; }
 	public:
-		void UpdateConstantBuffer(const std::string& uniformname, const::std::string& name, const void* pdata);
-		void UpdateConstantBuffer(const std::string& uniformname, const void* pdata);
+		//void UpdateConstantBuffer(const std::string& uniformname, const::std::string& name, const void* pdata);
+
+		std::pair<Ref<DX11ConstantBuffer>,ElementRef> FindVariable(const std::string& name);
+		template<typename T>
+		void UpdateConstantBuffer(const std::string& uniformname, const T& pdata)
+		{
+			QCAT_PROFILE_FUNCTION();
+
+			auto& vsConstantBuffers = pvs->GetConstantBuffers();
+			for (auto& iter : vsConstantBuffers)
+			{
+				iter.second->UpdateElement(uniformname, pdata);
+			}
+			auto& psConstantBuffers = pps->GetConstantBuffers();
+			for (auto& iter : psConstantBuffers)
+			{
+				iter.second->UpdateElement(uniformname, pdata);
+			}
+		}
 		bool UpdateVertexConstantBuffer(const std::string& name,const void* data);
 		bool UpdatePixelConstantBuffer(const std::string& name,const void* data);
 		std::vector<char>& GetVerexData();
@@ -67,6 +86,7 @@ namespace QCat
 		void MakeBufferElement();
 		void AddConstantBuffer(const std::string& name, Ref<DX11ConstantBuffer>& pConstantBuffer);
 		Ref<DX11ConstantBuffer> GetConstantBuffer(const std::string name);
+		std::unordered_map<std::string, Ref<DX11ConstantBuffer>>& GetConstantBuffers() { return m_ConstantBuffers; }
 	public:
 		virtual void Bind()const =0 ;
 		virtual void UnBind()const =0 ;

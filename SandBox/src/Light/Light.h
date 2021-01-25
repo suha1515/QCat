@@ -12,14 +12,12 @@ namespace QCat
 			lightColor = { 1.0f,1.0f,1.0f };
 			lightAmbient = { 0.0f,0.0f,0.0f };
 			lightPos = { 0.0f, 0.0f, 0.0f };
-			specularStrength = 0.5f;
-			shininess = 32;
+			lightSpecular = { 1.0f,1.0f,1.0f };
 		}
 		glm::vec3 lightColor;
 		glm::vec3 lightAmbient;
 		glm::vec3 lightPos;
-		float specularStrength;
-		int shininess;
+		glm::vec3 lightSpecular;
 	};
 	class Light
 	{

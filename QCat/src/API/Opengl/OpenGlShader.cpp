@@ -206,6 +206,12 @@ namespace QCat
 
 		UploadUniformFloat(name, value);
 	}
+	void OpenGLShader::SetFloatArray(const std::string name, float* values, unsigned int count)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		UploadUniformFloatArray(name, values, count);
+	}
 	void OpenGLShader::SetFloat3(const std::string& name,const glm::vec3& value)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -242,6 +248,11 @@ namespace QCat
 	{
 		GLint location = glGetUniformLocation(m_renderID, name.c_str());
 		glUniform1iv(location, count, values);
+	}
+	void OpenGLShader::UploadUniformFloatArray(const std::string& name, float* values, unsigned int count)
+	{
+		GLint location = glGetUniformLocation(m_renderID, name.c_str());
+		glUniform1fv(location, count, values);
 	}
 	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
 	{
