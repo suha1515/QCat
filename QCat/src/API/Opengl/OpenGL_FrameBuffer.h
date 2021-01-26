@@ -16,12 +16,17 @@ namespace QCat
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		virtual void* GetColorAttachmentRendererID() const override { return reinterpret_cast<void*>(m_ColorAttachment); }
-		virtual void SaveColorBuffer() const override {}
+		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override;
+		virtual void SaveColorBuffer(uint32_t index = 0) const override {}
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 	private:
 		uint32_t m_RendererID=0;
-		uint32_t m_ColorAttachment=0, m_DepthAttachment=0;
 		FrameBufferSpecification m_Specification;
+
+		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
+		FramebufferTextureSpecification m_DepthAttacmentSpecifications = FramebufferTextureFormat::None;
+
+		std::vector<uint32_t> m_ColorAttachments;
+		uint32_t m_DepthAttachment = 0,m_ColorAttachment=0;
 	};
 }

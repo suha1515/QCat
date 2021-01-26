@@ -18,12 +18,16 @@ namespace QCat
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		virtual void* GetColorAttachmentRendererID() const override { return reinterpret_cast<void*>(m_renderTarget->GetTexture()); }
-		virtual void SaveColorBuffer() const { m_renderTarget->SaveTexture(); }
+		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return reinterpret_cast<void*>(m_ColorAttachments[index]->GetTexture()); }
+		virtual void SaveColorBuffer(uint32_t index=0) const override { m_ColorAttachments[index]->SaveTexture(); }
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 	private:
-		Ref<DX11RenderTarget> m_renderTarget;
-		Ref<DX11DepthStencil> m_depthStencil;
 		FrameBufferSpecification m_Specification;
+
+		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
+		FramebufferTextureSpecification m_DepthAttacmentSpecifications = FramebufferTextureFormat::None;
+
+		std::vector<Ref<DX11RenderTarget>> m_ColorAttachments;
+		Ref<DX11DepthStencil> m_DepthAttachment = 0, m_ColorAttachment = 0;
 	};
 }

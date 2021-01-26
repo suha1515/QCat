@@ -25,6 +25,7 @@ namespace QCat {
 	void QGfxDeviceDX11::End()
 	{
 		EndFrame();
+
 	}
 
 	QGfxDeviceDX11::QGfxDeviceDX11()

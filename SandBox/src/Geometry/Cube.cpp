@@ -133,6 +133,7 @@ namespace QCat
 		shader->SetFloat3("material.specular", material.specular);
 		shader->SetFloat("material.shininess", material.shininess);
 
+	
 
 		m_Texture->Bind(0);
 
@@ -153,7 +154,7 @@ namespace QCat
 		ImGui::ColorEdit3("diffuse", glm::value_ptr(material.diffuse));
 		ImGui::ColorEdit3("specular", glm::value_ptr(material.specular));
 		ImGui::DragFloat("shininess", &material.shininess, 0.03f, 0.1f);
-
+		
 
 		ImGui::End();
 	}

@@ -3,8 +3,8 @@
 
 namespace QCat
 {
-	DX11DepthStencil::DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, DXGI_FORMAT format)
-		:m_width(width), m_height(height),format(format)
+	DX11DepthStencil::DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, int samples, DXGI_FORMAT format)
+		:m_width(width), m_height(height),format(format),samples(samples)
 	{
 		Initialize(gfx);
 	}
@@ -26,7 +26,7 @@ namespace QCat
 		descDepth.MipLevels = 1u;
 		descDepth.ArraySize = 1u;
 		descDepth.Format = format;
-		descDepth.SampleDesc.Count = 1u;
+		descDepth.SampleDesc.Count = samples;
 		descDepth.SampleDesc.Quality = 0u;
 		descDepth.Usage = D3D11_USAGE_DEFAULT;
 		// TODO :split ShaderInput or not
@@ -55,6 +55,10 @@ namespace QCat
 	void DX11DepthStencil::Bind(QGfxDeviceDX11& gfx) const
 	{
 		gfx.GetContext()->OMSetRenderTargets(0, nullptr, pDepthStencilView.Get());
+	}
+	void DX11DepthStencil::UnBind(QGfxDeviceDX11& gfx) const
+	{
+		gfx.GetContext()->OMSetRenderTargets(0, nullptr, nullptr);
 	}
 	void DX11DepthStencil::Resize(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height)
 	{

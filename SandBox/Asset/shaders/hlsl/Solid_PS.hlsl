@@ -54,5 +54,5 @@ float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPo
 	float spec = pow(max(0.0f, dot(viewDir, reflectDir)), material.shininess);
 	float3 specular = light.specular * (spec * material.specular);
 
-	return tex.Sample(splr, tc)*float4(diffuse + ambient + specular,1.0f);
+	return tex.Sample(splr, tc)*float4(diffuse + ambient + specular,1.0f) ;
 }

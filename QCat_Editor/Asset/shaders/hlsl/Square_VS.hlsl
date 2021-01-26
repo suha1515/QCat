@@ -1,8 +1,8 @@
-cbuffer u_ViewProjection : register(b0)
+cbuffer viewProjection : register(b0)
 {
-	matrix viewProj;
+	matrix u_ViewProjection;
 }
-cbuffer u_Transform : register(b1)
+cbuffer Transform : register(b1)
 {
 	matrix transform;
 }
@@ -19,7 +19,7 @@ VSOut main(float3 pos : a_Position,float4 color :a_Color ,float2 tc : a_Texcoord
 	VSOut vso;
 
 	//matrix mat = mul(viewProj, transform);
-	matrix mat = viewProj;
+	matrix mat = u_ViewProjection;
 	vso.pos = mul(mat, float4(pos, 1.0f));
 	vso.tc = tc;
 	vso.color = color;

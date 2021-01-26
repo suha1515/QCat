@@ -4,8 +4,8 @@
 #include "stb_image_write.h"
 namespace QCat
 {
-	DX11RenderTarget::DX11RenderTarget(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, DXGI_FORMAT format)
-		:m_width(width),m_height(height),format(format)
+	DX11RenderTarget::DX11RenderTarget(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, int samples, DXGI_FORMAT format)
+		:m_width(width),m_height(height),format(format),samples(samples)
 	{
 		Initialize(gfx);
 	}
@@ -25,7 +25,7 @@ namespace QCat
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
 		textureDesc.Format = format;
-		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Count = samples;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;

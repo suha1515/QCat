@@ -27,14 +27,16 @@ namespace QCat
 		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png");
 
 		FrameBufferSpecification fbSpec;
+		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = FrameBuffer::Create(fbSpec);
 
 		m_ActiveScene = CreateRef<Scene>();
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
+		
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDetach()
@@ -68,10 +70,10 @@ namespace QCat
 		m_Framebuffer->Bind();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		RenderCommand::Clear();
-
+		 
 		// Update Scene
-		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
-		m_ActiveScene->OnUpdateRuntime(ts);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
+		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		m_Framebuffer->UnBind();
 		RenderCommand::SetDefaultFrameBuffer();
@@ -189,11 +191,11 @@ namespace QCat
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(1), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(0), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 		}
 
 		// Gizmos
@@ -281,7 +283,6 @@ namespace QCat
 		{
 			if (control)
 				NewScene();
-
 			break;
 		}
 		case Key::O:
