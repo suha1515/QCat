@@ -167,6 +167,12 @@ namespace QCat
 		shader->SetFloat3("light.position", info.lightPos);
 		shader->SetFloat3("light.specular", info.lightSpecular);
 
+		// pointer light
+		shader->SetFloat("light.constant", info.constant);
+		shader->SetFloat("light.Linear", info.linear);
+		shader->SetFloat("light.quadratic", info.quadratic);
+
+
 		// material
 		shader->SetFloat3("material.specular", material.specular);
 		shader->SetFloat("material.shininess", material.shininess);

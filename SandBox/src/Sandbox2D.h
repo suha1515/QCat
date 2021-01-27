@@ -12,7 +12,7 @@ namespace QCat
 	{
 	public:
 		Sandbox2D();
-		virtual ~Sandbox2D() = default;
+	    virtual ~Sandbox2D()=default;
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -26,6 +26,12 @@ namespace QCat
 		Entity m_Camera;
 
 		Ref<Cube> cube;
+		Ref<Cube> cube1;
+		Ref<Cube> cube2;
+		Ref<Cube> cube3;
+		Ref<Cube> cube4;
+		Ref<Cube> cube5;
+
 		Ref<Sphere> sphere;
 		Ref<Light> light;
 

@@ -5,7 +5,7 @@
 namespace QCat
 {
 	Light::Light(glm::vec3 position, glm::vec3 lightColor, glm::vec3 lightAmbient)
-		:lightmodel(position,0.4f), rotation(glm::vec3(0.0f, 0.0f, 0.0f))
+		:lightmodel(position,0.1f), rotation(glm::vec3(0.0f, 0.0f, 0.0f))
 	{
 		info.lightColor = lightColor;
 		info.lightAmbient = lightAmbient;
@@ -33,6 +33,10 @@ namespace QCat
 		ImGui::ColorEdit3("Light Color", glm::value_ptr(info.lightColor));
 		ImGui::ColorEdit3("Light Ambient", glm::value_ptr(info.lightAmbient));
 		ImGui::ColorEdit3("Specular Color", glm::value_ptr(info.lightSpecular),0.1f);
+
+		ImGui::DragFloat("point light constant",  &info.constant);
+		ImGui::DragFloat("point light linear",    &info.linear);
+		ImGui::DragFloat("point light quadratic", &info.quadratic);
 
 
 		ImGui::End();

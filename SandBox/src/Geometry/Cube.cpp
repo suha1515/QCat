@@ -28,12 +28,12 @@ namespace QCat
 		
 		material.SetTexutre("Asset/textures/container2.png", Material::MaterialType::Diffuse);
 		material.SetTexutre("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
-		material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
+		//material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
 
 		shader->Bind();
 		shader->SetInt("material.diffuse", 0);
 		shader->SetInt("material.specular",1);
-		shader->SetInt("material.emission",2);
+		//shader->SetInt("material.emission",2);
 
 		// VertexArray
 		m_VertexArray = VertexArray::Create();
@@ -123,6 +123,11 @@ namespace QCat
 		shader->SetFloat3("light.ambient", info.lightAmbient);
 		shader->SetFloat3("light.position", info.lightPos);
 		shader->SetFloat3("light.specular", info.lightSpecular);
+
+		// pointer light
+		shader->SetFloat("light.constant", info.constant);
+		shader->SetFloat("light.Linear", info.linear);
+		shader->SetFloat("light.quadratic", info.quadratic);
 
 		// material
 		shader->SetFloat3("material.specular", material.specular);

@@ -15,6 +15,7 @@ namespace QCat
 		:Layer("Sandbox2D")
 	{
 	}
+
 	void Sandbox2D::OnAttach()
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -28,7 +29,24 @@ namespace QCat
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.001f, 1000.0f);
 
-		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 3.0f));
+		cube = CreateRef<Cube>(glm::vec3(0.0f, -1.6f, 4.5f));
+
+		cube1 = CreateRef<Cube>(glm::vec3(-2.1f, -1.4f, 5.6f));
+		cube1->SetRotation({ -0.5,0.3,-0.8 });
+
+		cube2 = CreateRef<Cube>(glm::vec3(-0.5f, -0.3f, 10.5f));
+		cube2->SetRotation({ -1.3,-0.4,-1.3 });
+
+		cube3 = CreateRef<Cube>(glm::vec3(1.9f, -0.9f, 3.6f));
+		cube3->SetRotation({ -2.3,-0.4,-1.6 });
+
+		cube4 = CreateRef<Cube>(glm::vec3(2.2f, 1.4f, 5.2f));
+		cube4->SetRotation({ -2.4,-2.2,-0.5 });
+
+		cube5 = CreateRef<Cube>(glm::vec3(-1.9f, 1.4f, 5.2f));
+		cube5->SetRotation({ -3.1,-1.5,-0.5 });
+
+
 		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f));
 		light = CreateRef<Light>(glm::vec3(2.0f, 0.0f, 5.0f));
 		//RenderCommand::SetWireFrameMode();
@@ -60,6 +78,11 @@ namespace QCat
 			glm::mat4 camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			glm::mat4& camTransform = m_Camera.GetComponent<TransformComponent>().GetTransform();
 			cube->Draw(camTransform, camProj,light->Getinfo());
+			cube1->Draw(camTransform, camProj, light->Getinfo());
+			cube2->Draw(camTransform, camProj, light->Getinfo());
+			cube3->Draw(camTransform, camProj, light->Getinfo());
+			cube4->Draw(camTransform, camProj, light->Getinfo());
+			cube5->Draw(camTransform, camProj, light->Getinfo());
 			sphere->Draw(camTransform, camProj,light->Getinfo());
 			light->Draw(camTransform, camProj);
 		}

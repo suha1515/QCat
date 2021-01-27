@@ -5,6 +5,10 @@ struct Light
 	float3 ambient;
 	float3 diffuse;
 	float3 specular;
+
+	float constant;
+	float Linear;
+	float quadratic;
 };
 struct Material
 {
@@ -21,7 +25,6 @@ cbuffer material : register(b1)
 }
 Texture2D diffuseTex;
 Texture2D specularTex;
-Texture2D emissionTex;
 
 SamplerState splr : register(s0);
 
@@ -42,7 +45,13 @@ float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPo
 	float spec = pow(max(0.0f, dot(viewDir, reflectDir)), material.shininess);
 	float3 specular = light.specular * spec * specularTex.Sample(splr,tc).rgb;
 
-	float3 emission = emissionTex.Sample(splr, tc).rgb;
+	//float3 emission = emissionTex.Sample(splr, tc).rgb;
 
-	return float4(diffuse + ambient + specular + emission,1.0f) ;
+	float distance = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.Linear * distance + light.quadratic * (distance * distance));
+
+	ambient *= attenuation;
+	diffuse *= attenuation;
+	specular *= attenuation;
+	return float4(diffuse + ambient + specular,1.0f) ;
 }

@@ -9,6 +9,7 @@ namespace QCat
 	{
 	public:
 		Cube(const glm::vec3& position);
+		~Cube() = default;
 	public:
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);

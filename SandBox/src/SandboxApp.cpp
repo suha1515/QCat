@@ -59,6 +59,7 @@ public:
 	~Sandbox()
 	{
 	}
+
 };
 
 QCat::Application* QCat::CreateApplication()
