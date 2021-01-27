@@ -12,7 +12,7 @@ namespace QCat
 		glm::vec3 Noemral;
 		glm::vec2 TexCoord;
 	};
-	Cube::Cube(const glm::vec3& position, const char* texturePath)
+	Cube::Cube(const glm::vec3& position)
 		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
 		,material(glm::vec3(1.0f,0.5f,0.31f),glm::vec3(1.0f,0.5f,0.31f),glm::vec3(0.5f,0.5f,0.5f),32.0f)
 	{
@@ -26,17 +26,14 @@ namespace QCat
 			shader = Shader::Create("CubeShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/Solid_PS.hlsl");
 		}
 		
-		if(texturePath != "")
-			m_Texture = QCat::Texture2D::Create(texturePath);
-		else
-		{
-			m_Texture = Texture2D::Create(1, 1);
-			unsigned int whiteTextureData = 0xffffffff;
-			m_Texture->SetData(&whiteTextureData, sizeof(unsigned int));
-		}
+		material.SetTexutre("Asset/textures/container2.png", Material::MaterialType::Diffuse);
+		material.SetTexutre("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
+		material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
 
 		shader->Bind();
-		shader->SetInt("u_Texture", 0);
+		shader->SetInt("material.diffuse", 0);
+		shader->SetInt("material.specular",1);
+		shader->SetInt("material.emission",2);
 
 		// VertexArray
 		m_VertexArray = VertexArray::Create();
@@ -128,14 +125,12 @@ namespace QCat
 		shader->SetFloat3("light.specular", info.lightSpecular);
 
 		// material
-		shader->SetFloat3("material.ambient", material.ambient);
-		shader->SetFloat3("material.diffuse", material.diffuse);
 		shader->SetFloat3("material.specular", material.specular);
 		shader->SetFloat("material.shininess", material.shininess);
 
 	
 
-		m_Texture->Bind(0);
+		material.Bind();
 
 		m_VertexArray->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
@@ -150,8 +145,6 @@ namespace QCat
 
 		ImGui::Text("Material");
 
-		ImGui::ColorEdit3("ambient", glm::value_ptr(material.ambient));
-		ImGui::ColorEdit3("diffuse", glm::value_ptr(material.diffuse));
 		ImGui::ColorEdit3("specular", glm::value_ptr(material.specular));
 		ImGui::DragFloat("shininess", &material.shininess, 0.03f, 0.1f);
 		

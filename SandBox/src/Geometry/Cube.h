@@ -8,7 +8,7 @@ namespace QCat
 	class Cube
 	{
 	public:
-		Cube(const glm::vec3& position,const char* texturePath = "");
+		Cube(const glm::vec3& position);
 	public:
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);
@@ -17,7 +17,6 @@ namespace QCat
 	public:
 		void ImguiRender(const char* name);
 	private:
-		Ref<Texture2D> m_Texture;
 		Ref<VertexArray> m_VertexArray;
 		Ref<Shader> shader;
 

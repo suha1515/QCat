@@ -8,7 +8,7 @@ namespace QCat
 	class Sphere
 	{
 	public:
-		Sphere(const glm::vec3& position,const char* texturePath = "", float radius =1.0f,int sectorCount = 36, int stackCount = 18);
+		Sphere(const glm::vec3& position, float radius =1.0f,int sectorCount = 36, int stackCount = 18);
 	public:
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);

@@ -28,8 +28,8 @@ namespace QCat
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.001f, 1000.0f);
 
-		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 3.0f), "Asset/textures/Checkerboard.png");
-		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f), "Asset/textures/Checkerboard.png");
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 3.0f));
+		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f));
 		light = CreateRef<Light>(glm::vec3(2.0f, 0.0f, 5.0f));
 		//RenderCommand::SetWireFrameMode();
 #if defined(QCAT_DX11)

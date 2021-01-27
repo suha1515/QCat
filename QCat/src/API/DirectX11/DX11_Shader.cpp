@@ -441,32 +441,40 @@ namespace QCat
 		gfx->GetContext()->PSSetShader(nullptr, nullptr, 0u);
 	}
 
+	// recursivley access member in struct
 	void ShaderDataStructAdd(ElementLayout* layout,ID3D11ShaderReflectionType* type, D3D11_SHADER_TYPE_DESC typedesc)
 	{
-
+		// if struct has member, loop and access all members
 		for (UINT k = 0; k < typedesc.Members; ++k)
 		{
+			// get memberType and decide datatype
 			ID3D11ShaderReflectionType* memberType = type->GetMemberTypeByIndex(k);
 			D3D11_SHADER_TYPE_DESC memberTypedesc;
 			memberType->GetDesc(&memberTypedesc);
+
 			uint32_t memberOffset = memberTypedesc.Offset;
+			// get member variable name
 			std::string memberName = type->GetMemberTypeName(k);
 
 			ShaderDataType memberDataType = DXShaderDataConvert(memberTypedesc);
 			ShaderDataType  memberclassType = ShaderDataType::None;
 
+			// if struct in array
 			if (memberTypedesc.Elements > 0)
 				memberclassType = ShaderDataType::Array;
+			// if struct in struct
 			else if (memberTypedesc.Members > 0)
 				memberclassType = ShaderDataType::Struct;
 
 			if (memberclassType == ShaderDataType::Struct)
 			{
+				// add struct in struct and do this proccess again
 				(*layout).Add(memberclassType, memberName, memberOffset);
 				ShaderDataStructAdd(&(*layout)[memberName], memberType, memberTypedesc);
 			}
 			else if (memberclassType == ShaderDataType::Array)
 			{
+				// add array in struct if struct array for adding member do this process again
 				(*layout).Add(memberclassType, memberName, memberOffset);
 				(*layout)[memberName].Set(memberDataType, memberTypedesc.Elements);
 				if (memberDataType == ShaderDataType::Struct)
@@ -491,9 +499,10 @@ namespace QCat
 			ElementLayout layout(ShaderDataType::Struct);
 			//std::vector<BufferElement> elements;
 			std::string constantbuffername;
-			D3D11_SHADER_BUFFER_DESC shaderdesc;
+			
 			// this is not com object dont worry about release
 			ID3D11ShaderReflectionConstantBuffer* constantbuffer = pReflector->GetConstantBufferByIndex(i);
+			D3D11_SHADER_BUFFER_DESC shaderdesc;
 			constantbuffer->GetDesc(&shaderdesc);
 			constantbuffername = shaderdesc.Name;
 			for (UINT j = 0; j < shaderdesc.Variables; ++j)
@@ -513,23 +522,33 @@ namespace QCat
 				
 				ShaderDataType datatype = DXShaderDataConvert(typedesc);
 				ShaderDataType classType = ShaderDataType::None;
+				// if there is elements that is array
 				if (typedesc.Elements > 0)
 					classType = ShaderDataType::Array;
+				// if member is more than zero that is struct
 				else if(typedesc.Members>0)
 					classType = ShaderDataType::Struct;
 			
+				// if Struct
 				if (classType == ShaderDataType::Struct)
 				{
+					// add struct member in layout
 					layout.Add(classType, name, offset, size);
+					// after for adding member in struct , pass pointer of layout and reflection desc
 					ShaderDataStructAdd(&layout[name], type, typedesc);
 				}
+				// if Array
 				else if (classType == ShaderDataType::Array)
 				{
+					// add array member in layout
 					layout.Add(classType, name, offset, size);
+					// and Set layout with element's dataType(float,int..) and set count of element
 					layout[name].Set(datatype, typedesc.Elements);
+					// but when datatype is struct (meaning struct array) for adding member in struct pass pointer of layout and desc
 					if(datatype == ShaderDataType::Struct)
 						ShaderDataStructAdd(&layout[name].Array(), type, typedesc);
 				}
+				// if normal variable
 				else
 				{
 					layout.Add(datatype, name, offset,size);
@@ -551,6 +570,12 @@ namespace QCat
 			AddConstantBuffer(constantbuffername, pConstantBuffer);
 		}
 		//===========================================
+
+		//for other Shader variable
+	/*	for (int i = 0; i < desc.BoundResources; ++i)
+		{
+
+		}*/
 	}
 
 	void DX11Shader::AddConstantBuffer(const std::string& name, Ref<DX11ConstantBuffer>& pConstantBuffer)

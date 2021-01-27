@@ -5,7 +5,7 @@
 namespace QCat
 {
 	Light::Light(glm::vec3 position, glm::vec3 lightColor, glm::vec3 lightAmbient)
-		:lightmodel(position,"",0.4f), rotation(glm::vec3(0.0f, 0.0f, 0.0f))
+		:lightmodel(position,0.4f), rotation(glm::vec3(0.0f, 0.0f, 0.0f))
 	{
 		info.lightColor = lightColor;
 		info.lightAmbient = lightAmbient;

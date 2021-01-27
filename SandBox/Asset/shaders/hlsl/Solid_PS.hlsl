@@ -1,14 +1,4 @@
-struct Test2
-{
-	float b;
-};
-struct Test
-{
-	float a;
-	float b;
-	float array[2];
-	Test2 test[3];
-};
+
 struct Light
 {
 	float3 position;
@@ -18,41 +8,41 @@ struct Light
 };
 struct Material
 {
-	float3 diffuse;
-	float3 ambient;
-	float3 specular;
 	float shininess;
 };
 cbuffer light : register(b0)
 {
 	Light light;
-	float b[3];
 }
 cbuffer material : register(b1)
 {
 	Material material;
 	float3 viewPosition;
 }
+Texture2D diffuseTex;
+Texture2D specularTex;
+Texture2D emissionTex;
 
-Texture2D tex : register(t0);
 SamplerState splr : register(s0);
 
 float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPos) : SV_TARGET
 {
 	//ambient
-	float3 ambient = light.ambient * material.ambient;
+	float3 ambient = light.ambient * diffuseTex.Sample(splr,tc).rgb;
 
 	// diffuse
 	float3 norm = normalize(normal);
 	float3 lightDir = normalize(light.position - fragPos);
 	float diff = max(0.0f,dot(norm, lightDir));
-	float3 diffuse = light.diffuse * (diff * material.diffuse);
+	float3 diffuse = light.diffuse * diff * diffuseTex.Sample(splr,tc).rgb;
 
 	//specular
 	float3 viewDir = normalize(viewPosition - fragPos);
 	float3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(0.0f, dot(viewDir, reflectDir)), material.shininess);
-	float3 specular = light.specular * (spec * material.specular);
+	float3 specular = light.specular * spec * specularTex.Sample(splr,tc).rgb;
 
-	return tex.Sample(splr, tc)*float4(diffuse + ambient + specular,1.0f) ;
+	float3 emission = emissionTex.Sample(splr, tc).rgb;
+
+	return float4(diffuse + ambient + specular + emission,1.0f) ;
 }
