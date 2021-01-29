@@ -3,7 +3,6 @@
 namespace QCat
 {
 	using MouseCode = uint16_t;
-
 	namespace Mouse
 	{
 		enum : MouseCode

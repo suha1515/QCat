@@ -96,8 +96,9 @@ namespace QCat
 		//장치등록
 		if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE)
 		{
-
+			QCAT_CORE_WARN("Raw input device isnt set");
 		}
+	
 	}
 	WindowsWindow::~WindowsWindow()
 	{
@@ -151,7 +152,21 @@ namespace QCat
 			PostQuitMessage(0);
 			break;
 		}
+		case WM_ACTIVATE:
+		{
+				//RECT rect;
+				//GetClientRect(hWnd, &rect);
+				////윈도우 공간에서 스크린 공간으로 포인트를 변환한다.
+				//MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT*>(&rect), 2);
+				////api 함수로 윈도영역에서의 마우스위치를 제한한다.
+				////위에서 클라이언트 영역만큼 제한된다.
+				//ClipCursor(&rect);
+		}
+			break;
 		// 윈도우 포커스를 잃었을때
+		case WM_CREATE:
+			
+			break;
 		case WM_KILLFOCUS:
 			break;
 		case WM_SIZE:
@@ -236,7 +251,7 @@ namespace QCat
 		/*******************************************************************/
 		/************************	마우스 메시지	************************/
 		case WM_MOUSEMOVE:
-		{
+		{	
 			const POINTS pt = MAKEPOINTS(lParam);
 			mouse.SetPos(pt.x, pt.y);
 			MouseMoveEvent event((float)pt.x, (float)pt.y);
@@ -251,6 +266,7 @@ namespace QCat
 		case WM_RBUTTONUP:
 		{
 			int i, button, action;
+			
 			if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP)
 				button = Mouse::ButtonLeft;
 			else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP)
@@ -317,6 +333,36 @@ namespace QCat
 		/************************ RAW 마우스 메시지 ************************/
 		case WM_INPUT:
 		{
+			UINT size;
+			// get input data size using GetRawInputData
+			// 3rd parameter is nullptr for not getting real data only get data size
+			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam),
+				RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) == -1)
+				break;
+
+			// make buffer with size
+			rawBuffer.resize(size);
+			// read Data
+			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam),
+				RID_INPUT, rawBuffer.data(), &size, sizeof(RAWINPUTHEADER)) == -1)
+				break;
+
+			// casting to RAWINPUT 
+			auto& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
+
+			// Header has a typeinfo so there is may rawinputdata we need to distringuishi
+			// if we nned mousetype info use RIM_TYPEMOUSE
+
+			if (ri.header.dwType == RIM_TYPEMOUSE)
+			{
+				int wheelDelta = 0;
+				if (ri.data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
+				{
+					wheelDelta = (*(short*)&ri.data.mouse.usButtonData) / WHEEL_DELTA;
+				}
+				mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY, wheelDelta);
+			}
+
 			break;
 		}
 		/*******************************************************************/

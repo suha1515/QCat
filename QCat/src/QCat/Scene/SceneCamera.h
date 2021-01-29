@@ -12,6 +12,7 @@ namespace QCat
 		SceneCamera();
 		virtual ~SceneCamera() = default;
 
+	public:
 		void SetOrthoGraphic(float size, float nearClip, float farClip);
 		void SetPerspective(float verticalFov, float nearClip, float farClip);
 		void SetViewportSize(uint32_t width, uint32_t height);
@@ -46,5 +47,7 @@ namespace QCat
 		float m_OrthoGraphicNear = 0.0f, m_OrthoGraphicfar  = 1.0f;
 
 		float m_AspectRatio = 0.0f;
+
+	
 	};
 }

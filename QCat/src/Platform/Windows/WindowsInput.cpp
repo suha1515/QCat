@@ -4,6 +4,7 @@
 
 #include "WindowsWindow.h"
 
+
 namespace QCat
 {
 	bool Input::IsKeyPressed(const KeyCode keycode)
@@ -37,6 +38,12 @@ namespace QCat
 	float Input::GetMouseY()
 	{
 		return  GetMousePos().y;
+	}
+	std::optional<MouseDevice::RawDelta> Input::GetDeltaData()
+	{
+		auto* window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
+		auto info = window->GetMouseRawDelta();
+		return info;
 	}
 }
 

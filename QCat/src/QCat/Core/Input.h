@@ -3,6 +3,7 @@
 
 #include "KeyCode.h"
 #include "MouseCode.h"
+#include "QCat/InputDevice/Mouse/Mouse.h"
 
 namespace QCat
 {
@@ -14,6 +15,8 @@ namespace QCat
 		static glm::vec2 GetMousePos();
 		static float GetMouseX();
 		static float GetMouseY();
+
+		static  std::optional<MouseDevice::RawDelta> GetDeltaData();
 	};
 }
 

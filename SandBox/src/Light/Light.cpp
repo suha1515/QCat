@@ -34,6 +34,9 @@ namespace QCat
 		ImGui::ColorEdit3("Light Ambient", glm::value_ptr(info.lightAmbient));
 		ImGui::ColorEdit3("Specular Color", glm::value_ptr(info.lightSpecular),0.1f);
 
+		ImGui::DragFloat3("Light Direction", glm::value_ptr(info.lightDirection), 0.1f);
+
+		ImGui::DragFloat("spotlight cutoff", &info.cutoff, 0.01f);
 		ImGui::DragFloat("point light constant",  &info.constant);
 		ImGui::DragFloat("point light linear",    &info.linear);
 		ImGui::DragFloat("point light quadratic", &info.quadratic);

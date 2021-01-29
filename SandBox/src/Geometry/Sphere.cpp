@@ -19,11 +19,11 @@ namespace QCat
 	{
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			shader = Shader::Create("Asset/shaders/glsl/FlatShader.glsl");
+			shader = Shader::Create("Asset/shaders/glsl/Spotlight.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			shader = Shader::Create("SphereShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/Solid_PS.hlsl");
+			shader = Shader::Create("SphereShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/SpotLight_PS.hlsl");
 		}
 
 		material.SetTexutre("Asset/textures/container2.png", Material::MaterialType::Diffuse);
@@ -151,12 +151,12 @@ namespace QCat
 		this->rotation = rotation;
 	}
 
-	void Sphere::Draw(const glm::mat4& cameraTransform,const glm::mat4& proj, LightInfo info)
+	void Sphere::Draw(const glm::mat4& view,const glm::mat4& proj, LightInfo info)
 	{
 		shader->Bind();
-		shader->SetMat4("u_ViewProjection", proj*glm::inverse(cameraTransform));
+		shader->SetMat4("u_ViewProjection", proj* view);
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
-		glm::vec3 viewpos = cameraTransform[3];
+		glm::vec3 viewpos = -1.0f * view[3];
 		shader->SetMat4("u_Transform", transform);
 		shader->SetMat4("u_invTransform", glm::inverse(transform));
 		shader->SetFloat3("viewPosition", viewpos);
@@ -166,11 +166,15 @@ namespace QCat
 		shader->SetFloat3("light.ambient", info.lightAmbient);
 		shader->SetFloat3("light.position", info.lightPos);
 		shader->SetFloat3("light.specular", info.lightSpecular);
+		shader->SetFloat3("light.direction", info.lightDirection);
+
 
 		// pointer light
 		shader->SetFloat("light.constant", info.constant);
 		shader->SetFloat("light.Linear", info.linear);
 		shader->SetFloat("light.quadratic", info.quadratic);
+		shader->SetFloat("light.cutOff", info.cutoff);
+		shader->SetFloat("light.outerCutOff", info.outerCutOff);
 
 
 		// material

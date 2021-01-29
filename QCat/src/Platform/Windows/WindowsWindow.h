@@ -37,7 +37,8 @@ namespace QCat
 
 		int GetKeyState(int keycode) noexcept { return keyboard.GetKey(keycode); }
 		int GetMouseState(int button) noexcept { return mouse.GetButton(button);}
-		std::pair<int, int> GetMousePos() noexcept { return mouse.GetMousePos(); } ;
+		std::pair<int, int> GetMousePos() noexcept { return mouse.GetMousePos(); } 
+		std::optional<MouseDevice::RawDelta> GetMouseRawDelta() noexcept { return mouse.ReadRawDelta(); }
 		WindowMessage GetMessage();
 	public:
 		void SetICon(HICON ico);
@@ -56,7 +57,7 @@ namespace QCat
 		virtual bool IsVSync() const override;
 
 
-	private:
+	public:
 		Keyboard keyboard;
 		MouseDevice mouse;
 	private:
@@ -68,7 +69,7 @@ namespace QCat
 		const char* wndName;
 		bool windowOpen;
 		bool initialized = false;
-
+		std::vector<BYTE> rawBuffer;
 		std::unique_ptr<Graphics> pGfx;
 	
 	};
