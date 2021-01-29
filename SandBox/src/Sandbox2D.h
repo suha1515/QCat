@@ -21,6 +21,8 @@ namespace QCat
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
 		bool OnWindowResize(WindowResizeEvent& e);
+
+		void CameraUpdate(QCat::Timestep ts);
 	private:
 		//camera
 		Entity m_Camera;
@@ -33,9 +35,15 @@ namespace QCat
 		Ref<Cube> cube5;
 
 		Ref<Sphere> sphere;
-		Ref<Light> light;
+		Ref<Light> Dirlight;
+		Ref<Light> Pointlight[4];
+		Ref<Light> Spotlight;
+
 
 		Ref<Scene> m_ActiveScene;
+
+		Ref<Shader> m_LightShader;
+
 		glm::vec3 m_CameraPosition = { 0.0f,0.0f,-2.0f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };
 

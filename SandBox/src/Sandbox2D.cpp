@@ -48,8 +48,34 @@ namespace QCat
 		cube5->SetRotation({ -3.1,-1.5,-0.5 });
 
 
-		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f));
-		light = CreateRef<Light>(glm::vec3(2.0f, 0.0f, 5.0f));
+		
+		//sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f));
+
+		//light
+	
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			m_LightShader = Shader::Create("Asset/shaders/glsl/MultiLight.glsl");
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			m_LightShader = Shader::Create("CubeShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/SpotLight_PS.hlsl");
+		}
+
+		cube->SetShader(m_LightShader);
+		cube1->SetShader(m_LightShader);
+		cube2->SetShader(m_LightShader);
+		cube3->SetShader(m_LightShader);
+		cube4->SetShader(m_LightShader);
+		cube5->SetShader(m_LightShader);
+		//material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
+
+		m_LightShader->Bind();
+		m_LightShader->SetInt("material.diffuse", 0);
+		m_LightShader->SetInt("material.specular", 1);
+		//shader->SetInt("material.emission",2);
+
 		
 		//RenderCommand::SetWireFrameMode();
 #if defined(QCAT_DX11)
@@ -66,71 +92,9 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 		// Update
-		cameraSpeed = 2.5f*ts;
-		auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
-		glm::mat4 rotationMat = glm::mat4(1.0f);
-		// camera roration by mouse
-		static bool fpsmode = true;
-		if (fpsmode)
-		{
-			while (const auto delta = Input::GetDeltaData())
-			{
-				float dx = (float)delta->x;
-				float dy = (float)delta->y;
-
-				yaw -= dx * 0.04f;
-				pitch -= dy * 0.04f;
-				//QCAT_INFO("dx : {0} , dy{1}", dx, dy);
-
-				if (pitch > 89.0f)
-					pitch = 89.f;
-				if (pitch < -89.0f)
-					pitch = -89.f;
-
-				rotationMat = glm::eulerAngleXYZ(glm::radians(pitch), glm::radians(yaw), 0.0f);
-				glm::vec4 front = { 0.0f,0.0f,1.0f,0.0f };
-				cameraFront = glm::vec3(rotationMat * front);
-				cameraFront = glm::normalize(cameraFront);
-
-
-				front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-				front.y = sin(glm::radians(pitch));
-				front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-				cameraFront = glm::normalize(front);
-			}
-			// camera Move
-			if (Input::IsKeyPressed(Key::W))
-			{
-				tc += cameraSpeed * cameraFront;
-			}
-			if (Input::IsKeyPressed(Key::S))
-			{
-				tc -= cameraSpeed * cameraFront;
-			}
-			if (Input::IsKeyPressed(Key::A))
-			{
-				tc -= cameraSpeed * cameraRight;
-			}
-			if (Input::IsKeyPressed(Key::D))
-			{
-				tc += cameraSpeed * cameraRight;
-			}
-			if (Input::IsKeyPressed(Key::Escape))
-				fpsmode = false;			
-		}
-		else
-		{
-			if (Input::IsKeyPressed(Key::Escape))
-				fpsmode = true;
-		}
-		light->SetDirection(cameraFront);
-		light->SetPosition(tc);
-		cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
-		cameraUp = glm::cross(cameraFront, cameraRight);
-
-		viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
-
-		//m_Camera.GetComponent<TransformComponent>().Rotation = glm::vec3(-pitch, yaw, 0.0f);
+		CameraUpdate(ts);
+		//Spotlight->SetDirection(cameraFront);
+		//Spotlight->SetPosition(tc);
 
 		// Render
 		// Reset stats here
@@ -142,16 +106,81 @@ namespace QCat
 		}
 		{
 			QCAT_PROFILE_SCOPE("Renderer Draw");
-			glm::mat4 camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
-			glm::mat4 cam = viewMatrix;//m_Camera.GetComponent<TransformComponent>().GetTransform();
-			cube->Draw(cam, camProj,light->Getinfo());
-			cube1->Draw(cam, camProj, light->Getinfo());
-			cube2->Draw(cam, camProj, light->Getinfo());
-			cube3->Draw(cam, camProj, light->Getinfo());
-			cube4->Draw(cam, camProj, light->Getinfo());
-			cube5->Draw(cam, camProj, light->Getinfo());
-			sphere->Draw(cam, camProj,light->Getinfo());
-			light->Draw(cam, camProj);
+			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
+			m_LightShader->Bind();
+			m_LightShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
+			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
+			m_LightShader->SetFloat3("viewPosition", tc);
+
+			// Directional Light
+			m_LightShader->SetFloat3("dirLight.direction", glm::vec3(-0.2f, -1.0f, 0.3f));
+			m_LightShader->SetFloat3("dirLight.ambient", glm::vec3(0.1f, 0.14f, 0.14f));
+			m_LightShader->SetFloat3("dirLight.diffuse", glm::vec3(0.1f, 0.12f, 0.16f));
+			m_LightShader->SetFloat3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+
+			// Point Light 1
+			m_LightShader->SetFloat3("pointLight[0].position", glm::vec3(0.7f, 0.2f, 3.0f));
+			m_LightShader->SetFloat3("pointLight[0].ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f);
+			m_LightShader->SetFloat3("pointLight[0].diffuse", glm::vec3(1.0f, 0.0f, 0.0f));
+			m_LightShader->SetFloat3("pointLight[0].specular", glm::vec3(1.0f, 0.6f, 0.0f));
+
+			m_LightShader->SetFloat("pointLight[0].constant", 1.0f);
+			m_LightShader->SetFloat("pointLight[0].Linear", 0.09f);
+			m_LightShader->SetFloat("pointLight[0].quadratic", 0.032f);
+
+			// Point Light 2
+			m_LightShader->SetFloat3("pointLight[1].position", glm::vec3(3.0f, -3.3f, -4.0f));
+			m_LightShader->SetFloat3("pointLight[1].ambient", glm::vec3(1.0f, 0.0f, 0.0f)*0.1f);
+			m_LightShader->SetFloat3("pointLight[1].diffuse", glm::vec3(0.0f, 1.0f, 0.0f));
+			m_LightShader->SetFloat3("pointLight[1].specular", glm::vec3(1.0f, 0.0f, 0.0f));
+												 
+			m_LightShader->SetFloat ("pointLight[1].constant", 1.0f);
+			m_LightShader->SetFloat ("pointLight[1].Linear", 0.09f);
+			m_LightShader->SetFloat ("pointLight[1].quadratic", 0.032f);
+
+			// Point Light 3
+			m_LightShader->SetFloat3("pointLight[2].position", glm::vec3(-4.0f, 2.0f, -6.0f));
+			m_LightShader->SetFloat3("pointLight[2].ambient", glm::vec3(1.0f, 1.0, 0.0) * 0.1f);
+			m_LightShader->SetFloat3("pointLight[2].diffuse", glm::vec3(0.0f, 0.0, 1.0));
+			m_LightShader->SetFloat3("pointLight[2].specular", glm::vec3(1.0f, 1.0, 0.0));
+												 
+			m_LightShader->SetFloat ("pointLight[2].constant", 1.0f);
+			m_LightShader->SetFloat ("pointLight[2].Linear", 0.09f);
+			m_LightShader->SetFloat ("pointLight[2].quadratic", 0.032f);
+
+			// Point Light 4
+			m_LightShader->SetFloat3("pointLight[3].position", glm::vec3(0.0f, 0.0f, -3.0f));
+			m_LightShader->SetFloat3("pointLight[3].ambient", glm::vec3(0.2f, 0.2f, 1.0f) * 0.1f);
+			m_LightShader->SetFloat3("pointLight[3].diffuse", glm::vec3(0.2f, 0.2f, 1.0f));
+			m_LightShader->SetFloat3("pointLight[3].specular", glm::vec3(0.2f, 0.2f, 1.0f));
+												 
+			m_LightShader->SetFloat ("pointLight[3].constant", 1.0f);
+			m_LightShader->SetFloat ("pointLight[3].Linear", 0.09f);
+			m_LightShader->SetFloat ("pointLight[3].quadratic", 0.032f);
+		
+			//spotLight
+			m_LightShader->SetFloat3("spotlight.position", tc);
+			m_LightShader->SetFloat3("spotlight.direction", cameraFront);
+			m_LightShader->SetFloat3("spotlight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
+			m_LightShader->SetFloat3("spotlight.diffuse", glm::vec3(1.f, 1.f, 0.0f));
+			m_LightShader->SetFloat3("spotlight.specular", glm::vec3(0.8f, 0.8f, 0.0f));
+
+			m_LightShader->SetFloat ("spotlight.constant", 1.0f);
+			m_LightShader->SetFloat ("spotlight.Linear", 0.09f);
+			m_LightShader->SetFloat ("spotlight.quadratic", 0.032f);
+			m_LightShader->SetFloat ("spotlight.cutOff", glm::cos(glm::radians(12.5f)));
+			m_LightShader->SetFloat ("spotlight.outerCutOff", glm::cos(glm::radians(13.0f)));
+
+
+			cube->Draw(m_LightShader);
+			cube1->Draw(m_LightShader);
+			cube2->Draw(m_LightShader);
+			cube3->Draw(m_LightShader);
+			cube4->Draw(m_LightShader);
+			cube5->Draw(m_LightShader);
+			m_LightShader->UnBind();
+			//sphere->Draw(m_LightShader);
+			//light->Draw(m_LightShader);
 		}
 	}
 
@@ -181,8 +210,8 @@ namespace QCat
 		ImGui::End();
 
 		cube->ImguiRender("Cube 1");
-		sphere->ImguiRender("Spehere 1");
-		light->ImGuiRender("light 1");
+		//sphere->ImguiRender("Spehere 1");
+		//light->ImGuiRender("light 1");
 	}
 
 	void Sandbox2D::OnEvent(QCat::Event& e)
@@ -203,6 +232,66 @@ namespace QCat
 		}
 		m_Camera.GetComponent<CameraComponent>().Camera.SetViewportSize(e.GetWidth(), e.GetHeight());
 		return false;
+	}
+
+	void Sandbox2D::CameraUpdate(QCat::Timestep ts)
+	{
+		cameraSpeed = 2.5f * ts;
+		auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
+		// camera roration by mouse
+		static bool fpsmode = true;
+		if (fpsmode)
+		{
+			while (const auto delta = Input::GetDeltaData())
+			{
+				float dx = (float)delta->x;
+				float dy = (float)delta->y;
+
+				yaw -= dx * 0.04f;
+				pitch -= dy * 0.04f;
+				//QCAT_INFO("dx : {0} , dy{1}", dx, dy);
+
+				if (pitch > 89.0f)
+					pitch = 89.f;
+				if (pitch < -89.0f)
+					pitch = -89.f;
+
+				glm::vec4 front = { 0.0f,0.0f,1.0f,0.0f };
+				front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+				front.y = sin(glm::radians(pitch));
+				front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+				cameraFront = glm::normalize(front);
+			}
+			// camera Move
+			if (Input::IsKeyPressed(Key::W))
+			{
+				tc += cameraSpeed * cameraFront;
+			}
+			if (Input::IsKeyPressed(Key::S))
+			{
+				tc -= cameraSpeed * cameraFront;
+			}
+			if (Input::IsKeyPressed(Key::A))
+			{
+				tc -= cameraSpeed * cameraRight;
+			}
+			if (Input::IsKeyPressed(Key::D))
+			{
+				tc += cameraSpeed * cameraRight;
+			}
+			if (Input::IsKeyPressed(Key::Escape))
+				fpsmode = false;
+		}
+		else
+		{
+			if (Input::IsKeyPressed(Key::Escape))
+				fpsmode = true;
+		}
+
+		cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
+		cameraUp = glm::cross(cameraFront, cameraRight);
+
+		viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
 	}
 
 }

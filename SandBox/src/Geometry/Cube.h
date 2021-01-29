@@ -14,7 +14,19 @@ namespace QCat
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);
 
-		void Draw(const glm::mat4& cameraTransform, const glm::mat4& proj, LightInfo info);
+		void Draw(const Ref<Shader>& shader);
+
+		void SetShader(const Ref<Shader>& shader)
+		{
+			for (auto& bf : m_VertexArray->GetVertexBuffers())
+			{
+				bf->SetLayout(BufferLayout::Create(
+					{ { ShaderDataType::Float3, "a_Position"},
+					  { ShaderDataType::Float3, "a_Normal"   },
+					  { ShaderDataType::Float2, "a_TexCoord"},
+					}, shader));
+			}
+		}
 	public:
 		void ImguiRender(const char* name);
 	private:

@@ -5,27 +5,39 @@
 
 namespace QCat
 {
+	enum class LightType
+	{
+		Directional =0,Point,Spot
+	};
 	struct LightInfo
 	{
 		LightInfo()
 		{
-			lightColor = { 1.0f,1.0f,1.0f };
-			lightAmbient = { 0.0f,0.0f,0.0f };
-			lightPos = { 0.0f, 0.0f, 0.0f };
-			lightSpecular = { 1.0f,1.0f,1.0f };
-			lightDirection = { -1.0f,0.0f,0.0f };
+			diffuse = { 1.0f,1.0f,1.0f };
+			ambient = { 0.0f,0.0f,0.0f };
+			specular = { 1.0f,1.0f,1.0f };
+
+			lightPosition = { 0.0f, 0.0f, 0.0f };
+			lightDirection = { 1.0f,0.0f,0.0f };
+
+			constant = 0.0;
+			linear = 0.0f;
+			quadratic = 0.0f;
+			cutoff = 0.0f;
+			outerCutOff = 0.0f;
 		}
-		glm::vec3 lightColor;
-		glm::vec3 lightAmbient;
-		glm::vec3 lightPos;
+		glm::vec3 diffuse;
+		glm::vec3 ambient;
+		glm::vec3 specular;
+		glm::vec3 lightPosition;
 		glm::vec3 lightDirection;
-		glm::vec3 lightSpecular;
 
 		float constant=1.0f;
 		float linear = 0.09f;
 		float quadratic = 0.032f;
 		float cutoff = glm::cos(glm::radians(12.5f));
 		float outerCutOff = glm::cos(glm::radians(17.5f));
+		LightType type = LightType::Directional;
 	};
 	class Light
 	{
@@ -34,7 +46,7 @@ namespace QCat
 
 		LightInfo Getinfo() const { return info; }
 		void SetDirection(const glm::vec3& dir) { info.lightDirection = dir; }
-		void SetPosition(const glm::vec3& pos) { info.lightPos = pos; }
+		void SetPosition(const glm::vec3& pos) { info.lightPosition = pos; }
 		void Bind();
 		void Draw(const glm::mat4& cameraTransform, const glm::mat4& proj);
 		void ImGuiRender(const char* name);
@@ -42,7 +54,7 @@ namespace QCat
 		uint32_t uniformBlockID;
 		Sphere lightmodel;
 		LightInfo info;
-
+		
 		glm::vec3 rotation;
 	};
 }

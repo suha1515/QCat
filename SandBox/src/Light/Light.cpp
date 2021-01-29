@@ -7,9 +7,9 @@ namespace QCat
 	Light::Light(glm::vec3 position, glm::vec3 lightColor, glm::vec3 lightAmbient)
 		:lightmodel(position,0.1f), rotation(glm::vec3(0.0f, 0.0f, 0.0f))
 	{
-		info.lightColor = lightColor;
-		info.lightAmbient = lightAmbient;
-		info.lightPos = position;
+		info.diffuse = lightColor;
+		info.ambient = lightAmbient;
+		info.lightPosition = position;
 	}
 	void Light::Bind()
 	{
@@ -22,17 +22,17 @@ namespace QCat
 	{
 		ImGui::Begin(name);
 
-		if (ImGui::DragFloat3("Light Position", glm::value_ptr(info.lightPos), 0.1f))
+		if (ImGui::DragFloat3("Light Position", glm::value_ptr(info.lightPosition), 0.1f))
 		{
-			lightmodel.SetTranslation(info.lightPos);
+			lightmodel.SetTranslation(info.lightPosition);
 		}
 		if (ImGui::DragFloat3("Light Rotation", glm::value_ptr(rotation), 0.1f))
 		{
 			lightmodel.SetRotation(rotation);
 		}
-		ImGui::ColorEdit3("Light Color", glm::value_ptr(info.lightColor));
-		ImGui::ColorEdit3("Light Ambient", glm::value_ptr(info.lightAmbient));
-		ImGui::ColorEdit3("Specular Color", glm::value_ptr(info.lightSpecular),0.1f);
+		ImGui::ColorEdit3("Light Color", glm::value_ptr(info.diffuse));
+		ImGui::ColorEdit3("Light Ambient", glm::value_ptr(info.ambient));
+		ImGui::ColorEdit3("Specular Color", glm::value_ptr(info.specular),0.1f);
 
 		ImGui::DragFloat3("Light Direction", glm::value_ptr(info.lightDirection), 0.1f);
 

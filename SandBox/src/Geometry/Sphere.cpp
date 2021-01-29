@@ -162,10 +162,10 @@ namespace QCat
 		shader->SetFloat3("viewPosition", viewpos);
 
 		// light
-		shader->SetFloat3("light.diffuse", info.lightColor);
-		shader->SetFloat3("light.ambient", info.lightAmbient);
-		shader->SetFloat3("light.position", info.lightPos);
-		shader->SetFloat3("light.specular", info.lightSpecular);
+		shader->SetFloat3("light.diffuse", info.diffuse);
+		shader->SetFloat3("light.ambient", info.ambient);
+		shader->SetFloat3("light.position", info.lightPosition);
+		shader->SetFloat3("light.specular", info.specular);
 		shader->SetFloat3("light.direction", info.lightDirection);
 
 
