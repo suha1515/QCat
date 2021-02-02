@@ -29,6 +29,7 @@ IncludeDir["stb_image"] = "%{wks.location}/QCat/3rdLib/stb_image"
 IncludeDir["entt"] = "%{wks.location}/QCat/3rdLib/entt/Include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/QCat/3rdLib/yaml-cpp/Include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/QCat/3rdLib/ImGuizmo"
+IncludeDir["assimp"] = "%{wks.location}/QCat/3rdLib/assimp/include"
 
 
 group "Dependencies"

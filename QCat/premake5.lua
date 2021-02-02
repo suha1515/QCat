@@ -13,6 +13,8 @@ project "QCat"
 	pchheader "qcpch.h"
 	pchsource "src/qcpch.cpp"
 
+	libdirs { "%{wks.location}/QCat/3rdLib/assimp/Debug" }
+
 	files
 	{
 		"src/**.h",
@@ -39,13 +41,15 @@ project "QCat"
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
-		"%{IncludeDir.ImGuizmo}"
+		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.assimp}"
 	}
 
 	links
 	{
 		"d3d11.lib",
 		"opengl32.lib",
+		"assimp-vc142-mtd.lib",
 		"ImGui",
 		"Glad",
 		"yaml-cpp"
