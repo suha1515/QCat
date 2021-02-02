@@ -27,7 +27,7 @@ namespace QCat
 		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png");
 
 		FrameBufferSpecification fbSpec;
-		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::Depth };
+		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::RED_INTEGER,FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = FrameBuffer::Create(fbSpec);
@@ -68,13 +68,30 @@ namespace QCat
 		// Reset stats here
 		Renderer2D::ResetStats();
 		m_Framebuffer->Bind();
-		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-		RenderCommand::Clear();
 		 
 		// Update Scene
 		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
 		//m_ActiveScene->OnUpdateRuntime(ts);
 
+		auto [mx, my] = ImGui::GetMousePos();
+		mx -= m_ViewportBounds[0].x;
+		my -= m_ViewportBounds[0].y;
+		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+
+		// opengl texture origin is bottom left so we have to flip y coordinate
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+			my = viewportSize.y - my;
+
+		int mouseX = (int)mx;
+		int mouseY = (int)my;
+
+		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		{
+			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+			QCAT_CORE_WARN("PixelData = {0}", pixelData);
+		}
+		
+		
 		m_Framebuffer->UnBind();
 		RenderCommand::SetDefaultFrameBuffer();
 
@@ -179,8 +196,8 @@ namespace QCat
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
-
 		ImGui::Begin("ViewPort");
+		auto viewportOffset = ImGui::GetCursorPos(); // Includes tab bar
 
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
@@ -191,13 +208,23 @@ namespace QCat
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(1), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(0), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(0), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 		}
 
+		auto windowSize = ImGui::GetWindowSize();
+		ImVec2 minBound = ImGui::GetWindowPos();
+		minBound.x += viewportOffset.x;
+		minBound.y += viewportOffset.y;
+
+		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+		m_ViewportBounds[0] = { minBound.x,minBound.y };
+		m_ViewportBounds[1] = { maxBound.x,maxBound.y };
+
+		
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GizmoType != -1)

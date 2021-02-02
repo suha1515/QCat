@@ -15,6 +15,7 @@ namespace QCat
 		void UnBind(QGfxDeviceDX11& gfx) const;
 		
 		void Resize(QGfxDeviceDX11& gfx,uint32_t width, uint32_t height);
+		void ReadData(uint32_t x, uint32_t y, int* outdata);
 
 		void Clear(QGfxDeviceDX11& gfx,const glm::vec4& color);
 		ID3D11RenderTargetView* GetRenderTargetView() { return pTargetView.Get(); }

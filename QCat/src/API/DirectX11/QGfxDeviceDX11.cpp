@@ -21,6 +21,7 @@ namespace QCat {
 	void QGfxDeviceDX11::Begin()
 	{
 		BeginFrame(glm::vec4(0.1f,0.1f,0.1f,1.0f));
+
 	}
 	void QGfxDeviceDX11::End()
 	{
@@ -333,9 +334,12 @@ namespace QCat {
 		m_BlendEnable = enable;
 		m_BlenderState.Reset();
 		D3D11_BLEND_DESC blendDesc = CD3D11_BLEND_DESC{ CD3D11_DEFAULT{} };
+		blendDesc.IndependentBlendEnable = true;			//if this value is false only use rendertarget0
 		blendDesc.RenderTarget[0].BlendEnable = m_BlendEnable;
 		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+
+		blendDesc.RenderTarget[1].BlendEnable = false;
 		device->CreateBlendState(&blendDesc, &m_BlenderState);
 	}
 	void QGfxDeviceDX11::BindBlendState()

@@ -58,6 +58,9 @@ namespace QCat
 				case FramebufferTextureFormat::RGBA8:
 					m_ColorAttachments[i] = CreateRef<DX11RenderTarget>(gfx, m_Specification.Width, m_Specification.Height,m_Specification.Samples, DXGI_FORMAT_R8G8B8A8_UNORM);
 					break;
+				case FramebufferTextureFormat::RED_INTEGER:
+					m_ColorAttachments[i] = CreateRef<DX11RenderTarget>(gfx, m_Specification.Width, m_Specification.Height, m_Specification.Samples, DXGI_FORMAT_R32_SINT);
+					break;
 				}
 			}
 		}
@@ -113,5 +116,12 @@ namespace QCat
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 		Invalidate();
+	}
+	int DX11FrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	{
+		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+		int pixelData;
+		m_ColorAttachments[attachmentIndex]->ReadData(x, y,&pixelData);
+		return pixelData;
 	}
 }

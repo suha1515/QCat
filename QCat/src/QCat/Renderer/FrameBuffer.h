@@ -8,7 +8,7 @@ namespace QCat
 		None = 0,
 		// Color
 		RGBA8 ,
-
+		RED_INTEGER,
 		// Depth/Stencil
 		DEPTH24STENCIL8,
 
@@ -51,7 +51,7 @@ namespace QCat
 		virtual void UnBind()=0;
 
 		virtual void Resize(uint32_t width,uint32_t height)=0;
-
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 		virtual void SaveColorBuffer(uint32_t index = 0) const = 0;
 		//virtual FrameBufferSpecification& GetSpecification() = 0;

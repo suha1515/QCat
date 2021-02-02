@@ -1,6 +1,7 @@
 struct PS_OUT
 {
 	float4 color : SV_TARGET0;
+	int id : SV_TARGET1;
 };
 
 Texture2D tex[32] : register(t0);
@@ -16,15 +17,17 @@ PS_OUT main(float2 tc: Texcoord, float4 color : Color, float texIndex : v_TexInd
 		if (index == 0)
 		{
 			output.color = tex[0].Sample(splr, tc * tilingFactor) * color;
+			output.id = 100;
 			return output;
 		}
 		if (i == index)
 		{
 			output.color =  tex[i].Sample(splr, tc * tilingFactor) * color;
+			output.id = 100;
 			return output;
 		}	
 	}
-	
 	output.color = tex[0].Sample(splr, tc * tilingFactor) * color;
+	output.id = 100;
 	return output;
 }
