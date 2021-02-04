@@ -33,7 +33,8 @@ namespace QCat
 	
 		Ref<Light> Pointlight;
 
-		bool blinn = false;;
+		bool blinn = false;
+		bool gamma = false;
 
 		Ref<Scene> m_ActiveScene;
 

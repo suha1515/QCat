@@ -40,24 +40,33 @@ namespace QCat
 		QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
 	}
-	DX11Texture2D::DX11Texture2D(const std::string& path)
+	DX11Texture2D::DX11Texture2D(const std::string& path, bool gamacorrection )
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
 		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		if (gamacorrection)
+		{
+			m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		}
+		else
+		{
+			m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		}
+		
 		QCAT_CORE_ASSERT(data, "Failed to load Image!");
 		m_width = width;
 		m_height = height;
-		m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		
 		// Texture Description
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
-		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.Format = m_dataFormat;
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;

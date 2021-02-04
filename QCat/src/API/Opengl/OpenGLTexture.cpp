@@ -5,7 +5,7 @@
 
 namespace QCat
 {
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool gammaCorrection)
 		:m_path(path)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -26,11 +26,11 @@ namespace QCat
 		switch (channels)
 		{
 		case 4:
-			imageformat = GL_RGBA8;
+			imageformat = gammaCorrection ? GL_SRGB8_ALPHA8: GL_RGBA8;
 			dataformat = GL_RGBA;
 			break;
 		case 3:
-			imageformat = GL_RGB8;
+			imageformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
 			dataformat = GL_RGB;
 			break;
 		}

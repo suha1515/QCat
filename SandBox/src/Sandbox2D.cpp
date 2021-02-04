@@ -94,6 +94,7 @@ namespace QCat
 			m_LightShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
 			m_LightShader->SetFloat3("viewPosition", tc);
 			m_LightShader->SetBool("blinn", blinn);
+			m_LightShader->SetBool("gamma", gamma);
 
 			// Point Light 1
 			m_LightShader->SetFloat3("pointLight.position", sphere->GetTranslation());
@@ -143,6 +144,7 @@ namespace QCat
 		}
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
 		ImGui::Checkbox("blinn", &blinn);
+		ImGui::Checkbox("gamaa Corretion", &gamma);
 		ImGui::End();
 
 		face->ImguiRender("face 1");

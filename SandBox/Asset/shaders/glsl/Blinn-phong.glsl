@@ -78,6 +78,7 @@ uniform Material material;
 uniform PointLight pointLight;
 uniform vec3 viewPosition;
 uniform bool blinn;
+uniform bool gamma;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -92,6 +93,8 @@ void main()
 	// point light
 	result +=CalcPointLight(pointLight,norm,FragPos,viewDir);
 
+	if(gamma)
+		result = pow(result,vec3(1.0/2.2));
 	color = vec4(result,1.0);
 }
 

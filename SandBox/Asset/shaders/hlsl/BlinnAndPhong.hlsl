@@ -42,6 +42,7 @@ cbuffer light : register(b0)
 {
 	PointLight pointLight;
 	bool	blinn;
+	bool	gamma;
 }
 cbuffer material : register(b1)
 {
@@ -135,7 +136,8 @@ float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPo
 	float3 result = float3(0.0f,0.0f,0.0f);
 	// point light
 	result += CalcPointLight(pointLight, norm, fragPos, viewDir, tc, diffuseTex, specularTex);
-
+	if (gamma)
+		result = pow(result,1.0f / 2.2f);
 
 	return color = float4(result,1.0f);
 }

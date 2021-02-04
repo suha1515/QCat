@@ -24,7 +24,7 @@ namespace QCat
 	{
 	public:
 		static Ref<Texture2D> Create(unsigned int width, unsigned int height);
-		static Ref<Texture2D> Create(const std::string & path);
+		static Ref<Texture2D> Create(const std::string & path,bool gamacorrection = false);
 		virtual std::string GetPath() const = 0;
 	};
 
