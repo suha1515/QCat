@@ -21,21 +21,6 @@ namespace QCat
 
 	void Sandbox2D::OnAttach()
 	{
-		// Create an instance of the Importer class
-		// And have it read the given file with some example postprocessing
-		// Usually - if speed is not the most important aspect for you - you'll
-		// probably to request more postprocessing than we do in this example.
-		//const aiScene* scene = importer.ReadFile(pFile,
-		//	aiProcess_CalcTangentSpace |
-		//	aiProcess_Triangulate |
-		//	aiProcess_JoinIdenticalVertices |
-		//	aiProcess_SortByPType);
-		//// If the import failed, report it
-		//if (!scene) {
-		//	DoTheErrorLogging(importer.GetErrorString());
-		//	return false;
-		//}
-
 		QCAT_PROFILE_FUNCTION();
 
 		m_ActiveScene = CreateRef<Scene>();
@@ -47,50 +32,30 @@ namespace QCat
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.001f, 1000.0f);
 
-		cube = CreateRef<Cube>(glm::vec3(0.0f, -1.6f, 4.5f));
 
-		cube1 = CreateRef<Cube>(glm::vec3(-2.1f, -1.4f, 5.6f));
-		cube1->SetRotation({ -0.5,0.3,-0.8 });
-
-		cube2 = CreateRef<Cube>(glm::vec3(-0.5f, -0.3f, 10.5f));
-		cube2->SetRotation({ -1.3,-0.4,-1.3 });
-
-		cube3 = CreateRef<Cube>(glm::vec3(1.9f, -0.9f, 3.6f));
-		cube3->SetRotation({ -2.3,-0.4,-1.6 });
-
-		cube4 = CreateRef<Cube>(glm::vec3(2.2f, 1.4f, 5.2f));
-		cube4->SetRotation({ -2.4,-2.2,-0.5 });
-
-		cube5 = CreateRef<Cube>(glm::vec3(-1.9f, 1.4f, 5.2f));
-		cube5->SetRotation({ -3.1,-1.5,-0.5 });
-
-
-		
 		//sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f));
 
 		//light
-	
-
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			m_LightShader = Shader::Create("Asset/shaders/glsl/MultiLight.glsl");
+			m_LightShader = Shader::Create("Asset/shaders/glsl/Blinn-phong.glsl");
+			m_FlatShader = Shader::Create("Asset/shaders/glsl/FlatShader.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = Shader::Create("CubeShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/SpotLight_PS.hlsl");
+			m_LightShader = Shader::Create("CubeShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong.hlsl");
+			m_FlatShader = Shader::Create("CubeShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
+
 		}
 
-		cube->SetShader(m_LightShader);
-		cube1->SetShader(m_LightShader);
-		cube2->SetShader(m_LightShader);
-		cube3->SetShader(m_LightShader);
-		cube4->SetShader(m_LightShader);
-		cube5->SetShader(m_LightShader);
 		//material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
 
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0);
 		m_LightShader->SetInt("material.specular", 1);
+
+		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f),m_LightShader,5);
+		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f), m_FlatShader, 0.1f);
 		//shader->SetInt("material.emission",2);
 
 		
@@ -124,78 +89,32 @@ namespace QCat
 		{
 			QCAT_PROFILE_SCOPE("Renderer Draw");
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
+			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 			m_LightShader->Bind();
 			m_LightShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
-			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 			m_LightShader->SetFloat3("viewPosition", tc);
-
-			// Directional Light
-			m_LightShader->SetFloat3("dirLight.direction", glm::vec3(-0.2f, -1.0f, 0.3f));
-			m_LightShader->SetFloat3("dirLight.ambient", glm::vec3(0.1f, 0.14f, 0.14f));
-			m_LightShader->SetFloat3("dirLight.diffuse", glm::vec3(0.1f, 0.12f, 0.16f));
-			m_LightShader->SetFloat3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+			m_LightShader->SetBool("blinn", blinn);
 
 			// Point Light 1
-			m_LightShader->SetFloat3("pointLight[0].position", glm::vec3(0.7f, 0.2f, 3.0f));
-			m_LightShader->SetFloat3("pointLight[0].ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f);
-			m_LightShader->SetFloat3("pointLight[0].diffuse", glm::vec3(1.0f, 0.0f, 0.0f));
-			m_LightShader->SetFloat3("pointLight[0].specular", glm::vec3(1.0f, 0.6f, 0.0f));
+			m_LightShader->SetFloat3("pointLight.position", sphere->GetTranslation());
+			m_LightShader->SetFloat3("pointLight.ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f);
+			m_LightShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+			m_LightShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
-			m_LightShader->SetFloat("pointLight[0].constant", 1.0f);
-			m_LightShader->SetFloat("pointLight[0].Linear", 0.09f);
-			m_LightShader->SetFloat("pointLight[0].quadratic", 0.032f);
+			m_LightShader->SetFloat("pointLight.constant", constant);
+			m_LightShader->SetFloat("pointLight.Linear", Linear);
+			m_LightShader->SetFloat("pointLight.quadratic", quadratic);
 
-			// Point Light 2
-			m_LightShader->SetFloat3("pointLight[1].position", glm::vec3(3.0f, -3.3f, -4.0f));
-			m_LightShader->SetFloat3("pointLight[1].ambient", glm::vec3(1.0f, 0.0f, 0.0f)*0.1f);
-			m_LightShader->SetFloat3("pointLight[1].diffuse", glm::vec3(0.0f, 1.0f, 0.0f));
-			m_LightShader->SetFloat3("pointLight[1].specular", glm::vec3(1.0f, 0.0f, 0.0f));
-												 
-			m_LightShader->SetFloat ("pointLight[1].constant", 1.0f);
-			m_LightShader->SetFloat ("pointLight[1].Linear", 0.09f);
-			m_LightShader->SetFloat ("pointLight[1].quadratic", 0.032f);
-
-			// Point Light 3
-			m_LightShader->SetFloat3("pointLight[2].position", glm::vec3(-4.0f, 2.0f, -6.0f));
-			m_LightShader->SetFloat3("pointLight[2].ambient", glm::vec3(1.0f, 1.0, 0.0) * 0.1f);
-			m_LightShader->SetFloat3("pointLight[2].diffuse", glm::vec3(0.0f, 0.0, 1.0));
-			m_LightShader->SetFloat3("pointLight[2].specular", glm::vec3(1.0f, 1.0, 0.0));
-												 
-			m_LightShader->SetFloat ("pointLight[2].constant", 1.0f);
-			m_LightShader->SetFloat ("pointLight[2].Linear", 0.09f);
-			m_LightShader->SetFloat ("pointLight[2].quadratic", 0.032f);
-
-			// Point Light 4
-			m_LightShader->SetFloat3("pointLight[3].position", glm::vec3(0.0f, 0.0f, -3.0f));
-			m_LightShader->SetFloat3("pointLight[3].ambient", glm::vec3(0.2f, 0.2f, 1.0f) * 0.1f);
-			m_LightShader->SetFloat3("pointLight[3].diffuse", glm::vec3(0.2f, 0.2f, 1.0f));
-			m_LightShader->SetFloat3("pointLight[3].specular", glm::vec3(0.2f, 0.2f, 1.0f));
-												 
-			m_LightShader->SetFloat ("pointLight[3].constant", 1.0f);
-			m_LightShader->SetFloat ("pointLight[3].Linear", 0.09f);
-			m_LightShader->SetFloat ("pointLight[3].quadratic", 0.032f);
-		
-			//spotLight
-			m_LightShader->SetFloat3("spotlight.position", tc);
-			m_LightShader->SetFloat3("spotlight.direction", cameraFront);
-			m_LightShader->SetFloat3("spotlight.ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-			m_LightShader->SetFloat3("spotlight.diffuse", glm::vec3(1.f, 1.f, 0.0f));
-			m_LightShader->SetFloat3("spotlight.specular", glm::vec3(0.8f, 0.8f, 0.0f));
-
-			m_LightShader->SetFloat ("spotlight.constant", 1.0f);
-			m_LightShader->SetFloat ("spotlight.Linear", 0.09f);
-			m_LightShader->SetFloat ("spotlight.quadratic", 0.032f);
-			m_LightShader->SetFloat ("spotlight.cutOff", glm::cos(glm::radians(12.5f)));
-			m_LightShader->SetFloat ("spotlight.outerCutOff", glm::cos(glm::radians(13.0f)));
-
-
-			cube->Draw(m_LightShader);
-			cube1->Draw(m_LightShader);
-			cube2->Draw(m_LightShader);
-			cube3->Draw(m_LightShader);
-			cube4->Draw(m_LightShader);
-			cube5->Draw(m_LightShader);
+			face->Draw(m_LightShader);
 			m_LightShader->UnBind();
+
+			m_FlatShader->Bind();
+			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
+			m_FlatShader->SetFloat3("viewPosition", tc);
+
+			sphere->Draw(m_FlatShader);
+
+			m_FlatShader->UnBind();
 			//sphere->Draw(m_LightShader);
 			//light->Draw(m_LightShader);
 		}
@@ -223,11 +142,11 @@ namespace QCat
 			sceneCamera->SetPerspectiveVerticalFov(fov);
 		}
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
-
+		ImGui::Checkbox("blinn", &blinn);
 		ImGui::End();
 
-		cube->ImguiRender("Cube 1");
-		//sphere->ImguiRender("Spehere 1");
+		face->ImguiRender("face 1");
+		sphere->ImguiRender("Spehere 1");
 		//light->ImGuiRender("light 1");
 	}
 

@@ -230,6 +230,12 @@ namespace QCat
 
 		UploadUniformMat4(name, value);
 	}
+	void OpenGLShader::SetBool(const std::string& name, const bool& value)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		UploadUniformBool(name, value);
+	}
 	void OpenGLShader::SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value)
 	{
 	}
@@ -273,6 +279,11 @@ namespace QCat
 	{
 		GLint location = glGetUniformLocation(m_renderID, name.c_str());
 		glUniform4f(location, value.x, value.y, value.z, value.w);
+	}
+	void OpenGLShader::UploadUniformBool(const std::string& name, const bool& value)
+	{
+		GLint location = glGetUniformLocation(m_renderID, name.c_str());
+		glUniform1i(location, value);
 	}
 	void OpenGLShader::UploadUniformMat3(const std::string& name, const glm::mat3& matrix)
 	{

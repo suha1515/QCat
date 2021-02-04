@@ -2,18 +2,19 @@
 
 #include "QCat.h"
 #include "../Material/Material.h"
+
 namespace QCat
 {
-	class Cube
+	class Face
 	{
 	public:
-		Cube(const glm::vec3& position,const Ref<Shader>& shader);
-		~Cube() = default;
+		Face(const glm::vec3& position, const Ref<Shader>& shader,uint32_t size=1);
+		~Face() = default;
 	public:
-		void SetScale(const glm::vec3& scale);
-		void SetRotation(const glm::vec3& rotation);
+		void SetScale(const glm::vec3 & scale);
+		void SetRotation(const glm::vec3 & rotation);
 
-		void Draw(const Ref<Shader>& shader);
+		void Draw(const Ref<Shader> & shader);
 	public:
 		void ImguiRender(const char* name);
 	private:

@@ -45,6 +45,8 @@ namespace QCat
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
+		virtual void SetBool(const std::string& name, const bool& value) override;
+
 		virtual void SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value) override;
 		virtual void SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value) override;
 		virtual void SetMat4u(const std::string& uniformname, const std::string& valuename, const glm::mat4& value) override;

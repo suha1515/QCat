@@ -52,7 +52,6 @@ namespace QCat
 		void ImGuiRender(const char* name);
 	private:
 		uint32_t uniformBlockID;
-		Sphere lightmodel;
 		LightInfo info;
 		
 		glm::vec3 rotation;

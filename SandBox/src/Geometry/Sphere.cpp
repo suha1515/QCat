@@ -13,26 +13,17 @@ namespace QCat
 		glm::vec2 TexCoord;
 	};
 
-	Sphere::Sphere(const glm::vec3& position, float radius, int sectorCount, int stackCount)
+	Sphere::Sphere(const glm::vec3& position, const Ref<Shader>& shader, float radius, int sectorCount, int stackCount)
 		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f)),
 		material(glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f)
 	{
-		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-		{
-			shader = Shader::Create("Asset/shaders/glsl/Spotlight.glsl");
-		}
-		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-		{
-			shader = Shader::Create("SphereShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/SpotLight_PS.hlsl");
-		}
+		//material.SetTexture("Asset/textures/container2.png", Material::MaterialType::Diffuse);
+		//material.SetTexture("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
+		//material.SetTexture("Asset/textures/blackpng.png", Material::MaterialType::Emission);
 
-		material.SetTexutre("Asset/textures/container2.png", Material::MaterialType::Diffuse);
-		material.SetTexutre("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
-		material.SetTexutre("Asset/textures/blackpng.png", Material::MaterialType::Emission);
-
-		shader->Bind();
-		shader->SetInt("material.diffuse", 0);
-		shader->SetInt("material.specular", 1);
+		//shader->Bind();
+		//shader->SetInt("material.diffuse", 0);
+		//shader->SetInt("material.specular", 1);
 		// VertexArray
 		m_VertexArray = VertexArray::Create();
 
@@ -151,32 +142,12 @@ namespace QCat
 		this->rotation = rotation;
 	}
 
-	void Sphere::Draw(const glm::mat4& view,const glm::mat4& proj, LightInfo info)
+	void Sphere::Draw(const Ref<Shader>& shader)
 	{
 		shader->Bind();
-		shader->SetMat4("u_ViewProjection", proj* view);
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
-		glm::vec3 viewpos = -1.0f * view[3];
 		shader->SetMat4("u_Transform", transform);
 		shader->SetMat4("u_invTransform", glm::inverse(transform));
-		shader->SetFloat3("viewPosition", viewpos);
-
-		// light
-		shader->SetFloat3("light.diffuse", info.diffuse);
-		shader->SetFloat3("light.ambient", info.ambient);
-		shader->SetFloat3("light.position", info.lightPosition);
-		shader->SetFloat3("light.specular", info.specular);
-		shader->SetFloat3("light.direction", info.lightDirection);
-
-
-		// pointer light
-		shader->SetFloat("light.constant", info.constant);
-		shader->SetFloat("light.Linear", info.linear);
-		shader->SetFloat("light.quadratic", info.quadratic);
-		shader->SetFloat("light.cutOff", info.cutoff);
-		shader->SetFloat("light.outerCutOff", info.outerCutOff);
-
-
 		// material
 		shader->SetFloat3("material.specular", material.specular);
 		shader->SetFloat("material.shininess", material.shininess);

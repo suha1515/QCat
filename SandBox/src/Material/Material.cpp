@@ -2,7 +2,7 @@
 
 namespace QCat
 {
-	void Material::SetTexutre(const std::string& path, MaterialType type)
+	void Material::SetTexture(const std::string& path, MaterialType type)
 	{
 		switch (type)
 		{
@@ -16,6 +16,24 @@ namespace QCat
 			break;
 		case MaterialType::Emission:
 			m_EmissionTexture = Texture2D::Create(path);
+			break;
+		}
+	}
+
+	void Material::SetTexture(const Ref<Texture2D>& texture, MaterialType type)
+	{
+		switch (type)
+		{
+		case MaterialType::None: QCAT_CORE_ASSERT(false);
+			break;
+		case MaterialType::Diffuse:
+			m_DiffuseTexture = texture;
+			break;
+		case MaterialType::Specular:
+			m_SpecularTexture = texture;
+			break;
+		case MaterialType::Emission:
+			m_EmissionTexture = texture;
 			break;
 		}
 	}

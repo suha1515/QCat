@@ -24,6 +24,9 @@ namespace QCat
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
+		//bool
+		virtual void SetBool(const std::string& name, const bool& value) override;
+
 		virtual void SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value) override;
 		virtual void SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value)override;
 		virtual void SetMat4u(const std::string& uniformname, const std::string& valuename, const glm::mat4& value) override;
@@ -39,6 +42,8 @@ namespace QCat
 		void UploadUniformFloat2(const std::string& name, const glm::vec2& value);
 		void UploadUniformFloat3(const std::string& name, const glm::vec3& value);
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& value);
+
+		void UploadUniformBool(const std::string& name, const bool& value);
 
 		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);	

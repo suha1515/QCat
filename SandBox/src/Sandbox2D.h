@@ -4,6 +4,7 @@
 #include "QCat.h"
 #include "Geometry/Cube.h"
 #include "Geometry/Sphere.h"
+#include "Geometry/Face.h"
 #include "Light/Light.h"
 
 namespace QCat
@@ -27,25 +28,24 @@ namespace QCat
 		//camera
 		Entity m_Camera;
 
-		Ref<Cube> cube;
-		Ref<Cube> cube1;
-		Ref<Cube> cube2;
-		Ref<Cube> cube3;
-		Ref<Cube> cube4;
-		Ref<Cube> cube5;
-
+		Ref<Face> face;
 		Ref<Sphere> sphere;
-		Ref<Light> Dirlight;
-		Ref<Light> Pointlight[4];
-		Ref<Light> Spotlight;
+	
+		Ref<Light> Pointlight;
 
+		bool blinn = false;;
 
 		Ref<Scene> m_ActiveScene;
 
 		Ref<Shader> m_LightShader;
+		Ref<Shader> m_FlatShader;
 
 		glm::vec3 m_CameraPosition = { 0.0f,0.0f,-2.0f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };
+
+		float constant = 1.0f;
+		float Linear = 0.09f;
+		float quadratic = 0.032f;
 
 		float cameraSpeed;
 		float lastX, lastY;

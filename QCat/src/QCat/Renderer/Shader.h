@@ -22,6 +22,8 @@ namespace QCat
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		
+		// Bool
+		virtual void SetBool(const std::string& name, const bool& value) = 0;
 
 		// matrix
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;

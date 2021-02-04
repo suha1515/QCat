@@ -114,6 +114,8 @@ namespace QCat
 			std::string texturePath = path + '/' + str.C_Str();
 			texture.texture = TextureLibrary::Load(texturePath);
 			texture.type = typeMame;
+			textures.push_back(texture);
 		}
+		return textures;
 	}
 }

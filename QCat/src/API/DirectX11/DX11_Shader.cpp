@@ -238,6 +238,15 @@ namespace QCat
 		ref.first->IsDataChanged = true;
 		ref.second = value;
 	}
+	void DXShader::SetBool(const std::string& name, const bool& value)
+	{
+		QCAT_PROFILE_FUNCTION();
+		auto ref = FindVariable(name);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
+	}
 	void DXShader::SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value)
 	{
 		/*QCAT_PROFILE_FUNCTION();

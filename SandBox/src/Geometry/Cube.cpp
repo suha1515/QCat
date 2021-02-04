@@ -12,12 +12,18 @@ namespace QCat
 		glm::vec3 Noemral;
 		glm::vec2 TexCoord;
 	};
-	Cube::Cube(const glm::vec3& position)
+	Cube::Cube(const glm::vec3& position,const Ref<Shader>& shader)
 		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
 		,material(glm::vec3(1.0f,0.5f,0.31f),glm::vec3(1.0f,0.5f,0.31f),glm::vec3(0.5f,0.5f,0.5f),32.0f)
 	{
-		material.SetTexutre("Asset/textures/container2.png", Material::MaterialType::Diffuse);
-		material.SetTexutre("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
+		material.SetTexture("Asset/textures/container2.png", Material::MaterialType::Diffuse);
+		//material.SetTexutre("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
+
+		Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
+		unsigned int whiteTextureData = 0xffffffff;
+		whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
+		material.SetTexture(whiteTexture, Material::MaterialType::Specular);
+
 
 		// VertexArray
 		m_VertexArray = VertexArray::Create();
@@ -70,6 +76,14 @@ namespace QCat
 		};
 
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(Indices, sizeof(Indices) / sizeof(uint32_t));
+
+		// layout
+		vertexBuffer->SetLayout(BufferLayout::Create(
+				{ { ShaderDataType::Float3, "a_Position"},
+				  { ShaderDataType::Float3, "a_Normal"   },
+				  { ShaderDataType::Float2, "a_TexCoord"},
+				}, shader));
+		
 
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 		m_VertexArray->SetIndexBuffer(indexBuffer);

@@ -29,9 +29,6 @@ layout(location = 0) out vec4 color;
 
 in vec3 v_Normal;
 in vec2 v_TexCoord;
-
-uniform Material material;
-uniform Light light;
 uniform vec3 viewPosition;
 
 void main()
