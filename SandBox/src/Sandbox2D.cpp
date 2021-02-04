@@ -9,9 +9,7 @@
 
 #include <chrono>
 #include <QCat/InputDevice/Mouse/Mouse.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+
 
 namespace QCat
 {
@@ -24,7 +22,6 @@ namespace QCat
 	void Sandbox2D::OnAttach()
 	{
 		// Create an instance of the Importer class
-		Assimp::Importer importer;
 		// And have it read the given file with some example postprocessing
 		// Usually - if speed is not the most important aspect for you - you'll
 		// probably to request more postprocessing than we do in this example.

@@ -28,4 +28,5 @@ namespace  QCat
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
+
 }

@@ -29,7 +29,7 @@ namespace QCat
 		{
 			return m_path == ((DX11Texture2D&)other).m_path;
 		}
-
+		virtual std::string GetPath() const override { return m_path; }
 	private:
 		std::string m_path;
 		unsigned int m_width, m_height;

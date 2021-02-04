@@ -23,6 +23,7 @@ namespace QCat
 		{
 			return m_renderID == ((OpenGLTexture2D&)other).m_renderID;
 		}
+		virtual std::string GetPath() const override { return m_path; }
 	private:
 		std::string m_path;
 		unsigned int m_width,m_height;
