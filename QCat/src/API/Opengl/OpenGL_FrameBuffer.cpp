@@ -71,6 +71,17 @@ namespace QCat
 			}
 			return false;
 		}
+		static GLenum QCatTextureFormatToGL(FramebufferTextureFormat format)
+		{
+			switch (format)
+			{
+			case FramebufferTextureFormat::RGBA8:			return GL_RGBA8;
+			case FramebufferTextureFormat::RED_INTEGER:		return GL_RED_INTEGER;
+			}
+			QCAT_CORE_ASSERT(false);
+			return 0;
+		}
+	
 	}
 
 	OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& spec)
@@ -167,6 +178,10 @@ namespace QCat
 		// bind Framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+
+		// ClearColorAttament(index,
+
+		
 	}
 	void OpenGLFrameBuffer::UnBind()
 	{
@@ -192,6 +207,13 @@ namespace QCat
 		int pixelData;
 		glReadPixels(x, y, 1, 1,GL_RED_INTEGER,GL_INT,&pixelData);
 		return pixelData;
+	}
+	void OpenGLFrameBuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	{
+		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+
+		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
+		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::QCatTextureFormatToGL(spec.TextureFormat), GL_INT, &value);
 	}
 	void* OpenGLFrameBuffer::GetColorAttachmentRendererID(uint32_t index) const
 	{

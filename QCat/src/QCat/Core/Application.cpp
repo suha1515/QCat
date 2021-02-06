@@ -58,8 +58,7 @@ namespace QCat
 			if (m_Running)
 			{
 				m_window->OnBegin();
-				RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-				RenderCommand::Clear();
+
 
 				if (!m_minimized)
 				{

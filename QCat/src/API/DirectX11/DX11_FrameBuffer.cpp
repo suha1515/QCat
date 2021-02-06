@@ -124,4 +124,13 @@ namespace QCat
 		m_ColorAttachments[attachmentIndex]->ReadData(x, y,&pixelData);
 		return pixelData;
 	}
+	void DX11FrameBuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	{
+		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+
+		glm::vec4 color = { value,value,value,value};
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		m_ColorAttachments[attachmentIndex]->Clear(gfx,color);
+
+	}
 }

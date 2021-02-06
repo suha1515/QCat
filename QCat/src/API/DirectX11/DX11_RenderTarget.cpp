@@ -108,29 +108,7 @@ namespace QCat
 		gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_READ, 0, &msr);
 		if (x >= 0 && x <= m_width && y >= 0 && y <= m_height)
 		{
-			//uint8_t* pSrcBytes = static_cast<uint8_t*>(msr.pData);
-			//int* sptr = reinterpret_cast< int*>(msr.pData);
-			//int index = x + (m_width * y);
-			//*outdata = sptr[index];
-			//byte r = pSrcBytes[(x*4) + (msr.RowPitch * y)];
-			//byte g = pSrcBytes[(x*4) + (msr.RowPitch * y)+1];
-			//byte b = pSrcBytes[(x*4) + (msr.RowPitch * y)+2];
-			//byte a = pSrcBytes[(x*4) + (msr.RowPitch * y)+3];
-			//uint32_t* data = reinterpret_cast<uint32_t*>(msr.pData);
-			//uint32_t value = data[x + (m_width * y)];
-			//int value = *r;
-			//value = sptr[x + (m_width * y)];
-
-			/*glm::vec3 color = glm::vec3(0.0f);
-			color.r = r;
-			color.g = g;
-			color.b = b;
-			QCAT_CORE_WARN("color r = {0}, g = {1} , b = {2}", color.r, color.g, color.b);*/
-
 			int* data = reinterpret_cast<int*>(msr.pData);
-
-			//QCAT_CORE_WARN("PixelData = {0},{1},{2}", r,g,b);
-
 			*outdata = *data;
 		}
 		gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
