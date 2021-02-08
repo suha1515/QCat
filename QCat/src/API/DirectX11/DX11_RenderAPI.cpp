@@ -30,6 +30,24 @@ namespace QCat
 		pgfx->BindSamplerState();
 
 		pgfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		DepthStencil::DepthStencilDesc desc;
+		{
+			desc.depthEnable = true;
+			desc.depthFunc = COMPARISON_FUNC::LESS;
+			desc.depthWriteMask =DEPTH_WRITE_MASK::MASK_ALL;
+
+			desc.stencilEnable = true;
+			desc.stencilFunc = COMPARISON_FUNC::ALWAYS;
+			desc.stencilReadMask = 0xFF;
+			desc.stencilWriteMask = 0xFF;
+			desc.stencilFail = STENCIL_OP::KEEP;
+			desc.depthFail = STENCIL_OP::KEEP;
+			desc.bothPass = STENCIL_OP::REPLACE;
+			desc.referenceValue = 1;
+		}
+		m_DepthStencilState = DepthStencil::Create(desc);
+		m_DepthStencilState->Bind();
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -57,6 +75,8 @@ namespace QCat
 		{
 			pgfx->BindBlendState();
 		}
+		if (m_DepthStencilState)
+			m_DepthStencilState->Bind();
 		pgfx->GetContext()->DrawIndexed(indexCount,0u,0u);
 	}
 	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount)
@@ -85,5 +105,29 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
 		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
 		pgfx->GetContext()->RSSetState(pRasterizer.Get());
+	}
+	void DX11RenderAPI::SetDepthTest(bool enable)
+	{
+		m_DepthStencilState->EnableDepth(enable);
+	}
+	void DX11RenderAPI::SetStencilTest(bool enable)
+	{
+		m_DepthStencilState->EnableStencil(enable);
+	}
+	void DX11RenderAPI::SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		m_DepthStencilState->SetStencilOperator(stencilFail, depthFail, bothPass);
+	}
+	void DX11RenderAPI::SetStencilFunc(COMPARISON_FUNC func, int value)
+	{
+		m_DepthStencilState->SetStencilFunc(func, value, 0xFF);
+	}
+	void DX11RenderAPI::SetDepthWriteMask(DEPTH_WRITE_MASK mask)
+	{
+		m_DepthStencilState->SetDepthWriteMask(mask);
+	}
+	void DX11RenderAPI::SetStencilWriteMask(int value)
+	{
+		m_DepthStencilState->SetStencilWriteMask(value);
 	}
 }

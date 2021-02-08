@@ -76,7 +76,7 @@ namespace QCat
 
 	void Face::Draw(const Ref<Shader>& shader)
 	{
-		shader->Bind();
+		
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 		shader->SetMat4("u_Transform", transform);
 		shader->SetMat4("u_invTransform", glm::inverse(transform));
@@ -85,8 +85,8 @@ namespace QCat
 		shader->SetFloat("material.shininess", material.shininess);
 
 		material.Bind();
-
 		m_VertexArray->Bind();
+		shader->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 

@@ -6,6 +6,7 @@
 #include "Geometry/Sphere.h"
 #include "Geometry/Face.h"
 #include "Light/Light.h"
+#include "QCat/Renderer/DepthStencil.h"
 
 namespace QCat
 {
@@ -29,6 +30,9 @@ namespace QCat
 		Entity m_Camera;
 
 		Ref<Face> face;
+		Ref<Cube> cube;
+		Ref<Cube> cube2;
+
 		Ref<Sphere> sphere;
 	
 		Ref<Light> Pointlight;
@@ -41,7 +45,7 @@ namespace QCat
 		Ref<Shader> m_LightShader;
 		Ref<Shader> m_FlatShader;
 
-		glm::vec3 m_CameraPosition = { 0.0f,0.0f,-2.0f };
+		glm::vec3 m_CameraPosition = { 0.5f,0.0f,-7.2f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };
 
 		float constant = 1.0f;
@@ -50,9 +54,9 @@ namespace QCat
 
 		float cameraSpeed;
 		float lastX, lastY;
-		float yaw=90.f, pitch=0.0f;
+		float yaw=90.f, pitch=-30.0f;
 		glm::vec3 cameraUp = glm::vec3(0.0f,1.0f,0.0f);
-		glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
+		glm::vec3 cameraFront = glm::vec3(0.0f, -0.5f, 1.0f);
 		glm::vec3 cameraRight = glm::vec3(1.0f,0.0f,0.0f);
 		glm::vec3 cameraTarget = glm::vec3(0.0f,0.0f,0.0f);
 		bool firstMouse = true;

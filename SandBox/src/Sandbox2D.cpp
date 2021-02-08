@@ -27,7 +27,7 @@ namespace QCat
 		m_Camera = m_ActiveScene->CreateEntity("Camera");
 		
 		auto& tc = m_Camera.GetComponent<TransformComponent>();
-		tc.Translation = glm::vec3(0.0f, 0.0f, -5.0f);
+		tc.Translation = m_CameraPosition;
 		auto& camera = m_Camera.AddComponent<CameraComponent>();
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.001f, 1000.0f);
@@ -54,11 +54,14 @@ namespace QCat
 		m_LightShader->SetInt("material.diffuse", 0);
 		m_LightShader->SetInt("material.specular", 1);
 
-		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f),m_LightShader,5);
-		sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f), m_FlatShader, 0.1f);
+		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,5);
+		sphere = CreateRef<Sphere>(glm::vec3(-0.1f, -2.6f, -1.0f), m_FlatShader, 0.1f);
+		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
+		cube->SetScale({ 0.5f,0.5f,0.5f });
+		cube2 = CreateRef<Cube>(glm::vec3(-0.8f, -2.6f, 0.0f), m_LightShader);
+		cube2->SetScale({ 0.5f,0.5f,0.5f });
 		//shader->SetInt("material.emission",2);
 
-		
 		//RenderCommand::SetWireFrameMode();
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)
@@ -105,14 +108,34 @@ namespace QCat
 			m_LightShader->SetFloat("pointLight.constant", constant);
 			m_LightShader->SetFloat("pointLight.Linear", Linear);
 			m_LightShader->SetFloat("pointLight.quadratic", quadratic);
-
 			face->Draw(m_LightShader);
+
+			RenderCommand::SetStencilTest(true);
+			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
+			RenderCommand::SetStencilWriteMask(0xFF);
+			cube->SetScale({ 0.5f, 0.5f, 0.5f });
+			cube2->SetScale({ 0.5f, 0.5f, 0.5f });
+			cube->Draw(m_LightShader);
+			cube2->Draw(m_LightShader);
 			m_LightShader->UnBind();
 
 			m_FlatShader->Bind();
+
 			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
 			m_FlatShader->SetFloat3("viewPosition", tc);
-
+			
+			RenderCommand::SetStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
+			RenderCommand::SetStencilWriteMask(0x00);
+			RenderCommand::SetDepthTest(false);
+			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			cube->SetScale({ 0.55f, 0.55f, 0.55f });
+			cube2->SetScale({ 0.55f, 0.55f, 0.55f });
+			cube->Draw(m_FlatShader);
+			cube2->Draw(m_FlatShader);
+			RenderCommand::SetDepthTest(true);
+			RenderCommand::SetStencilWriteMask(0xFF);
+			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
+			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 			sphere->Draw(m_FlatShader);
 
 			m_FlatShader->UnBind();
@@ -149,6 +172,7 @@ namespace QCat
 
 		face->ImguiRender("face 1");
 		sphere->ImguiRender("Spehere 1");
+		cube->ImguiRender("Cube1");
 		//light->ImGuiRender("light 1");
 	}
 
@@ -177,7 +201,7 @@ namespace QCat
 		cameraSpeed = 2.5f * ts;
 		auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 		// camera roration by mouse
-		static bool fpsmode = true;
+		static bool fpsmode = false;
 		if (fpsmode)
 		{
 			while (const auto delta = Input::GetDeltaData())
@@ -194,7 +218,7 @@ namespace QCat
 				if (pitch < -89.0f)
 					pitch = -89.f;
 
-				glm::vec4 front = { 0.0f,0.0f,1.0f,0.0f };
+				glm::vec3 front = { 0.0f,0.0f,1.0f };
 				front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 				front.y = sin(glm::radians(pitch));
 				front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -228,7 +252,6 @@ namespace QCat
 
 		cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
 		cameraUp = glm::cross(cameraFront, cameraRight);
-
 		viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
 	}
 

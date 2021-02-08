@@ -11,9 +11,28 @@ namespace QCat
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+
+		DepthStencil::DepthStencilDesc desc;
+		{
+			desc.depthEnable = true;
+			desc.depthFunc = COMPARISON_FUNC::LESS;
+			desc.depthWriteMask = DEPTH_WRITE_MASK::MASK_ALL;
+
+			desc.stencilEnable = true;
+			desc.stencilFunc = COMPARISON_FUNC::ALWAYS;
+			desc.stencilReadMask = 0xFF;
+			desc.stencilWriteMask = 0xFF;
+			desc.stencilFail = STENCIL_OP::KEEP;
+			desc.depthFail = STENCIL_OP::KEEP;
+			desc.bothPass = STENCIL_OP::REPLACE;
+			desc.referenceValue = 1;
+		}
+		m_DepthStencilState = DepthStencil::Create(desc);
+		m_DepthStencilState->EnableDepth(true);
+		m_DepthStencilState->EnableStencil(true);
+		m_DepthStencilState->SetStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -25,7 +44,7 @@ namespace QCat
 	}
 	void OpenGLRenderAPI::Clear()
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
 	}
 	void OpenGLRenderAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount)
 	{
@@ -40,5 +59,29 @@ namespace QCat
 	void OpenGLRenderAPI::SetFillMode()
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+	void OpenGLRenderAPI::SetDepthTest(bool enable)
+	{
+		m_DepthStencilState->EnableDepth(enable);
+	}
+	void OpenGLRenderAPI::SetStencilTest(bool enable)
+	{
+		m_DepthStencilState->EnableStencil(enable);
+	}
+	void OpenGLRenderAPI::SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		m_DepthStencilState->SetStencilOperator(stencilFail, depthFail, bothPass);
+	}
+	void OpenGLRenderAPI::SetStencilFunc(COMPARISON_FUNC func, int value)
+	{
+		m_DepthStencilState->SetStencilFunc(func,value,0xFF);
+	}
+	void OpenGLRenderAPI::SetDepthWriteMask(DEPTH_WRITE_MASK mask)
+	{
+		m_DepthStencilState->SetDepthWriteMask(mask);
+	}
+	void OpenGLRenderAPI::SetStencilWriteMask(int value)
+	{
+		m_DepthStencilState->SetStencilWriteMask(value);
 	}
 }

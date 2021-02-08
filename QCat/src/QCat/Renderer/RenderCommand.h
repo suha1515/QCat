@@ -38,6 +38,32 @@ namespace QCat
 		{
 			s_renderAPI->SetFillMode();
 		}
+		inline static void SetDepthTest(bool enable)
+		{
+			s_renderAPI->SetDepthTest(enable);
+		}
+		inline static void SetStencilTest(bool enable)
+		{
+			s_renderAPI->SetStencilTest(enable);
+		}
+		inline static void SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+		{
+			s_renderAPI->SetStencilOp(stencilFail, depthFail, bothPass);
+		}
+		inline static void SetStencilFunc(COMPARISON_FUNC func, int value)
+		{
+			s_renderAPI->SetStencilFunc(func, value);
+		}
+
+		inline static void SetDepthWriteMask(DEPTH_WRITE_MASK mask)
+		{
+			s_renderAPI->SetDepthWriteMask(mask);
+		}
+		inline static void SetStencilWriteMask(int value)
+		{
+			s_renderAPI->SetStencilWriteMask(value);
+		}
+
 	private:
 		static RenderAPI* s_renderAPI;
 	};

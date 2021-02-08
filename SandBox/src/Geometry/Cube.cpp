@@ -17,12 +17,12 @@ namespace QCat
 		,material(glm::vec3(1.0f,0.5f,0.31f),glm::vec3(1.0f,0.5f,0.31f),glm::vec3(0.5f,0.5f,0.5f),32.0f)
 	{
 		material.SetTexture("Asset/textures/container2.png", Material::MaterialType::Diffuse);
-		//material.SetTexutre("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
+		material.SetTexture("Asset/textures/container2_specular.png", Material::MaterialType::Specular);
 
-		Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
+		/*Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
 		unsigned int whiteTextureData = 0xffffffff;
 		whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
-		material.SetTexture(whiteTexture, Material::MaterialType::Specular);
+		material.SetTexture(whiteTexture, Material::MaterialType::Specular);*/
 
 
 		// VertexArray
@@ -100,7 +100,6 @@ namespace QCat
 	}
 	void Cube::Draw(const Ref<Shader>& shader)
 	{
-		shader->Bind();
 		glm::mat4 transform= glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 		shader->SetMat4("u_Transform", transform);
 		shader->SetMat4("u_invTransform", glm::inverse(transform));
@@ -109,8 +108,8 @@ namespace QCat
 		shader->SetFloat("material.shininess", material.shininess);
 
 		material.Bind();
-
 		m_VertexArray->Bind();
+		shader->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 	void Cube::ImguiRender(const char* name)

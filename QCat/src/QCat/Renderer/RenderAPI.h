@@ -1,5 +1,6 @@
 #pragma once
 #include "VertexArray.h"
+#include "DepthStencil.h"
 
 namespace QCat
 {
@@ -22,7 +23,12 @@ namespace QCat
 		virtual void SetWireFrameMode() = 0;
 		virtual void SetFillMode() = 0;
 
-
+		virtual void SetDepthTest(bool enable)=0;
+		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) = 0;
+		virtual void SetStencilTest(bool enable)=0;
+		virtual void SetStencilOp(STENCIL_OP stencilFail,STENCIL_OP depthFail,STENCIL_OP bothPass) = 0;
+		virtual void SetStencilFunc(COMPARISON_FUNC func,int value)=0;
+		virtual void SetStencilWriteMask(int value) = 0;
 		inline static API GetAPI() { return s_api; }
 	private:
 		static API s_api;
