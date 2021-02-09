@@ -77,6 +77,7 @@ float3 CalcPointLight(PointLight light, float3 normal, float3 fragPos, float3 vi
 	float diff = max(dot(normal, lightDir), 0.0);
 
 	float spec;
+
 	if (blinn)
 	{
 		float3 halfwayDir = normalize(lightDir + viewDir);
@@ -134,10 +135,13 @@ float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPo
 	float3 norm = normalize(normal);
 	float3 viewDir = normalize(viewPosition - fragPos);
 	float3 result = float3(0.0f,0.0f,0.0f);
+
+	float4 texcolor = diffuseTex.Sample(splr, tc).rgba;
+	clip(texcolor.a < 0.1f ? -1 : 1);
 	// point light
 	result += CalcPointLight(pointLight, norm, fragPos, viewDir, tc, diffuseTex, specularTex);
 	if (gamma)
 		result = pow(result,1.0f / 2.2f);
 
-	return color = float4(result,1.0f);
+	return color = float4(result,texcolor.a);
 }

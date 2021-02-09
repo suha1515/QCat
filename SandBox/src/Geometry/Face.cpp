@@ -9,26 +9,10 @@ namespace QCat
 		glm::vec3 Noemral;
 		glm::vec2 TexCoord;
 	};
-	Face::Face(const glm::vec3& position, const Ref<Shader>& shader,uint32_t size)
+	Face::Face(const glm::vec3& position, const Ref<Shader>& shader, Material material,uint32_t size)
 		:translation(position), rotation(glm::vec3(0.0f, 0.0f, 0.0f)), scale(glm::vec3(1.0f, 1.0f, 1.0f))
-		, material(glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f)
+		, material(material)
 	{
-		Ref<Texture2D> diffuseTexture = Texture2D::Create("Asset/textures/floor.png", true);
-		material.SetTexture(diffuseTexture, Material::MaterialType::Diffuse);
-
-		Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
-		byte r = 125;
-		byte g = 125;
-		byte b = 125;
-		byte a = 125;
-
-		//unsigned int whiteTextureData = 0xffffffff;
-		unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
-
-		whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
-		material.SetTexture(whiteTexture, Material::MaterialType::Specular);
-
-
 		// VertexArray
 		m_VertexArray = VertexArray::Create();
 

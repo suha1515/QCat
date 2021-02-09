@@ -87,6 +87,9 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main()
 {
+	vec4 texcolor = texture(material.diffuse,TexCoords);
+	if(texcolor.a<0.1)
+		discard;
 	vec3 norm = normalize(v_Normal);
 	vec3 viewDir = normalize(viewPosition - FragPos);
 	vec3 result;
@@ -95,7 +98,7 @@ void main()
 
 	if(gamma)
 		result = pow(result,vec3(1.0/2.2));
-	color = vec4(result,1.0);
+	color = vec4(result,texcolor.a);
 }
 
 // calculates the color when using a directional light.

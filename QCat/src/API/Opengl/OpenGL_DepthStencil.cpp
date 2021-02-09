@@ -11,9 +11,9 @@ namespace QCat
 			switch (func)
 			{
 			case COMPARISON_FUNC::ALWAYS:			return GL_ALWAYS;
-			case COMPARISON_FUNC::GREATER:		return GL_GREATER;
-			case COMPARISON_FUNC::GREATER_EQUAL:  return GL_GEQUAL;
-			case COMPARISON_FUNC::LESS:			return GL_LESS;
+			case COMPARISON_FUNC::GREATER:			return GL_GREATER;
+			case COMPARISON_FUNC::GREATER_EQUAL:	return GL_GEQUAL;
+			case COMPARISON_FUNC::LESS:				return GL_LESS;
 			case COMPARISON_FUNC::LESS_EQUAL:		return GL_LEQUAL;
 			case COMPARISON_FUNC::NOT_EQUAL:		return GL_NOTEQUAL;
 			case COMPARISON_FUNC::EQUAL:			return GL_EQUAL;
@@ -49,10 +49,15 @@ namespace QCat
 	void OpenGLDepthStencil::SetDepthFunc(COMPARISON_FUNC func)
 	{
 		desc.depthFunc = func;
+		glDepthFunc(Utils::ComparisonFuncToOpengl(func));
 	}
 	void OpenGLDepthStencil::SetDepthWriteMask(DEPTH_WRITE_MASK mask)
 	{
 		desc.depthWriteMask = mask;
+		if (desc.depthWriteMask == DEPTH_WRITE_MASK::MASK_ALL)
+			glDepthMask(GL_TRUE);
+		else
+			glDepthMask(GL_FALSE);
 	}
 	void OpenGLDepthStencil::EnableStencil(bool enable)
 	{

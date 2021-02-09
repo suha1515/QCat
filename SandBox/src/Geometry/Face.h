@@ -8,13 +8,15 @@ namespace QCat
 	class Face
 	{
 	public:
-		Face(const glm::vec3& position, const Ref<Shader>& shader,uint32_t size=1);
+		Face(const glm::vec3& position, const Ref<Shader>& shader,Material material,uint32_t size=1);
 		~Face() = default;
 	public:
 		void SetScale(const glm::vec3 & scale);
 		void SetRotation(const glm::vec3 & rotation);
 
 		void Draw(const Ref<Shader> & shader);
+
+		Material& GetMaterial() { return material; }
 	public:
 		void ImguiRender(const char* name);
 	private:

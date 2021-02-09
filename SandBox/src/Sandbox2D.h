@@ -30,6 +30,15 @@ namespace QCat
 		Entity m_Camera;
 
 		Ref<Face> face;
+
+		Ref<Face> grass1;
+		Ref<Face> grass2;
+		Ref<Face> grass3;
+
+		Ref<Face> window1;
+		Ref<Face> window2;
+		Ref<Face> window3;
+
 		Ref<Cube> cube;
 		Ref<Cube> cube2;
 

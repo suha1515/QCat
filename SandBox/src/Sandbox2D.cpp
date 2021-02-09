@@ -50,16 +50,49 @@ namespace QCat
 
 		//material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
 
+		Material woodFloor = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		Material grass = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		Material window = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		// wood Texture
+		Ref<Texture2D> woodTexture = TextureLibrary::Load("Asset/textures/floor.png");
+		// grass Texture
+		Ref<Texture2D> grassTexture = TextureLibrary::Load("Asset/textures/grass.png"); 
+		// window Texture
+		Ref<Texture2D> windowTexture = TextureLibrary::Load("Asset/textures/blending_transparent_window.png");
+		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
+		grass.SetTexture(grassTexture, Material::MaterialType::Diffuse);
+		window.SetTexture(windowTexture, Material::MaterialType::Diffuse);
+
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0);
 		m_LightShader->SetInt("material.specular", 1);
 
-		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,5);
+		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,5);
 		sphere = CreateRef<Sphere>(glm::vec3(-0.1f, -2.6f, -1.0f), m_FlatShader, 0.1f);
 		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
 		cube->SetScale({ 0.5f,0.5f,0.5f });
 		cube2 = CreateRef<Cube>(glm::vec3(-0.8f, -2.6f, 0.0f), m_LightShader);
 		cube2->SetScale({ 0.5f,0.5f,0.5f });
+
+		grass1 = CreateRef<Face>(glm::vec3(0.0f, -2.75f, 0.0f), m_LightShader, grass, 1);
+		grass1->SetRotation(glm::vec3(-1.6f, 0.0f, 0.0f));
+		grass1->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+		grass2 = CreateRef<Face>(glm::vec3(0.8f, -2.75f, 0.4f), m_LightShader, grass, 1);
+		grass2->SetRotation(glm::vec3(-1.6f, 0.0f, 0.0f));
+		grass2->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+		grass3 = CreateRef<Face>(glm::vec3(1.0f, -2.75f, -0.5f), m_LightShader, grass, 1);
+		grass3->SetRotation(glm::vec3(-1.6f, 0.0f, 0.0f));
+		grass3->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+
+		window1 = CreateRef<Face>(glm::vec3(0.9f, -2.75f, -0.7f), m_LightShader, window, 1);
+		window1->SetRotation(glm::vec3(-1.6f, 0.0f, 0.0f));
+		window1->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+		window2 = CreateRef<Face>(glm::vec3(0.3f, -2.75f, 0.3f), m_LightShader, window, 1);
+		window2->SetRotation(glm::vec3(-1.6f, 0.0f, 0.0f));
+		window2->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+		window3 = CreateRef<Face>(glm::vec3(0.5f, -2.75f, -0.1f), m_LightShader, window, 1);
+		window3->SetRotation(glm::vec3(-1.6f, 0.0f, 0.0f));
+		window3->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 		//shader->SetInt("material.emission",2);
 
 		//RenderCommand::SetWireFrameMode();
@@ -109,6 +142,14 @@ namespace QCat
 			m_LightShader->SetFloat("pointLight.Linear", Linear);
 			m_LightShader->SetFloat("pointLight.quadratic", quadratic);
 			face->Draw(m_LightShader);
+
+			grass1->Draw(m_LightShader);
+			grass2->Draw(m_LightShader);
+			grass3->Draw(m_LightShader);
+
+			window2->Draw(m_LightShader);
+			window3->Draw(m_LightShader);
+			window1->Draw(m_LightShader);
 
 			RenderCommand::SetStencilTest(true);
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
@@ -173,6 +214,8 @@ namespace QCat
 		face->ImguiRender("face 1");
 		sphere->ImguiRender("Spehere 1");
 		cube->ImguiRender("Cube1");
+		grass1->ImguiRender("Grass 1");
+		window1->ImguiRender("window1");
 		//light->ImGuiRender("light 1");
 	}
 
