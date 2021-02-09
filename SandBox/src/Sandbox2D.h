@@ -31,16 +31,7 @@ namespace QCat
 
 		Ref<Face> face;
 
-		Ref<Face> grass1;
-		Ref<Face> grass2;
-		Ref<Face> grass3;
-
-		Ref<Face> window1;
-		Ref<Face> window2;
-		Ref<Face> window3;
-
 		Ref<Cube> cube;
-		Ref<Cube> cube2;
 
 		Ref<Sphere> sphere;
 	
@@ -69,6 +60,25 @@ namespace QCat
 		glm::vec3 cameraRight = glm::vec3(1.0f,0.0f,0.0f);
 		glm::vec3 cameraTarget = glm::vec3(0.0f,0.0f,0.0f);
 		bool firstMouse = true;
+
+		// position
+
+		glm::vec3 grass1;
+		glm::vec3 grass2;
+		glm::vec3 grass3;
+
+		glm::vec3 cube1;
+		glm::vec3 cube2;
+
+		glm::vec3 floor;
+
+		glm::vec3 window1;
+		glm::vec3 window2;
+		glm::vec3 window3;
+
+		Material woodFloor;
+		Material grass;
+		Material window;
 
 		glm::mat4 viewMatrix;
 	};

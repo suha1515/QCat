@@ -94,6 +94,27 @@ namespace QCat
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
 
+		//Set SamplerState
+		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
+		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+		if (channels > 3)
+		{
+			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		}
+		else
+		{
+			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		}
+		samplerDesc.BorderColor[0] = 1.0f;
+		samplerDesc.BorderColor[1] = 0.0f;
+		samplerDesc.BorderColor[2] = 1.0f;
+		samplerDesc.BorderColor[3] = 1.0f;
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateSamplerState(&samplerDesc, &pSamplerState);
+
+
 		// Generate Mip
 		QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
@@ -114,6 +135,8 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
+		if (pSamplerState)
+			QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(0u, 1u, pSamplerState.GetAddressOf());
 		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
 	}
 }

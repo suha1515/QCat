@@ -98,6 +98,10 @@ namespace QCat
 	{
 		this->rotation = rotation;
 	}
+	void Cube::SetTranslation(const glm::vec3& translation)
+	{
+		this->translation = translation;
+	}
 	void Cube::Draw(const Ref<Shader>& shader)
 	{
 		glm::mat4 transform= glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);

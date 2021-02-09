@@ -35,6 +35,7 @@ namespace QCat
 		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
+		Microsoft::WRL::ComPtr< ID3D11SamplerState> pSamplerState;
 		DXGI_FORMAT m_dataFormat;
 	};
 }

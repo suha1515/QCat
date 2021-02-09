@@ -13,10 +13,12 @@ namespace QCat
 	public:
 		void SetScale(const glm::vec3 & scale);
 		void SetRotation(const glm::vec3 & rotation);
+		void SetTranslation(const glm::vec3& translation);
 
 		void Draw(const Ref<Shader> & shader);
 
-		Material& GetMaterial() { return material; }
+		const Material& GetMaterial() { return material; }
+		void SetMaterial(Material& mat) { material = mat; }
 	public:
 		void ImguiRender(const char* name);
 	private:

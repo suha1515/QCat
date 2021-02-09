@@ -58,6 +58,11 @@ namespace QCat
 		this->rotation = rotation;
 	}
 
+	void Face::SetTranslation(const glm::vec3& translation)
+	{
+		this->translation = translation;
+	}
+
 	void Face::Draw(const Ref<Shader>& shader)
 	{
 		
