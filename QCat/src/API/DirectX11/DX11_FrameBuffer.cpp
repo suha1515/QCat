@@ -133,4 +133,12 @@ namespace QCat
 		m_ColorAttachments[attachmentIndex]->Clear(gfx,color);
 
 	}
+	void DX11FrameBuffer::BindColorTexture(uint32_t slot, uint32_t index) const
+	{
+
+		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
+
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		gfx.GetContext()->PSSetShaderResources(slot, 1u, m_ColorAttachments[index]->GetShaderResourceView());
+	}
 }

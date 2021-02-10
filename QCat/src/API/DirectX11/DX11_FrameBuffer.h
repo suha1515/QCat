@@ -24,6 +24,9 @@ namespace QCat
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return reinterpret_cast<void*>(m_ColorAttachments[index]->GetTexture()); }
 		virtual void SaveColorBuffer(uint32_t index=0) const override { m_ColorAttachments[index]->SaveTexture(); }
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
+
+		virtual void BindColorTexture(uint32_t slot, uint32_t index = 0) const override;
+
 	private:
 		FrameBufferSpecification m_Specification;
 

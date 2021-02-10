@@ -38,6 +38,25 @@ namespace QCat
 		}
 	}
 
+	Ref<Texture2D> Material::GetTexture(MaterialType type)
+	{
+		switch (type)
+		{
+		case MaterialType::None: QCAT_CORE_ASSERT(false);
+			break;
+		case MaterialType::Diffuse:
+			return m_DiffuseTexture;
+			break;
+		case MaterialType::Specular:
+			return m_SpecularTexture;
+			break;
+		case MaterialType::Emission:
+			return m_EmissionTexture;
+			break;
+		}
+		return nullptr;
+	}
+
 	void Material::Bind()
 	{
 		if (m_DiffuseTexture)

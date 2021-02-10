@@ -31,9 +31,9 @@ namespace QCat
 	class TextureLibrary
 	{
 	public:
-		static Ref<Texture2D> Load(const std::string& path)
+		static Ref<Texture2D> Load(const std::string& path,bool gamaCorrection = false)
 		{
-			return Get().Load_(path);
+			return Get().Load_(path, gamaCorrection);
 		}
 	private:
 		static TextureLibrary& Get()
@@ -45,7 +45,7 @@ namespace QCat
 		{
 			return m_Textures.find(path) != m_Textures.end();
 		}
-		Ref<Texture2D> Load_(const std::string& path)
+		Ref<Texture2D> Load_(const std::string& path, bool gamaCorrection = false)
 		{
 			if (Exists(path))
 			{
@@ -53,7 +53,7 @@ namespace QCat
 			}
 			else
 			{
-				Ref<Texture2D> texture = Texture2D::Create(path);
+				Ref<Texture2D> texture = Texture2D::Create(path, gamaCorrection);
 				m_Textures[path] = texture;
 				return texture;
 			}

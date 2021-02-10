@@ -40,11 +40,13 @@ namespace QCat
 		{
 			m_LightShader = Shader::Create("Asset/shaders/glsl/Blinn-phong.glsl");
 			m_FlatShader = Shader::Create("Asset/shaders/glsl/FlatShader.glsl");
+			m_ScreenShader = Shader::Create("Asset/shaders/glsl/SingleQuad.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = Shader::Create("CubeShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong.hlsl");
-			m_FlatShader = Shader::Create("CubeShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
+			m_LightShader = Shader::Create("LightShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong.hlsl");
+			m_FlatShader = Shader::Create("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
+			m_ScreenShader = Shader::Create("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 
 		}
 
@@ -59,6 +61,7 @@ namespace QCat
 		Ref<Texture2D> grassTexture = TextureLibrary::Load("Asset/textures/grass.png"); 
 		// window Texture
 		Ref<Texture2D> windowTexture = TextureLibrary::Load("Asset/textures/blending_transparent_window.png");
+		// quad Texture
 		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
 		grass.SetTexture(grassTexture, Material::MaterialType::Diffuse);
 		window.SetTexture(windowTexture, Material::MaterialType::Diffuse);
@@ -66,6 +69,9 @@ namespace QCat
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0);
 		m_LightShader->SetInt("material.specular", 1);
+
+		m_ScreenShader->Bind();
+		m_ScreenShader->SetInt("screenTexture", 0);
 
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
@@ -85,6 +91,48 @@ namespace QCat
 		window1 = glm::vec3(0.9f, -2.75f, -0.7f);
 		window2 = glm::vec3(0.3f, -2.75f, 0.3f);
 		window3 = glm::vec3(0.5f, -2.75f, -0.1f);
+
+		FrameBufferSpecification spec;
+		spec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::Depth };
+		spec.Width = 1600;
+		spec.Height = 900;
+		framebuffer = FrameBuffer::Create(spec);
+
+		m_quad = VertexArray::Create();
+
+		static float bias = 0.0f;
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			bias = 1.0f;
+		}
+		float quadVertices[] =
+		{
+			-1.0f, 1.0f,  0.0f,0.0f+bias,
+			-1.0f,-1.0f,  0.0f,1.0f-bias,
+			 1.0f,-1.0f,  1.0f,1.0f-bias,
+			 1.0f, 1.0f,  1.0f,0.0f+bias
+		};
+
+		Ref<VertexBuffer> quadBuffer = VertexBuffer::Create(quadVertices,sizeof(quadVertices));
+
+		quadBuffer->SetLayout(BufferLayout::Create({ 
+			{ShaderDataType::Float2,"a_Position"},
+			{ShaderDataType::Float2,"a_TexCoords"}},m_ScreenShader
+		));
+
+		unsigned int indices[] =
+		{
+			0,1,2,0,2,3
+		};
+		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, 6);
+
+
+
+		m_quad->AddVertexBuffer(quadBuffer);
+		m_quad->SetIndexBuffer(indexBuffer);
+		m_quad->UnBind();
+
+		//FrameBuffer
 
 		//shader->SetInt("material.emission",2);
 
@@ -112,6 +160,8 @@ namespace QCat
 		QCat::Renderer2D::ResetStats();
 		{
 			QCAT_PROFILE_SCOPE("Renderer Prep");
+			// new framebuffer
+			framebuffer->Bind();
 			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 			QCat::RenderCommand::Clear();
 		}
@@ -134,6 +184,8 @@ namespace QCat
 			m_LightShader->SetFloat("pointLight.constant", constant);
 			m_LightShader->SetFloat("pointLight.Linear", Linear);
 			m_LightShader->SetFloat("pointLight.quadratic", quadratic);
+
+			RenderCommand::SetDepthTest(true);
 			face->SetMaterial(woodFloor);
 			face->SetTranslation(floor);
 			face->SetScale({ 5.0f,5.0f,5.0f });
@@ -157,7 +209,6 @@ namespace QCat
 			face->Draw(m_LightShader);
 			face->SetTranslation(window1);
 			face->Draw(m_LightShader);
-
 			RenderCommand::SetStencilTest(true);
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
 			RenderCommand::SetStencilWriteMask(0xFF);
@@ -177,18 +228,38 @@ namespace QCat
 			RenderCommand::SetStencilWriteMask(0x00);
 			RenderCommand::SetDepthTest(false);
 			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-			cube->SetScale({ 0.5f, 0.5f, 0.5f });
+			cube->SetScale({ 0.6f, 0.6f, 0.6f });
 			cube->SetTranslation(cube1);
-			cube->Draw(m_LightShader);
+			cube->Draw(m_FlatShader);
 			cube->SetTranslation(cube2);
-			cube->Draw(m_LightShader);
+			cube->Draw(m_FlatShader);
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetStencilWriteMask(0xFF);
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
 			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+			m_FlatShader->Bind();
+
+			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
+			m_FlatShader->SetFloat3("viewPosition", tc);
+			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 			sphere->Draw(m_FlatShader);
 
 			m_FlatShader->UnBind();
+
+			framebuffer->UnBind();
+			RenderCommand::SetDefaultFrameBuffer();
+			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+			QCat::RenderCommand::Clear();
+			{
+				m_ScreenShader->Bind();
+				RenderCommand::SetDepthTest(false);
+				m_quad->Bind();
+				framebuffer->BindColorTexture(0, 0);
+				//woodFloor.GetTexture(Material::MaterialType::Diffuse)->Bind(0);
+				RenderCommand::DrawIndexed(m_quad);
+				m_ScreenShader->UnBind();
+			}
+			
 			//sphere->Draw(m_LightShader);
 			//light->Draw(m_LightShader);
 		}
@@ -220,6 +291,7 @@ namespace QCat
 		ImGui::Checkbox("gamaa Corretion", &gamma);
 		ImGui::End();
 		sphere->ImguiRender("Spehere 1");
+
 		//light->ImGuiRender("light 1");
 	}
 
@@ -234,6 +306,13 @@ namespace QCat
 	bool Sandbox2D::OnWindowResize(WindowResizeEvent& e)
 	{
 		QCAT_PROFILE_FUNCTION();
+		FrameBufferSpecification spec = framebuffer->GetSpecification();
+		uint32_t width = e.GetWidth();
+		uint32_t height = e.GetHeight();
+		if (width>0.0f && height>0.0f && (spec.Width != width || spec.Height != height))
+		{
+			framebuffer->Resize(width, height);
+		}
 
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{

@@ -221,4 +221,10 @@ namespace QCat
 		uint32_t id = m_ColorAttachments[index];
 		return reinterpret_cast<void*>(id);
 	}
+	void OpenGLFrameBuffer::BindColorTexture(uint32_t slot, uint32_t index) const
+	{
+		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
+
+		glBindTextureUnit(slot, m_ColorAttachments[index]);
+	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "QCat/Renderer/FrameBuffer.h"
+#include "API/Opengl/OpenGLTexture.h"
 
 namespace QCat
 {
@@ -20,8 +21,10 @@ namespace QCat
 		virtual void ClearAttachment(uint32_t attachmentIndex, int value)  override;
 
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override;
-		virtual void SaveColorBuffer(uint32_t index = 0) const override {}
+		virtual void  SaveColorBuffer(uint32_t index = 0) const override {}
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
+
+		virtual void BindColorTexture(uint32_t slot,uint32_t index = 0) const override;
 	private:
 		uint32_t m_RendererID=0;
 		FrameBufferSpecification m_Specification;

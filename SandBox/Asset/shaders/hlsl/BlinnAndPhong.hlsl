@@ -54,6 +54,11 @@ Texture2D specularTex;
 
 SamplerState splr : register(s0);
 
+struct PS_OUT
+{
+	float4 color :SV_TARGET0;
+};
+
 // calculates the color when using a directional light.
 float3 CalcDirLight(DirLight light, float3 normal, float3 viewDir, float2 tc , Texture2D diffuseTex,Texture2D specularTex)
 {
@@ -128,8 +133,9 @@ float3 CalcSpotLight(SpotLight light, float3 normal, float3 fragPos, float3 view
 	specular *= attenuation * intensity;
 	return (ambient + diffuse + specular);
 }
-float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPos) : SV_TARGET
+PS_OUT main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPos)
 {
+	PS_OUT output;
 	float4 color;
 
 	float3 norm = normalize(normal);
@@ -143,5 +149,6 @@ float4 main(float2 tc: Texcoord, float3 normal : Normal, float3 fragPos : FragPo
 	if (gamma)
 		result = pow(result,1.0f / 2.2f);
 
-	return color = float4(result,texcolor.a);
+	output.color = float4(result, texcolor.a);
+	return output;
 }

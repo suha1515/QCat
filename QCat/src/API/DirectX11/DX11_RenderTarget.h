@@ -19,6 +19,7 @@ namespace QCat
 
 		void Clear(QGfxDeviceDX11& gfx,const glm::vec4& color);
 		ID3D11RenderTargetView* GetRenderTargetView() { return pTargetView.Get(); }
+		ID3D11ShaderResourceView** GetShaderResourceView() { return pShaderResourceView.GetAddressOf(); }
 		void* GetTexture() const ;
 		void  SaveTexture();
 	private:

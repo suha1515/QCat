@@ -31,12 +31,16 @@ namespace QCat
 		}
 		m_DepthStencilState = DepthStencil::Create(desc);
 		m_DepthStencilState->EnableDepth(true);
-		m_DepthStencilState->EnableStencil(true);
+		m_DepthStencilState->EnableStencil(false);
 		m_DepthStencilState->SetStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
 		glViewport(x, y, width, height);
+	}
+	void OpenGLRenderAPI::SetDefaultFrameBuffer()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	void OpenGLRenderAPI::SetClearColor(const glm::vec4& color)
 	{

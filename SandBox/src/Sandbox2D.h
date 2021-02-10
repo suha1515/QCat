@@ -44,6 +44,9 @@ namespace QCat
 
 		Ref<Shader> m_LightShader;
 		Ref<Shader> m_FlatShader;
+		Ref<Shader> m_ScreenShader;
+
+		Ref<FrameBuffer> framebuffer;
 
 		glm::vec3 m_CameraPosition = { 0.5f,0.0f,-7.2f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };
@@ -81,6 +84,9 @@ namespace QCat
 		Material window;
 
 		glm::mat4 viewMatrix;
+
+		Ref<VertexArray> m_quad;
+		Ref<Texture2D> screenTexture;
 	};
 
 }

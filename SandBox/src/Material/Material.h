@@ -39,6 +39,8 @@ namespace QCat
 		void SetSpecular(const glm::vec3& color) { specular = color; }
 		void SetShininess(const float shininess) { this->shininess = shininess; }
 
+		Ref<Texture2D> GetTexture(MaterialType type);
+
 		void Bind();
 	public:
 		glm::vec3 ambient;
