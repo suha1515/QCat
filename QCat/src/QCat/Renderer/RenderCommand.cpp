@@ -10,4 +10,5 @@ namespace QCat
 #elif defined(QCAT_DX11)
 	RenderAPI* RenderCommand::s_renderAPI = new DX11RenderAPI;
 #endif
+	
 }

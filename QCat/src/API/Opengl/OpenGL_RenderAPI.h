@@ -1,6 +1,7 @@
 #pragma once
 #include "QCat/Renderer/RenderAPI.h"
-#include "QCat/Renderer/DepthStencil.h"
+
+
 
 namespace QCat
 {
@@ -16,6 +17,7 @@ namespace QCat
 		virtual void SetWireFrameMode() override;
 		virtual void SetFillMode()override;
 
+		// depth-stencil option
 		virtual void SetDepthTest(bool enable)override;
 		virtual void SetStencilTest(bool enable) override;
 		virtual void SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass) override;
@@ -23,7 +25,15 @@ namespace QCat
 		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) override;
 		virtual void SetStencilWriteMask(int value) override;
 
+		//blend option
+		virtual void SetBlend(bool enable) override;
+		virtual void SetBlend(uint32_t index, bool enable) override;
+		virtual void SetBlendFunc(BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) override;
+		virtual void SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) override;
+		virtual void SetBlendOp(BlendOp colorOp, BlendOp alphaOp) override;
+		virtual void SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp) override;
 	private:
 		Ref<DepthStencil> m_DepthStencilState;
+		Ref<Blender> m_BlenderState;
 	};
 }

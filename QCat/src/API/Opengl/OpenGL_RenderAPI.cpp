@@ -8,9 +8,8 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
@@ -33,6 +32,9 @@ namespace QCat
 		m_DepthStencilState->EnableDepth(true);
 		m_DepthStencilState->EnableStencil(false);
 		m_DepthStencilState->SetStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
+
+		m_BlenderState = Blender::Create();
+
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -88,4 +90,29 @@ namespace QCat
 	{
 		m_DepthStencilState->SetStencilWriteMask(value);
 	}
+	void OpenGLRenderAPI::SetBlend(bool enable)
+	{
+		m_BlenderState->SetEnableBlend(0,enable);
+	}
+	void OpenGLRenderAPI::SetBlend(uint32_t index, bool enable)
+	{
+		m_BlenderState->SetEnableBlend(index, enable);
+	}
+	void OpenGLRenderAPI::SetBlendFunc(BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha)
+	{
+		m_BlenderState->SetBlendFunc(0,srcColor,dstColor,srcAlpha,dstAlpha);
+	}
+	void OpenGLRenderAPI::SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha)
+	{
+		m_BlenderState->SetBlendFunc(index, srcColor, dstColor, srcAlpha, dstAlpha);
+	}
+	void OpenGLRenderAPI::SetBlendOp(BlendOp colorOp, BlendOp alphaOp)
+	{
+		m_BlenderState->SetBlendOp(0,colorOp, alphaOp);
+	}
+	void OpenGLRenderAPI::SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp)
+	{
+		m_BlenderState->SetBlendOp(index, colorOp, alphaOp);
+	}
+
 }

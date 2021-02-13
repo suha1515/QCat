@@ -1,6 +1,7 @@
 #pragma once
 #include "VertexArray.h"
 #include "DepthStencil.h"
+#include "Blend.h"
 
 namespace QCat
 {
@@ -29,6 +30,14 @@ namespace QCat
 		virtual void SetStencilOp(STENCIL_OP stencilFail,STENCIL_OP depthFail,STENCIL_OP bothPass) = 0;
 		virtual void SetStencilFunc(COMPARISON_FUNC func,int value)=0;
 		virtual void SetStencilWriteMask(int value) = 0;
+
+		virtual void SetBlend( bool enable) = 0;
+		virtual void SetBlend(uint32_t index, bool enable) = 0;
+		virtual void SetBlendFunc( BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) = 0;
+		virtual void SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) = 0;
+		virtual void SetBlendOp( BlendOp colorOp, BlendOp alphaOp) = 0;
+		virtual void SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp) = 0;
+
 		inline static API GetAPI() { return s_api; }
 	private:
 		static API s_api;

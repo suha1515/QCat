@@ -62,6 +62,32 @@ namespace QCat
 		inline static void SetStencilWriteMask(int value)
 		{
 			s_renderAPI->SetStencilWriteMask(value);
+		
+		}
+		//Blend
+		inline static void SetBlend(bool enable)
+		{
+			s_renderAPI->SetBlend(enable);
+		}
+		inline static void SetBlend(uint32_t index, bool enable)
+		{
+			s_renderAPI->SetBlend(index, enable);
+		}
+		inline static void SetBlendFunc(BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha)
+		{
+			s_renderAPI->SetBlendFunc(srcColor, dstColor, srcAlpha, dstAlpha);
+		}
+		inline static void SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha)
+		{
+			s_renderAPI->SetBlendFunc(index, srcColor, dstColor, srcAlpha, dstAlpha);
+		}
+		inline static void SetBlendOp(BlendOp colorOp, BlendOp alphaOp)
+		{
+			s_renderAPI->SetBlendOp(colorOp, alphaOp);
+		}
+		inline static void SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp)
+		{
+			s_renderAPI->SetBlendOp(index, colorOp, alphaOp);
 		}
 
 	private:

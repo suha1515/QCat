@@ -186,6 +186,9 @@ namespace QCat
 			m_LightShader->SetFloat("pointLight.quadratic", quadratic);
 
 			RenderCommand::SetDepthTest(true);
+			RenderCommand::SetBlend(true);
+			RenderCommand::SetBlendFunc(BlendFunc::BLEND_SRC_ALPHA, BlendFunc::BLEND_INV_SRC_ALPHA, BlendFunc::BLEND_ONE, BlendFunc::BLEND_ZERO);
+			RenderCommand::SetBlendOp(BlendOp::BLEND_ADD, BlendOp::BLEND_ADD);
 			face->SetMaterial(woodFloor);
 			face->SetTranslation(floor);
 			face->SetScale({ 5.0f,5.0f,5.0f });
@@ -248,8 +251,8 @@ namespace QCat
 
 			framebuffer->UnBind();
 			RenderCommand::SetDefaultFrameBuffer();
-			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-			QCat::RenderCommand::Clear();
+
+			RenderCommand::SetBlend(false);
 			{
 				m_ScreenShader->Bind();
 				RenderCommand::SetDepthTest(false);

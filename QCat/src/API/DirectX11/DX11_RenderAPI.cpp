@@ -48,6 +48,8 @@ namespace QCat
 		}
 		m_DepthStencilState = DepthStencil::Create(desc);
 		m_DepthStencilState->Bind();
+
+		m_BlenderState = Blender::Create();
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -71,12 +73,8 @@ namespace QCat
 	}
 	void DX11RenderAPI::DrawIndexed(const unsigned int indexCount)
 	{
-		if (pgfx->GetBlendState())
-		{
-			pgfx->BindBlendState();
-		}
-		if (m_DepthStencilState)
-			m_DepthStencilState->Bind();
+		m_BlenderState->Bind();
+		m_DepthStencilState->Bind();
 		pgfx->GetContext()->DrawIndexed(indexCount,0u,0u);
 	}
 	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount)
@@ -129,5 +127,29 @@ namespace QCat
 	void DX11RenderAPI::SetStencilWriteMask(int value)
 	{
 		m_DepthStencilState->SetStencilWriteMask(value);
+	}
+	void DX11RenderAPI::SetBlend(bool enable)
+	{
+		m_BlenderState->SetEnableBlend(0, enable);
+	}
+	void DX11RenderAPI::SetBlend(uint32_t index, bool enable)
+	{
+		m_BlenderState->SetEnableBlend(index, enable);
+	}
+	void DX11RenderAPI::SetBlendFunc(BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha)
+	{
+		m_BlenderState->SetBlendFunc(0, srcColor, dstColor, srcAlpha, dstAlpha);
+	}
+	void DX11RenderAPI::SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha)
+	{
+		m_BlenderState->SetBlendFunc(index, srcColor, dstColor, srcAlpha, dstAlpha);
+	}
+	void DX11RenderAPI::SetBlendOp(BlendOp colorOp, BlendOp alphaOp)
+	{
+		m_BlenderState->SetBlendOp(0, colorOp, alphaOp);
+	}
+	void DX11RenderAPI::SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp)
+	{
+		m_BlenderState->SetBlendOp(index, colorOp, alphaOp);
 	}
 }
