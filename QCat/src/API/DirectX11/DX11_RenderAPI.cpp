@@ -50,6 +50,7 @@ namespace QCat
 		m_DepthStencilState->Bind();
 
 		m_BlenderState = Blender::Create();
+		m_BlenderState->SetIndependentBlend(true);
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{

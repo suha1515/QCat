@@ -52,6 +52,17 @@ namespace QCat
 			case ShaderDataType::Float2:
 			case ShaderDataType::Float3:
 			case ShaderDataType::Float4:
+			{
+				glEnableVertexAttribArray(index);
+				glVertexAttribPointer(index,
+					element.GetComponentCount(),
+					ShaderDataTypeToOpenGLBaseType(element.type),
+					element.normalized ? GL_TRUE : GL_FALSE,
+					GetStride(),
+					(const void*)element.offset);
+				index++;
+				break;
+			}
 			case ShaderDataType::Int:
 			case ShaderDataType::Int2:
 			case ShaderDataType::Int3:
@@ -59,10 +70,9 @@ namespace QCat
 			case ShaderDataType::Bool:
 			{
 				glEnableVertexAttribArray(index);
-				glVertexAttribPointer(index,
+				glVertexAttribIPointer(index,
 					element.GetComponentCount(),
 					ShaderDataTypeToOpenGLBaseType(element.type),
-					element.normalized ? GL_TRUE : GL_FALSE,
 					GetStride(),
 					(const void*)element.offset);
 				index++;

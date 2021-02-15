@@ -25,10 +25,10 @@ namespace QCat
 		case QCat::ShaderDataType::Float4:   return DXGI_FORMAT_R32G32B32A32_FLOAT;
 		case QCat::ShaderDataType::Mat3:     return DXGI_FORMAT_R32G32B32_FLOAT;
 		case QCat::ShaderDataType::Mat4:     return DXGI_FORMAT_R32G32B32A32_FLOAT;
-		case QCat::ShaderDataType::Int:      return DXGI_FORMAT_R32_UINT;
-		case QCat::ShaderDataType::Int2:     return DXGI_FORMAT_R32G32_UINT;
-		case QCat::ShaderDataType::Int3:     return DXGI_FORMAT_R32G32B32_UINT;
-		case QCat::ShaderDataType::Int4:     return DXGI_FORMAT_R32G32B32A32_UINT;
+		case QCat::ShaderDataType::Int:      return DXGI_FORMAT_R32_SINT;
+		case QCat::ShaderDataType::Int2:     return DXGI_FORMAT_R32G32_SINT;
+		case QCat::ShaderDataType::Int3:     return DXGI_FORMAT_R32G32B32_SINT;
+		case QCat::ShaderDataType::Int4:     return DXGI_FORMAT_R32G32B32A32_SINT;
 		case QCat::ShaderDataType::Bool:     return DXGI_FORMAT_R32_UINT;
 		}
 

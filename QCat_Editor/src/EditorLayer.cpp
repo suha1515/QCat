@@ -94,8 +94,8 @@ namespace QCat
 
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
-			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			QCAT_CORE_WARN("PixelData = {0}", pixelData);
+			int pixelData= m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
 		
 		
@@ -192,6 +192,10 @@ namespace QCat
 
 		ImGui::Begin("Renderer2D Stats");
 
+		std::string name = "None";
+		if (m_HoveredEntity)
+			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+		ImGui::Text("Hovered Entity: %s", name.c_str());
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");
 		ImGui::Text("Draw Calls: %d", stats.DrawCalls);

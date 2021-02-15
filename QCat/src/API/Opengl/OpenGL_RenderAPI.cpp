@@ -34,7 +34,7 @@ namespace QCat
 		m_DepthStencilState->SetStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 
 		m_BlenderState = Blender::Create();
-
+		m_BlenderState->SetIndependentBlend(false);
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
