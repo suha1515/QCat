@@ -10,7 +10,6 @@
 #else
 
 #endif
-
 #define QCAT_DX11
 //#define QCAT_OPENGL
 

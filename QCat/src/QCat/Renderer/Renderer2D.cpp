@@ -91,7 +91,7 @@ namespace QCat
 #elif defined(QCAT_OPENGL)
 		s_data.TextureShader = Shader::Create("Asset/shaders/glsl/Texture.glsl");
 		s_data.TextureShader->Bind();
-		s_data.TextureShader->SetIntArray("u_Textures", samplers, s_data.MaxTextureSlot);
+		s_data.TextureShader->SetIntArray("u_Textures", samplers, s_data.MaxTextureSlot,ShaderType::PS);
 #endif
 		s_data.QuadVertexBuffer->SetLayout(BufferLayout::Create({
 			{ ShaderDataType::Float3, "a_Position"},
@@ -126,7 +126,7 @@ namespace QCat
 
 		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 		s_data.TextureShader->Bind();
-		s_data.TextureShader->SetMat4("u_ViewProjection", viewProj);
+		s_data.TextureShader->SetMat4("u_ViewProjection", viewProj,ShaderType::VS);
 		StartBatch();
 	}
 	void Renderer2D::BeginScene(const EditorCamera& camera)
@@ -136,14 +136,14 @@ namespace QCat
 		glm::mat4 viewProj = camera.GetViewProjection();
 
 		s_data.TextureShader->Bind();
-		s_data.TextureShader->SetMat4("u_ViewProjection", viewProj);
+		s_data.TextureShader->SetMat4("u_ViewProjection", viewProj, ShaderType::VS);
 		StartBatch();
 	}
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	{	
 		QCAT_PROFILE_FUNCTION();
 		s_data.TextureShader->Bind();
-		s_data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+		s_data.TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), ShaderType::VS);
 		StartBatch();
 	}
 	void Renderer2D::EndScene()

@@ -178,31 +178,31 @@ namespace QCat
 		pvs->UnBind();
 		pps->UnBind();
 	}
-	void DXShader::SetInt(const std::string& name, int value)
+	void DXShader::SetInt(const std::string& name, int value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name,type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
 		ref.second = value;
 	}
-	void DXShader::SetIntArray(const std::string& name, int* values, unsigned int count)
+	void DXShader::SetIntArray(const std::string& name, int* values, unsigned int count, ShaderType type)
 	{
 	}
-	void DXShader::SetFloat(const std::string& name, const float& value)
+	void DXShader::SetFloat(const std::string& name, const float& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name,type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
 		ref.second = value;
 	}
-	void DXShader::SetFloatArray(const std::string name, float* values, unsigned int count)
+	void DXShader::SetFloatArray(const std::string name, float* values, unsigned int count, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name, type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
@@ -211,37 +211,37 @@ namespace QCat
 			ref.second[i] = values[i];
 		}
 	}
-	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value)
+	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name, type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
 		ref.second = value;
 	}
-	void DXShader::SetFloat4(const std::string& name, const glm::vec4& value)
+	void DXShader::SetFloat4(const std::string& name, const glm::vec4& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name, type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
 		ref.second = value;
 	}
-	void DXShader::SetMat4(const std::string& name, const glm::mat4& value)
+	void DXShader::SetMat4(const std::string& name, const glm::mat4& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name, type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
 		ref.second = value;
 	}
-	void DXShader::SetBool(const std::string& name, const bool& value)
+	void DXShader::SetBool(const std::string& name, const bool& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		auto ref = FindVariable(name);
+		auto ref = FindVariable(name, type);
 		if (!ref.first)
 			return;
 		ref.first->IsDataChanged = true;
@@ -265,20 +265,27 @@ namespace QCat
 
 		UpdateConstantBuffer(uniformname, valuename, &value);*/
 	}
-	std::pair<Ref<DX11ConstantBuffer>, ElementRef> DXShader::FindVariable(const std::string& name)
+	std::pair<Ref<DX11ConstantBuffer>, ElementRef> DXShader::FindVariable(const std::string& name, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		auto& vsConstantBuffers = pvs->GetConstantBuffers();
-		std::pair<Ref<DX11ConstantBuffer>, ElementRef> pair;
-		for (auto& iter : vsConstantBuffers)
+		std::unordered_map<std::string, Ref<DX11ConstantBuffer>>* constantBuffers;
+		switch (type)
 		{
-			auto ref = iter.second->FindVariable(name);
-			if (ref.Exists())
-				return { iter.second,ref };
+		case ShaderType::VS:
+			constantBuffers = &pvs->GetConstantBuffers();
+			break;
+		case ShaderType::PS:
+			constantBuffers = &pps->GetConstantBuffers();
+			break;
+		case ShaderType::GS:
+
+			break;
+		case ShaderType::CS:
+
+			break;
 		}
-		auto& psConstantBuffers = pps->GetConstantBuffers();
-		for (auto& iter : psConstantBuffers)
+		std::pair<Ref<DX11ConstantBuffer>, ElementRef> pair;
+		for (auto& iter : *constantBuffers)
 		{
 			auto ref = iter.second->FindVariable(name);
 			if (ref.Exists())

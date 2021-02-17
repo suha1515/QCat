@@ -4,6 +4,10 @@
 
 namespace QCat
 {
+	enum class ShaderType
+	{
+		VS = 0, PS, GS, CS
+	};
 	class Shader
 	{
 	public:
@@ -13,20 +17,20 @@ namespace QCat
 		virtual void UnBind()const = 0;
 
 		// Integer
-		virtual void SetInt(const std::string& name, int value) = 0;
-		virtual void SetIntArray(const std::string& name, int* values, unsigned int count) = 0;
+		virtual void SetInt(const std::string& name, int value ,ShaderType type) = 0;
+		virtual void SetIntArray(const std::string& name, int* values, unsigned int count, ShaderType type) = 0;
 
 		// Float
-		virtual void SetFloat(const std::string& name, const float& value) =0;
-		virtual void SetFloatArray(const std::string name, float* values, unsigned int count) = 0;
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
-		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
-		
+		virtual void SetFloat(const std::string& name, const float& value, ShaderType type) =0;
+		virtual void SetFloatArray(const std::string name, float* values, unsigned int count, ShaderType type) = 0;
+		virtual void SetFloat3(const std::string& name, const glm::vec3& value, ShaderType type) = 0;
+		virtual void SetFloat4(const std::string& name, const glm::vec4& value, ShaderType type) = 0;
+
 		// Bool
-		virtual void SetBool(const std::string& name, const bool& value) = 0;
+		virtual void SetBool(const std::string& name, const bool& value, ShaderType type) = 0;
 
 		// matrix
-		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
+		virtual void SetMat4(const std::string& name, const glm::mat4& value, ShaderType type) = 0;
 		virtual void SetFloat3u(const std::string& uniformname, const std::string& valuename,const glm::vec3& value) = 0;
 		virtual void SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value) = 0;
 		virtual void SetMat4u(const std::string& uniformname, const std::string& valuename, const glm::mat4& value) = 0;

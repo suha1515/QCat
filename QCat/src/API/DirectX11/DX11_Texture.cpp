@@ -40,12 +40,16 @@ namespace QCat
 		QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
 	}
-	DX11Texture2D::DX11Texture2D(const std::string& path, bool gamacorrection )
+	DX11Texture2D::DX11Texture2D(const std::string& path, bool flip, bool gamacorrection )
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);
+		if(!flip)
+			stbi_set_flip_vertically_on_load(0);
+		else
+			stbi_set_flip_vertically_on_load(1);
+		
 		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 		if (gamacorrection)
 		{

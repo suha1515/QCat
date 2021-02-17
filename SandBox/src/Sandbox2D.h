@@ -43,6 +43,7 @@ namespace QCat
 		Ref<Scene> m_ActiveScene;
 
 		Ref<Shader> m_LightShader;
+		Ref<Shader> m_LightNormalShader;
 		Ref<Shader> m_FlatShader;
 		Ref<Shader> m_ScreenShader;
 
@@ -74,6 +75,8 @@ namespace QCat
 		glm::vec3 cube2;
 
 		glm::vec3 floor;
+		glm::vec3 floorRot;
+		glm::vec3 brickwall;
 
 		glm::vec3 window1;
 		glm::vec3 window2;
@@ -82,6 +85,9 @@ namespace QCat
 		Material woodFloor;
 		Material grass;
 		Material window;
+		Material brick;
+		Material Box;
+		Material BasicMaterial;
 
 		glm::mat4 viewMatrix;
 

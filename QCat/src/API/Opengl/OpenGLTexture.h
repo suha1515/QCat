@@ -6,7 +6,7 @@ namespace QCat
 	class OpenGLTexture2D :public Texture2D
 	{
 	public:
-		OpenGLTexture2D(const std::string& path, bool gammaCorrection = false);
+		OpenGLTexture2D(const std::string& path, bool flip =false, bool gammaCorrection = false);
 		OpenGLTexture2D(unsigned int width,unsigned int height);
 
 		virtual ~OpenGLTexture2D();

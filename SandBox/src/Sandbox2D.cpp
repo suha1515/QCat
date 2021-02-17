@@ -44,7 +44,7 @@ namespace QCat
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = Shader::Create("LightShader", "Asset/shaders/hlsl/Solid_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong.hlsl");
+			m_LightShader = Shader::Create("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 			m_FlatShader = Shader::Create("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
 			m_ScreenShader = Shader::Create("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 
@@ -55,23 +55,40 @@ namespace QCat
 		woodFloor = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		grass     = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		window    = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		brick	  = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		Box	      = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		BasicMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		// wood Texture
 		Ref<Texture2D> woodTexture = TextureLibrary::Load("Asset/textures/floor.png");
 		// grass Texture
 		Ref<Texture2D> grassTexture = TextureLibrary::Load("Asset/textures/grass.png"); 
 		// window Texture
 		Ref<Texture2D> windowTexture = TextureLibrary::Load("Asset/textures/blending_transparent_window.png");
+		// Brickwall Texture
+		Ref<Texture2D> brickTexture = TextureLibrary::Load("Asset/textures/brickwall.jpg");
+		// Brickwall normalmap
+		Ref<Texture2D> brickNormalMap = TextureLibrary::Load("Asset/textures/brickwall_normal.jpg");
+		// Box diffuse
+		Ref<Texture2D> boxDiffuse = TextureLibrary::Load("Asset/textures/container2.png");
+		// Box specular
+		Ref<Texture2D> boxSpecular = TextureLibrary::Load("Asset/textures/container2_specular.png");
+
 		// quad Texture
 		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
 		grass.SetTexture(grassTexture, Material::MaterialType::Diffuse);
 		window.SetTexture(windowTexture, Material::MaterialType::Diffuse);
+		brick.SetTexture(brickTexture, Material::MaterialType::Diffuse);
+		brick.SetTexture(brickNormalMap, Material::MaterialType::NormalMap);
+		Box.SetTexture(boxDiffuse, Material::MaterialType::Diffuse);
+		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
 
 		m_LightShader->Bind();
-		m_LightShader->SetInt("material.diffuse", 0);
-		m_LightShader->SetInt("material.specular", 1);
+		m_LightShader->SetInt("material.diffuse", 0, ShaderType::PS);
+		m_LightShader->SetInt("material.specular", 1, ShaderType::PS);
+		m_LightShader->SetInt("material.normal", 2, ShaderType::PS);
 
 		m_ScreenShader->Bind();
-		m_ScreenShader->SetInt("screenTexture", 0);
+		m_ScreenShader->SetInt("screenTexture", 0, ShaderType::PS);
 
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
@@ -80,6 +97,8 @@ namespace QCat
 		cube->SetScale({ 0.5f,0.5f,0.5f });
 
 		floor = glm::vec3(0.0f, -3.0f, 0.0f);
+		floorRot = glm::vec3(0.0f);
+		brickwall = glm::vec3(0.0f, -1.5f, 2.42f);
 
 		grass1 = glm::vec3(0.0f, -2.75f, 0.0f);
 		grass2 = glm::vec3(0.8f, -2.75f, 0.4f);
@@ -167,37 +186,48 @@ namespace QCat
 		}
 		{
 			QCAT_PROFILE_SCOPE("Renderer Draw");
-			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
-			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
-			m_LightShader->Bind();
-			m_LightShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
-			m_LightShader->SetFloat3("viewPosition", tc);
-			m_LightShader->SetBool("blinn", blinn);
-			m_LightShader->SetBool("gamma", gamma);
-
-			// Point Light 1
-			m_LightShader->SetFloat3("pointLight.position", sphere->GetTranslation());
-			m_LightShader->SetFloat3("pointLight.ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f);
-			m_LightShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-			m_LightShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
-
-			m_LightShader->SetFloat("pointLight.constant", constant);
-			m_LightShader->SetFloat("pointLight.Linear", Linear);
-			m_LightShader->SetFloat("pointLight.quadratic", quadratic);
-
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetBlend(true);
 			RenderCommand::SetBlendFunc(BlendFunc::BLEND_SRC_ALPHA, BlendFunc::BLEND_INV_SRC_ALPHA, BlendFunc::BLEND_ONE, BlendFunc::BLEND_ZERO);
 			RenderCommand::SetBlendOp(BlendOp::BLEND_ADD, BlendOp::BLEND_ADD);
+
+			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
+			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
+
+			m_LightShader->Bind();
+			m_LightShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);
+			m_LightShader->SetFloat3("viewPosition", tc, ShaderType::VS);
+			m_LightShader->SetBool("blinn", blinn, ShaderType::PS);
+			m_LightShader->SetBool("gamma", gamma, ShaderType::PS);
+			m_LightShader->SetBool("material.normalMap", false, ShaderType::PS);
+
+			// Point Light 1
+			m_LightShader->SetFloat3("pointLight.position", sphere->GetTranslation(), ShaderType::PS);
+			m_LightShader->SetFloat3("lightPosition", sphere->GetTranslation(), ShaderType::VS);
+			m_LightShader->SetFloat3("pointLight.ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f, ShaderType::PS);
+			m_LightShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+			m_LightShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+
+			m_LightShader->SetFloat("pointLight.constant", constant, ShaderType::PS);
+			m_LightShader->SetFloat("pointLight.Linear", Linear, ShaderType::PS);
+			m_LightShader->SetFloat("pointLight.quadratic", quadratic, ShaderType::PS);
+
 			face->SetMaterial(woodFloor);
 			face->SetTranslation(floor);
-			face->SetScale({ 5.0f,5.0f,5.0f });
-			face->SetRotation({ 0.0f,0.0f,0.0f });
+			face->SetScale({ 5.0f,5.0f,1.0f });
+			face->SetRotation({1.6f,0.0f,0.0f });
 			face->Draw(m_LightShader);
+			face->SetMaterial(brick);
+			m_LightShader->SetBool("material.normalMap", brick.IsThereTexture(Material::MaterialType::NormalMap), ShaderType::PS);
+			face->SetTranslation(brickwall);
+			face->SetRotation(floorRot);
+			face->SetScale({ 5.0f,3.0f,1.0f });
+			face->Draw(m_LightShader);
+			m_LightShader->SetBool("material.normalMap", false, ShaderType::PS);
 
 			face->SetMaterial(grass);
 			face->SetScale({ 0.5f,0.5f,0.5f });
-			face->SetRotation({ -1.6f,0.0f,0.0f });
+			face->SetRotation({0.0f,0.0f,0.0f });
 			face->SetTranslation(grass1);
 			face->Draw(m_LightShader);
 			face->SetTranslation(grass2);
@@ -215,22 +245,27 @@ namespace QCat
 			RenderCommand::SetStencilTest(true);
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
 			RenderCommand::SetStencilWriteMask(0xFF);
+			cube->SetMaterial(Box);
 			cube->SetScale({ 0.5f, 0.5f, 0.5f });
 			cube->SetTranslation(cube1);
 			cube->Draw(m_LightShader);
+			m_LightShader->SetBool("material.normalMap", brick.IsThereTexture(Material::MaterialType::NormalMap), ShaderType::PS);
+			cube->SetMaterial(brick);
 			cube->SetTranslation(cube2);
 			cube->Draw(m_LightShader);
+			m_LightShader->SetBool("material.normalMap", false, ShaderType::PS);
 			m_LightShader->UnBind();
 
 			m_FlatShader->Bind();
 
-			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
-			m_FlatShader->SetFloat3("viewPosition", tc);
+			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);
 			
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
 			RenderCommand::SetStencilWriteMask(0x00);
 			RenderCommand::SetDepthTest(false);
-			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),ShaderType::PS);
+			cube->SetMaterial(BasicMaterial);
 			cube->SetScale({ 0.6f, 0.6f, 0.6f });
 			cube->SetTranslation(cube1);
 			cube->Draw(m_FlatShader);
@@ -239,12 +274,7 @@ namespace QCat
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetStencilWriteMask(0xFF);
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
-			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-			m_FlatShader->Bind();
-
-			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix);
-			m_FlatShader->SetFloat3("viewPosition", tc);
-			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
 			sphere->Draw(m_FlatShader);
 
 			m_FlatShader->UnBind();
@@ -292,7 +322,9 @@ namespace QCat
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
 		ImGui::Checkbox("blinn", &blinn);
 		ImGui::Checkbox("gamaa Corretion", &gamma);
+		ImGui::DragFloat3("floor", glm::value_ptr(floorRot), 0.1f);
 		ImGui::End();
+
 		sphere->ImguiRender("Spehere 1");
 
 		//light->ImGuiRender("light 1");

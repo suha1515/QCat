@@ -190,47 +190,47 @@ namespace QCat
 
 		glUseProgram(0);
 	}
-	void OpenGLShader::SetInt(const std::string& name, int value)
+	void OpenGLShader::SetInt(const std::string& name, int value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		UploadUniformInt(name, value);
 	}
-	void OpenGLShader::SetIntArray(const std::string& name, int* values, unsigned int count)
+	void OpenGLShader::SetIntArray(const std::string& name, int* values, unsigned int count, ShaderType type)
 	{
 		UploadUniformIntArray(name, values, count);
 	}
-	void OpenGLShader::SetFloat(const std::string& name, const float& value)
+	void OpenGLShader::SetFloat(const std::string& name, const float& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		UploadUniformFloat(name, value);
 	}
-	void OpenGLShader::SetFloatArray(const std::string name, float* values, unsigned int count)
+	void OpenGLShader::SetFloatArray(const std::string name, float* values, unsigned int count, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		UploadUniformFloatArray(name, values, count);
 	}
-	void OpenGLShader::SetFloat3(const std::string& name,const glm::vec3& value)
+	void OpenGLShader::SetFloat3(const std::string& name,const glm::vec3& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		UploadUniformFloat3(name, value);
 	}
-	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
+	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		UploadUniformFloat4(name, value);
 	}
-	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
+	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		UploadUniformMat4(name, value);
 	}
-	void OpenGLShader::SetBool(const std::string& name, const bool& value)
+	void OpenGLShader::SetBool(const std::string& name, const bool& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 

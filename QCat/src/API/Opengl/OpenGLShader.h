@@ -15,17 +15,17 @@ namespace QCat
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
 
-		virtual void SetInt(const std::string& name, int value) override;
-		virtual void SetIntArray(const std::string& name, int* values, unsigned int count) override;
+		virtual void SetInt(const std::string& name, int value, ShaderType type) override;
+		virtual void SetIntArray(const std::string& name, int* values, unsigned int count, ShaderType type) override;
 
-		virtual void SetFloat(const std::string& name, const float& value) override;
-		virtual void SetFloatArray(const std::string name, float* values, unsigned int count) override;
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
-		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
-		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
+		virtual void SetFloat(const std::string& name, const float& value, ShaderType type) override;
+		virtual void SetFloatArray(const std::string name, float* values, unsigned int count, ShaderType type) override;
+		virtual void SetFloat3(const std::string& name, const glm::vec3& value, ShaderType type) override;
+		virtual void SetFloat4(const std::string& name, const glm::vec4& value, ShaderType type) override;
+		virtual void SetMat4(const std::string& name, const glm::mat4& value, ShaderType type) override;
 
 		//bool
-		virtual void SetBool(const std::string& name, const bool& value) override;
+		virtual void SetBool(const std::string& name, const bool& value, ShaderType type) override;
 
 		virtual void SetFloat3u(const std::string& uniformname, const std::string& valuename, const glm::vec3& value) override;
 		virtual void SetFloat4u(const std::string& uniformname, const std::string& valuename, const glm::vec4& value)override;

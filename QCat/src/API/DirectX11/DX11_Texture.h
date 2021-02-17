@@ -14,7 +14,7 @@ namespace QCat
 	{
 	public:
 		DX11Texture2D(unsigned int width,unsigned int height);
-		DX11Texture2D(const std::string& path,bool gamacorrection = false);
+		DX11Texture2D(const std::string& path, bool flip=false,bool gamacorrection = false);
 		virtual ~DX11Texture2D();
 
 		virtual unsigned int GetWidth() const override { return m_width; }

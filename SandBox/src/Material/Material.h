@@ -9,7 +9,7 @@ namespace QCat
 	public:
 		enum class MaterialType
 		{
-			None=0,Diffuse,Specular,Emission
+			None=0,Diffuse,Specular,NormalMap,Emission
 		};
 		Material()
 			:Material({0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},32.f)
@@ -30,6 +30,7 @@ namespace QCat
 			SetTexture(whiteTexture, Material::MaterialType::Diffuse);
 			SetTexture(whiteTexture, Material::MaterialType::Specular);
 			SetTexture(whiteTexture, Material::MaterialType::Emission);
+			SetTexture(whiteTexture, Material::MaterialType::NormalMap);
 		}
 		void SetTexture(const std::string& path,MaterialType type);
 		void SetTexture(const Ref<Texture2D>& texture, MaterialType type);
@@ -41,6 +42,7 @@ namespace QCat
 
 		Ref<Texture2D> GetTexture(MaterialType type);
 
+		bool IsThereTexture(MaterialType type);
 		void Bind();
 	public:
 		glm::vec3 ambient;
@@ -50,7 +52,9 @@ namespace QCat
 
 		Ref<Texture2D> m_DiffuseTexture;
 		Ref<Texture2D> m_SpecularTexture;
+		Ref<Texture2D> m_NormalMapTexture;
 		Ref<Texture2D> m_EmissionTexture;
+
 	};
 		
 }

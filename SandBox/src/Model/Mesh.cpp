@@ -25,7 +25,7 @@ namespace QCat
 			else if (name == "texture_specular")
 				number = std::to_string(specularNr++);
 
-			shader->SetInt("material." + name + number, i);
+			shader->SetInt("material." + name + number, i,ShaderType::PS);
 			m_Textures[i].texture->Bind(i);
 		}
 

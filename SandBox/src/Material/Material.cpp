@@ -14,6 +14,9 @@ namespace QCat
 		case MaterialType::Specular:
 			m_SpecularTexture = Texture2D::Create(path);
 			break;
+		case MaterialType::NormalMap:
+			m_NormalMapTexture = Texture2D::Create(path);
+			break;
 		case MaterialType::Emission:
 			m_EmissionTexture = Texture2D::Create(path);
 			break;
@@ -31,6 +34,9 @@ namespace QCat
 			break;
 		case MaterialType::Specular:
 			m_SpecularTexture = texture;
+			break;
+		case MaterialType::NormalMap:
+			m_NormalMapTexture = texture;
 			break;
 		case MaterialType::Emission:
 			m_EmissionTexture = texture;
@@ -50,11 +56,48 @@ namespace QCat
 		case MaterialType::Specular:
 			return m_SpecularTexture;
 			break;
+		case MaterialType::NormalMap:
+			return m_NormalMapTexture;
+			break;
 		case MaterialType::Emission:
 			return m_EmissionTexture;
 			break;
 		}
 		return nullptr;
+	}
+
+	bool Material::IsThereTexture(MaterialType type)
+	{
+		switch (type)
+		{
+		case MaterialType::None: QCAT_CORE_ASSERT(false);
+			break;
+		case MaterialType::Diffuse:
+			if (m_DiffuseTexture)
+				return true;
+			else
+				return false;
+			break;
+		case MaterialType::Specular:
+			if (m_SpecularTexture)
+				return true;
+			else
+				return false;
+			break;
+		case MaterialType::NormalMap:
+			if (m_NormalMapTexture)
+				return true;
+			else
+				return false;
+			break;
+		case MaterialType::Emission:
+			if (m_EmissionTexture)
+				return true;
+			else
+				return false;
+			break;
+		}
+		return false;
 	}
 
 	void Material::Bind()
@@ -63,8 +106,10 @@ namespace QCat
 			m_DiffuseTexture->Bind(0);
 		if (m_SpecularTexture)
 			m_SpecularTexture->Bind(1);
+		if (m_NormalMapTexture)
+			m_NormalMapTexture->Bind(2);
 		if (m_EmissionTexture)
-			m_EmissionTexture->Bind(2);
+			m_EmissionTexture->Bind(3);
 	}
 }
 

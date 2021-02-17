@@ -5,13 +5,16 @@
 
 namespace QCat
 {
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool gammaCorrection)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool flip, bool gammaCorrection)
 		:m_path(path)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);
+		if(!flip)
+			stbi_set_flip_vertically_on_load(0);
+		else
+			stbi_set_flip_vertically_on_load(1);
 		stbi_uc* data = nullptr;
 		{
 			QCAT_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
