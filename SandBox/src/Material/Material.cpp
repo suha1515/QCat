@@ -104,12 +104,20 @@ namespace QCat
 	{
 		if (m_DiffuseTexture)
 			m_DiffuseTexture->Bind(0);
+		else
+			m_WhiteTexture->Bind(0);
 		if (m_SpecularTexture)
 			m_SpecularTexture->Bind(1);
+		else
+			m_WhiteTexture->Bind(1);
 		if (m_NormalMapTexture)
 			m_NormalMapTexture->Bind(2);
+		else
+			m_WhiteTexture->Bind(2);
 		if (m_EmissionTexture)
 			m_EmissionTexture->Bind(3);
+		else
+			m_WhiteTexture->Bind(3);
 	}
 }
 

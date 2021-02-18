@@ -8,17 +8,24 @@ namespace QCat
 	}
 	void Model::Draw(const Ref<Shader>& shader)
 	{
+		shader->Bind();
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+		shader->SetMat4("u_Transform", transform, ShaderType::VS);
+		shader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 		for (uint32_t i = 0; i < meshes.size(); ++i)
-			meshes[i].Draw(shader);
-
+			meshes[i].Draw(shader, transform);
+	}
+	Ref<Model> Model::Create(const char* path)
+	{
+		return CreateRef<Model>(path);
 	}
 	void Model::LoadModel(const std::string& path)
 	{
 		Assimp::Importer importer;
 		uint32_t flag;
-		flag |= aiProcess_Triangulate;
-		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-			flag |= aiProcess_FlipUVs;
+		flag |= aiProcess_Triangulate | aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipWindingOrder | aiProcess_MakeLeftHanded| aiProcess_FlipUVs;
+		//if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		//	flag |= aiProcess_FlipUVs;
 		const aiScene* scene = importer.ReadFile(path, flag);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -52,7 +59,7 @@ namespace QCat
 		std::vector<Mesh::Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<Mesh::Texture> textures;
-
+		Material mat;
 		// Vertex information
 		for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
 		{
@@ -68,6 +75,19 @@ namespace QCat
 			vector.y = mesh->mNormals[i].y;
 			vector.z = mesh->mNormals[i].z;
 			vertex.normal = vector;
+
+			// Tangent
+			vector.x = mesh->mTangents[i].x;
+			vector.y = mesh->mTangents[i].y;
+			vector.z = mesh->mTangents[i].z;
+			vertex.tangent = vector;
+
+			// biTangent
+			vector.x = mesh->mBitangents[i].x;
+			vector.y = mesh->mBitangents[i].y;
+			vector.z = mesh->mBitangents[i].z;
+			vertex.bitangent = vector;
+
 			// TextureCoord
 			// assimp let vertex has 8 max texture 0~7
 			if (mesh->mTextureCoords[0])
@@ -79,6 +99,8 @@ namespace QCat
 			}
 			else
 				vertex.texcoords = glm::vec2(0.0f, 0.0f);
+
+			vertices.emplace_back(vertex);
 		}
 		// Index information
 		for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
@@ -93,15 +115,47 @@ namespace QCat
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			std::vector<Mesh::Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+			//std::vector<Mesh::Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 
-			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+			//textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-			std::vector<Mesh::Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+			//std::vector<Mesh::Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+			//textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+			//std::vector<Mesh::Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+			//textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+			aiString str;
+			std::string texturePath;
+			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				Ref<Texture2D> diffTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(diffTexture, Material::MaterialType::Diffuse);
+			}
+			if (material->GetTexture(aiTextureType_SPECULAR, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				Ref<Texture2D> specularTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(specularTexture, Material::MaterialType::Specular);
+			}
+			if (material->GetTexture(aiTextureType_HEIGHT, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(normalTexture, Material::MaterialType::NormalMap);
+			}
+		}
+		Ref<Shader> shader;
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			shader = ShaderLibrary::Load("lightShader","Asset/shaders/glsl/Blinn-phong.glsl");
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		// TODO: Shader split..?
-		return Mesh(vertices, indices, textures,nullptr);
+		return Mesh(vertices, indices, mat, shader);
 	}
 	std::vector<Mesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
 	{

@@ -7,6 +7,7 @@
 #include "Geometry/Face.h"
 #include "Light/Light.h"
 #include "QCat/Renderer/DepthStencil.h"
+#include "Model/Model.h"
 
 namespace QCat
 {
@@ -82,6 +83,8 @@ namespace QCat
 		glm::vec3 window2;
 		glm::vec3 window3;
 
+		glm::vec3 backpackPos;
+
 		Material woodFloor;
 		Material grass;
 		Material window;
@@ -93,6 +96,9 @@ namespace QCat
 
 		Ref<VertexArray> m_quad;
 		Ref<Texture2D> screenTexture;
+
+		//Model
+		Ref<Model> bagPack;
 	};
 
 }

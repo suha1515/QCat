@@ -261,7 +261,7 @@ namespace QCat {
 		//Rasterizer
 		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
 		rasterDesc.CullMode = D3D11_CULL_BACK;
-		rasterDesc.FrontCounterClockwise = true;
+		rasterDesc.FrontCounterClockwise = false;
 
 		device->CreateRasterizerState(&rasterDesc, &pRasterizer);
 		immediateContext->RSSetState(pRasterizer.Get());

@@ -10,7 +10,6 @@
 #include <chrono>
 #include <QCat/InputDevice/Mouse/Mouse.h>
 
-
 namespace QCat
 {
 
@@ -30,7 +29,7 @@ namespace QCat
 		tc.Translation = m_CameraPosition;
 		auto& camera = m_Camera.AddComponent<CameraComponent>();
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
-		camera.Camera.SetPerspective(glm::radians(30.0f), 0.001f, 1000.0f);
+		camera.Camera.SetPerspective(glm::radians(30.0f), 0.01f, 100.0f);
 
 
 		//sphere = CreateRef<Sphere>(glm::vec3(-3.0f, 0.0f, 3.0f));
@@ -38,15 +37,15 @@ namespace QCat
 		//light
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			m_LightShader = Shader::Create("Asset/shaders/glsl/Blinn-phong.glsl");
-			m_FlatShader = Shader::Create("Asset/shaders/glsl/FlatShader.glsl");
-			m_ScreenShader = Shader::Create("Asset/shaders/glsl/SingleQuad.glsl");
+			m_LightShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong.glsl");
+			m_FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/FlatShader.glsl");
+			m_ScreenShader = ShaderLibrary::Load("Asset/shaders/glsl/SingleQuad.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = Shader::Create("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
-			m_FlatShader = Shader::Create("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
-			m_ScreenShader = Shader::Create("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
+			m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
+			m_FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
+			m_ScreenShader = ShaderLibrary::Load("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 
 		}
 
@@ -82,6 +81,10 @@ namespace QCat
 		Box.SetTexture(boxDiffuse, Material::MaterialType::Diffuse);
 		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
 
+		// model Load
+		bagPack = Model::Create("Asset/model/backpack/backpack.obj");
+		bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0, ShaderType::PS);
 		m_LightShader->SetInt("material.specular", 1, ShaderType::PS);
@@ -98,7 +101,7 @@ namespace QCat
 
 		floor = glm::vec3(0.0f, -3.0f, 0.0f);
 		floorRot = glm::vec3(0.0f);
-		brickwall = glm::vec3(0.0f, -1.5f, 2.42f);
+		brickwall = glm::vec3(0.0f, -1.6f, 2.42f);
 
 		grass1 = glm::vec3(0.0f, -2.75f, 0.0f);
 		grass2 = glm::vec3(0.8f, -2.75f, 0.4f);
@@ -110,6 +113,8 @@ namespace QCat
 		window1 = glm::vec3(0.9f, -2.75f, -0.7f);
 		window2 = glm::vec3(0.3f, -2.75f, 0.3f);
 		window3 = glm::vec3(0.5f, -2.75f, -0.1f);
+
+		backpackPos = glm::vec3(2.0f, -2.0f, 0.0f);
 
 		FrameBufferSpecification spec;
 		spec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::Depth };
@@ -126,10 +131,10 @@ namespace QCat
 		}
 		float quadVertices[] =
 		{
-			-1.0f, 1.0f,  0.0f,0.0f+bias,
-			-1.0f,-1.0f,  0.0f,1.0f-bias,
-			 1.0f,-1.0f,  1.0f,1.0f-bias,
-			 1.0f, 1.0f,  1.0f,0.0f+bias
+			-1.0f, 1.0f,  0.0f,0.0f+bias,//0
+			-1.0f,-1.0f,  0.0f,1.0f-bias,//1
+			 1.0f,-1.0f,  1.0f,1.0f-bias,//2
+			 1.0f, 1.0f,  1.0f,0.0f+bias // 3
 		};
 
 		Ref<VertexBuffer> quadBuffer = VertexBuffer::Create(quadVertices,sizeof(quadVertices));
@@ -141,7 +146,7 @@ namespace QCat
 
 		unsigned int indices[] =
 		{
-			0,1,2,0,2,3
+			1,0,3,1,3,2
 		};
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, 6);
 
@@ -193,9 +198,8 @@ namespace QCat
 
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
-
 			m_LightShader->Bind();
-			m_LightShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);
+			m_LightShader->SetMat4("u_ViewProjection", camProj* viewMatrix,ShaderType::VS);
 			m_LightShader->SetFloat3("viewPosition", tc, ShaderType::VS);
 			m_LightShader->SetBool("blinn", blinn, ShaderType::PS);
 			m_LightShader->SetBool("gamma", gamma, ShaderType::PS);
@@ -218,12 +222,10 @@ namespace QCat
 			face->SetRotation({1.6f,0.0f,0.0f });
 			face->Draw(m_LightShader);
 			face->SetMaterial(brick);
-			m_LightShader->SetBool("material.normalMap", brick.IsThereTexture(Material::MaterialType::NormalMap), ShaderType::PS);
 			face->SetTranslation(brickwall);
 			face->SetRotation(floorRot);
 			face->SetScale({ 5.0f,3.0f,1.0f });
 			face->Draw(m_LightShader);
-			m_LightShader->SetBool("material.normalMap", false, ShaderType::PS);
 
 			face->SetMaterial(grass);
 			face->SetScale({ 0.5f,0.5f,0.5f });
@@ -242,6 +244,10 @@ namespace QCat
 			face->Draw(m_LightShader);
 			face->SetTranslation(window1);
 			face->Draw(m_LightShader);
+			bagPack->SetTranslation(backpackPos);
+			bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
+			bagPack->Draw(m_LightShader);
+
 			RenderCommand::SetStencilTest(true);
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
 			RenderCommand::SetStencilWriteMask(0xFF);
@@ -249,17 +255,13 @@ namespace QCat
 			cube->SetScale({ 0.5f, 0.5f, 0.5f });
 			cube->SetTranslation(cube1);
 			cube->Draw(m_LightShader);
-			m_LightShader->SetBool("material.normalMap", brick.IsThereTexture(Material::MaterialType::NormalMap), ShaderType::PS);
 			cube->SetMaterial(brick);
 			cube->SetTranslation(cube2);
 			cube->Draw(m_LightShader);
-			m_LightShader->SetBool("material.normalMap", false, ShaderType::PS);
 			m_LightShader->UnBind();
 
 			m_FlatShader->Bind();
-
-			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);
-			
+			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);	
 			RenderCommand::SetStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
 			RenderCommand::SetStencilWriteMask(0x00);
 			RenderCommand::SetDepthTest(false);
@@ -322,7 +324,8 @@ namespace QCat
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
 		ImGui::Checkbox("blinn", &blinn);
 		ImGui::Checkbox("gamaa Corretion", &gamma);
-		ImGui::DragFloat3("floor", glm::value_ptr(floorRot), 0.1f);
+		ImGui::DragFloat3("floor", glm::value_ptr(floor), 0.1f);
+		ImGui::DragFloat3("backpack", glm::value_ptr(backpackPos), 0.1f);
 		ImGui::End();
 
 		sphere->ImguiRender("Spehere 1");

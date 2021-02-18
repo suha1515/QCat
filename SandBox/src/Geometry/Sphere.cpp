@@ -88,15 +88,15 @@ namespace QCat
 				if (i != 0)
 				{
 					indices.push_back(k1);
-					indices.push_back(k2);
 					indices.push_back(k1+1);
+					indices.push_back(k2);
 				}
 				// k1+1 >= k2 >= k2+1
 				if (i != (stackCount - 1))
 				{
 					indices.push_back(k1 +1);
-					indices.push_back(k2);
 					indices.push_back(k2+1);
+					indices.push_back(k2);
 				}
 				// store indices for lines
 				// vertical lines for all stacks, k1>=k2
@@ -214,8 +214,16 @@ namespace QCat
 		shader->SetMat4("u_Transform", transform, ShaderType::VS);
 		shader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 		// material
-		shader->SetFloat3("material.specular", material.specular, ShaderType::PS);
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
+
+		if (material.IsThereTexture(Material::MaterialType::NormalMap))
+		{
+			shader->SetBool("material.normalMap", true, ShaderType::PS);
+		}
+		else
+		{
+			shader->SetBool("material.normalMap", false, ShaderType::PS);
+		}
 
 		material.Bind();
 		m_VertexArray->Bind();

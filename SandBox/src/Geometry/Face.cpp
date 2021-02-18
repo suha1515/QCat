@@ -23,12 +23,20 @@ namespace QCat
 
 		Vertex vertex[6];
 		vertex[0] = { {-0.5f*size,-0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,1.0f} };
-		vertex[1] = { { 0.5f*size,-0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,1.0f} };
+		vertex[1] = { {-0.5f*size, 0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,0.0f} };
 		vertex[2] = { { 0.5f*size, 0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,0.0f} };
-											
-		vertex[3] = { { 0.5f*size, 0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,0.0f} };
-		vertex[4] = { {-0.5f*size, 0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,0.0f} };
-		vertex[5] = { {-0.5f*size,-0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,1.0f} };
+							
+		vertex[3] = { {-0.5f*size,-0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,1.0f} };
+		vertex[4] = { { 0.5f*size, 0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,0.0f} };
+		vertex[5] = { { 0.5f*size,-0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,1.0f} };
+
+	/*	vertex[0] = { {-0.5f * size,-0.5f * size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,0.0f} };
+		vertex[1] = { {-0.5f * size, 0.5f * size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,1.0f} };
+		vertex[2] = { { 0.5f * size, 0.5f * size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,1.0f} };
+
+		vertex[3] = { {-0.5f * size,-0.5f * size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,0.0f} };
+		vertex[4] = { { 0.5f * size, 0.5f * size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,1.0f} };
+		vertex[5] = { { 0.5f * size,-0.5f * size,0.0f,},{0.0f,0.0f,-1.0f},{1.0f,0.0f} };*/
 
 		glm::vec3 tangent1, bitangent1;
 		glm::vec3 tangent2, bitangent2;
@@ -38,12 +46,12 @@ namespace QCat
 		glm::vec3 pos1 = vertex[0].Position;
 		glm::vec3 pos2 = vertex[1].Position;
 		glm::vec3 pos3 = vertex[2].Position;
-		glm::vec3 pos4 = vertex[4].Position;
+		glm::vec3 pos4 = vertex[5].Position;
 		// texture
 		glm::vec2 uv1 = vertex[0].TexCoord;
 		glm::vec2 uv2 = vertex[1].TexCoord;
 		glm::vec2 uv3 = vertex[2].TexCoord;
-		glm::vec2 uv4 = vertex[4].TexCoord;
+		glm::vec2 uv4 = vertex[5].TexCoord;
 
 		glm::vec3 edge1 = pos2 - pos1;
 		glm::vec3 edge2 = pos3 - pos1;
@@ -145,6 +153,15 @@ namespace QCat
 
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
+
+		if (material.IsThereTexture(Material::MaterialType::NormalMap))
+		{
+			shader->SetBool("material.normalMap", true, ShaderType::PS);
+		}
+		else
+		{
+			shader->SetBool("material.normalMap", false, ShaderType::PS);
+		}
 
 		material.Bind();
 		m_VertexArray->Bind();

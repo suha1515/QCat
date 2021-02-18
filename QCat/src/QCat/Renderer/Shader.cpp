@@ -44,8 +44,8 @@ namespace QCat
 
 	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 	{
-		QCAT_CORE_ASSERT(!Exists(name), "Shader already exists!");
-		m_Shaders[name] = shader;
+		QCAT_CORE_ASSERT(!Get().Exists(name), "Shader already exists!");
+		Get().m_Shaders[name] = shader;
 	}
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
@@ -64,12 +64,33 @@ namespace QCat
 	}
 	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 	{
-		auto shader = Shader::Create(filepath);
-		Add(name,shader);
-		return shader;
+		if (Get().Exists(name))
+		{
+			return Get().GetShader(name);
+		}
+		else
+		{
+			auto shader = Shader::Create(filepath);
+			Add(name, shader);
+			return shader;
+		}
 	}
 
-	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath, const std::string& filepath2)
+	{
+		if (Get().Exists(name))
+		{
+			return Get().GetShader(name);
+		}
+		else
+		{
+			auto shader = Shader::Create(name, filepath, filepath2);
+			Add(name, shader);
+			return shader;
+		}
+	}
+
+	Ref<Shader> ShaderLibrary::GetShader(const std::string& name)
 	{
 		QCAT_CORE_ASSERT(Exists(name), "Shader not found!");
 		return m_Shaders[name];

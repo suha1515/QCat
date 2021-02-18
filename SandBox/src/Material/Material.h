@@ -17,7 +17,7 @@ namespace QCat
 		Material(glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,float shininess)
 			:ambient(ambient),diffuse(diffuse), specular(specular),shininess(shininess)
 		{
-			Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
+			m_WhiteTexture  = Texture2D::Create(1, 1);
 			byte r = 125;
 			byte g = 125;
 			byte b = 125;
@@ -26,11 +26,7 @@ namespace QCat
 			//unsigned int whiteTextureData = 0xffffffff;
 			unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
 
-			whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
-			SetTexture(whiteTexture, Material::MaterialType::Diffuse);
-			SetTexture(whiteTexture, Material::MaterialType::Specular);
-			SetTexture(whiteTexture, Material::MaterialType::Emission);
-			SetTexture(whiteTexture, Material::MaterialType::NormalMap);
+			m_WhiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
 		}
 		void SetTexture(const std::string& path,MaterialType type);
 		void SetTexture(const Ref<Texture2D>& texture, MaterialType type);
@@ -54,6 +50,7 @@ namespace QCat
 		Ref<Texture2D> m_SpecularTexture;
 		Ref<Texture2D> m_NormalMapTexture;
 		Ref<Texture2D> m_EmissionTexture;
+		Ref<Texture2D> m_WhiteTexture;
 
 	};
 		

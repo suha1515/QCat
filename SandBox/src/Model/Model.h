@@ -11,6 +11,12 @@ namespace QCat
 	public:
 		Model(const char* path);
 		void Draw(const Ref<Shader> & shader);
+
+		void SetScale(const glm::vec3& scale) { this->scale = scale; };
+		void SetRotation(const glm::vec3& rotation) { this->rotation = rotation; }
+		void SetTranslation(const glm::vec3& translation) {this->translation = translation;}
+
+		static Ref<Model> Create(const char* path);
 	private:
 		std::vector<Mesh> meshes;
 		std::string path;
@@ -20,5 +26,8 @@ namespace QCat
 		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
 		std::vector<Mesh::Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typename);
 
+		glm::vec3 translation = { 0.0f,0.0f,0.0f };
+		glm::vec3 rotation = { 0.0f,0.0f,0.0f };
+		glm::vec3 scale = { 1.0f,1.0f,1.0f };
 	};
 }
