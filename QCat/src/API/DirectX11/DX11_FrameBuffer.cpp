@@ -141,4 +141,10 @@ namespace QCat
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 		gfx.GetContext()->PSSetShaderResources(slot, 1u, m_ColorAttachments[index]->GetShaderResourceView());
 	}
+	void DX11FrameBuffer::UnBindTexture()
+	{
+		ID3D11ShaderResourceView* pSrv = nullptr;
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		gfx.GetContext()->PSSetShaderResources(0, 1u, &pSrv);
+	}
 }

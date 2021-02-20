@@ -26,7 +26,7 @@ namespace QCat
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void BindColorTexture(uint32_t slot, uint32_t index = 0) const override;
-
+		virtual void UnBindTexture() override;
 	private:
 		FrameBufferSpecification m_Specification;
 

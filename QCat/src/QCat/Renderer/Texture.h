@@ -17,7 +17,6 @@ namespace QCat
 		virtual void Bind(unsigned int slot =0) const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
-		virtual std::string GetPath() const = 0;
 	};
 
 	class Texture2D : public Texture
@@ -25,7 +24,14 @@ namespace QCat
 	public:
 		static Ref<Texture2D> Create(unsigned int width, unsigned int height);
 		static Ref<Texture2D> Create(const std::string & path, bool flip =false,bool gamacorrection = false);
-		virtual std::string GetPath() const = 0;
+	private:
+		std::string path;
+	};
+	class TextureCube  : public Texture
+	{
+	public:
+		static Ref<TextureCube> Create(std::vector<std::string> imagePath, bool flip=false,bool gammacorrection = false);
+
 	};
 
 	class TextureLibrary

@@ -14,10 +14,12 @@ namespace QCat
 		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) override;
 
 		virtual void EnableStencil(bool enable) override;
-		virtual void SetStencilFunc(COMPARISON_FUNC func, int ref, int mask) override;
 		virtual void SetStencilWriteMask(int mask) override;
 		virtual void SetStencilReadMask(int mask) override;
-		virtual void SetStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass) override;
+		virtual void SetFrontStencilFunc(COMPARISON_FUNC func, int ref, int mask) override;
+		virtual void SetFrontStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)override;
+		virtual void SetBackStencilFunc(COMPARISON_FUNC func, int ref, int mask)override;
+		virtual void SetBackStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass) override;
 		virtual void Bind() override;
 	private:
 	};

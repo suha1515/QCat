@@ -6,7 +6,6 @@
 namespace QCat
 {
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool flip, bool gammaCorrection)
-		:m_path(path)
 	{
 		QCAT_PROFILE_FUNCTION();
 
@@ -43,7 +42,7 @@ namespace QCat
 
 		// Texture Create
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
-		glTextureStorage2D(m_renderID, 1, imageformat, m_width, m_height);
+		glTextureStorage2D(m_renderID, 1,imageformat, m_width, m_height);
 
 		// Texture Filtering
 		glTextureParameteri(m_renderID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -60,8 +59,6 @@ namespace QCat
 			glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 		
-
-
 		// Upload Texture
 		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, dataformat, GL_UNSIGNED_BYTE,data);
 
@@ -108,4 +105,68 @@ namespace QCat
 		// 1st parameter is for slot
 		glBindTextureUnit(slot, m_renderID);
 	}
+	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, bool flip , bool gammaCorrection)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		uint32_t textureID;
+		glGenTextures(1, &m_renderID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
+
+		if (!flip)
+			stbi_set_flip_vertically_on_load(0);
+		else
+			stbi_set_flip_vertically_on_load(1);
+		int width, height, channels;
+		for (uint32_t i = 0; i < imgPathes.size(); ++i)
+		{
+
+			stbi_uc* data = nullptr;
+			GLenum imageformat = 0, dataformat = 0;
+			{
+				QCAT_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
+				data = stbi_load(imgPathes[i].c_str(), &width, &height, &channels, 0);
+				switch (channels)
+				{
+				case 4:
+					imageformat = gammaCorrection ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+					dataformat = GL_RGBA;
+					break;
+				case 3:
+					imageformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
+					dataformat = GL_RGB;
+					break;
+				}
+			}
+			QCAT_CORE_ASSERT(data, "Failed to load Image!");
+			m_width = width;
+			m_height = height;
+
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, imageformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	}
+	OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		glDeleteTextures(1, &m_renderID);
+	}
+	void OpenGLCubeMapTexture::SetData(void* pData, unsigned int size)
+	{
+	}
+	void OpenGLCubeMapTexture::Bind(unsigned int slot) const
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		// 1st parameter is for slot
+		//glBindTextureUnit(slot, m_renderID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
+	}
+	
 }

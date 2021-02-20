@@ -34,6 +34,7 @@ namespace QCat
 		~DXShader();
 	public:
 		virtual void Bind()const override;
+		virtual void UpdateBuffer() const override;
 		virtual void UnBind()const override;
 
 		virtual void SetInt(const std::string& name, int value, ShaderType type) override;
@@ -91,6 +92,7 @@ namespace QCat
 		std::unordered_map<std::string, Ref<DX11ConstantBuffer>>& GetConstantBuffers() { return m_ConstantBuffers; }
 	public:
 		virtual void Bind()const =0 ;
+		virtual void UpdateBuffer() const=0;
 		virtual void UnBind()const =0 ;
 	protected:
 		Microsoft::WRL::ComPtr <ID3D11ShaderReflection> pReflector;
@@ -109,8 +111,9 @@ namespace QCat
 		Microsoft::WRL::ComPtr <ID3D11ShaderReflection>& GetReflector() { return pReflector; };
 		std::vector<char>& DX11VertexShader::GetData();
 	public:
-	    void Bind()const ;
-	    void UnBind()const ;
+	    virtual void Bind()const ;
+		virtual void UpdateBuffer() const;
+	    virtual void UnBind()const ;
 	   
 	    const std::string& GetName()const { return m_name; }
 	private:
@@ -126,6 +129,7 @@ namespace QCat
 		~DX11PixelShader();
 	public:
 		 void Bind()const ;
+		 virtual void UpdateBuffer() const;
 		 void UnBind()const ;
 		 Microsoft::WRL::ComPtr <ID3D11ShaderReflection>& GetReflector() { return pReflector; };
 		const std::string& GetName()const  { return m_name; }

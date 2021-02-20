@@ -13,6 +13,7 @@ namespace QCat
 		virtual ~OpenGLShader();
 
 		virtual void Bind() const override;
+		virtual void UpdateBuffer() const override {};
 		virtual void UnBind() const override;
 
 		virtual void SetInt(const std::string& name, int value, ShaderType type) override;

@@ -34,16 +34,21 @@ namespace QCat
 		DepthStencil::DepthStencilDesc desc;
 		{
 			desc.depthEnable = true;
-			desc.depthFunc = COMPARISON_FUNC::LESS;
+			desc.depthFunc = COMPARISON_FUNC::LESS_EQUAL;
 			desc.depthWriteMask =DEPTH_WRITE_MASK::MASK_ALL;
 
-			desc.stencilEnable = true;
-			desc.stencilFunc = COMPARISON_FUNC::ALWAYS;
+			desc.stencilEnable = false;
 			desc.stencilReadMask = 0xFF;
 			desc.stencilWriteMask = 0xFF;
-			desc.stencilFail = STENCIL_OP::KEEP;
-			desc.depthFail = STENCIL_OP::KEEP;
-			desc.bothPass = STENCIL_OP::REPLACE;
+			desc.FrontstencilFunc = COMPARISON_FUNC::ALWAYS;
+			desc.FrontstencilFail = STENCIL_OP::KEEP;
+			desc.FrontdepthFail = STENCIL_OP::KEEP;
+			desc.FrontbothPass = STENCIL_OP::REPLACE;
+
+			desc.BackstencilFunc = COMPARISON_FUNC::ALWAYS;
+			desc.BackstencilFail = STENCIL_OP::KEEP;
+			desc.BackdepthFail = STENCIL_OP::KEEP;
+			desc.BackbothPass = STENCIL_OP::REPLACE;
 			desc.referenceValue = 1;
 		}
 		m_DepthStencilState = DepthStencil::Create(desc);
@@ -90,7 +95,7 @@ namespace QCat
 		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
 		rasterDesc.CullMode = D3D11_CULL_BACK;
 		rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-		rasterDesc.FrontCounterClockwise = true;
+		rasterDesc.FrontCounterClockwise = false;
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
 		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
 		pgfx->GetContext()->RSSetState(pRasterizer.Get());
@@ -100,7 +105,7 @@ namespace QCat
 		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
 		rasterDesc.CullMode = D3D11_CULL_BACK;
 		rasterDesc.FillMode = D3D11_FILL_SOLID;
-		rasterDesc.FrontCounterClockwise = true;
+		rasterDesc.FrontCounterClockwise = false;
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
 		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
 		pgfx->GetContext()->RSSetState(pRasterizer.Get());
@@ -109,17 +114,29 @@ namespace QCat
 	{
 		m_DepthStencilState->EnableDepth(enable);
 	}
+	void DX11RenderAPI::SetDepthFunc(COMPARISON_FUNC func)
+	{
+		m_DepthStencilState->SetDepthFunc(func);
+	}
 	void DX11RenderAPI::SetStencilTest(bool enable)
 	{
 		m_DepthStencilState->EnableStencil(enable);
 	}
-	void DX11RenderAPI::SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	void DX11RenderAPI::SetFrontStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
 	{
-		m_DepthStencilState->SetStencilOperator(stencilFail, depthFail, bothPass);
+		m_DepthStencilState->SetFrontStencilOperator(stencilFail, depthFail, bothPass);
 	}
-	void DX11RenderAPI::SetStencilFunc(COMPARISON_FUNC func, int value)
+	void DX11RenderAPI::SetFrontStencilFunc(COMPARISON_FUNC func, int value)
 	{
-		m_DepthStencilState->SetStencilFunc(func, value, 0xFF);
+		m_DepthStencilState->SetFrontStencilFunc(func, value, 0xFF);
+	}
+	void DX11RenderAPI::SetBackStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		m_DepthStencilState->SetBackStencilOperator(stencilFail, depthFail, bothPass);
+	}
+	void DX11RenderAPI::SetBackStencilFunc(COMPARISON_FUNC func, int value)
+	{
+		m_DepthStencilState->SetBackStencilFunc(func, value, 0xFF);
 	}
 	void DX11RenderAPI::SetDepthWriteMask(DEPTH_WRITE_MASK mask)
 	{

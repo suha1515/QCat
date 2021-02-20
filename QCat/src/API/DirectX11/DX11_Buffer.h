@@ -115,6 +115,16 @@ namespace QCat
 			return ref;
 		}
 		void UpdateData();
+		void FinalizeUpdate()
+		{
+			QCAT_PROFILE_FUNCTION();
+
+			if (IsDataChanged)
+			{
+				UpdateData();
+				IsDataChanged = false;
+			}
+		};
 		void UpdateElements(const void* pData)
 		{
 			memcpy(bufferElements.GetData(), pData, bufferElements.GetSizeInBytes());
@@ -155,11 +165,6 @@ namespace QCat
 		virtual void Bind() override
 		{
 			QCAT_PROFILE_FUNCTION();
-			if (IsDataChanged)
-			{
-				UpdateData();
-				IsDataChanged = false;
-			}
 			pgfx->GetContext()->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};

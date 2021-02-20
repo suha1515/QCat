@@ -27,9 +27,8 @@ namespace QCat
 
 		virtual bool operator==(const Texture& other) const override
 		{
-			return m_path == ((DX11Texture2D&)other).m_path;
+			return pTexture.Get() == ((DX11Texture2D&)other).pTexture.Get();
 		}
-		virtual std::string GetPath() const override { return m_path; }
 	private:
 		std::string m_path;
 		unsigned int m_width, m_height;
@@ -37,5 +36,30 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		Microsoft::WRL::ComPtr< ID3D11SamplerState> pSamplerState;
 		DXGI_FORMAT m_dataFormat;
+	};
+	class DX11TextureCube : public TextureCube
+	{
+	public:
+		DX11TextureCube(const std::vector<std::string>& imgPathes, bool flip = false, bool gammaCorrection = false);
+		~DX11TextureCube() = default;
+
+		virtual unsigned int GetWidth() const override { return m_width; }
+		virtual unsigned int GetHeight() const override { return m_height; }
+		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+
+		virtual void SetData(void* pData, unsigned int size) override;
+		virtual void Bind(unsigned int slot = 0) const override;
+
+		virtual bool operator==(const Texture& other) const override
+		{
+			return pTexture.Get() == ((DX11TextureCube&)other).pTexture.Get();
+		}
+	private:
+		unsigned int m_width, m_height;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
+		Microsoft::WRL::ComPtr< ID3D11SamplerState> pSamplerState;
+		DXGI_FORMAT m_dataFormat;
+
 	};
 }

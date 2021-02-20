@@ -116,7 +116,7 @@ namespace QCat
 		// layout
 		vertexBuffer->SetLayout(BufferLayout::Create(
 			{ { ShaderDataType::Float3, "a_Position"},
-			  { ShaderDataType::Float3, "a_Normal"   },
+			  { ShaderDataType::Float3, "a_Normal" },
 			  { ShaderDataType::Float2, "a_TexCoord"},
 			  { ShaderDataType::Float3, "a_Tangent"},
 			  { ShaderDataType::Float3, "a_BiTangent"},
@@ -165,7 +165,7 @@ namespace QCat
 
 		material.Bind();
 		m_VertexArray->Bind();
-		shader->Bind();
+		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 

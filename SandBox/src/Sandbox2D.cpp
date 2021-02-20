@@ -40,12 +40,14 @@ namespace QCat
 			m_LightShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong.glsl");
 			m_FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/FlatShader.glsl");
 			m_ScreenShader = ShaderLibrary::Load("Asset/shaders/glsl/SingleQuad.glsl");
+			m_SkyBoxShader = ShaderLibrary::Load("Asset/shaders/glsl/SkyBox.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 			m_FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
 			m_ScreenShader = ShaderLibrary::Load("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
+			m_SkyBoxShader = ShaderLibrary::Load("SkyBoxShader","Asset/shaders/hlsl/SkyBox_VS.hlsl","Asset/shaders/hlsl/SkyBox_PS.hlsl");
 
 		}
 
@@ -82,8 +84,8 @@ namespace QCat
 		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
 
 		// model Load
-		bagPack = Model::Create("Asset/model/backpack/backpack.obj");
-		bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+		//bagPack = Model::Create("Asset/model/backpack/backpack.obj");
+		//bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
 
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0, ShaderType::PS);
@@ -93,11 +95,25 @@ namespace QCat
 		m_ScreenShader->Bind();
 		m_ScreenShader->SetInt("screenTexture", 0, ShaderType::PS);
 
+		m_SkyBoxShader->Bind();
+		m_SkyBoxShader->SetInt("skybox", 0, ShaderType::PS);
+
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
 		sphere = CreateRef<Sphere>(glm::vec3(-0.1f, -2.6f, -1.0f), m_FlatShader, 0.1f);
 		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
 		cube->SetScale({ 0.5f,0.5f,0.5f });
+
+		std::vector<std::string> imagePath =
+		{
+			"Asset/textures/skybox/right.jpg",
+			"Asset/textures/skybox/left.jpg",
+			"Asset/textures/skybox/top.jpg",
+			"Asset/textures/skybox/bottom.jpg",
+			"Asset/textures/skybox/front.jpg",
+			"Asset/textures/skybox/back.jpg",
+		};
+		cubeMap = CreateRef<CubeMap>(imagePath,m_SkyBoxShader);
 
 		floor = glm::vec3(0.0f, -3.0f, 0.0f);
 		floorRot = glm::vec3(0.0f);
@@ -198,12 +214,12 @@ namespace QCat
 
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
+
 			m_LightShader->Bind();
 			m_LightShader->SetMat4("u_ViewProjection", camProj* viewMatrix,ShaderType::VS);
 			m_LightShader->SetFloat3("viewPosition", tc, ShaderType::VS);
 			m_LightShader->SetBool("blinn", blinn, ShaderType::PS);
 			m_LightShader->SetBool("gamma", gamma, ShaderType::PS);
-			m_LightShader->SetBool("material.normalMap", false, ShaderType::PS);
 
 			// Point Light 1
 			m_LightShader->SetFloat3("pointLight.position", sphere->GetTranslation(), ShaderType::PS);
@@ -244,12 +260,13 @@ namespace QCat
 			face->Draw(m_LightShader);
 			face->SetTranslation(window1);
 			face->Draw(m_LightShader);
-			bagPack->SetTranslation(backpackPos);
-			bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-			bagPack->Draw(m_LightShader);
+			//bagPack->SetTranslation(backpackPos);
+			//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
+			//bagPack->Draw(m_LightShader);
 
 			RenderCommand::SetStencilTest(true);
-			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
+			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
 			RenderCommand::SetStencilWriteMask(0xFF);
 			cube->SetMaterial(Box);
 			cube->SetScale({ 0.5f, 0.5f, 0.5f });
@@ -262,7 +279,8 @@ namespace QCat
 
 			m_FlatShader->Bind();
 			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);	
-			RenderCommand::SetStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
+			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
 			RenderCommand::SetStencilWriteMask(0x00);
 			RenderCommand::SetDepthTest(false);
 
@@ -275,11 +293,22 @@ namespace QCat
 			cube->Draw(m_FlatShader);
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetStencilWriteMask(0xFF);
-			RenderCommand::SetStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
+			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
+			RenderCommand::SetStencilTest(false);
 			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
 			sphere->Draw(m_FlatShader);
 
 			m_FlatShader->UnBind();
+			// last drawing for ealry depth test skybox
+			m_SkyBoxShader->Bind();
+			glm::mat4 view = glm::mat4(glm::mat3(viewMatrix));
+			m_SkyBoxShader->SetMat4("u_ViewProjection", camProj* view, ShaderType::VS);
+			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ZERO);
+			cubeMap->Draw(m_SkyBoxShader);
+			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ALL);
+			m_SkyBoxShader->UnBind();
+
 
 			framebuffer->UnBind();
 			RenderCommand::SetDefaultFrameBuffer();
@@ -293,6 +322,7 @@ namespace QCat
 				//woodFloor.GetTexture(Material::MaterialType::Diffuse)->Bind(0);
 				RenderCommand::DrawIndexed(m_quad);
 				m_ScreenShader->UnBind();
+				framebuffer->UnBindTexture();
 			}
 			
 			//sphere->Draw(m_LightShader);

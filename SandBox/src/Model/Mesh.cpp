@@ -30,7 +30,7 @@ namespace QCat
 		}*/
 		material.Bind();
 		m_VertexArray->Bind();
-		shader->Bind();
+		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 	void Mesh::Initialize(const Ref<Shader>& shader, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)

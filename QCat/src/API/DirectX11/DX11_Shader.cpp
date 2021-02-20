@@ -171,6 +171,11 @@ namespace QCat
 		pvs->Bind();
 		pps->Bind();
 	}
+	void DXShader::UpdateBuffer() const
+	{
+		pvs->UpdateBuffer();
+		pps->UpdateBuffer();
+	}
 	void DXShader::UnBind() const
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -407,6 +412,11 @@ namespace QCat
 			buf.second->Bind();
 		gfx->GetContext()->VSSetShader(pVertexShader.Get(), nullptr, 0u);
 	}
+	void DX11VertexShader::UpdateBuffer() const
+	{
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->FinalizeUpdate();
+	}
 	void DX11VertexShader::UnBind() const
 	{
 		gfx->GetContext()->VSSetShader(nullptr, nullptr, 0u);
@@ -451,6 +461,11 @@ namespace QCat
 		for (auto& buf : m_ConstantBuffers)
 			buf.second->Bind();
 		gfx->GetContext()->PSSetShader(pPixelShader.Get(), nullptr, 0u);
+	}
+	void DX11PixelShader::UpdateBuffer() const
+	{
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->FinalizeUpdate();
 	}
 	void DX11PixelShader::UnBind() const
 	{

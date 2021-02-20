@@ -42,19 +42,30 @@ namespace QCat
 		{
 			s_renderAPI->SetDepthTest(enable);
 		}
+		inline static void SetDepthFunc(COMPARISON_FUNC func)
+		{
+			s_renderAPI->SetDepthFunc(func);
+		}
 		inline static void SetStencilTest(bool enable)
 		{
 			s_renderAPI->SetStencilTest(enable);
 		}
-		inline static void SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+		inline static void SetFrontStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
 		{
-			s_renderAPI->SetStencilOp(stencilFail, depthFail, bothPass);
+			s_renderAPI->SetFrontStencilOp(stencilFail, depthFail, bothPass);
 		}
-		inline static void SetStencilFunc(COMPARISON_FUNC func, int value)
+		inline static void SetFrontStencilFunc(COMPARISON_FUNC func, int value)
 		{
-			s_renderAPI->SetStencilFunc(func, value);
+			s_renderAPI->SetFrontStencilFunc(func, value);
 		}
-
+		inline static void SetBackStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+		{
+			s_renderAPI->SetBackStencilOp(stencilFail, depthFail, bothPass);
+		}
+		inline static void SetBackStencilFunc(COMPARISON_FUNC func, int value)
+		{
+			s_renderAPI->SetBackStencilFunc(func, value);
+		}
 		inline static void SetDepthWriteMask(DEPTH_WRITE_MASK mask)
 		{
 			s_renderAPI->SetDepthWriteMask(mask);

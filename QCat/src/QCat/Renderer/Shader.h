@@ -14,6 +14,7 @@ namespace QCat
 		virtual ~Shader() =default;
 
 		virtual void Bind() const = 0;
+		virtual void UpdateBuffer() const = 0;
 		virtual void UnBind()const = 0;
 
 		// Integer

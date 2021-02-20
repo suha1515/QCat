@@ -143,4 +143,98 @@ namespace QCat
 			QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(0u, 1u, pSamplerState.GetAddressOf());
 		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
 	}
+	DX11TextureCube::DX11TextureCube(const std::vector<std::string>& imgPathes, bool flip, bool gammaCorrection)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		
+		if (!flip)
+			stbi_set_flip_vertically_on_load(0);
+		else
+			stbi_set_flip_vertically_on_load(1);
+
+		stbi_uc* data[6];
+		int width, height, channels;
+		if (gammaCorrection)
+		{
+			m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		}
+		else
+		{
+			m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		}
+		for (int i = 0; i < imgPathes.size(); ++i)
+		{
+			
+			data[i] = stbi_load(imgPathes[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);
+
+			QCAT_CORE_ASSERT(data, "Failed to load Image!");
+			m_width = width;
+			m_height = height;
+		}
+		// Texture Description
+		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc.Width = m_width;
+		textureDesc.Height = m_height;
+		textureDesc.MipLevels = 1;
+		textureDesc.ArraySize = 6;
+		textureDesc.Format = m_dataFormat;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE ;
+		textureDesc.CPUAccessFlags = 0;
+		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+		// Create Texture and update it
+		D3D11_SUBRESOURCE_DATA subResource[6];
+		for (int i = 0; i < 6; ++i)
+		{
+			subResource[i].pSysMem = data[i];
+			subResource[i].SysMemPitch = textureDesc.Width * 4;
+			subResource[i].SysMemSlicePitch = 0;
+		}
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc,subResource, &pTexture);
+
+		// Texture resource view
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = textureDesc.Format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+		srvDesc.Texture2D.MostDetailedMip = 0; // mip level
+		srvDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+
+		// Create ShaderResouceView
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
+			pTexture.Get(), &srvDesc, &pTextureView
+		);
+
+		//Set SamplerState
+		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
+		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+		samplerDesc.BorderColor[0] = 1.0f;
+		samplerDesc.BorderColor[1] = 0.0f;
+		samplerDesc.BorderColor[2] = 1.0f;
+		samplerDesc.BorderColor[3] = 1.0f;
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateSamplerState(&samplerDesc, &pSamplerState);
+
+		// free loaded image
+		for (int i = 0; i < 6; ++i)
+		{
+			stbi_image_free(data[i]);
+		}
+	}
+	void DX11TextureCube::SetData(void* pData, unsigned int size)
+	{
+	}
+	void DX11TextureCube::Bind(unsigned int slot) const
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		if (pSamplerState)
+			QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(0u, 1u, pSamplerState.GetAddressOf());
+		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
+	}
 }

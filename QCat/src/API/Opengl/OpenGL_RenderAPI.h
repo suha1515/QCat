@@ -19,9 +19,12 @@ namespace QCat
 
 		// depth-stencil option
 		virtual void SetDepthTest(bool enable)override;
+		virtual void SetDepthFunc(COMPARISON_FUNC func)override;
 		virtual void SetStencilTest(bool enable) override;
-		virtual void SetStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass) override;
-		virtual void SetStencilFunc(COMPARISON_FUNC func, int value) override;
+		virtual void SetFrontStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)override;
+		virtual void SetFrontStencilFunc(COMPARISON_FUNC func, int value) override;
+		virtual void SetBackStencilOp(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass) override;
+		virtual void SetBackStencilFunc(COMPARISON_FUNC func, int value) override;
 		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) override;
 		virtual void SetStencilWriteMask(int value) override;
 

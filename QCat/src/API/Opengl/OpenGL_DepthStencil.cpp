@@ -67,12 +67,7 @@ namespace QCat
 		else
 			glDisable(GL_STENCIL_TEST);
 	}
-	void OpenGLDepthStencil::SetStencilFunc(COMPARISON_FUNC func, int ref, int mask)
-	{
-		desc.stencilFunc = func;
-		desc.referenceValue = ref;
-		glStencilFunc(Utils::ComparisonFuncToOpengl(desc.stencilFunc), desc.referenceValue, 0xFF);
-	}
+
 	void OpenGLDepthStencil::SetStencilWriteMask(int mask)
 	{
 		desc.stencilWriteMask = mask;
@@ -82,14 +77,34 @@ namespace QCat
 	{
 		desc.stencilReadMask = mask;
 	}
-	void OpenGLDepthStencil::SetStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	void OpenGLDepthStencil::SetFrontStencilFunc(COMPARISON_FUNC func, int ref, int mask)
 	{
-		desc.stencilFail = stencilFail;
-		desc.depthFail	 = depthFail;
-		desc.bothPass    = bothPass;
+		desc.FrontstencilFunc = func;
+		desc.referenceValue = ref;
+		glStencilFuncSeparate(GL_FRONT,Utils::ComparisonFuncToOpengl(desc.FrontstencilFunc), desc.referenceValue, 0xFF);
+	}
+	void OpenGLDepthStencil::SetFrontStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		desc.FrontstencilFail = stencilFail;
+		desc.FrontdepthFail	 = depthFail;
+		desc.FrontbothPass    = bothPass;
 
-		glStencilOp(Utils::StencilOpToOpengl(desc.stencilFail), Utils::StencilOpToOpengl(desc.depthFail), Utils::StencilOpToOpengl(desc.bothPass));
+		glStencilOpSeparate(GL_FRONT,Utils::StencilOpToOpengl(desc.FrontstencilFail), Utils::StencilOpToOpengl(desc.FrontdepthFail), Utils::StencilOpToOpengl(desc.FrontbothPass));
 
+	}
+	void OpenGLDepthStencil::SetBackStencilFunc(COMPARISON_FUNC func, int ref, int mask)
+	{
+		desc.BackstencilFunc = func;
+		desc.referenceValue = ref;
+		glStencilFuncSeparate(GL_BACK, Utils::ComparisonFuncToOpengl(desc.BackstencilFunc), desc.referenceValue, 0xFF);
+	}
+	void OpenGLDepthStencil::SetBackStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		desc.BackstencilFail = stencilFail;
+		desc.BackdepthFail = depthFail;
+		desc.BackbothPass = bothPass;
+
+		glStencilOpSeparate(GL_BACK, Utils::StencilOpToOpengl(desc.BackstencilFail), Utils::StencilOpToOpengl(desc.BackdepthFail), Utils::StencilOpToOpengl(desc.BackbothPass));
 	}
 	void OpenGLDepthStencil::Bind()
 	{

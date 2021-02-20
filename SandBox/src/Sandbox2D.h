@@ -8,6 +8,7 @@
 #include "Light/Light.h"
 #include "QCat/Renderer/DepthStencil.h"
 #include "Model/Model.h"
+#include "CubeMap/CubeMap.h"
 
 namespace QCat
 {
@@ -35,6 +36,8 @@ namespace QCat
 		Ref<Cube> cube;
 
 		Ref<Sphere> sphere;
+
+		Ref<CubeMap> cubeMap;
 	
 		Ref<Light> Pointlight;
 
@@ -47,6 +50,7 @@ namespace QCat
 		Ref<Shader> m_LightNormalShader;
 		Ref<Shader> m_FlatShader;
 		Ref<Shader> m_ScreenShader;
+		Ref<Shader> m_SkyBoxShader;
 
 		Ref<FrameBuffer> framebuffer;
 

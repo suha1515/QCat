@@ -227,7 +227,7 @@ namespace QCat
 
 		material.Bind();
 		m_VertexArray->Bind();
-		shader->Bind();
+		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 	void Sphere::ImguiRender(const char* name)

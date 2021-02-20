@@ -29,4 +29,16 @@ namespace  QCat
 		return nullptr;
 	}
 
+	Ref<TextureCube> TextureCube::Create(std::vector<std::string> imagePath,bool flip, bool gammacorrection)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLCubeMapTexture>(imagePath, flip, gammacorrection);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11TextureCube>(imagePath, flip, gammacorrection);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+
 }

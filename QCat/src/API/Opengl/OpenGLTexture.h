@@ -23,10 +23,31 @@ namespace QCat
 		{
 			return m_renderID == ((OpenGLTexture2D&)other).m_renderID;
 		}
-		virtual std::string GetPath() const override { return m_path; }
 	private:
-		std::string m_path;
 		unsigned int m_width,m_height;
+		unsigned int m_renderID;
+		GLenum m_InternalFormat, m_DataFormat;
+	};
+
+	class OpenGLCubeMapTexture : public TextureCube
+	{
+	public:
+		OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, bool flip = false, bool gammaCorrection = false);
+		virtual ~OpenGLCubeMapTexture();
+
+		virtual unsigned int GetWidth() const override { return m_width; }
+		virtual unsigned int GetHeight() const override { return m_height; }
+		virtual void* GetTexture() const override { return (void*)m_renderID; }
+
+		virtual void SetData(void* pData, unsigned int size) override;
+		virtual void Bind(unsigned int slot = 0) const override;
+
+		virtual bool operator==(const Texture& other) const override
+		{
+			return m_renderID == ((OpenGLCubeMapTexture&)other).m_renderID;
+		}
+	private:
+		unsigned int m_width, m_height;
 		unsigned int m_renderID;
 		GLenum m_InternalFormat, m_DataFormat;
 	};

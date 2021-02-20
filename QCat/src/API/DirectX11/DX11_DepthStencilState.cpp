@@ -83,16 +83,7 @@ namespace QCat
 		if (exValue != desc.stencilEnable)
 			changed = true;
 	}
-	void DX11DepthStencilState::SetStencilFunc(COMPARISON_FUNC func, int ref, int mask)
-	{
-		COMPARISON_FUNC exFunc = desc.stencilFunc;
-		int exRef = desc.referenceValue;
-		desc.stencilFunc = func;
-		desc.referenceValue = ref;
-		if (exFunc != desc.stencilFunc && exRef != desc.referenceValue)
-			changed = true;
 
-	}
 	void DX11DepthStencilState::SetStencilWriteMask(int mask)
 	{
 		int exMask = desc.stencilWriteMask;
@@ -107,25 +98,60 @@ namespace QCat
 		if (exMask != desc.stencilReadMask)
 			changed = true;
 	}
-	void DX11DepthStencilState::SetStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	void DX11DepthStencilState::SetFrontStencilFunc(COMPARISON_FUNC func, int ref, int mask)
 	{
-		STENCIL_OP exOp1 = desc.stencilFail;
-		STENCIL_OP exOp2 = desc.depthFail;
-		STENCIL_OP exOp3 = desc.bothPass;
-
-		desc.stencilFail = stencilFail;
-		desc.depthFail = depthFail;
-		desc.bothPass = bothPass;
-
-		if (exOp1 != desc.stencilFail && exOp2 != desc.depthFail && exOp3 != desc.bothPass)
+		COMPARISON_FUNC exFunc = desc.FrontstencilFunc;
+		int exRef = desc.referenceValue;
+		desc.FrontstencilFunc = func;
+		desc.referenceValue = ref;
+		if (exFunc != desc.FrontstencilFunc && exRef != desc.referenceValue)
 			changed = true;
 
+	}
+	void DX11DepthStencilState::SetFrontStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		STENCIL_OP exOp1 = desc.FrontstencilFail;
+		STENCIL_OP exOp2 = desc.FrontdepthFail;
+		STENCIL_OP exOp3 = desc.FrontbothPass;
+
+		desc.FrontstencilFail = stencilFail;
+		desc.FrontdepthFail = depthFail;
+		desc.FrontbothPass = bothPass;
+
+		if (exOp1 != desc.FrontstencilFail && exOp2 != desc.FrontdepthFail && exOp3 != desc.FrontbothPass)
+			changed = true;
+
+	}
+	void DX11DepthStencilState::SetBackStencilFunc(COMPARISON_FUNC func, int ref, int mask)
+	{
+		COMPARISON_FUNC exFunc = desc.BackstencilFunc;
+		int exRef = desc.referenceValue;
+		desc.BackstencilFunc = func;
+		desc.referenceValue = ref;
+		if (exFunc != desc.BackstencilFunc && exRef != desc.referenceValue)
+			changed = true;
+	}
+	void DX11DepthStencilState::SetBackStencilOperator(STENCIL_OP stencilFail, STENCIL_OP depthFail, STENCIL_OP bothPass)
+	{
+		STENCIL_OP exOp1 = desc.BackstencilFail;
+		STENCIL_OP exOp2 = desc.BackdepthFail;
+		STENCIL_OP exOp3 = desc.BackbothPass;
+
+		desc.BackstencilFail = stencilFail;
+		desc.BackdepthFail = depthFail;
+		desc.BackbothPass = bothPass;
+
+		if (exOp1 != desc.BackstencilFail && exOp2 != desc.BackdepthFail && exOp3 != desc.BackbothPass)
+			changed = true;
 	}
 	void DX11DepthStencilState::Bind()
 	{
 		if (changed)
+		{
 			Initialize();
-
+			changed = false;
+		}
+			
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 		gfx.GetContext()->OMSetDepthStencilState(pDSState.Get(), desc.referenceValue);
 	}
@@ -147,17 +173,17 @@ namespace QCat
 		dsDesc.StencilWriteMask = desc.stencilWriteMask;
 
 		// Stencil operations if pixel is front-facing
-		dsDesc.FrontFace.StencilFailOp = Utils::StencilOpToDx(desc.stencilFail);
-		dsDesc.FrontFace.StencilDepthFailOp = Utils::StencilOpToDx(desc.depthFail);
-		dsDesc.FrontFace.StencilPassOp = Utils::StencilOpToDx(desc.bothPass);
-		dsDesc.FrontFace.StencilFunc = Utils::ComparisonFuncToDx(desc.stencilFunc);
+		dsDesc.FrontFace.StencilFailOp = Utils::StencilOpToDx(desc.FrontstencilFail);
+		dsDesc.FrontFace.StencilDepthFailOp = Utils::StencilOpToDx(desc.FrontdepthFail);
+		dsDesc.FrontFace.StencilPassOp = Utils::StencilOpToDx(desc.FrontbothPass);
+		dsDesc.FrontFace.StencilFunc = Utils::ComparisonFuncToDx(desc.FrontstencilFunc);
 
 		// Stencil operations if pixel is back-facing
 		// later
-		dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		dsDesc.BackFace.StencilFailOp = Utils::StencilOpToDx(desc.BackstencilFail);
+		dsDesc.BackFace.StencilDepthFailOp = Utils::StencilOpToDx(desc.BackdepthFail);
+		dsDesc.BackFace.StencilPassOp = Utils::StencilOpToDx(desc.BackbothPass);
+		dsDesc.BackFace.StencilFunc = Utils::ComparisonFuncToDx(desc.BackstencilFunc);
 
 		// Create depth stencil state
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
