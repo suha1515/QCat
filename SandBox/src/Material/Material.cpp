@@ -23,7 +23,7 @@ namespace QCat
 		}
 	}
 
-	void Material::SetTexture(const Ref<Texture2D>& texture, MaterialType type)
+	void Material::SetTexture(const Ref<Texture>& texture, MaterialType type)
 	{
 		switch (type)
 		{
@@ -44,7 +44,7 @@ namespace QCat
 		}
 	}
 
-	Ref<Texture2D> Material::GetTexture(MaterialType type)
+	Ref<Texture> Material::GetTexture(MaterialType type)
 	{
 		switch (type)
 		{

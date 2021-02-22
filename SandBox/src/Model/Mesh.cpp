@@ -14,21 +14,6 @@ namespace QCat
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
 
-		//unsigned int diffuseNr = 1;
-		//unsigned int specularNr = 1;
-		/*for (uint32_t i = 0; i < m_Textures.size(); ++i)
-		{
-			std::string number;
-			std::string name = m_Textures[i].type;
-			if (name == "texture_diffuse")
-				number = std::to_string(diffuseNr++);
-			else if (name == "texture_specular")
-				number = std::to_string(specularNr++);
-
-			shader->SetInt("material." + name + number, i,ShaderType::PS);
-			m_Textures[i].texture->Bind(i);
-		}*/
-		material.Bind();
 		m_VertexArray->Bind();
 		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);

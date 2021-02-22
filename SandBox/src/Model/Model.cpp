@@ -12,6 +12,7 @@ namespace QCat
 		shader->SetMat4("u_Transform", transform, ShaderType::VS);
 		shader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 		shader->UpdateBuffer();
+		material.Bind();
 		for (uint32_t i = 0; i < meshes.size(); ++i)
 			meshes[i].Draw(shader, transform);
 	}
@@ -144,6 +145,7 @@ namespace QCat
 				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
 				mat.SetTexture(normalTexture, Material::MaterialType::NormalMap);
 			}
+			this->material = mat;
 		}
 		Ref<Shader> shader;
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)

@@ -185,7 +185,7 @@ namespace QCat
 		// InputLayout
 		vertexBuffer->SetLayout(BufferLayout::Create(
 			{ { ShaderDataType::Float3, "a_Position"},
-			  { ShaderDataType::Float3, "a_Normal"   },
+			  { ShaderDataType::Float3, "a_Normal"  },
 			  { ShaderDataType::Float2, "a_TexCoord"},
 			  { ShaderDataType::Float3, "a_Tangent"},
 			  { ShaderDataType::Float3, "a_BiTangent"}
@@ -232,21 +232,7 @@ namespace QCat
 	}
 	void Sphere::ImguiRender(const char* name)
 	{
-		ImGui::Begin(name);
-
-		ImGui::DragFloat3("Position", glm::value_ptr(translation), 0.1f);
-		ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f);
-		ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.1f);
-
-		ImGui::Text("Material");
-
-		ImGui::ColorEdit3("ambient", glm::value_ptr(material.ambient));
-		ImGui::ColorEdit3("diffuse", glm::value_ptr(material.diffuse));
-		ImGui::ColorEdit3("specular", glm::value_ptr(material.specular));
-		ImGui::DragFloat("shininess", &material.shininess, 0.03f, 0.1f);
-
-
-		ImGui::End();
+	
 	}
 
 

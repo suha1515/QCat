@@ -41,6 +41,7 @@ namespace QCat
 			m_FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/FlatShader.glsl");
 			m_ScreenShader = ShaderLibrary::Load("Asset/shaders/glsl/SingleQuad.glsl");
 			m_SkyBoxShader = ShaderLibrary::Load("Asset/shaders/glsl/SkyBox.glsl");
+			m_ReflectShader = ShaderLibrary::Load("Asset/shaders/glsl/Reflective.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
@@ -48,6 +49,7 @@ namespace QCat
 			m_FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
 			m_ScreenShader = ShaderLibrary::Load("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 			m_SkyBoxShader = ShaderLibrary::Load("SkyBoxShader","Asset/shaders/hlsl/SkyBox_VS.hlsl","Asset/shaders/hlsl/SkyBox_PS.hlsl");
+			m_ReflectShader = ShaderLibrary::Load("ReflectShader", "Asset/shaders/hlsl/Reflect_VS.hlsl", "Asset/shaders/hlsl/Reflect_PS.hlsl");
 
 		}
 
@@ -59,6 +61,7 @@ namespace QCat
 		brick	  = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		Box	      = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		BasicMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		ReflectMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		// wood Texture
 		Ref<Texture2D> woodTexture = TextureLibrary::Load("Asset/textures/floor.png");
 		// grass Texture
@@ -73,7 +76,17 @@ namespace QCat
 		Ref<Texture2D> boxDiffuse = TextureLibrary::Load("Asset/textures/container2.png");
 		// Box specular
 		Ref<Texture2D> boxSpecular = TextureLibrary::Load("Asset/textures/container2_specular.png");
-
+		// Sky Box
+		std::vector<std::string> imagePath =
+		{
+			"Asset/textures/NissiBeach/right.jpg",
+			"Asset/textures/NissiBeach/left.jpg",
+			"Asset/textures/NissiBeach/top.jpg",
+			"Asset/textures/NissiBeach/bottom.jpg",
+			"Asset/textures/NissiBeach/front.jpg",
+			"Asset/textures/NissiBeach/back.jpg",
+		};
+		m_cubeTexture = TextureCube::Create(imagePath);
 		// quad Texture
 		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
 		grass.SetTexture(grassTexture, Material::MaterialType::Diffuse);
@@ -82,10 +95,11 @@ namespace QCat
 		brick.SetTexture(brickNormalMap, Material::MaterialType::NormalMap);
 		Box.SetTexture(boxDiffuse, Material::MaterialType::Diffuse);
 		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
-
+		ReflectMaterial.SetTexture(m_cubeTexture, Material::MaterialType::Diffuse);
 		// model Load
-		//bagPack = Model::Create("Asset/model/backpack/backpack.obj");
-		//bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+		bagPack = Model::Create("Asset/model/backpack/backpack.obj");
+		bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+		temMat = bagPack->GetMaterial();
 
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0, ShaderType::PS);
@@ -98,21 +112,17 @@ namespace QCat
 		m_SkyBoxShader->Bind();
 		m_SkyBoxShader->SetInt("skybox", 0, ShaderType::PS);
 
+		m_ReflectShader->Bind();
+		m_ReflectShader->SetInt("skybox", 0, ShaderType::PS);
+
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
 		sphere = CreateRef<Sphere>(glm::vec3(-0.1f, -2.6f, -1.0f), m_FlatShader, 0.1f);
+		LightPosition = sphere->GetTranslation();
 		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
 		cube->SetScale({ 0.5f,0.5f,0.5f });
 
-		std::vector<std::string> imagePath =
-		{
-			"Asset/textures/skybox/right.jpg",
-			"Asset/textures/skybox/left.jpg",
-			"Asset/textures/skybox/top.jpg",
-			"Asset/textures/skybox/bottom.jpg",
-			"Asset/textures/skybox/front.jpg",
-			"Asset/textures/skybox/back.jpg",
-		};
+		
 		cubeMap = CreateRef<CubeMap>(imagePath,m_SkyBoxShader);
 
 		floor = glm::vec3(0.0f, -3.0f, 0.0f);
@@ -131,6 +141,7 @@ namespace QCat
 		window3 = glm::vec3(0.5f, -2.75f, -0.1f);
 
 		backpackPos = glm::vec3(2.0f, -2.0f, 0.0f);
+		ReflectObjPos = glm::vec3(0.5f, -2.0f, -0.5f);
 
 		FrameBufferSpecification spec;
 		spec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::Depth };
@@ -222,8 +233,8 @@ namespace QCat
 			m_LightShader->SetBool("gamma", gamma, ShaderType::PS);
 
 			// Point Light 1
-			m_LightShader->SetFloat3("pointLight.position", sphere->GetTranslation(), ShaderType::PS);
-			m_LightShader->SetFloat3("lightPosition", sphere->GetTranslation(), ShaderType::VS);
+			m_LightShader->SetFloat3("pointLight.position", LightPosition, ShaderType::PS);
+			m_LightShader->SetFloat3("lightPosition", LightPosition, ShaderType::VS);
 			m_LightShader->SetFloat3("pointLight.ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f, ShaderType::PS);
 			m_LightShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
 			m_LightShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
@@ -282,7 +293,7 @@ namespace QCat
 			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
 			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
 			RenderCommand::SetStencilWriteMask(0x00);
-			RenderCommand::SetDepthTest(false);
+			//RenderCommand::SetDepthTest(false);
 
 			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),ShaderType::PS);
 			cube->SetMaterial(BasicMaterial);
@@ -291,15 +302,33 @@ namespace QCat
 			cube->Draw(m_FlatShader);
 			cube->SetTranslation(cube2);
 			cube->Draw(m_FlatShader);
-			RenderCommand::SetDepthTest(true);
+			//RenderCommand::SetDepthTest(true);
 			RenderCommand::SetStencilWriteMask(0xFF);
 			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
 			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
 			RenderCommand::SetStencilTest(false);
 			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
+			sphere->SetTranslation(LightPosition);
+			sphere->SetMaterial(BasicMaterial);
+			sphere->SetScale({ 1.0f,1.0f,1.0f });
 			sphere->Draw(m_FlatShader);
 
 			m_FlatShader->UnBind();
+
+			//Reflect
+			m_ReflectShader->Bind();
+			m_ReflectShader->SetMat4("u_ViewProjection", camProj* viewMatrix, ShaderType::VS);
+			m_ReflectShader->SetFloat3("viewPosition", tc, ShaderType::PS);
+			sphere->SetTranslation(ReflectObjPos);
+			sphere->SetScale({ 2.0f,2.0f,2.0f });
+			sphere->SetMaterial(ReflectMaterial);
+			sphere->Draw(m_ReflectShader);
+			bagPack->SetTranslation(backpackPos);
+			bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
+			bagPack->GetMaterial() = ReflectMaterial;
+			bagPack->Draw(m_ReflectShader);
+			m_ReflectShader->UnBind();
+
 			// last drawing for ealry depth test skybox
 			m_SkyBoxShader->Bind();
 			glm::mat4 view = glm::mat4(glm::mat3(viewMatrix));
@@ -356,6 +385,8 @@ namespace QCat
 		ImGui::Checkbox("gamaa Corretion", &gamma);
 		ImGui::DragFloat3("floor", glm::value_ptr(floor), 0.1f);
 		ImGui::DragFloat3("backpack", glm::value_ptr(backpackPos), 0.1f);
+		ImGui::DragFloat3("obj", glm::value_ptr(ReflectObjPos), 0.1f);
+		ImGui::DragFloat3("light", glm::value_ptr(LightPosition), 0.1f);
 		ImGui::End();
 
 		sphere->ImguiRender("Spehere 1");

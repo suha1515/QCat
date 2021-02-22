@@ -51,6 +51,7 @@ namespace QCat
 		Ref<Shader> m_FlatShader;
 		Ref<Shader> m_ScreenShader;
 		Ref<Shader> m_SkyBoxShader;
+		Ref<Shader> m_ReflectShader;
 
 		Ref<FrameBuffer> framebuffer;
 
@@ -87,7 +88,10 @@ namespace QCat
 		glm::vec3 window2;
 		glm::vec3 window3;
 
+		glm::vec3 LightPosition;
+
 		glm::vec3 backpackPos;
+		glm::vec3 ReflectObjPos;
 
 		Material woodFloor;
 		Material grass;
@@ -95,11 +99,14 @@ namespace QCat
 		Material brick;
 		Material Box;
 		Material BasicMaterial;
+		Material ReflectMaterial;
 
 		glm::mat4 viewMatrix;
 
 		Ref<VertexArray> m_quad;
 		Ref<Texture2D> screenTexture;
+		Ref<TextureCube> m_cubeTexture;
+		Material temMat;
 
 		//Model
 		Ref<Model> bagPack;

@@ -29,28 +29,33 @@ namespace QCat
 			m_WhiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
 		}
 		void SetTexture(const std::string& path,MaterialType type);
-		void SetTexture(const Ref<Texture2D>& texture, MaterialType type);
+		void SetTexture(const Ref<Texture>& texture, MaterialType type);
 
 		void SetDiffuse(const glm::vec3& color) { diffuse = color; }
 		void SetAmbient(const glm::vec3& color) { ambient = color; }
 		void SetSpecular(const glm::vec3& color) { specular = color; }
 		void SetShininess(const float shininess) { this->shininess = shininess; }
 
-		Ref<Texture2D> GetTexture(MaterialType type);
+		Ref<Texture> GetTexture(MaterialType type);
 
 		bool IsThereTexture(MaterialType type);
 		void Bind();
+	public:
+		//Material& operator== (const Material& mat)
+		//{
+
+		//}
 	public:
 		glm::vec3 ambient;
 		glm::vec3 diffuse;
 		glm::vec3 specular;
 		float shininess;
 
-		Ref<Texture2D> m_DiffuseTexture;
-		Ref<Texture2D> m_SpecularTexture;
-		Ref<Texture2D> m_NormalMapTexture;
-		Ref<Texture2D> m_EmissionTexture;
-		Ref<Texture2D> m_WhiteTexture;
+		Ref<Texture> m_DiffuseTexture;
+		Ref<Texture> m_SpecularTexture;
+		Ref<Texture> m_NormalMapTexture;
+		Ref<Texture> m_EmissionTexture;
+		Ref<Texture> m_WhiteTexture;
 
 	};
 		

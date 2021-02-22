@@ -16,6 +16,8 @@ namespace QCat
 
 		void Draw(const Ref<Shader>& shader);
 
+		void SetMaterial(const Material& mat) { this->material = mat; }
+
 		glm::vec3 GetTranslation() { return translation; }
 	public:
 		void ImguiRender(const char* name);

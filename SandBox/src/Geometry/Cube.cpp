@@ -215,18 +215,6 @@ namespace QCat
 	}
 	void Cube::ImguiRender(const char* name)
 	{
-		ImGui::Begin(name);
 		
-		ImGui::DragFloat3("Position", glm::value_ptr(translation), 0.1f);
-		ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f);
-		ImGui::DragFloat3("Scale", glm::value_ptr(scale), 0.1f);
-
-		ImGui::Text("Material");
-
-		ImGui::ColorEdit3("specular", glm::value_ptr(material.specular));
-		ImGui::DragFloat("shininess", &material.shininess, 0.03f, 0.1f);
-		
-
-		ImGui::End();
 	}
 }
