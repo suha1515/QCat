@@ -30,14 +30,7 @@ namespace QCat
 		{
 			s_renderAPI->DrawIndexed(vertexArray, count);
 		}
-		inline static void SetWireFrameMode()
-		{
-			s_renderAPI->SetWireFrameMode();
-		}
-		inline static void SetFillMode()
-		{
-			s_renderAPI->SetFillMode();
-		}
+		// Depth Stencil State Function
 		inline static void SetDepthTest(bool enable)
 		{
 			s_renderAPI->SetDepthTest(enable);
@@ -74,6 +67,47 @@ namespace QCat
 		{
 			s_renderAPI->SetStencilWriteMask(value);
 		
+		}
+		// Rasterize State Function
+		inline static void SetFillMode(FillMode mode)
+		{
+			s_renderAPI->SetFillMode(mode);
+		}
+		inline static void SetCullMode(CullMode mode)
+		{
+			s_renderAPI->SetCullMode(mode);
+		}
+		inline static void SetClockWise(bool enable)
+		{
+			s_renderAPI->SetClockWise(enable);
+		}
+		inline static void SetDepthBias(int value)
+		{
+			s_renderAPI->SetDepthBias(value);
+		}
+		inline static void SetDepthBiasClamp(float value)
+		{
+			s_renderAPI->SetDepthBiasClamp(value);
+		}
+		inline static void SetSlopeScaledDepthBias(float value)
+		{
+			s_renderAPI->SetSlopeScaledDepthBias(value);
+		}
+		inline static void SetDepthClip(bool enable)
+		{
+			s_renderAPI->SetDepthClip(enable);
+		}
+		inline static void SetSissor(bool enable)
+		{
+			s_renderAPI->SetSissor(enable);
+		}
+		inline static void SetMultiSample(bool enable)
+		{
+			s_renderAPI->SetMultiSample(enable);
+		}
+		inline static void SetAntialiasedLine(bool enable)
+		{
+			s_renderAPI->SetAntialiasedLine(enable);
 		}
 		//Blend
 		inline static void SetBlend(bool enable)

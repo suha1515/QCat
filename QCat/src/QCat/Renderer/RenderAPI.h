@@ -1,6 +1,7 @@
 #pragma once
 #include "VertexArray.h"
 #include "DepthStencil.h"
+#include "Rasterizer.h"
 #include "Blend.h"
 
 namespace QCat
@@ -21,9 +22,8 @@ namespace QCat
 		virtual void SetClearColor(const glm::vec4& color)=0;
 		virtual void Clear() = 0;
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0)=0;
-		virtual void SetWireFrameMode() = 0;
-		virtual void SetFillMode() = 0;
 
+		// Depth Stencil Function
 		virtual void SetDepthTest(bool enable)=0;
 		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) = 0;
 		virtual void SetDepthFunc(COMPARISON_FUNC func)=0;
@@ -34,6 +34,19 @@ namespace QCat
 		virtual void SetBackStencilFunc(COMPARISON_FUNC func, int value) = 0;
 		virtual void SetStencilWriteMask(int value) = 0;
 
+		// Rasterize State Function
+		virtual void SetFillMode(FillMode mode) = 0;
+		virtual void SetCullMode(CullMode mode) = 0;
+		virtual void SetClockWise(bool enable) = 0;
+		virtual void SetDepthBias(int value) = 0;
+		virtual void SetDepthBiasClamp(float value) = 0;
+		virtual void SetSlopeScaledDepthBias(float value) = 0;
+		virtual void SetDepthClip(bool enable) = 0;
+		virtual void SetSissor(bool enable) = 0;
+		virtual void SetMultiSample(bool enable) = 0;
+		virtual void SetAntialiasedLine(bool enable) = 0;
+
+		// Blend State Function
 		virtual void SetBlend( bool enable) = 0;
 		virtual void SetBlend(uint32_t index, bool enable) = 0;
 		virtual void SetBlendFunc( BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) = 0;

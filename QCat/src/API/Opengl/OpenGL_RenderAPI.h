@@ -14,8 +14,6 @@ namespace QCat
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount=0) override;
-		virtual void SetWireFrameMode() override;
-		virtual void SetFillMode()override;
 
 		// depth-stencil option
 		virtual void SetDepthTest(bool enable)override;
@@ -28,6 +26,18 @@ namespace QCat
 		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) override;
 		virtual void SetStencilWriteMask(int value) override;
 
+		// Rasterize State Function
+		virtual void SetFillMode(FillMode mode)override;
+		virtual void SetCullMode(CullMode mode)override;
+		virtual void SetClockWise(bool enable) override;
+		virtual void SetDepthBias(int value) override;
+		virtual void SetDepthBiasClamp(float value) override;
+		virtual void SetSlopeScaledDepthBias(float value) override;
+		virtual void SetDepthClip(bool enable) override;
+		virtual void SetSissor(bool enable) override;
+		virtual void SetMultiSample(bool enable) override;
+		virtual void SetAntialiasedLine(bool enable) override;
+
 		//blend option
 		virtual void SetBlend(bool enable) override;
 		virtual void SetBlend(uint32_t index, bool enable) override;
@@ -38,5 +48,6 @@ namespace QCat
 	private:
 		Ref<DepthStencil> m_DepthStencilState;
 		Ref<Blender> m_BlenderState;
+		Ref<Rasterizer> m_RasterizeState;
 	};
 }

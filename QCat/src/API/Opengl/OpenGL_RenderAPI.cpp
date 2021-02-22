@@ -13,9 +13,6 @@ namespace QCat
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
 
-		glFrontFace(GL_CW);
-		glDepthFunc(GL_LEQUAL);
-		
 		DepthStencil::DepthStencilDesc desc;
 		{
 			desc.depthEnable = true;
@@ -42,8 +39,16 @@ namespace QCat
 		m_DepthStencilState->EnableStencil(false);
 		m_DepthStencilState->SetFrontStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 		m_DepthStencilState->SetBackStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
+		SetDepthFunc(COMPARISON_FUNC::EQUAL);
+
 		m_BlenderState = Blender::Create();
 		m_BlenderState->SetIndependentBlend(false);
+
+		Rasterizer::Rasterizer_Desc Rastdesc;
+		m_RasterizeState = Rasterizer::Create(Rastdesc);
+
+		SetCullMode(CullMode::Back);
+		SetClockWise(true);
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -67,14 +72,7 @@ namespace QCat
 		glDrawElements(GL_TRIANGLES, count,GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	void OpenGLRenderAPI::SetWireFrameMode()
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	void OpenGLRenderAPI::SetFillMode()
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
+	
 	void OpenGLRenderAPI::SetDepthTest(bool enable)
 	{
 		m_DepthStencilState->EnableDepth(enable);
@@ -110,6 +108,46 @@ namespace QCat
 	void OpenGLRenderAPI::SetStencilWriteMask(int value)
 	{
 		m_DepthStencilState->SetStencilWriteMask(value);
+	}
+	void OpenGLRenderAPI::SetFillMode(FillMode mode)
+	{
+		m_RasterizeState->SetFillMode(mode);
+	}
+	void OpenGLRenderAPI::SetCullMode(CullMode mode)
+	{
+		m_RasterizeState->SetCullMode(mode);
+	}
+	void OpenGLRenderAPI::SetClockWise(bool enable)
+	{
+		m_RasterizeState->SetClockWise(enable);
+	}
+	void OpenGLRenderAPI::SetDepthBias(int value)
+	{
+		m_RasterizeState->SetDepthBias(value);
+	}
+	void OpenGLRenderAPI::SetDepthBiasClamp(float value)
+	{
+		m_RasterizeState->SetDepthBiasClamp(value);
+	}
+	void OpenGLRenderAPI::SetSlopeScaledDepthBias(float value)
+	{
+		m_RasterizeState->SetSlopeScaledDepthBias(value);
+	}
+	void OpenGLRenderAPI::SetDepthClip(bool enable)
+	{
+		m_RasterizeState->SetDepthClip(enable);
+	}
+	void OpenGLRenderAPI::SetSissor(bool enable)
+	{
+		m_RasterizeState->SetSissor(enable);
+	}
+	void OpenGLRenderAPI::SetMultiSample(bool enable)
+	{
+		m_RasterizeState->SetMultiSample(enable);
+	}
+	void OpenGLRenderAPI::SetAntialiasedLine(bool enable)
+	{
+		m_RasterizeState->SetAntialiasedLine(enable);
 	}
 	void OpenGLRenderAPI::SetBlend(bool enable)
 	{

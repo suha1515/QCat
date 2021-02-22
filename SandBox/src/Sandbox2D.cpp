@@ -79,12 +79,12 @@ namespace QCat
 		// Sky Box
 		std::vector<std::string> imagePath =
 		{
-			"Asset/textures/NissiBeach/right.jpg",
-			"Asset/textures/NissiBeach/left.jpg",
-			"Asset/textures/NissiBeach/top.jpg",
-			"Asset/textures/NissiBeach/bottom.jpg",
-			"Asset/textures/NissiBeach/front.jpg",
-			"Asset/textures/NissiBeach/back.jpg",
+			"Asset/textures/skybox/right.jpg",
+			"Asset/textures/skybox/left.jpg",
+			"Asset/textures/skybox/top.jpg",
+			"Asset/textures/skybox/bottom.jpg",
+			"Asset/textures/skybox/front.jpg",
+			"Asset/textures/skybox/back.jpg",
 		};
 		m_cubeTexture = TextureCube::Create(imagePath);
 		// quad Texture
@@ -97,9 +97,9 @@ namespace QCat
 		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
 		ReflectMaterial.SetTexture(m_cubeTexture, Material::MaterialType::Diffuse);
 		// model Load
-		bagPack = Model::Create("Asset/model/backpack/backpack.obj");
-		bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
-		temMat = bagPack->GetMaterial();
+		//bagPack = Model::Create("Asset/model/backpack/backpack.obj");
+		//bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+		//temMat = bagPack->GetMaterial();
 
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0, ShaderType::PS);
@@ -277,7 +277,7 @@ namespace QCat
 
 			RenderCommand::SetStencilTest(true);
 			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
-			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
+			RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 			RenderCommand::SetStencilWriteMask(0xFF);
 			cube->SetMaterial(Box);
 			cube->SetScale({ 0.5f, 0.5f, 0.5f });
@@ -288,31 +288,14 @@ namespace QCat
 			cube->Draw(m_LightShader);
 			m_LightShader->UnBind();
 
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
 			m_FlatShader->Bind();
 			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);	
-			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
-			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
-			RenderCommand::SetStencilWriteMask(0x00);
-			//RenderCommand::SetDepthTest(false);
-
-			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),ShaderType::PS);
-			cube->SetMaterial(BasicMaterial);
-			cube->SetScale({ 0.6f, 0.6f, 0.6f });
-			cube->SetTranslation(cube1);
-			cube->Draw(m_FlatShader);
-			cube->SetTranslation(cube2);
-			cube->Draw(m_FlatShader);
-			//RenderCommand::SetDepthTest(true);
-			RenderCommand::SetStencilWriteMask(0xFF);
-			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
-			RenderCommand::SetBackStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
-			RenderCommand::SetStencilTest(false);
 			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
 			sphere->SetTranslation(LightPosition);
 			sphere->SetMaterial(BasicMaterial);
 			sphere->SetScale({ 1.0f,1.0f,1.0f });
 			sphere->Draw(m_FlatShader);
-
 			m_FlatShader->UnBind();
 
 			//Reflect
@@ -323,13 +306,15 @@ namespace QCat
 			sphere->SetScale({ 2.0f,2.0f,2.0f });
 			sphere->SetMaterial(ReflectMaterial);
 			sphere->Draw(m_ReflectShader);
-			bagPack->SetTranslation(backpackPos);
-			bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-			bagPack->GetMaterial() = ReflectMaterial;
-			bagPack->Draw(m_ReflectShader);
+			//bagPack->SetTranslation(backpackPos);
+			//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
+			//bagPack->GetMaterial() = ReflectMaterial;
+			//bagPack->Draw(m_ReflectShader);
 			m_ReflectShader->UnBind();
 
 			// last drawing for ealry depth test skybox
+			RenderCommand::SetDepthFunc(COMPARISON_FUNC::LESS_EQUAL);
+			RenderCommand::SetCullMode(CullMode::Front);
 			m_SkyBoxShader->Bind();
 			glm::mat4 view = glm::mat4(glm::mat3(viewMatrix));
 			m_SkyBoxShader->SetMat4("u_ViewProjection", camProj* view, ShaderType::VS);
@@ -337,7 +322,25 @@ namespace QCat
 			cubeMap->Draw(m_SkyBoxShader);
 			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ALL);
 			m_SkyBoxShader->UnBind();
+			RenderCommand::SetCullMode(CullMode::Back);
 
+			m_FlatShader->Bind();
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
+			RenderCommand::SetStencilWriteMask(0x00);
+			RenderCommand::SetDepthTest(false);
+			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), ShaderType::PS);
+			cube->SetMaterial(BasicMaterial);
+			cube->SetScale({ 0.6f, 0.6f, 0.6f });
+			cube->SetTranslation(cube1);
+			cube->Draw(m_FlatShader);
+			cube->SetTranslation(cube2);
+			cube->Draw(m_FlatShader);
+			RenderCommand::SetDepthTest(true);
+			RenderCommand::SetStencilWriteMask(0xFF);
+			RenderCommand::SetStencilTest(false);
+			m_FlatShader->UnBind();
+
+			
 
 			framebuffer->UnBind();
 			RenderCommand::SetDefaultFrameBuffer();

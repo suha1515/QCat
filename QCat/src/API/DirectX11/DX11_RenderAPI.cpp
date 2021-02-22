@@ -31,31 +31,36 @@ namespace QCat
 
 		pgfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		DepthStencil::DepthStencilDesc desc;
+		DepthStencil::DepthStencilDesc DepthStencildesc;
 		{
-			desc.depthEnable = true;
-			desc.depthFunc = COMPARISON_FUNC::LESS_EQUAL;
-			desc.depthWriteMask =DEPTH_WRITE_MASK::MASK_ALL;
+			DepthStencildesc.depthEnable = true;
+			DepthStencildesc.depthFunc = COMPARISON_FUNC::LESS;
+			DepthStencildesc.depthWriteMask =DEPTH_WRITE_MASK::MASK_ALL;
 
-			desc.stencilEnable = false;
-			desc.stencilReadMask = 0xFF;
-			desc.stencilWriteMask = 0xFF;
-			desc.FrontstencilFunc = COMPARISON_FUNC::ALWAYS;
-			desc.FrontstencilFail = STENCIL_OP::KEEP;
-			desc.FrontdepthFail = STENCIL_OP::KEEP;
-			desc.FrontbothPass = STENCIL_OP::REPLACE;
+			DepthStencildesc.stencilEnable = false;
+			DepthStencildesc.stencilReadMask = 0xFF;
+			DepthStencildesc.stencilWriteMask = 0xFF;
 
-			desc.BackstencilFunc = COMPARISON_FUNC::ALWAYS;
-			desc.BackstencilFail = STENCIL_OP::KEEP;
-			desc.BackdepthFail = STENCIL_OP::KEEP;
-			desc.BackbothPass = STENCIL_OP::REPLACE;
-			desc.referenceValue = 1;
+			DepthStencildesc.FrontstencilFunc = COMPARISON_FUNC::ALWAYS;
+			DepthStencildesc.FrontstencilFail = STENCIL_OP::KEEP;
+			DepthStencildesc.FrontdepthFail = STENCIL_OP::KEEP;
+			DepthStencildesc.FrontbothPass = STENCIL_OP::KEEP;
+
+			DepthStencildesc.BackstencilFunc = COMPARISON_FUNC::ALWAYS;
+			DepthStencildesc.BackstencilFail = STENCIL_OP::KEEP;
+			DepthStencildesc.BackdepthFail = STENCIL_OP::KEEP;
+			DepthStencildesc.BackbothPass = STENCIL_OP::KEEP;
+			DepthStencildesc.referenceValue = 1;
 		}
-		m_DepthStencilState = DepthStencil::Create(desc);
+		m_DepthStencilState = DepthStencil::Create(DepthStencildesc);
 		m_DepthStencilState->Bind();
 
 		m_BlenderState = Blender::Create();
 		m_BlenderState->SetIndependentBlend(true);
+
+		Rasterizer::Rasterizer_Desc Rasterdesc;
+		m_RasterizState = Rasterizer::Create(Rasterdesc);
+		m_RasterizState->SetCullMode(CullMode::Back);
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -81,6 +86,7 @@ namespace QCat
 	{
 		m_BlenderState->Bind();
 		m_DepthStencilState->Bind();
+		m_RasterizState->Bind();
 		pgfx->GetContext()->DrawIndexed(indexCount,0u,0u);
 	}
 	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount)
@@ -89,26 +95,6 @@ namespace QCat
 		DrawIndexed(count);
 		//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullSRV =  nullptr;
 		//pgfx->GetContext()->PSSetShaderResources(0u, 1u, nullSRV.GetAddressOf());
-	}
-	void DX11RenderAPI::SetWireFrameMode()
-	{
-		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
-		rasterDesc.CullMode = D3D11_CULL_BACK;
-		rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-		rasterDesc.FrontCounterClockwise = false;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
-		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
-		pgfx->GetContext()->RSSetState(pRasterizer.Get());
-	}
-	void DX11RenderAPI::SetFillMode()
-	{
-		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
-		rasterDesc.CullMode = D3D11_CULL_BACK;
-		rasterDesc.FillMode = D3D11_FILL_SOLID;
-		rasterDesc.FrontCounterClockwise = false;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
-		pgfx->GetDevice()->CreateRasterizerState(&rasterDesc, &pRasterizer);
-		pgfx->GetContext()->RSSetState(pRasterizer.Get());
 	}
 	void DX11RenderAPI::SetDepthTest(bool enable)
 	{
@@ -145,6 +131,46 @@ namespace QCat
 	void DX11RenderAPI::SetStencilWriteMask(int value)
 	{
 		m_DepthStencilState->SetStencilWriteMask(value);
+	}
+	void DX11RenderAPI::SetFillMode(FillMode mode)
+	{
+		m_RasterizState->SetFillMode(mode);
+	}
+	void DX11RenderAPI::SetCullMode(CullMode mode)
+	{
+		m_RasterizState->SetCullMode(mode);
+	}
+	void DX11RenderAPI::SetClockWise(bool enable)
+	{
+		m_RasterizState->SetClockWise(enable);
+	}
+	void DX11RenderAPI::SetDepthBias(int value)
+	{
+		m_RasterizState->SetDepthBias(value);
+	}
+	void DX11RenderAPI::SetDepthBiasClamp(float value)
+	{
+		m_RasterizState->SetDepthBiasClamp(value);
+	}
+	void DX11RenderAPI::SetSlopeScaledDepthBias(float value)
+	{
+		m_RasterizState->SetSlopeScaledDepthBias(value);
+	}
+	void DX11RenderAPI::SetDepthClip(bool enable)
+	{
+		m_RasterizState->SetDepthClip(enable);
+	}
+	void DX11RenderAPI::SetSissor(bool enable)
+	{
+		m_RasterizState->SetSissor(enable);
+	}
+	void DX11RenderAPI::SetMultiSample(bool enable)
+	{
+		m_RasterizState->SetMultiSample(enable);
+	}
+	void DX11RenderAPI::SetAntialiasedLine(bool enable)
+	{
+		m_RasterizState->SetAntialiasedLine(enable);
 	}
 	void DX11RenderAPI::SetBlend(bool enable)
 	{

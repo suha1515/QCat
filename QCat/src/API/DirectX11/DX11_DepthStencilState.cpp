@@ -54,6 +54,7 @@ namespace QCat
 	DX11DepthStencilState::DX11DepthStencilState(DepthStencilDesc desc)
 	{
 		this->desc = desc;
+		Initialize();
 	}
 	void DX11DepthStencilState::EnableDepth(bool enable)
 	{
