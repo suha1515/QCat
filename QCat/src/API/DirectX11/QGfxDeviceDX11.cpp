@@ -264,7 +264,7 @@ namespace QCat {
 	{
 		Instance = nullptr;
 	}
-	void QGfxDeviceDX11::BeginFrame(glm::vec4& color)
+	void QGfxDeviceDX11::BeginFrame(glm::vec4 color)
 	{
 		SetRenderTarget();
 		Clear(color);

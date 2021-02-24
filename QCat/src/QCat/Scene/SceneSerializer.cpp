@@ -224,7 +224,7 @@ namespace QCat
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 					
-					auto& cameraProps = cameraComponent["Camera"];
+					auto cameraProps = cameraComponent["Camera"];
 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
 					cc.Camera.SetPerspectiveVerticalFov(cameraProps["PerspectiveFov"].as<float>());

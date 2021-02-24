@@ -119,5 +119,26 @@ namespace QCat
 		else
 			m_WhiteTexture->Bind(3);
 	}
+	void Material::Bind(int slot,MaterialType type)
+	{
+		switch (type)
+		{
+		case MaterialType::None: 
+			break;
+		case MaterialType::Diffuse:
+			m_DiffuseTexture->Bind(slot);
+			break;
+		case MaterialType::Specular:
+			m_SpecularTexture->Bind(slot);
+			break;
+		case MaterialType::NormalMap:
+			m_NormalMapTexture->Bind(slot);
+			break;
+		case MaterialType::Emission:
+			m_EmissionTexture->Bind(slot);
+			break;
+		}
+		
+	}
 }
 

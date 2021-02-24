@@ -19,6 +19,8 @@ namespace QCat
 		void SetMaterial(const Material& mat) { this->material = mat; }
 
 		glm::vec3 GetTranslation() { return translation; }
+
+		Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 	public:
 		void ImguiRender(const char* name);
 	private:

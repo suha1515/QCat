@@ -121,7 +121,7 @@ namespace QCat
 		const ElementLayout& operator[](const std::string& key) const;
 
 		//For Array
-		ElementLayout& ElementLayout::Array();
+		ElementLayout& Array();
 	public:
 		void Add(ShaderDataType addtype, std::string name, uint32_t offset=0,uint32_t size=0);
 		void Set(ShaderDataType addtype, uint32_t count);

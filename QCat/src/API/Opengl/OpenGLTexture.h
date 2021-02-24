@@ -23,6 +23,13 @@ namespace QCat
 		{
 			return m_renderID == ((OpenGLTexture2D&)other).m_renderID;
 		}
+		//virtual Texture& operator=(const Texture& other) override
+		//{
+		//	m_width = ((OpenGLTexture2D&)other).m_width;
+		//	m_height = ((OpenGLTexture2D&)other).m_height;
+		//	m_InternalFormat = ((OpenGLTexture2D&)other).m_InternalFormat;
+		//	m_DataFormat = ((OpenGLTexture2D&)other).m_DataFormat;
+		//}
 	private:
 		unsigned int m_width,m_height;
 		unsigned int m_renderID;

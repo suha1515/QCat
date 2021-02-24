@@ -96,7 +96,7 @@ namespace QCat
 		m_ViewPortHeight = height;
 
 		// Resize our non-FixedAsepectRatio Camera
-		auto& view = m_Registry.view<CameraComponent>();
+		auto view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);

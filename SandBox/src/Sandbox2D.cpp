@@ -42,6 +42,7 @@ namespace QCat
 			m_ScreenShader = ShaderLibrary::Load("Asset/shaders/glsl/SingleQuad.glsl");
 			m_SkyBoxShader = ShaderLibrary::Load("Asset/shaders/glsl/SkyBox.glsl");
 			m_ReflectShader = ShaderLibrary::Load("Asset/shaders/glsl/Reflective.glsl");
+			m_CubeMapShader = ShaderLibrary::Load("Asset/shaders/glsl/CubeMap.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
@@ -62,6 +63,7 @@ namespace QCat
 		Box	      = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		BasicMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		ReflectMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+		CubeMapMat = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		// wood Texture
 		Ref<Texture2D> woodTexture = TextureLibrary::Load("Asset/textures/floor.png");
 		// grass Texture
@@ -115,6 +117,9 @@ namespace QCat
 		m_ReflectShader->Bind();
 		m_ReflectShader->SetInt("skybox", 0, ShaderType::PS);
 
+		m_CubeMapShader->Bind();
+		m_CubeMapShader->SetInt("skybox", 0, ShaderType::PS);
+
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
 		sphere = CreateRef<Sphere>(glm::vec3(-0.1f, -2.6f, -1.0f), m_FlatShader, 0.1f);
@@ -135,19 +140,29 @@ namespace QCat
 
 		cube1 = glm::vec3(-1.6f, -2.6f, -0.6f);
 		cube2 = glm::vec3(-0.8f, -2.6f, 0.0f);
+		cube3 = glm::vec3(0.0f, -2.0f, -1.0f);
 		
 		window1 = glm::vec3(0.9f, -2.75f, -0.7f);
 		window2 = glm::vec3(0.3f, -2.75f, 0.3f);
 		window3 = glm::vec3(0.5f, -2.75f, -0.1f);
 
 		backpackPos = glm::vec3(2.0f, -2.0f, 0.0f);
+		backpackRot = glm::vec3(0.0f);
 		ReflectObjPos = glm::vec3(0.5f, -2.0f, -0.5f);
 
 		FrameBufferSpecification spec;
-		spec.Attachments = { FramebufferTextureFormat::RGBA8,FramebufferTextureFormat::Depth };
+		spec.Attachments = { {FramebufferTextureFormat::Texture2D,FramebufferTextureDataFormat::RGBA8},
+							 {FramebufferTextureFormat::Depth ,FramebufferTextureDataFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
 		framebuffer = FrameBuffer::Create(spec);
+
+		FrameBufferSpecification spec2;
+		spec2.Attachments = { {FramebufferTextureFormat::CubeMap,FramebufferTextureDataFormat::RGB8},
+							 {FramebufferTextureFormat::Depth ,FramebufferTextureDataFormat::DEPTH24STENCIL8} };
+		spec2.Width  = 1024;
+		spec2.Height = 1024;
+		CubeFarameBuffer = FrameBuffer::Create(spec2);
 
 		m_quad = VertexArray::Create();
 
@@ -211,120 +226,122 @@ namespace QCat
 		QCat::Renderer2D::ResetStats();
 		{
 			QCAT_PROFILE_SCOPE("Renderer Prep");
-			// new framebuffer
-			framebuffer->Bind();
+			
 			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 			QCat::RenderCommand::Clear();
 		}
 		{
+			
 			QCAT_PROFILE_SCOPE("Renderer Draw");
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetBlend(true);
 			RenderCommand::SetBlendFunc(BlendFunc::BLEND_SRC_ALPHA, BlendFunc::BLEND_INV_SRC_ALPHA, BlendFunc::BLEND_ONE, BlendFunc::BLEND_ZERO);
 			RenderCommand::SetBlendOp(BlendOp::BLEND_ADD, BlendOp::BLEND_ADD);
+			RenderCommand::SetCullMode(CullMode::Back);
 
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
-			m_LightShader->Bind();
-			m_LightShader->SetMat4("u_ViewProjection", camProj* viewMatrix,ShaderType::VS);
-			m_LightShader->SetFloat3("viewPosition", tc, ShaderType::VS);
-			m_LightShader->SetBool("blinn", blinn, ShaderType::PS);
-			m_LightShader->SetBool("gamma", gamma, ShaderType::PS);
+			CubeFarameBuffer->Bind();
+			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+			QCat::RenderCommand::Clear();
 
-			// Point Light 1
-			m_LightShader->SetFloat3("pointLight.position", LightPosition, ShaderType::PS);
-			m_LightShader->SetFloat3("lightPosition", LightPosition, ShaderType::VS);
-			m_LightShader->SetFloat3("pointLight.ambient", glm::vec3(1.0f, 0.6f, 0.0f)*0.1f, ShaderType::PS);
-			m_LightShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
-			m_LightShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+			glm::mat4 view;
+			glm::mat4 proj = glm::perspective(glm::radians(90.0f),1.0f,0.01f,25.0f);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(1);
+			QCat::RenderCommand::Clear();
 
-			m_LightShader->SetFloat("pointLight.constant", constant, ShaderType::PS);
-			m_LightShader->SetFloat("pointLight.Linear", Linear, ShaderType::PS);
-			m_LightShader->SetFloat("pointLight.quadratic", quadratic, ShaderType::PS);
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(0);
+			QCat::RenderCommand::Clear();
 
-			face->SetMaterial(woodFloor);
-			face->SetTranslation(floor);
-			face->SetScale({ 5.0f,5.0f,1.0f });
-			face->SetRotation({1.6f,0.0f,0.0f });
-			face->Draw(m_LightShader);
-			face->SetMaterial(brick);
-			face->SetTranslation(brickwall);
-			face->SetRotation(floorRot);
-			face->SetScale({ 5.0f,3.0f,1.0f });
-			face->Draw(m_LightShader);
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f,1.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(3);
+			QCat::RenderCommand::Clear();
 
-			face->SetMaterial(grass);
-			face->SetScale({ 0.5f,0.5f,0.5f });
-			face->SetRotation({0.0f,0.0f,0.0f });
-			face->SetTranslation(grass1);
-			face->Draw(m_LightShader);
-			face->SetTranslation(grass2);
-			face->Draw(m_LightShader);
-			face->SetTranslation(grass3);
-			face->Draw(m_LightShader);
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f,-1.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(2);
+			QCat::RenderCommand::Clear();
 
-			face->SetMaterial(window);
-			face->SetTranslation(window2);
-			face->Draw(m_LightShader);
-			face->SetTranslation(window3);
-			face->Draw(m_LightShader);
-			face->SetTranslation(window1);
-			face->Draw(m_LightShader);
-			//bagPack->SetTranslation(backpackPos);
-			//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-			//bagPack->Draw(m_LightShader);
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(5);
+			QCat::RenderCommand::Clear();
 
-			RenderCommand::SetStencilTest(true);
-			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
-			RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
-			RenderCommand::SetStencilWriteMask(0xFF);
-			cube->SetMaterial(Box);
-			cube->SetScale({ 0.5f, 0.5f, 0.5f });
-			cube->SetTranslation(cube1);
-			cube->Draw(m_LightShader);
-			cube->SetMaterial(brick);
-			cube->SetTranslation(cube2);
-			cube->Draw(m_LightShader);
-			m_LightShader->UnBind();
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(4);
+			QCat::RenderCommand::Clear();
 
-			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
-			m_FlatShader->Bind();
-			m_FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);	
-			m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
-			sphere->SetTranslation(LightPosition);
-			sphere->SetMaterial(BasicMaterial);
-			sphere->SetScale({ 1.0f,1.0f,1.0f });
-			sphere->Draw(m_FlatShader);
-			m_FlatShader->UnBind();
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+
+			CubeFarameBuffer->UnBind();
+
+			// new framebuffer
+			framebuffer->Bind();
+			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+			QCat::RenderCommand::Clear();
+
+
+			RenderLightObj(camProj, viewMatrix, tc);
+			RenderNonLightObj(camProj, viewMatrix, tc);
 
 			//Reflect
 			m_ReflectShader->Bind();
-			m_ReflectShader->SetMat4("u_ViewProjection", camProj* viewMatrix, ShaderType::VS);
+			m_ReflectShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
 			m_ReflectShader->SetFloat3("viewPosition", tc, ShaderType::PS);
-			sphere->SetTranslation(ReflectObjPos);
-			sphere->SetScale({ 2.0f,2.0f,2.0f });
-			sphere->SetMaterial(ReflectMaterial);
-			sphere->Draw(m_ReflectShader);
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), ReflectObjPos) * glm::scale(glm::mat4(1.0f), { 2.0f,2.0f,2.0f });
+			m_ReflectShader->SetMat4("u_Transform", transform, ShaderType::VS);
+			m_ReflectShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
+			CubeFarameBuffer->BindColorTexture(0, 0);
+			//ReflectMaterial.Bind(0, Material::MaterialType::Diffuse);
+			m_ReflectShader->UpdateBuffer();
+			sphere->GetVertexArray()->Bind();
+			RenderCommand::DrawIndexed(sphere->GetVertexArray());
 			//bagPack->SetTranslation(backpackPos);
+			//bagPack->SetRotation(backpackRot);
 			//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
 			//bagPack->GetMaterial() = ReflectMaterial;
 			//bagPack->Draw(m_ReflectShader);
 			m_ReflectShader->UnBind();
 
 			// last drawing for ealry depth test skybox
-			RenderCommand::SetDepthFunc(COMPARISON_FUNC::LESS_EQUAL);
-			RenderCommand::SetCullMode(CullMode::Front);
-			m_SkyBoxShader->Bind();
-			glm::mat4 view = glm::mat4(glm::mat3(viewMatrix));
-			m_SkyBoxShader->SetMat4("u_ViewProjection", camProj* view, ShaderType::VS);
-			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ZERO);
-			cubeMap->Draw(m_SkyBoxShader);
-			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ALL);
-			m_SkyBoxShader->UnBind();
-			RenderCommand::SetCullMode(CullMode::Back);
+			m_CubeMapShader->Bind();
+			m_CubeMapShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
+			cube->SetTranslation(cube3);
+			cube->SetScale({ 1.0f,1.0f,1.0f });
 
-			m_FlatShader->Bind();
+			RenderCommand::SetCullMode(CullMode::None);
+			transform = glm::translate(glm::mat4(1.0f), cube3) * glm::scale(glm::mat4(1.0f), { 1.0f,1.0f,1.0f });
+			m_CubeMapShader->SetMat4("u_Transform", transform, ShaderType::VS);
+			CubeFarameBuffer->BindColorTexture(0, 0);
+			//ReflectMaterial.Bind(0, Material::MaterialType::Diffuse);
+			m_CubeMapShader->UpdateBuffer();
+			cube->GetVertexArray()->Bind();
+			RenderCommand::DrawIndexed(cube->GetVertexArray());
+			
+	/*		cube->SetMaterial(ReflectMaterial);
+			cube->Draw(m_CubeMapShader);*/
+			m_CubeMapShader->UnBind();
+
+			RenderSkyObj(camProj, viewMatrix, tc);
+			/*m_FlatShader->Bind();
 			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::NOT_EQUAL, 1);
 			RenderCommand::SetStencilWriteMask(0x00);
 			RenderCommand::SetDepthTest(false);
@@ -338,9 +355,7 @@ namespace QCat
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetStencilWriteMask(0xFF);
 			RenderCommand::SetStencilTest(false);
-			m_FlatShader->UnBind();
-
-			
+			m_FlatShader->UnBind();*/
 
 			framebuffer->UnBind();
 			RenderCommand::SetDefaultFrameBuffer();
@@ -387,9 +402,10 @@ namespace QCat
 		ImGui::Checkbox("blinn", &blinn);
 		ImGui::Checkbox("gamaa Corretion", &gamma);
 		ImGui::DragFloat3("floor", glm::value_ptr(floor), 0.1f);
-		ImGui::DragFloat3("backpack", glm::value_ptr(backpackPos), 0.1f);
+		ImGui::DragFloat3("backpackRot", glm::value_ptr(backpackRot), 0.1f);
 		ImGui::DragFloat3("obj", glm::value_ptr(ReflectObjPos), 0.1f);
 		ImGui::DragFloat3("light", glm::value_ptr(LightPosition), 0.1f);
+
 		ImGui::End();
 
 		sphere->ImguiRender("Spehere 1");
@@ -481,6 +497,100 @@ namespace QCat
 		cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
 		cameraUp = glm::cross(cameraFront, cameraRight);
 		viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
+	}
+
+	void Sandbox2D::RenderSkyObj(const glm::mat4& proj,const glm::mat4& view,const glm::vec3& camPos)
+	{	
+			// last drawing for ealry depth test skybox
+			RenderCommand::SetDepthFunc(COMPARISON_FUNC::LESS_EQUAL);
+			RenderCommand::SetCullMode(CullMode::Front);
+			m_SkyBoxShader->Bind();
+			glm::mat4 view3x3 = glm::mat4(glm::mat3(view));
+			m_SkyBoxShader->SetMat4("u_ViewProjection", proj* view3x3, ShaderType::VS);
+			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ZERO);
+			cubeMap->Draw(m_SkyBoxShader);
+			RenderCommand::SetDepthWriteMask(DEPTH_WRITE_MASK::MASK_ALL);
+			m_SkyBoxShader->UnBind();
+			RenderCommand::SetCullMode(CullMode::Back);
+	}
+
+	void Sandbox2D::RenderLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos)
+	{
+		m_LightShader->Bind();
+		m_LightShader->SetMat4("u_ViewProjection", proj * view, ShaderType::VS);
+		m_LightShader->SetFloat3("viewPosition", camPos, ShaderType::VS);
+		m_LightShader->SetBool("blinn", blinn, ShaderType::PS);
+		m_LightShader->SetBool("gamma", gamma, ShaderType::PS);
+
+		// Point Light 1
+		m_LightShader->SetFloat3("pointLight.position", LightPosition, ShaderType::PS);
+		m_LightShader->SetFloat3("lightPosition", LightPosition, ShaderType::VS);
+		m_LightShader->SetFloat3("pointLight.ambient", glm::vec3(1.0f, 0.6f, 0.0f) * 0.1f, ShaderType::PS);
+		m_LightShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+		m_LightShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+
+		m_LightShader->SetFloat("pointLight.constant", constant, ShaderType::PS);
+		m_LightShader->SetFloat("pointLight.Linear", Linear, ShaderType::PS);
+		m_LightShader->SetFloat("pointLight.quadratic", quadratic, ShaderType::PS);
+
+		face->SetMaterial(woodFloor);
+		face->SetTranslation(floor);
+		face->SetScale({ 5.0f,5.0f,1.0f });
+		face->SetRotation({ 1.6f,0.0f,0.0f });
+		face->Draw(m_LightShader);
+		face->SetMaterial(brick);
+		face->SetTranslation(brickwall);
+		face->SetRotation(floorRot);
+		face->SetScale({ 5.0f,3.0f,1.0f });
+		face->Draw(m_LightShader);
+
+		face->SetMaterial(grass);
+		face->SetScale({ 0.5f,0.5f,0.5f });
+		face->SetRotation({ 0.0f,0.0f,0.0f });
+		face->SetTranslation(grass1);
+		face->Draw(m_LightShader);
+		face->SetTranslation(grass2);
+		face->Draw(m_LightShader);
+		face->SetTranslation(grass3);
+		face->Draw(m_LightShader);
+
+		face->SetMaterial(window);
+		face->SetTranslation(window2);
+		face->Draw(m_LightShader);
+		face->SetTranslation(window3);
+		face->Draw(m_LightShader);
+		face->SetTranslation(window1);
+		face->Draw(m_LightShader);
+		//bagPack->SetTranslation(backpackPos);
+		//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
+		//bagPack->Draw(m_LightShader);
+
+		/*RenderCommand::SetStencilTest(true);
+		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
+		RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
+		RenderCommand::SetStencilWriteMask(0xFF);*/
+		cube->SetMaterial(Box);
+		cube->SetScale({ 0.5f, 0.5f, 0.5f });
+		cube->SetTranslation(cube1);
+		cube->Draw(m_LightShader);
+		cube->SetMaterial(brick);
+		cube->SetTranslation(cube2);
+		cube->Draw(m_LightShader);
+		m_LightShader->UnBind();
+	}
+
+	void Sandbox2D::RenderNonLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos)
+	{
+		//RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 0);
+		m_FlatShader->Bind();
+		m_FlatShader->SetMat4("u_ViewProjection", proj * view, ShaderType::VS);
+		m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
+		sphere->SetTranslation(LightPosition);
+		sphere->SetMaterial(BasicMaterial);
+		sphere->SetScale({ 1.0f,1.0f,1.0f });
+		sphere->Draw(m_FlatShader);
+		m_FlatShader->UnBind();
+
 	}
 
 }

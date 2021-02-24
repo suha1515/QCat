@@ -40,6 +40,7 @@ namespace QCat
 
 		bool IsThereTexture(MaterialType type);
 		void Bind();
+		void Bind(int slot,MaterialType type);
 	public:
 		//Material& operator== (const Material& mat)
 		//{

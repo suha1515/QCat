@@ -57,7 +57,7 @@ namespace QCat
 		//void UpdateConstantBuffer(const std::string& uniformname, const::std::string& name, const void* pdata);
 
 		std::pair<Ref<DX11ConstantBuffer>,ElementRef> FindVariable(const std::string& name, ShaderType type);
-		template<typename T>
+	/*	template<typename T>
 		void UpdateConstantBuffer(const std::string& uniformname, const T& pdata, ShaderType type)
 		{
 			QCAT_PROFILE_FUNCTION();
@@ -72,7 +72,7 @@ namespace QCat
 			{
 				iter.second->UpdateElement(uniformname, pdata);
 			}
-		}
+		}*/
 		bool UpdateVertexConstantBuffer(const std::string& name,const void* data);
 		bool UpdatePixelConstantBuffer(const std::string& name,const void* data);
 		std::vector<char>& GetVerexData();
@@ -109,7 +109,7 @@ namespace QCat
 		~DX11VertexShader();
 	public:
 		Microsoft::WRL::ComPtr <ID3D11ShaderReflection>& GetReflector() { return pReflector; };
-		std::vector<char>& DX11VertexShader::GetData();
+		std::vector<char>& GetData();
 	public:
 	    virtual void Bind()const ;
 		virtual void UpdateBuffer() const;

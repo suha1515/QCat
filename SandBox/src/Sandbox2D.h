@@ -1,5 +1,4 @@
 #pragma once
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_FORCE_LEFT_HANDED
 #include "QCat.h"
 #include "Geometry/Cube.h"
@@ -27,6 +26,10 @@ namespace QCat
 		bool OnWindowResize(WindowResizeEvent& e);
 
 		void CameraUpdate(QCat::Timestep ts);
+
+		void RenderSkyObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos);
+		void RenderLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos);
+		void RenderNonLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos);
 	private:
 		//camera
 		Entity m_Camera;
@@ -52,8 +55,10 @@ namespace QCat
 		Ref<Shader> m_ScreenShader;
 		Ref<Shader> m_SkyBoxShader;
 		Ref<Shader> m_ReflectShader;
+		Ref<Shader> m_CubeMapShader;
 
 		Ref<FrameBuffer> framebuffer;
+		Ref<FrameBuffer> CubeFarameBuffer;
 
 		glm::vec3 m_CameraPosition = { 0.5f,0.0f,-7.2f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };
@@ -91,7 +96,9 @@ namespace QCat
 		glm::vec3 LightPosition;
 
 		glm::vec3 backpackPos;
+		glm::vec3 backpackRot;
 		glm::vec3 ReflectObjPos;
+		glm::vec3 cube3;
 
 		Material woodFloor;
 		Material grass;
@@ -100,6 +107,7 @@ namespace QCat
 		Material Box;
 		Material BasicMaterial;
 		Material ReflectMaterial;
+		Material CubeMapMat;
 
 		glm::mat4 viewMatrix;
 

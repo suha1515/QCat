@@ -13,7 +13,7 @@ namespace QCat
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::DEPTH24STENCIL8: return true;
+			case FramebufferTextureFormat::Depth: return true;
 			}
 			return false;
 		}
@@ -55,10 +55,10 @@ namespace QCat
 			{
 				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
 				{
-				case FramebufferTextureFormat::RGBA8:
+				case FramebufferTextureFormat::Texture2D:
 					m_ColorAttachments[i] = CreateRef<DX11RenderTarget>(gfx, m_Specification.Width, m_Specification.Height,m_Specification.Samples, DXGI_FORMAT_R8G8B8A8_UNORM);
 					break;
-				case FramebufferTextureFormat::RED_INTEGER:
+				case FramebufferTextureFormat::CubeMap:
 					m_ColorAttachments[i] = CreateRef<DX11RenderTarget>(gfx, m_Specification.Width, m_Specification.Height, m_Specification.Samples, DXGI_FORMAT_R32_SINT);
 					break;
 				}
@@ -68,7 +68,7 @@ namespace QCat
 		{
 			switch (m_DepthAttacmentSpecifications.TextureFormat)
 			{
-			case FramebufferTextureFormat::DEPTH24STENCIL8:
+			case FramebufferTextureFormat::Depth:
 				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height,m_Specification.Samples, DXGI_FORMAT_D24_UNORM_S8_UINT);
 				break;
 			}
@@ -124,11 +124,15 @@ namespace QCat
 		m_ColorAttachments[attachmentIndex]->ReadData(x, y,&pixelData);
 		return pixelData;
 	}
-	void DX11FrameBuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+	void DX11FrameBuffer::AttachCubeMapByIndex(uint32_t faceindex)
+	{
+	}
+	void DX11FrameBuffer::ClearAttachment(uint32_t attachmentIndex, const void* value)
 	{
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
-		glm::vec4 color = { value,value,value,value};
+		float r = *(float*)value;
+		glm::vec4 color = { r, r, r, r };
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 		m_ColorAttachments[attachmentIndex]->Clear(gfx,color);
 

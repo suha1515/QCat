@@ -631,7 +631,7 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		auto& iter = m_ConstantBuffers.find(name);
+		auto iter = m_ConstantBuffers.find(name);
 		if (iter == m_ConstantBuffers.end())
 		{
 			//QCAT_CORE_ERROR("Cant find vertexConstantBuffer! : Invalid name for buffer");

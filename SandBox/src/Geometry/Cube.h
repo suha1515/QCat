@@ -17,6 +17,8 @@ namespace QCat
 		void Draw(const Ref<Shader>& shader);
 
 		void SetMaterial(Material& mat) { material = mat; }
+
+		Ref<VertexArray>& GetVertexArray() { return m_VertexArray; }
 	public:
 		void ImguiRender(const char* name);
 	private:

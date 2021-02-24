@@ -6,24 +6,32 @@ namespace QCat
 	enum class FramebufferTextureFormat
 	{
 		None = 0,
-		// Color
-		RGBA8 ,
-		RED_INTEGER,
-		// Depth/Stencil
-		DEPTH24STENCIL8,
-
+		// 2D
+		Texture2D,
+		// CubeMap,
+		CubeMap,
+		
 		// Defaults
-		Depth = DEPTH24STENCIL8
+		Depth
+	};
+	enum class FramebufferTextureDataFormat	
+	{
+		None =0,
+		// 32 bit
+		RGBA8,RED32_INTEGER,
+		// 24bit
+		RGB8,
+		// DepthStencil
+		DEPTH24STENCIL8
 	};
 	struct FramebufferTextureSpecification
 	{
 		FramebufferTextureSpecification() = default;
-		FramebufferTextureSpecification(FramebufferTextureFormat format)
-			: TextureFormat(format){}
+		FramebufferTextureSpecification(FramebufferTextureFormat format, FramebufferTextureDataFormat dataformat)
+			: TextureFormat(format),DataFormat(dataformat){}
 
 		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
-
-		// TODO: filtering/wrap
+		FramebufferTextureDataFormat DataFormat = FramebufferTextureDataFormat::None;
 	};
 
 	struct FramebufferAttachmentSpecification
@@ -53,7 +61,8 @@ namespace QCat
 		virtual void Resize(uint32_t width,uint32_t height)=0;
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 
-		virtual void ClearAttachment(uint32_t attachmentIndex, int value) = 0;
+		virtual void AttachCubeMapByIndex(uint32_t faceindex) = 0;
+		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value) = 0;
 
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 		virtual void SaveColorBuffer(uint32_t index = 0) const = 0;
