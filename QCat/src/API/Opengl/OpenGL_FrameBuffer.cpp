@@ -189,8 +189,8 @@ namespace QCat
 			for (size_t i =0;i< m_ColorAttachments.size();++i)
 			{
 				auto foramt = m_ColorAttachmentSpecifications[i];
-				Utils::CreateTextures(foramt.TextureFormat,multisample, m_ColorAttachments.data(), m_ColorAttachments.size());
-				Utils::BindTexture(foramt.TextureFormat,multisample, m_ColorAttachments[i]);
+				Utils::CreateTextures(foramt.TextureFormat,multisample,&m_ColorAttachments[i], 1);
+				Utils::BindTexture(foramt.TextureFormat,multisample,m_ColorAttachments[i]);
 				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
 				{
 				case FramebufferTextureFormat::Texture2D:

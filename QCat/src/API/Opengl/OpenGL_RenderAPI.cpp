@@ -49,6 +49,7 @@ namespace QCat
 
 		SetCullMode(CullMode::Back);
 		SetClockWise(true);
+
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
