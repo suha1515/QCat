@@ -161,6 +161,8 @@ namespace QCat
 		//Bind Texture
 		for (uint32_t i = 0; i < s_data.TextureSlotIndex; ++i)
 			s_data.TextureSlots[i]->Bind(i);
+
+		s_data.TextureShader->UpdateBuffer();
 		RenderCommand::DrawIndexed(s_data.QuadVertexArray,s_data.QuadIndexCount);
 
 		s_data.Stats.DrawCalls++;

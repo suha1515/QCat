@@ -18,7 +18,7 @@ namespace QCat
 		{
 			FillMode fillmode = FillMode::Solid;
 			CullMode cullmode = CullMode::Back;
-			bool     frontClockWise=false;
+			bool     frontCounterClockWise=false;
 			int		 DepthBias = 0;
 			float    DepthBiasClamp=0;
 			float    SlopeScaledDepthBias=0;
@@ -33,7 +33,7 @@ namespace QCat
 
 		virtual void SetFillMode(FillMode mode) = 0;
 		virtual void SetCullMode(CullMode mode) = 0;
-		virtual void SetClockWise(bool enable) = 0;
+		virtual void SetFrontClockWise(bool enable) = 0;
 		virtual void SetDepthBias(int value) = 0;
 		virtual void SetDepthBiasClamp(float value) = 0;
 		virtual void SetSlopeScaledDepthBias(float value) = 0;

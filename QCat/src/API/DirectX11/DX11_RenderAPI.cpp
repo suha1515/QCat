@@ -61,6 +61,7 @@ namespace QCat
 		Rasterizer::Rasterizer_Desc Rasterdesc;
 		m_RasterizState = Rasterizer::Create(Rasterdesc);
 		m_RasterizState->SetCullMode(CullMode::Back);
+		m_RasterizState->SetFrontClockWise(false);
 	}
 	void DX11RenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 	{
@@ -140,9 +141,9 @@ namespace QCat
 	{
 		m_RasterizState->SetCullMode(mode);
 	}
-	void DX11RenderAPI::SetClockWise(bool enable)
+	void DX11RenderAPI::SetFrontClockWise(bool enable)
 	{
-		m_RasterizState->SetClockWise(enable);
+		m_RasterizState->SetFrontClockWise(enable);
 	}
 	void DX11RenderAPI::SetDepthBias(int value)
 	{

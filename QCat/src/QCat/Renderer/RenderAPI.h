@@ -37,7 +37,7 @@ namespace QCat
 		// Rasterize State Function
 		virtual void SetFillMode(FillMode mode) = 0;
 		virtual void SetCullMode(CullMode mode) = 0;
-		virtual void SetClockWise(bool enable) = 0;
+		virtual void SetFrontClockWise(bool enable) = 0;
 		virtual void SetDepthBias(int value) = 0;
 		virtual void SetDepthBiasClamp(float value) = 0;
 		virtual void SetSlopeScaledDepthBias(float value) = 0;

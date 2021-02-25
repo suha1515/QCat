@@ -12,7 +12,7 @@ namespace QCat
 
 		virtual void SetFillMode(FillMode mode)override;
 		virtual void SetCullMode(CullMode mode)override;
-		virtual void SetClockWise(bool enable) override;
+		virtual void SetFrontClockWise(bool enable) override;
 		virtual void SetDepthBias(int value) override;
 		virtual void SetDepthBiasClamp(float value) override;
 		virtual void SetSlopeScaledDepthBias(float value) override;

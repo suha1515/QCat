@@ -45,10 +45,10 @@ namespace QCat
 		if (exValue != mode)
 			changed = true;
 	}
-	void DX11RasterizerState::SetClockWise(bool enable)
+	void DX11RasterizerState::SetFrontClockWise(bool enable)
 	{
-		auto exValue = desc.frontClockWise;
-		desc.frontClockWise = enable;
+		auto exValue = desc.frontCounterClockWise;
+		desc.frontCounterClockWise = enable;
 		if (exValue != enable)
 			changed = true;
 	}
@@ -120,7 +120,7 @@ namespace QCat
 		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
 		rasterDesc.FillMode = Utils::FillModeToDx(desc.fillmode);
 		rasterDesc.CullMode = Utils::CullModeToDX(desc.cullmode);
-		rasterDesc.FrontCounterClockwise = desc.frontClockWise;
+		rasterDesc.FrontCounterClockwise = desc.frontCounterClockWise;
 		rasterDesc.DepthBias = desc.DepthBias;
 		rasterDesc.DepthBiasClamp = desc.DepthBiasClamp;
 		rasterDesc.SlopeScaledDepthBias = desc.SlopeScaledDepthBias;

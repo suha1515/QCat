@@ -84,7 +84,7 @@ namespace QCat
 				case FramebufferTextureFormat::Texture2D:
 				{
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 1,
-						DXGI_FORMAT_R8G8B8A8_UNORM, m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
+						Utils::GetDataType(m_ColorAttachmentSpecifications[i].DataFormat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
 
 					D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 					rtvDesc.Format = texdesc.Format;
@@ -98,7 +98,7 @@ namespace QCat
 				case FramebufferTextureFormat::CubeMap:
 				{
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 6,
-						DXGI_FORMAT_R8G8B8A8_UNORM, m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0,
+						Utils::GetDataType(m_ColorAttachmentSpecifications[i].DataFormat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0,
 						D3D11_RESOURCE_MISC_GENERATE_MIPS | D3D11_RESOURCE_MISC_TEXTURECUBE);
 
 					D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -201,11 +201,11 @@ namespace QCat
 	{
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
-		float r = *(float*)value;
+		float r = *(int*)value;
 		glm::vec4 color = { r, r, r, r };
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
-		for(int i=0;i< m_ColorAttachments[attachmentIndex].rendertargets.size();++i)
-			m_ColorAttachments[attachmentIndex].rendertargets[i]->Clear(gfx,color);
+		int mainindex = m_ColorAttachments[attachmentIndex].attachTarget;
+		m_ColorAttachments[attachmentIndex].rendertargets[mainindex]->Clear(gfx,color);
 
 	}
 	void DX11FrameBuffer::SaveColorBuffer(uint32_t index) const

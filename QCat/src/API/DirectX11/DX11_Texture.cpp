@@ -225,7 +225,7 @@ namespace QCat
 		gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_READ, 0, &msr);
 		if (x >= 0 && x <= m_width && y >= 0 && y <= m_height)
 		{
-			outdata = msr.pData;
+			*(int*)outdata = *(int*)msr.pData;
 		}
 		gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
 	}

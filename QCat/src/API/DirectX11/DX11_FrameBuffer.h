@@ -29,7 +29,7 @@ namespace QCat
 		virtual void AttachCubeMapByIndex(uint32_t faceindex)override;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
 
-		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return reinterpret_cast<void*>(m_ColorAttachments[index].textures[0]->GetTexture()); }
+		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return m_ColorAttachments[index].textures[0]->GetTexture(); }
 		virtual void SaveColorBuffer(uint32_t index = 0) const override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 

@@ -16,7 +16,7 @@ namespace QCat
 		virtual void UnBind()override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z=0) override;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) override;
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
 

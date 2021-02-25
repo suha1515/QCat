@@ -77,9 +77,9 @@ namespace QCat
 		{
 			s_renderAPI->SetCullMode(mode);
 		}
-		inline static void SetClockWise(bool enable)
+		inline static void SetFrontClockWise(bool enable)
 		{
-			s_renderAPI->SetClockWise(enable);
+			s_renderAPI->SetFrontClockWise(enable);
 		}
 		inline static void SetDepthBias(int value)
 		{

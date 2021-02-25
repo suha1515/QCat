@@ -53,13 +53,13 @@ namespace QCat
 			glCullFace(cullMode);
 		}
 	}
-	void OpenGLRasterizer::SetClockWise(bool enable)
+	void OpenGLRasterizer::SetFrontClockWise(bool enable)
 	{
-		desc.frontClockWise = enable;
-		if (desc.frontClockWise)
-			glFrontFace(GL_CW);
-		else
+		desc.frontCounterClockWise = enable;
+		if (desc.frontCounterClockWise)
 			glFrontFace(GL_CCW);
+		else
+			glFrontFace(GL_CW);
 	}
 	void OpenGLRasterizer::SetDepthBias(int value)
 	{

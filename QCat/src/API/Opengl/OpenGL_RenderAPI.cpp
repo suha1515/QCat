@@ -48,7 +48,7 @@ namespace QCat
 		m_RasterizeState = Rasterizer::Create(Rastdesc);
 
 		SetCullMode(CullMode::Back);
-		SetClockWise(true);
+		SetFrontClockWise(false);
 
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
@@ -118,9 +118,9 @@ namespace QCat
 	{
 		m_RasterizeState->SetCullMode(mode);
 	}
-	void OpenGLRenderAPI::SetClockWise(bool enable)
+	void OpenGLRenderAPI::SetFrontClockWise(bool enable)
 	{
-		m_RasterizeState->SetClockWise(enable);
+		m_RasterizeState->SetFrontClockWise(enable);
 	}
 	void OpenGLRenderAPI::SetDepthBias(int value)
 	{
