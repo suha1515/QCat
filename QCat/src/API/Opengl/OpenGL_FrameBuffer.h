@@ -16,7 +16,7 @@ namespace QCat
 		virtual void UnBind()override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z=0) override;
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
 
@@ -29,6 +29,7 @@ namespace QCat
 		virtual void BindColorTexture(uint32_t slot,uint32_t index = 0) const override;
 		
 		virtual void UnBindTexture() override {};
+		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;
 	private:
 		uint32_t m_RendererID=0;
 		FrameBufferSpecification m_Specification;

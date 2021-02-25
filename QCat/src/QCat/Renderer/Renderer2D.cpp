@@ -63,12 +63,12 @@ namespace QCat
 		for (unsigned int i = 0; i < s_data.MaxIndices; i+=6)
 		{
 			quadIndices[i + 0] = offset + 0;
-			quadIndices[i + 1] = offset + 1;
-			quadIndices[i + 2] = offset + 2;
+			quadIndices[i + 1] = offset + 2;
+			quadIndices[i + 2] = offset + 1;
 
-			quadIndices[i + 3] = offset + 2;
+			quadIndices[i + 3] = offset + 0;
 			quadIndices[i + 4] = offset + 3;
-			quadIndices[i + 5] = offset + 0;
+			quadIndices[i + 5] = offset + 2;
 
 			offset += 4;
 		}
@@ -185,7 +185,7 @@ namespace QCat
 
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; //White Texture
-		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		constexpr glm::vec2 textureCoords[] = { { 0.0f, 1.0f }, { 1.0f, 1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f } };
 		const float tilingFactor = 1.0f;
 
 		if (s_data.QuadIndexCount >= Renderer2DData::MaxIndices)

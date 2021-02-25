@@ -39,7 +39,7 @@ namespace QCat
 		m_DepthStencilState->EnableStencil(false);
 		m_DepthStencilState->SetFrontStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 		m_DepthStencilState->SetBackStencilOperator(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
-		SetDepthFunc(COMPARISON_FUNC::EQUAL);
+		SetDepthFunc(COMPARISON_FUNC::LESS);
 
 		m_BlenderState = Blender::Create();
 		m_BlenderState->SetIndependentBlend(false);

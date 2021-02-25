@@ -17,6 +17,8 @@ namespace QCat
 
 		virtual void SetData(void* pData, unsigned int size) override;
 
+		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) {};
+
 		virtual void Bind(unsigned int slot=0) const override;
 
 		virtual bool operator==(const Texture& other) const override
@@ -47,6 +49,9 @@ namespace QCat
 		virtual void* GetTexture() const override { return (void*)m_renderID; }
 
 		virtual void SetData(void* pData, unsigned int size) override;
+
+		virtual void ReadData(uint32_t face, uint32_t x, uint32_t y, const void* outdata) {};
+
 		virtual void Bind(unsigned int slot = 0) const override;
 
 		virtual bool operator==(const Texture& other) const override

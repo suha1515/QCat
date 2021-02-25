@@ -29,6 +29,6 @@ void main()
 	//tex.y = tex.y * -1.0;
 	//tex.z = tex.z*-1.0;
 	//tex.x = tex.x*-1.0;
-	color = texture(skybox,-tex);	
+	color = texture(skybox,tex);	
 }
 

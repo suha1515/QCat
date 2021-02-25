@@ -17,12 +17,15 @@ namespace QCat
 		virtual void Bind(unsigned int slot =0) const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+
 		//virtual Texture& operator=(const Texture& other) = 0;
 	};
 
 	class Texture2D : public Texture
 	{
 	public:
+		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) = 0;
+
 		static Ref<Texture2D> Create(unsigned int width, unsigned int height);
 		static Ref<Texture2D> Create(const std::string & path, bool flip =false,bool gamacorrection = false);
 	private:
@@ -31,6 +34,8 @@ namespace QCat
 	class TextureCube  : public Texture
 	{
 	public:
+		virtual void ReadData(uint32_t face,uint32_t x, uint32_t y, const void* outdata) = 0;
+
 		static Ref<TextureCube> Create(std::vector<std::string> imagePath, bool flip=false,bool gammacorrection = false);
 
 	};

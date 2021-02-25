@@ -260,7 +260,7 @@ namespace QCat
 		m_Specification.Height = height;
 		Invalidate();
 	}
-	int OpenGLFrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	int OpenGLFrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y,int z)
 	{
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
@@ -305,5 +305,10 @@ namespace QCat
 		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
 
 		glBindTextureUnit(slot, m_ColorAttachments[index]);
+	}
+	void OpenGLFrameBuffer::Clear(glm::vec4 color) const
+	{
+		glClearColor(color.r, color.g, color.b, color.a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 }

@@ -7,6 +7,12 @@
 
 namespace QCat
 {
+	struct RenderTargets
+	{
+		std::vector<Ref<DX11RenderTarget>> rendertargets;
+		std::vector<Ref<Texture>> textures;
+		int attachTarget = 0;
+	};
 	class DX11FrameBuffer : public FrameBuffer
 	{
 	public:
@@ -18,24 +24,25 @@ namespace QCat
 		virtual void UnBind()override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) override;
 
 		virtual void AttachCubeMapByIndex(uint32_t faceindex)override;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
 
-		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return reinterpret_cast<void*>(m_ColorAttachments[index]->GetTexture()); }
-		virtual void SaveColorBuffer(uint32_t index=0) const override { m_ColorAttachments[index]->SaveTexture(); }
+		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return reinterpret_cast<void*>(m_ColorAttachments[index].textures[0]->GetTexture()); }
+		virtual void SaveColorBuffer(uint32_t index = 0) const override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void BindColorTexture(uint32_t slot, uint32_t index = 0) const override;
 		virtual void UnBindTexture() override;
+		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;
 	private:
 		FrameBufferSpecification m_Specification;
 
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecification m_DepthAttacmentSpecifications = { FramebufferTextureFormat::None,FramebufferTextureDataFormat::None };
 
-		std::vector<Ref<DX11RenderTarget>> m_ColorAttachments;
+		std::vector<RenderTargets> m_ColorAttachments;
 		Ref<DX11DepthStencil> m_DepthAttachment = 0, m_ColorAttachment = 0;
 	};
 }

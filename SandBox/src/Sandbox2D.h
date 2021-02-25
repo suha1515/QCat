@@ -114,6 +114,7 @@ namespace QCat
 		Ref<VertexArray> m_quad;
 		Ref<Texture2D> screenTexture;
 		Ref<TextureCube> m_cubeTexture;
+		Ref<TextureCube> m_cubeTexture2;
 		Material temMat;
 
 		//Model

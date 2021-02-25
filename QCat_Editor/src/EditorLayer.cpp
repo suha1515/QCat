@@ -75,7 +75,8 @@ namespace QCat
 		RenderCommand::Clear();
 
 		// clear out entity ID attacment to -1
-		m_Framebuffer->ClearAttachment(1, -1);
+		int value = -1;
+		m_Framebuffer->ClearAttachment(1, &value);
 	
 
 		// Update Scene
@@ -195,8 +196,8 @@ namespace QCat
 		ImGui::Begin("Renderer2D Stats");
 
 		std::string name = "None";
-		if (m_HoveredEntity)
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+		//if (m_HoveredEntity)
+		//	name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 		ImGui::Text("Hovered Entity: %s", name.c_str());
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer2D Stats:");

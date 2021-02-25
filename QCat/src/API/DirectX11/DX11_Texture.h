@@ -10,11 +10,13 @@ namespace QCat
 	// Texture2D[] is each Textures dont have to be same foramt or data but Texture2DArray must be same
 	// so when you use Texute2D[] in your hlsl code each Texture2D has own slot for using
 	// Like Texuture2D[0]'s slot 0 and Texture2D[1]'s slot is 1
+
 	class DX11Texture2D : public Texture2D
 	{
 	public:
 		DX11Texture2D(unsigned int width,unsigned int height);
 		DX11Texture2D(const std::string& path, bool flip=false,bool gamacorrection = false);
+		DX11Texture2D(D3D11_TEXTURE2D_DESC textureDesc, bool flip = false, bool gammaCorrection = false);
 		virtual ~DX11Texture2D();
 
 		virtual unsigned int GetWidth() const override { return m_width; }
@@ -25,11 +27,16 @@ namespace QCat
 
 		virtual void Bind(unsigned int slot = 0) const override;
 
+		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) override;
+
 		virtual bool operator==(const Texture& other) const override
 		{
 			return pTexture.Get() == ((DX11Texture2D&)other).pTexture.Get();
 		}
+
+		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
 	private:
+		int samples = 0;
 		std::string m_path;
 		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
@@ -41,6 +48,8 @@ namespace QCat
 	{
 	public:
 		DX11TextureCube(const std::vector<std::string>& imgPathes, bool flip = false, bool gammaCorrection = false);
+		DX11TextureCube(D3D11_TEXTURE2D_DESC textureDesc,bool flip = false, bool gammaCorrection = false);
+
 		~DX11TextureCube() = default;
 
 		virtual unsigned int GetWidth() const override { return m_width; }
@@ -50,11 +59,16 @@ namespace QCat
 		virtual void SetData(void* pData, unsigned int size) override;
 		virtual void Bind(unsigned int slot = 0) const override;
 
+		virtual void ReadData(uint32_t face, uint32_t x, uint32_t y, const void* outdata) override;
+
 		virtual bool operator==(const Texture& other) const override
 		{
 			return pTexture.Get() == ((DX11TextureCube&)other).pTexture.Get();
 		}
+
+		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
 	private:
+		int samples = 0;
 		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;

@@ -59,7 +59,7 @@ namespace QCat
 		virtual void UnBind()=0;
 
 		virtual void Resize(uint32_t width,uint32_t height)=0;
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) = 0;
 
 		virtual void AttachCubeMapByIndex(uint32_t faceindex) = 0;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value) = 0;
@@ -69,6 +69,7 @@ namespace QCat
 
 		virtual void BindColorTexture(uint32_t slot, uint32_t index = 0) const = 0;
 		virtual void UnBindTexture() = 0;
+		virtual void Clear(glm::vec4 color = {0.1f,0.1f,0.1f,1.0f }) const = 0;
 		//virtual FrameBufferSpecification& GetSpecification() = 0;
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 		static Ref <FrameBuffer> Create(const FrameBufferSpecification& spec);

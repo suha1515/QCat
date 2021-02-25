@@ -51,6 +51,7 @@ namespace QCat
 			m_ScreenShader = ShaderLibrary::Load("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 			m_SkyBoxShader = ShaderLibrary::Load("SkyBoxShader","Asset/shaders/hlsl/SkyBox_VS.hlsl","Asset/shaders/hlsl/SkyBox_PS.hlsl");
 			m_ReflectShader = ShaderLibrary::Load("ReflectShader", "Asset/shaders/hlsl/Reflect_VS.hlsl", "Asset/shaders/hlsl/Reflect_PS.hlsl");
+			m_CubeMapShader = ShaderLibrary::Load("CubeMapShader","Asset/shaders/hlsl/CubeMap/CubeMap_VS.hlsl", "Asset/shaders/hlsl/CubeMap/CubeMap_PS.hlsl");
 
 		}
 
@@ -88,7 +89,17 @@ namespace QCat
 			"Asset/textures/skybox/front.jpg",
 			"Asset/textures/skybox/back.jpg",
 		};
+		std::vector<std::string> imagePath2 =
+		{
+			"Asset/textures/NissiBeach/right.jpg",
+			"Asset/textures/NissiBeach/left.jpg",
+			"Asset/textures/NissiBeach/top.jpg",
+			"Asset/textures/NissiBeach/bottom.jpg",
+			"Asset/textures/NissiBeach/front.jpg",
+			"Asset/textures/NissiBeach/back.jpg",
+		};
 		m_cubeTexture = TextureCube::Create(imagePath);
+		m_cubeTexture2= TextureCube::Create(imagePath2);
 		// quad Texture
 		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
 		grass.SetTexture(grassTexture, Material::MaterialType::Diffuse);
@@ -243,66 +254,76 @@ namespace QCat
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
 			CubeFarameBuffer->Bind();
-			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-			QCat::RenderCommand::Clear();
+			CubeFarameBuffer->Clear();
 
 			glm::mat4 view;
 			glm::mat4 proj = glm::perspective(glm::radians(90.0f),1.0f,0.01f,25.0f);
+			//view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//CubeFarameBuffer->AttachCubeMapByIndex(1);
 			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			CubeFarameBuffer->AttachCubeMapByIndex(1);
-			QCat::RenderCommand::Clear();
-
-			RenderLightObj(proj, view, tc);
-			RenderNonLightObj(proj, view, tc);
-			RenderSkyObj(proj, view, tc);
-			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			CubeFarameBuffer->AttachCubeMapByIndex(0);
-			QCat::RenderCommand::Clear();
+			CubeFarameBuffer->Clear();
 
 			RenderLightObj(proj, view, tc);
 			RenderNonLightObj(proj, view, tc);
 			RenderSkyObj(proj, view, tc);
-			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f,1.0f));
-			CubeFarameBuffer->AttachCubeMapByIndex(3);
-			QCat::RenderCommand::Clear();
+			//view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//CubeFarameBuffer->AttachCubeMapByIndex(0);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(1);
+			CubeFarameBuffer->Clear();
 
 			RenderLightObj(proj, view, tc);
 			RenderNonLightObj(proj, view, tc);
 			RenderSkyObj(proj, view, tc);
-			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f,-1.0f));
+			//view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f,1.0f));
+			//CubeFarameBuffer->AttachCubeMapByIndex(3);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f,0.0f , -1.0f));
 			CubeFarameBuffer->AttachCubeMapByIndex(2);
-			QCat::RenderCommand::Clear();
+			CubeFarameBuffer->Clear();
 
 			RenderLightObj(proj, view, tc);
 			RenderNonLightObj(proj, view, tc);
 			RenderSkyObj(proj, view, tc);
+			//view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f,-1.0f));
+			//CubeFarameBuffer->AttachCubeMapByIndex(2);
+			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+			CubeFarameBuffer->AttachCubeMapByIndex(3);
+			CubeFarameBuffer->Clear();
+
+			RenderLightObj(proj, view, tc);
+			RenderNonLightObj(proj, view, tc);
+			RenderSkyObj(proj, view, tc);
+			//view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//CubeFarameBuffer->AttachCubeMapByIndex(5);
 			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			CubeFarameBuffer->AttachCubeMapByIndex(5);
-			QCat::RenderCommand::Clear();
+			CubeFarameBuffer->AttachCubeMapByIndex(4);
+			CubeFarameBuffer->Clear();
 
 			RenderLightObj(proj, view, tc);
 			RenderNonLightObj(proj, view, tc);
 			RenderSkyObj(proj, view, tc);
+			//view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//CubeFarameBuffer->AttachCubeMapByIndex(4);
 			view = glm::lookAt(ReflectObjPos, ReflectObjPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			CubeFarameBuffer->AttachCubeMapByIndex(4);
-			QCat::RenderCommand::Clear();
+			CubeFarameBuffer->AttachCubeMapByIndex(5);
+			CubeFarameBuffer->Clear();
 
 			RenderLightObj(proj, view, tc);
 			RenderNonLightObj(proj, view, tc);
 			RenderSkyObj(proj, view, tc);
 
 			CubeFarameBuffer->UnBind();
-
+			
 			// new framebuffer
 			framebuffer->Bind();
-			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-			QCat::RenderCommand::Clear();
-
+			framebuffer->Clear();
 
 			RenderLightObj(camProj, viewMatrix, tc);
 			RenderNonLightObj(camProj, viewMatrix, tc);
 
 			//Reflect
+			//RenderCommand::SetBlend(false);
 			m_ReflectShader->Bind();
 			m_ReflectShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
 			m_ReflectShader->SetFloat3("viewPosition", tc, ShaderType::PS);
@@ -326,11 +347,13 @@ namespace QCat
 			m_CubeMapShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
 			cube->SetTranslation(cube3);
 			cube->SetScale({ 1.0f,1.0f,1.0f });
+			//RenderCommand::SetBlend(true);
 
 			RenderCommand::SetCullMode(CullMode::None);
 			transform = glm::translate(glm::mat4(1.0f), cube3) * glm::scale(glm::mat4(1.0f), { 1.0f,1.0f,1.0f });
 			m_CubeMapShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			CubeFarameBuffer->BindColorTexture(0, 0);
+			//m_cubeTexture2->Bind();
 			//ReflectMaterial.Bind(0, Material::MaterialType::Diffuse);
 			m_CubeMapShader->UpdateBuffer();
 			cube->GetVertexArray()->Bind();
