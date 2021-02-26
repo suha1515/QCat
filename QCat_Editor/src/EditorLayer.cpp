@@ -317,6 +317,7 @@ namespace QCat
 
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
 		/*if (e.GetEventType() == EventType::KeyPressed)
 		{
 			QCAT_CORE_TRACE("key : {0}", e);
@@ -365,6 +366,16 @@ namespace QCat
 		case Key::R:
 			m_GizmoType = ImGuizmo::OPERATION::SCALE;
 			break;
+		}
+		return false;
+	}
+
+	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+	{
+		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		{
+			if(m_ViewportHovered&& !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
 		}
 		return false;
 	}
