@@ -10,9 +10,10 @@ namespace QCat
 		Texture2D,
 		// CubeMap,
 		CubeMap,
-		
+
 		// Defaults
-		Depth
+		Depth_Stencil,
+		Depth,
 	};
 	enum class FramebufferTextureDataFormat	
 	{
@@ -22,7 +23,8 @@ namespace QCat
 		// 24bit
 		RGB8,
 		// DepthStencil
-		DEPTH24STENCIL8
+		DEPTH24STENCIL8,
+		DEPTH32
 	};
 	struct FramebufferTextureSpecification
 	{
@@ -65,9 +67,13 @@ namespace QCat
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value) = 0;
 
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		virtual void* GetDepthAttachmentRendererID() const = 0;
+
 		virtual void SaveColorBuffer(uint32_t index = 0) const = 0;
 
 		virtual void BindColorTexture(uint32_t slot, uint32_t index = 0) const = 0;
+		virtual void BindDepthTexture(uint32_t slot) const =0;
+
 		virtual void UnBindTexture() = 0;
 		virtual void Clear(glm::vec4 color = {0.1f,0.1f,0.1f,1.0f }) const = 0;
 		//virtual FrameBufferSpecification& GetSpecification() = 0;

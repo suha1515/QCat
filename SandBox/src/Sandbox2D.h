@@ -1,5 +1,5 @@
 #pragma once
-#define GLM_FORCE_LEFT_HANDED
+
 #include "QCat.h"
 #include "Geometry/Cube.h"
 #include "Geometry/Sphere.h"
@@ -8,6 +8,8 @@
 #include "QCat/Renderer/DepthStencil.h"
 #include "Model/Model.h"
 #include "CubeMap/CubeMap.h"
+
+
 
 namespace QCat
 {
@@ -30,6 +32,7 @@ namespace QCat
 		void RenderSkyObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos);
 		void RenderLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos);
 		void RenderNonLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos);
+		void RenderScene(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos, const Ref<Shader>& shader);
 	private:
 		//camera
 		Entity m_Camera;
@@ -53,12 +56,16 @@ namespace QCat
 		Ref<Shader> m_LightNormalShader;
 		Ref<Shader> m_FlatShader;
 		Ref<Shader> m_ScreenShader;
+		Ref<Shader> m_ScreenDepthShader;
 		Ref<Shader> m_SkyBoxShader;
 		Ref<Shader> m_ReflectShader;
 		Ref<Shader> m_CubeMapShader;
+		Ref<Shader> m_ShadowMappingShader;
 
 		Ref<FrameBuffer> framebuffer;
+		Ref<FrameBuffer> screenframeBuffer;
 		Ref<FrameBuffer> CubeFarameBuffer;
+		Ref<FrameBuffer> DepthFrameBuffer;
 
 		glm::vec3 m_CameraPosition = { 0.5f,0.0f,-7.2f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };
@@ -119,6 +126,9 @@ namespace QCat
 
 		//Model
 		Ref<Model> bagPack;
+
+		//Light
+		Light dirLight;
 	};
 
 }

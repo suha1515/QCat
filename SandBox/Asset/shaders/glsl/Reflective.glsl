@@ -54,9 +54,8 @@ void main()
 	// Refract
 	//float ratio = 1.00/1.52;
 	//vec3 R = refract(I,normalize(Normal),ratio);
-	color = vec4(texture(skybox,-R).rgb,1.0);
+	color = vec4(texture(skybox,R).rgb,1.0);
 	//color = vec4(viewPosition,1.0);
-
 	//color = vec4(reflect_refract(I,normalize(Normal)),1.0);
 }
 

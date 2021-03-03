@@ -30,10 +30,14 @@ namespace QCat
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
 
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override { QCAT_CORE_ASSERT(index<m_ColorAttachments.size());return m_ColorAttachments[index].textures[0]->GetTexture(); }
+		virtual void* GetDepthAttachmentRendererID() const override { return nullptr; };
+
 		virtual void SaveColorBuffer(uint32_t index = 0) const override;
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void BindColorTexture(uint32_t slot, uint32_t index = 0) const override;
+		virtual void BindDepthTexture(uint32_t slot) const override;
+
 		virtual void UnBindTexture() override;
 		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;
 	private:

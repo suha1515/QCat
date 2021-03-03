@@ -6,7 +6,13 @@ namespace QCat
 	class DX11DepthStencil
 	{
 	public:
-		DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height,int samples=1, DXGI_FORMAT format = DXGI_FORMAT_D24_UNORM_S8_UINT);
+		enum class Usage
+		{
+			DepthStencil,
+			ShadowDepth,
+		};
+	public:
+		DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, Usage usage,int samples = 1, bool bindShader = false);
 		virtual ~DX11DepthStencil();
 		
 		void Initialize(QGfxDeviceDX11& gfx);
@@ -22,6 +28,8 @@ namespace QCat
 		uint32_t m_height;
 		DXGI_FORMAT format;
 		int samples;
+		bool bindShader = false;
+		Usage usage;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pShaderResourceView;
 	};

@@ -2,19 +2,6 @@
 
 #type vertex
 #version 330 core
-struct PointLight
-{
-	vec3 position;
-
-	float constant;
-	float Linear;
-	float quadratic;
-
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
-};
-
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
@@ -26,14 +13,13 @@ layout(location = 4) in vec3 a_BitTangent;
 uniform mat4 u_ViewProjection;
 uniform mat4 u_Transform;
 uniform vec3 viewPosition;
-uniform PointLight pointLight;
+uniform mat4 lightSpaceMatrix;
 
 out vec2 TexCoords;
 out vec3 v_Normal;
 out vec3 FragPos;
-out vec3 TanLightPos;
-out vec3 TanViewPos;
-out vec3 TanFragPos;
+out vec4 FragPosLightSpace;
+out mat3 TBN;
 
 void main()
 {
@@ -42,18 +28,16 @@ void main()
 	v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
 	gl_Position = u_ViewProjection *u_Transform * vec4(a_Position, 1.0);
 	FragPos = vec3(u_Transform * vec4(a_Position,1.0));
+	FragPosLightSpace = lightSpaceMatrix * vec4(FragPos,1.0);
 
 	vec3 T = normalize(normalMatrix *a_Tangent);
-	//vec3 B = normalize(normalMatrix *a_BitTangent);
+	vec3 B = normalize(normalMatrix *a_BitTangent);
 	vec3 N = normalize(normalMatrix *a_Normal);
 	// re-orthogonalize T With to N
-	T = normalize(T - dot(T,N) * N);
-	vec3 B = cross(N,T);
-	mat3 TBN = transpose(mat3(T,B,N));
+	//T = normalize(T - dot(T,N) * N);
+	//vec3 B = cross(N,T);
+	TBN = mat3(T,B,N);
 
-	TanViewPos  = TBN * viewPosition;
-	TanLightPos = TBN * pointLight.position;
-	TanFragPos  = TBN * FragPos;
 }
 
 #type fragment
@@ -68,13 +52,13 @@ struct Material
 
 	bool normalMap;
 };
-//struct DirLight
-//{
-//	vec3 direction;
-//	vec3 diffuse;
-//	vec3 ambient;
-//	vec3 specular;
-//};
+struct DirLight
+{
+	vec3 direction;
+	vec3 diffuse;
+	vec3 ambient;
+	vec3 specular;
+};
 struct PointLight
 {
 	vec3 position;
@@ -109,19 +93,47 @@ layout(location = 0) out vec4 color;
 in vec3 v_Normal;
 in vec2 TexCoords;
 in vec3 FragPos;
-in vec3 TanLightPos;
-in vec3 TanViewPos;
-in vec3 TanFragPos;
-
+in vec4 FragPosLightSpace;
+in mat3 TBN;
 
 uniform Material material;
 uniform PointLight pointLight;
+uniform DirLight dirLight;
 uniform vec3 viewPosition;
 uniform bool blinn;
 uniform bool gamma;
 
+uniform sampler2D shadowMap;
+
+float ShadowCalculation(vec4 fragPosLightSpace,vec3 normal,vec3 lightDir)
+{
+	vec3 projCoords = fragPosLightSpace.xyz/fragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	if(projCoords.z>1.0)
+		return 0.0;
+	float closestDepth = texture(shadowMap,projCoords.xy).r;
+	float currentDepth = projCoords.z;
+	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001f);  
+	//float bias = 0.001f;
+
+	float shadow = 0.0;
+	vec2 texelSize = 1.0/ textureSize(shadowMap,0);
+	for(int x = -2;x<=2;++x)
+	{
+		for(int y=-2;y<=2;++y)
+		{
+			float pcfDepth = texture(shadowMap,projCoords.xy + vec2(x,y) * texelSize).r;
+			shadow += currentDepth - bias > pcfDepth ? 1.0:0.0;
+		}
+	}
+
+	shadow /=25.0;
+	//shadow = currentDepth - bias > closestDepth ? 1.0:0.0;
+	return shadow;
+}
+
 // function prototypes
-//vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir,vec3 lightDir);
 //vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
@@ -131,15 +143,11 @@ void main()
 	if(texcolor.a<0.1)
 		discard;
 	vec3 norm;
-	vec3 lightDir;
 	vec3 viewDir;
-	vec3 fragPos;
+	viewDir =  normalize(viewPosition - FragPos);
 	if(!material.normalMap)
 	{
 	   norm = normalize(v_Normal);
-	   lightDir = normalize(pointLight.position - FragPos);
-	   viewDir =  normalize(viewPosition - FragPos);
-	   fragPos = FragPos;
 	}
 	else
 	{
@@ -147,15 +155,14 @@ void main()
 		norm.r = norm.r *2.0 - 1.0;
 		norm.g = norm.g *2.0 - 1.0;
 		norm.b = norm.b *2.0 - 1.0;
-		norm = normalize(norm);
-		lightDir = normalize(TanLightPos - TanFragPos);
-		viewDir = normalize(TanViewPos - TanFragPos);
-		fragPos = TanFragPos;
+		norm = normalize(TBN * norm);
 	}	
 	
 	vec3 result;
+	// dir light
+	result +=CalcDirLight(dirLight,norm,viewDir);
 	 //point light
-	result +=CalcPointLight(pointLight,norm,fragPos,viewDir,lightDir);
+	//result +=CalcPointLight(pointLight,norm,FragPos,viewDir,lightDir);
 
 	if(gamma)
 		result = pow(result,vec3(1.0/2.2));
@@ -164,20 +171,31 @@ void main()
 }
 
 // calculates the color when using a directional light.
-//vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
-//{
-//    vec3 lightDir = normalize(-light.direction);
-//    // diffuse shading
-//    float diff = max(dot(normal, lightDir), 0.0);
-//    // specular shading
-//    vec3 reflectDir = reflect(-lightDir, normal);
-//    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-//    // combine results
-//    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
-//    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-//    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
-//    return (ambient + diffuse + specular);
-//}
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+{
+    vec3 lightDir = normalize(-light.direction);
+
+	float spec;
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    // specular shading
+	if(blinn)
+	{
+		vec3 halfwayDir = normalize(lightDir + viewDir);
+		spec = pow(max(dot(normal,halfwayDir),0.0),material.shininess*4);
+	}
+	else
+	{
+		 vec3 reflectDir = reflect(-lightDir, normal);
+		 spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	}
+	float shadow = ShadowCalculation(FragPosLightSpace,normal,lightDir);
+    // combine results
+    vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+    return (ambient +(1.0-shadow)*(diffuse + specular));
+}
 
 // calculates the color when using a point light.
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir,vec3 lightDir)

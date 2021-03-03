@@ -26,9 +26,10 @@ namespace QCat
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::Texture2D: return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case FramebufferTextureFormat::Depth:	  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case FramebufferTextureFormat::CubeMap:   return GL_TEXTURE_CUBE_MAP;
+			case FramebufferTextureFormat::Texture2D:     return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+			case FramebufferTextureFormat::Depth:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+			case FramebufferTextureFormat::Depth_Stencil: return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+			case FramebufferTextureFormat::CubeMap:       return GL_TEXTURE_CUBE_MAP;
 			}
 		}
 		static GLenum GetTextureFormat(FramebufferTextureDataFormat format)
@@ -41,6 +42,9 @@ namespace QCat
 				//24 bit
 			case FramebufferTextureDataFormat::RGB8:			return GL_RGB;
 
+				//depth
+			case FramebufferTextureDataFormat::DEPTH32:			return GL_DEPTH_COMPONENT;
+			case FramebufferTextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH_STENCIL;
 			}
 
 		}
@@ -53,6 +57,11 @@ namespace QCat
 			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_R32I;
 				//24 bit
 			case FramebufferTextureDataFormat::RGB8:			return GL_RGB8;
+
+
+				//depth
+			case FramebufferTextureDataFormat::DEPTH32:			return GL_DEPTH_COMPONENT32;
+			case FramebufferTextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
 			}
 		}
 
@@ -103,23 +112,45 @@ namespace QCat
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_CUBE_MAP_POSITIVE_X, id, 0);
 
 		}
-		static void AttachDepthTexture(FramebufferTextureFormat textureformat,uint32_t id, int samples, GLenum format,GLenum attachmentType, uint32_t width, uint32_t height)
+		static void AttachDepthTexture(FramebufferTextureFormat textureformat,uint32_t id, int samples, FramebufferTextureDataFormat format,GLenum attachmentType, uint32_t width, uint32_t height)
 		{
 			bool multisampled = samples > 1;
 			if (multisampled)
 			{
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, Utils::GetTextureInternalFormat(format), width, height, GL_FALSE);
 			}
 			else
 			{
-				glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
+				glTexStorage2D(GL_TEXTURE_2D, 1, Utils::GetTextureInternalFormat(format), width, height);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				if (textureformat == FramebufferTextureFormat::Depth)
+				{
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+					float borderColor[] = { 1.0f,1.0f,1.0f,1.0f };
+					glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+					// for Hardware PCF ShadowSamplnig
+					// Comparison Mode Set
+					//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+					// Compare func set
+					//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC,GL_LEQUAL);
+
+				}
+				else
+				{
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				}
 			}
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GetTextureTarget(textureformat, multisampled), id, 0);
 
@@ -129,6 +160,7 @@ namespace QCat
 			switch (format)
 			{
 			case FramebufferTextureFormat::Depth: return true;
+			case FramebufferTextureFormat::Depth_Stencil: return true;
 			}
 			return false;
 		}
@@ -210,8 +242,10 @@ namespace QCat
 			Utils::BindTexture(foramt.TextureFormat,multisample, m_DepthAttachment);
 			switch (m_DepthAttacmentSpecifications.TextureFormat)
 			{
+			case FramebufferTextureFormat::Depth_Stencil:
+				Utils::AttachDepthTexture(foramt.TextureFormat,m_DepthAttachment, m_Specification.Samples, foramt.DataFormat, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 			case FramebufferTextureFormat::Depth:
-				Utils::AttachDepthTexture(foramt.TextureFormat,m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+				Utils::AttachDepthTexture(foramt.TextureFormat, m_DepthAttachment, m_Specification.Samples, foramt.DataFormat, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 				break;
 			}
 		}
@@ -225,6 +259,7 @@ namespace QCat
 		{
 			// only Depth-pass
 			glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
 		}
 
 		/*glCreateTextures(GL_TEXTURE_2D, 1, &m_DepthAttachment);
@@ -232,7 +267,8 @@ namespace QCat
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, m_Specification.Width, m_Specification.Height);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthAttachment, 0);*/
 
-		QCAT_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Frambuffer is incomplete!");
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Frambuffer is incomplete!");
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -309,6 +345,9 @@ namespace QCat
 	void OpenGLFrameBuffer::Clear(glm::vec4 color) const
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		if(m_ColorAttachments.size()>0 && m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth_Stencil)
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		else if (m_ColorAttachments.size() == 0 && m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth)
+			glClear(GL_DEPTH_BUFFER_BIT);
 	}
 }

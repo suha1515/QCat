@@ -22,6 +22,8 @@ namespace QCat
 			switch (format)
 			{
 			case FramebufferTextureFormat::Depth: return true;
+			case FramebufferTextureFormat::Depth_Stencil: return true;
+
 			}
 			return false;
 		}
@@ -124,7 +126,10 @@ namespace QCat
 			switch (m_DepthAttacmentSpecifications.TextureFormat)
 			{
 			case FramebufferTextureFormat::Depth:
-				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height,m_Specification.Samples, DXGI_FORMAT_D24_UNORM_S8_UINT);
+				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height,DX11DepthStencil::Usage::ShadowDepth,m_Specification.Samples,true);
+				break;
+			case FramebufferTextureFormat::Depth_Stencil:
+				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height, DX11DepthStencil::Usage::DepthStencil,m_Specification.Samples,true);
 				break;
 			}
 			
@@ -138,13 +143,19 @@ namespace QCat
 		{
 			m_RenderTargets.push_back(rendertarget.rendertargets[rendertarget.attachTarget]->GetRenderTargetView());
 		}
-		if(m_DepthAttachment)
-		 gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], m_DepthAttachment->GetDepthStencil());
+		if (m_ColorAttachments.size() > 0)
+		{
+			if(m_DepthAttachment)
+				gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], m_DepthAttachment->GetDepthStencil());
+			else
+				gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], nullptr);
+		}
 		else
-		 gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], nullptr);
-		// only for depth buffer
-		if (m_ColorAttachments.empty() && m_DepthAttachment)
-			m_DepthAttachment->Bind(gfx);
+		{
+			// only for depth buffer
+			if (m_ColorAttachments.empty() && m_DepthAttachment)
+				m_DepthAttachment->Bind(gfx);
+		}
 		// configure viewport
 		D3D11_VIEWPORT vp;
 		vp.Width = (float)m_Specification.Width;
@@ -222,11 +233,22 @@ namespace QCat
 
 		gfx.GetContext()->PSSetShaderResources(slot, 1u, &srv);
 	}
+	void DX11FrameBuffer::BindDepthTexture(uint32_t slot) const
+	{
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		ID3D11ShaderResourceView* srv = (ID3D11ShaderResourceView*)(m_DepthAttachment->GetTexture());
+
+		gfx.GetContext()->PSSetShaderResources(slot, 1u, &srv);
+	}
 	void DX11FrameBuffer::UnBindTexture()
 	{
 		ID3D11ShaderResourceView* pSrv = nullptr;
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
-		gfx.GetContext()->PSSetShaderResources(0, 1u, &pSrv);
+		
+		for (int i = 0; i < 8; ++i)
+		{
+			gfx.GetContext()->PSSetShaderResources(i, 1u, &pSrv);
+		}
 	}
 	void DX11FrameBuffer::Clear(glm::vec4 color) const
 	{

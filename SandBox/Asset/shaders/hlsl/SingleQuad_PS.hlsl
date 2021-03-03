@@ -48,13 +48,14 @@ float4 main(float2 tc : Texcoord) : SV_TARGET
 	sampleTex[6] = screenTex.Sample(splr, tc + float2(-offset, -offset)).rgb;
 	sampleTex[7] = screenTex.Sample(splr, tc + float2( 0.0f, -offset)).rgb;
 	sampleTex[8] = screenTex.Sample(splr, tc + float2(offset, -offset)).rgb;*/
-	float3 col = float3(0.0f, 0.0f, 0.0f);
-	[unroll]
-	for (int i = 0; i < 9; ++i)
-	{
-		col += screenTex.Sample(splr, tc + offsets[i]).rgb * kernel[i];
-		//sampleTex[i] = float3(1.0f, 1.0f, 1.0f);
-	}
-	color = float4(col, 1.0f);
+	//float3 col = float3(0.0f, 0.0f, 0.0f);
+	//[unroll]
+	//for (int i = 0; i < 9; ++i)
+	//{
+	//	col += screenTex.Sample(splr, tc + offsets[i]).rgb * kernel[i];
+	//	//sampleTex[i] = float3(1.0f, 1.0f, 1.0f);
+	//}
+	//color = float4(col, 1.0f);
+	color = screenTex.Sample(splr, tc);
 	return color;
 }

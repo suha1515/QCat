@@ -42,7 +42,7 @@ namespace QCat
 	class Light
 	{
 	public:
-		Light(glm::vec3 position, glm::vec3 lightColor = { 1.0f,1.0f,1.0f }, glm::vec3 lightAmbient = { 0.1f,0.1f,0.1f });
+		Light(glm::vec3 position = { 0.0f,0.0f,0.0f }, glm::vec3 lightColor = { 1.0f,1.0f,1.0f }, glm::vec3 lightAmbient = { 0.1f,0.1f,0.1f });
 
 		LightInfo Getinfo() const { return info; }
 		void SetDirection(const glm::vec3& dir) { info.lightDirection = dir; }

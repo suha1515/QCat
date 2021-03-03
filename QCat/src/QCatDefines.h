@@ -10,11 +10,13 @@
 #else
 
 #endif
-#define QCAT_DX11
-//#define QCAT_OPENGL
+//#define QCAT_DX11
+#define QCAT_OPENGL
 
-//#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #define GLM_FORCE_LEFT_HANDED
 #if defined(QCAT_DX11)
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #elif defined(QCAT_OPENGL)
+//#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #endif

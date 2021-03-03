@@ -23,11 +23,14 @@ namespace QCat
 		virtual void AttachCubeMapByIndex(uint32_t faceindex) override;
 
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override;
+		virtual void* GetDepthAttachmentRendererID() const override { return reinterpret_cast<void*>(m_DepthAttachment); }
+
 		virtual void  SaveColorBuffer(uint32_t index = 0) const override {}
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void BindColorTexture(uint32_t slot,uint32_t index = 0) const override;
-		
+		virtual void BindDepthTexture(uint32_t slot) const override { glBindTextureUnit(slot, m_DepthAttachment); };
+
 		virtual void UnBindTexture() override {};
 		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;
 	private:

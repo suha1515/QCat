@@ -29,7 +29,7 @@ namespace QCat
 		FrameBufferSpecification fbSpec;
 		fbSpec.Attachments = { {FramebufferTextureFormat::Texture2D,FramebufferTextureDataFormat::RGBA8},
 								{FramebufferTextureFormat::Texture2D,FramebufferTextureDataFormat::RED32_INTEGER},
-							 {FramebufferTextureFormat::Depth ,FramebufferTextureDataFormat::DEPTH24STENCIL8} };
+							 {FramebufferTextureFormat::Depth_Stencil,FramebufferTextureDataFormat::DEPTH24STENCIL8} };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = FrameBuffer::Create(fbSpec);

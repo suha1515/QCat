@@ -1,6 +1,8 @@
 #pragma once
 
 // For use by QCat application
+//defines
+#include "QCatDefines.h"
 
 #include "QCat/Core/QCatCore.h"
 #include "QCat/Core/Application.h"
@@ -14,8 +16,7 @@
 #include "QCat/Core/Input.h"
 #include "QCat/Core/KeyCode.h"
 #include "QCat/OrthographicCameraController.h"
-//defines
-#include "QCatDefines.h"
+
 
 #include "QCat/ImGui/ImGuiLayer.h"
 #include "QCat/Scene/Scene.h"
