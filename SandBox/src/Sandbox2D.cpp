@@ -250,7 +250,7 @@ namespace QCat
 		desc.mode = FilterMode::COMPARISON;
 		desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
 
-		//shadowSampler = SamplerState::Create(desc);
+		shadowSampler = SamplerState::Create(desc);
 
 	}
 
@@ -310,7 +310,7 @@ namespace QCat
 			m_ScreenDepthShader->Bind();
 
 			DepthFrameBuffer->BindDepthTexture(0);
-
+			defaultSampler->Bind(0);
 			m_quad->Bind();
 			RenderCommand::DrawIndexed(m_quad);
 			m_ScreenDepthShader->UnBind();
@@ -324,6 +324,7 @@ namespace QCat
 			m_LightShader->Bind();
 			m_LightShader->SetMat4("lightSpaceMatrix", lightProjection * lightView, ShaderType::VS);
 			DepthFrameBuffer->BindDepthTexture(4);
+			shadowSampler->Bind(4);
 			//shadowSampler->Bind(4);
 			RenderLightObj(camProj, viewMatrix, tc);
 			m_LightShader->UnBind();

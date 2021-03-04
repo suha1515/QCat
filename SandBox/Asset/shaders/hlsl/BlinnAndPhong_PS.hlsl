@@ -56,7 +56,7 @@ Texture2D normalMapTex;
 Texture2D shadowMapTex : register(t4);
 
 SamplerState splr : register(s0);
-//SamplerComparisonState shadowSampler : register(s4);
+SamplerComparisonState shadowSampler : register(s4);
 struct PS_OUT
 {
 	float4 color :SV_TARGET0;
@@ -67,10 +67,10 @@ float ShadowCalculation(float4 fragPosLightSpace, float3 normal, float3 lightDir
 	float3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	if (projCoords.z > 1.0)
 		return 0.0;
-	float closestDepth = shadowMapTex.Sample(splr, projCoords.xy).r;
+	//float closestDepth = shadowMapTex.Sample(splr, projCoords.xy).r;
 	float currentDepth = projCoords.z;
 	//float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.0001f);  
-	float bias = 0.0001f;
+	float bias = 0.001f;
 
 	float shadow = 0.0;
 	//float x1, y1;
@@ -81,8 +81,9 @@ float ShadowCalculation(float4 fragPosLightSpace, float3 normal, float3 lightDir
 	{
 		for (int y = -2; y <= 2; ++y)
 		{
-			float pcfDepth = shadowMapTex.Sample(splr, projCoords.xy, int2(x, y)).r;
-			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+			//float pcfDepth = shadowMapTex.Sample(splr, projCoords.xy, int2(x, y)).r;
+			//shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+			shadow += shadowMapTex.SampleCmpLevelZero(shadowSampler, projCoords.xy, projCoords.z-bias, int2(x, y));
 		}
 	}
 
@@ -117,7 +118,7 @@ float3 CalcDirLight(DirLight light, float3 normal, float3 viewDir, float2 tc ,fl
 	float3 diffuse = light.diffuse * diff * diffuseTex.Sample(splr, tc).rgb;
 	float3 specular = light.specular * spec * specularTex.Sample(splr, tc).rgb;
 	//return (ambient + ((1.0f-shadow) *(diffuse + specular)));
-	return (ambient + (1.0f - shadow) * (diffuse + specular));
+	return (ambient + (shadow) * (diffuse + specular));
 
 }
 // calculates the color when using a point light.

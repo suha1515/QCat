@@ -48,6 +48,6 @@ VSOut main(float3 pos : a_Position, float3 normal : a_Normal, float2 tc : a_Texc
 	vso.fragPos = FragPos;
 	vso.viewPosition = viewPosition;
 	vso.fragPosLightSpace = mul(lightSpaceMatrix, float4(FragPos, 1.0f));
-	vso.fragPosLightSpace= vso.fragPosLightSpace *float4(0.5f, 0.5f, 1.0f, 1.0f) + float4(0.5f, 0.5f, 0.0f, 0.0f)* vso.fragPosLightSpace.w;
+	vso.fragPosLightSpace= vso.fragPosLightSpace *float4(0.5f, -0.5f, 1.0f, 1.0f) + float4(0.5f, 0.5f, 0.0f, 0.0f)* vso.fragPosLightSpace.w;
 	return vso;
 }
