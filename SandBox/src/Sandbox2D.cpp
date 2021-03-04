@@ -7,6 +7,7 @@
 #include "API/DirectX11/DX11_Shader.h"
 #include "API/DirectX11/DX11_Blender.h"
 
+
 #include <chrono>
 #include <QCat/InputDevice/Mouse/Mouse.h>
 
@@ -223,17 +224,33 @@ namespace QCat
 		};
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, 6);
 
-
-
 		m_quad->AddVertexBuffer(quadBuffer);
 		m_quad->SetIndexBuffer(indexBuffer);
 		m_quad->UnBind();
 
-		//FrameBuffer
+		Sampler_Desc desc;
+		desc.MIN = Filtering::POINT;
+		desc.MAG = Filtering::POINT;
+		desc.MIP = Filtering::NONE;
+		
+		desc.addressU = WrapingMode::CLAMP;
+		desc.addressV = WrapingMode::CLAMP;
+		desc.addressW = WrapingMode::CLAMP;
 
-		//shader->SetInt("material.emission",2);
+		defaultSampler = SamplerState::Create(desc);
 
-		//RenderCommand::SetWireFrameMode();
+		desc.MIN = Filtering::LINEAR;
+		desc.MAG = Filtering::LINEAR;
+		desc.MIP = Filtering::NONE;
+
+		desc.addressU = WrapingMode::BORDER;
+		desc.addressV = WrapingMode::BORDER;
+		desc.addressW = WrapingMode::BORDER;
+
+		desc.mode = FilterMode::COMPARISON;
+		desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+
+		//shadowSampler = SamplerState::Create(desc);
 
 	}
 
@@ -271,7 +288,7 @@ namespace QCat
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
 			float near_plane = 1.0f, far_plane = 50.5f;
-			const glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+			const glm::mat4 lightProjection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, near_plane, far_plane);
 			//const glm::mat4 lightProjection = camProj;
 			glm::mat4 lightView = glm::lookAt(glm::vec3(0.5f, 3.0f, -7.2f), glm::vec3(0.0f, -2.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
@@ -291,6 +308,7 @@ namespace QCat
 			//for check depth image
 			screenframeBuffer->Bind();
 			m_ScreenDepthShader->Bind();
+
 			DepthFrameBuffer->BindDepthTexture(0);
 
 			m_quad->Bind();
@@ -306,10 +324,12 @@ namespace QCat
 			m_LightShader->Bind();
 			m_LightShader->SetMat4("lightSpaceMatrix", lightProjection * lightView, ShaderType::VS);
 			DepthFrameBuffer->BindDepthTexture(4);
+			//shadowSampler->Bind(4);
 			RenderLightObj(camProj, viewMatrix, tc);
 			m_LightShader->UnBind();
 			RenderNonLightObj(camProj, viewMatrix, tc);
 			DepthFrameBuffer->UnBindTexture();
+			//shadowSampler->UnBind();
 
 			//Reflect
 			//RenderCommand::SetBlend(false);

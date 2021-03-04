@@ -29,7 +29,7 @@ namespace QCat
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 		virtual void BindColorTexture(uint32_t slot,uint32_t index = 0) const override;
-		virtual void BindDepthTexture(uint32_t slot) const override { glBindTextureUnit(slot, m_DepthAttachment); };
+		virtual void BindDepthTexture(uint32_t slot) const override;
 
 		virtual void UnBindTexture() override {};
 		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;

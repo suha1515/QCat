@@ -1,4 +1,5 @@
 #pragma once
+#include "enums.h"
 
 namespace QCat
 {
@@ -8,13 +9,6 @@ namespace QCat
 		INCREMENT, INCREMENT_WRAP,
 		DECREMENT, DECREMENT_WRAP,
 		INVERT
-	};
-	enum class COMPARISON_FUNC
-	{
-		NEVER, EQUAL,
-		LESS, LESS_EQUAL,
-		GREATER, GREATER_EQUAL,
-		NOT_EQUAL, ALWAYS
 	};
 	enum class DEPTH_WRITE_MASK
 	{

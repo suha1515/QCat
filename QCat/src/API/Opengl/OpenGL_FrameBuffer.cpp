@@ -52,6 +52,7 @@ namespace QCat
 		{
 			switch (format)
 			{
+				
 				//32 bit
 			case FramebufferTextureDataFormat::RGBA8:			return GL_RGBA8;
 			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_R32I;
@@ -65,6 +66,22 @@ namespace QCat
 			}
 		}
 
+		static GLenum GetTextureDataType(FramebufferTextureDataFormat format)
+		{
+			switch (format)
+			{
+				//32 bit
+			case FramebufferTextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_INT;
+				//24 bit
+			case FramebufferTextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
+
+
+				//depth
+			case FramebufferTextureDataFormat::DEPTH32:			return GL_FLOAT;
+			case FramebufferTextureDataFormat::DEPTH24STENCIL8: return GL_UNSIGNED_INT_24_8;
+			}
+		}
 	/*	static GLenum TextureTarget(bool multisampled)
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -87,7 +104,7 @@ namespace QCat
 			}
 			else
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GL_UNSIGNED_BYTE, nullptr);
+				glTexImage2D(GL_TEXTURE_2D, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GetTextureDataType(dataformat), nullptr);
 
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -102,7 +119,7 @@ namespace QCat
 		{
 			for (int i = 0; i < 6; ++i)
 			{
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GL_UNSIGNED_BYTE, nullptr);
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GetTextureDataType(dataformat), nullptr);
 			}
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -112,35 +129,34 @@ namespace QCat
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_CUBE_MAP_POSITIVE_X, id, 0);
 
 		}
-		static void AttachDepthTexture(FramebufferTextureFormat textureformat,uint32_t id, int samples, FramebufferTextureDataFormat format,GLenum attachmentType, uint32_t width, uint32_t height)
+		static void AttachDepthTexture(FramebufferTextureFormat textureformat,uint32_t id, int samples, FramebufferTextureDataFormat dataformat,GLenum attachmentType, uint32_t width, uint32_t height)
 		{
 			bool multisampled = samples > 1;
 			if (multisampled)
 			{
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, Utils::GetTextureInternalFormat(format), width, height, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples,GetTextureInternalFormat(dataformat), width, height, GL_FALSE);
 			}
 			else
 			{
-				glTexStorage2D(GL_TEXTURE_2D, 1, Utils::GetTextureInternalFormat(format), width, height);
-
+				glTexImage2D(GL_TEXTURE_2D, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GetTextureDataType(dataformat), nullptr);
 				if (textureformat == FramebufferTextureFormat::Depth)
 				{
+
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 					float borderColor[] = { 1.0f,1.0f,1.0f,1.0f };
 					glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
+					// with this settings you cant use sampler2D use have to use shadow samplers
 					// for Hardware PCF ShadowSamplnig
 					// Comparison Mode Set
-					//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+					
 					// Compare func set
-					//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC,GL_LEQUAL);
-
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC,GL_LEQUAL);
 				}
 				else
 				{
@@ -341,6 +357,10 @@ namespace QCat
 		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
 
 		glBindTextureUnit(slot, m_ColorAttachments[index]);
+	}
+	void OpenGLFrameBuffer::BindDepthTexture(uint32_t slot) const
+	{
+		 glBindTextureUnit(slot, m_DepthAttachment); 
 	}
 	void OpenGLFrameBuffer::Clear(glm::vec4 color) const
 	{

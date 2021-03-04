@@ -9,8 +9,6 @@
 #include "Model/Model.h"
 #include "CubeMap/CubeMap.h"
 
-
-
 namespace QCat
 {
 	class Sandbox2D : public Layer
@@ -66,6 +64,9 @@ namespace QCat
 		Ref<FrameBuffer> screenframeBuffer;
 		Ref<FrameBuffer> CubeFarameBuffer;
 		Ref<FrameBuffer> DepthFrameBuffer;
+
+		Ref<SamplerState> defaultSampler;
+		Ref<SamplerState> shadowSampler;
 
 		glm::vec3 m_CameraPosition = { 0.5f,0.0f,-7.2f };
 		glm::vec3 m_CameraRotation = { 0.0f,0.0f, 0.0f };

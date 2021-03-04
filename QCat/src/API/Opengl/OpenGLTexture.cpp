@@ -166,6 +166,7 @@ namespace QCat
 
 		// 1st parameter is for slot
 		//glBindTextureUnit(slot, m_renderID);
+		glActiveTexture(GL_TEXTURE0+slot);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
 	}
 	

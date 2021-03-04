@@ -4,6 +4,22 @@
 #include <glad/glad.h>
 namespace QCat
 {
+	void GLAPIENTRY
+		MessageCallback(GLenum source,
+			GLenum type,
+			GLuint id,
+			GLenum severity,
+			GLsizei length,
+			const GLchar* message,
+			const void* userParam)
+	{
+		if (type == GL_DEBUG_TYPE_ERROR)
+		{
+			fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+				"** GL ERROR **",type, severity, message);
+		}
+		
+	}
 	void OpenGLRenderAPI::Init()
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -49,6 +65,13 @@ namespace QCat
 
 		SetCullMode(CullMode::Back);
 		SetFrontClockWise(false);
+
+#ifdef QCAT_DEBUG
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, 0);
+#else
+
+#endif
 
 	}
 	void OpenGLRenderAPI::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)

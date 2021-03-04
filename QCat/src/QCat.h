@@ -35,6 +35,8 @@
 #include "QCat/Renderer/FrameBuffer.h"
 #include "QCat/Renderer/VertexArray.h"
 #include "QCat/Renderer/OrthographicCamera.h"
+
+#include "QCat/Renderer/SamplerState.h"
 //--Renderer-----------------------------//
 //--API----------------------------------//
 #include "API/Opengl/OpenGLShader.h"

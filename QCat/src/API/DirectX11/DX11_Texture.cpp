@@ -350,6 +350,7 @@ namespace QCat
 		samplerDesc.BorderColor[2] = 1.0f;
 		samplerDesc.BorderColor[3] = 1.0f;
 
+
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateSamplerState(&samplerDesc, &pSamplerState);
 	}
 	void DX11TextureCube::SetData(void* pData, unsigned int size)
