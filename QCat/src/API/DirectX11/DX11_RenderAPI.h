@@ -17,7 +17,7 @@ namespace QCat
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 		virtual void DrawIndexed(const unsigned int indexCount);
-		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0) override;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0, DrawMode mode = DrawMode::TRIANGLES) override;
 	
 		// depth-stencil option
 		virtual void SetDepthTest(bool enable)override;

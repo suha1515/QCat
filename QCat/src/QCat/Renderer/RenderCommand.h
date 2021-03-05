@@ -26,9 +26,9 @@ namespace QCat
 		{
 			s_renderAPI->Clear();
 		}
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray,unsigned int count =0)
+		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray,unsigned int count =0,RenderAPI::DrawMode mode = RenderAPI::DrawMode::TRIANGLES)
 		{
-			s_renderAPI->DrawIndexed(vertexArray, count);
+			s_renderAPI->DrawIndexed(vertexArray, count,mode);
 		}
 		// Depth Stencil State Function
 		inline static void SetDepthTest(bool enable)

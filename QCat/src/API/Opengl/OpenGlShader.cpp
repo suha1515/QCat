@@ -12,6 +12,8 @@ namespace QCat
 			return GL_VERTEX_SHADER;
 		if (type == "fragment" || type == "pixel")
 			return GL_FRAGMENT_SHADER;
+		if (type == "geometry")
+			return GL_GEOMETRY_SHADER;
 
 		QCAT_CORE_ASSERT(false, "Unknown shader Type!");
 		return 0;
@@ -111,8 +113,8 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
-		QCAT_CORE_ASSERT(shaderSources.size() <= 2, "we only support 2 shaders");
-		std::array<GLenum,2> glShaderIDs;
+		QCAT_CORE_ASSERT(shaderSources.size() <= 3, "we only support 3 shaders");
+		std::array<GLenum, 3> glShaderIDs = { 0,0,0 };
 		int glShaderIDIndex = 0;
 		for (auto& kv : shaderSources)
 		{
@@ -175,7 +177,11 @@ namespace QCat
 		}
 
 		for (auto id : glShaderIDs)
-			glDetachShader(program, id);
+		{
+			if(id!=0)
+				glDetachShader(program, id);
+		}
+			
 	}
 
 	void OpenGLShader::Bind() const
@@ -368,5 +374,41 @@ namespace QCat
 	OpenGLPixelShader::~OpenGLPixelShader()
 	{
 		glDeleteShader(fragmentShader);
+	}
+	OpenGLGeoMetryShader::OpenGLGeoMetryShader(const std::string& geometrySrc)
+	{
+		// Create an empty vertex shader handle
+		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+
+		// Send the vertex shader source code to GL
+		// Note that std::string's .c_str is NULL character terminated.
+		const GLchar* source = geometrySrc.c_str();
+		glShaderSource(geometryShader, 1, &source, 0);
+
+		// Compile the vertex shader
+		glCompileShader(geometryShader);
+
+		GLint isCompiled = 0;
+		glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &isCompiled);
+		if (isCompiled == GL_FALSE)
+		{
+			GLint maxLength = 0;
+			glGetShaderiv(geometryShader, GL_INFO_LOG_LENGTH, &maxLength);
+
+			// The maxLength includes the NULL character
+			std::vector<GLchar> infoLog(maxLength);
+			glGetShaderInfoLog(geometryShader, maxLength, &maxLength, &infoLog[0]);
+
+			// We don't need the shader anymore.
+			glDeleteShader(geometryShader);
+
+			QCAT_CORE_ERROR("{0}", infoLog.data());
+			QCAT_CORE_ASSERT(false, "Vertex shader compilation failure!");
+			return;
+		}
+	}
+	OpenGLGeoMetryShader::~OpenGLGeoMetryShader()
+	{
+		glDeleteShader(geometryShader);
 	}
 }

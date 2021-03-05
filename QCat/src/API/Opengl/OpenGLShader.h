@@ -68,6 +68,16 @@ namespace QCat
 	private:
 		unsigned int vertexShader = 0;
 	};
+	class OpenGLGeoMetryShader
+	{
+	public:
+		OpenGLGeoMetryShader(const std::string& geometrySrc);
+		~OpenGLGeoMetryShader();
+
+		unsigned int GetGeometryShader() { return geometryShader; }
+	private:
+		unsigned int geometryShader = 0;
+	};
 
 	class OpenGLPixelShader
 	{

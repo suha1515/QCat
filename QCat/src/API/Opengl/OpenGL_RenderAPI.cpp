@@ -4,6 +4,22 @@
 #include <glad/glad.h>
 namespace QCat
 {
+	namespace Utils
+	{
+		GLenum DrawModetoGL(RenderAPI::DrawMode mode)
+		{
+			switch (mode)
+			{
+			case RenderAPI::DrawMode::POINT:			return GL_POINTS;
+			case RenderAPI::DrawMode::LINES:			return GL_LINES;
+			case RenderAPI::DrawMode::LINE_LOOP:		return GL_LINE_LOOP;
+			case RenderAPI::DrawMode::LINE_STRIP:		return GL_LINE_STRIP;
+			case RenderAPI::DrawMode::TRIANGLES:		return GL_TRIANGLES;
+			case RenderAPI::DrawMode::TRIANGLES_FAN:	return GL_TRIANGLE_FAN;
+			case RenderAPI::DrawMode::TRIANGLE_STRIP:	return GL_TRIANGLE_STRIP;
+			}
+		}
+	}
 	void GLAPIENTRY
 		MessageCallback(GLenum source,
 			GLenum type,
@@ -90,10 +106,10 @@ namespace QCat
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
 	}
-	void OpenGLRenderAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount)
+	void OpenGLRenderAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount, DrawMode mode)
 	{
 		unsigned int count = indexCount ?  indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLES, count,GL_UNSIGNED_INT, nullptr);
+		glDrawElements(Utils::DrawModetoGL(mode), count,GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	

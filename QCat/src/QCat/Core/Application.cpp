@@ -55,11 +55,10 @@ namespace QCat
 		{
 			QCAT_PROFILE_SCOPE("RunLoop");
 			Timestep timestep = timer.Mark();
+			m_window->OnMessageUpdate();
 			if (m_Running)
 			{
 				m_window->OnBegin();
-
-
 				if (!m_minimized)
 				{
 					{
@@ -77,9 +76,9 @@ namespace QCat
 				}	
 #if defined(QCAT_DX11)
 #elif defined(QCAT_OPENGL)	
-#endif								
+#endif							
 				m_window->OnEnd();
-				m_window->OnMessageUpdate();
+				
 			}
 		}
 	}

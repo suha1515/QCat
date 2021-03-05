@@ -13,6 +13,16 @@ namespace QCat
 		{
 			None =0,OpenGL = 1,DirectX11 = 2
 		};
+		enum class DrawMode
+		{
+			POINT=0,		// independent point
+			LINE_STRIP,		// line is connected
+			LINE_LOOP,		// after line_strip start,end point will be connected with line
+			LINES,
+			TRIANGLES,		// independent triangles
+			TRIANGLE_STRIP, // connected triangles
+			TRIANGLES_FAN,  // triangles share center
+		};
 	public:
 		virtual ~RenderAPI() = default;
 
@@ -21,7 +31,7 @@ namespace QCat
 		virtual void SetDefaultFrameBuffer()=0;
 		virtual void SetClearColor(const glm::vec4& color)=0;
 		virtual void Clear() = 0;
-		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0)=0;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0, DrawMode mode = DrawMode::TRIANGLES)=0;
 
 		// Depth Stencil Function
 		virtual void SetDepthTest(bool enable)=0;

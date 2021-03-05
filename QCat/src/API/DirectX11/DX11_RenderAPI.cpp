@@ -90,7 +90,7 @@ namespace QCat
 		m_RasterizState->Bind();
 		pgfx->GetContext()->DrawIndexed(indexCount,0u,0u);
 	}
-	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount)
+	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount, DrawMode mode)
 	{
 		unsigned int count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		DrawIndexed(count);
