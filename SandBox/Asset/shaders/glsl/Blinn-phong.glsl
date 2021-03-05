@@ -125,8 +125,6 @@ float ShadowCalculation(vec4 fragPosLightSpace,vec3 normal,vec3 lightDir)
 		{
 			vec3 coords = vec3(projCoords.xy + vec2(x,y) * texelSize,currentDepth-bias);
 			comparisonResult += texture(shadowMap,coords);
-			//shadow += currentDepth - bias > pcfDepth ? 1.0:0.0;
-			//shadow +=
 		}
 	}
 

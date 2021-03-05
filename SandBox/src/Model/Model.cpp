@@ -2,6 +2,18 @@
 
 namespace QCat
 {
+	namespace Utils
+	{
+		glm::mat4 ConvertToGlm(aiMatrix4x4 mat)
+		{
+			return {
+				mat.a1, mat.b1, mat.c1, mat.d1,
+				mat.a2, mat.b2, mat.c2, mat.d2,
+				mat.a3, mat.b3, mat.c3, mat.d3,
+				mat.a4, mat.b4, mat.c4, mat.d4
+			};
+		}
+	}
 	Model::Model(const char* path)
 	{
 		LoadModel(path);
@@ -9,10 +21,6 @@ namespace QCat
 	void Model::Draw(const Ref<Shader>& shader)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
-		shader->SetMat4("u_Transform", transform, ShaderType::VS);
-		shader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-		shader->UpdateBuffer();
-		//material.Bind();
 		for (uint32_t i = 0; i < meshes.size(); ++i)
 			meshes[i].Draw(shader, transform);
 	}
@@ -23,11 +31,17 @@ namespace QCat
 	void Model::LoadModel(const std::string& path)
 	{
 		Assimp::Importer importer;
-		uint32_t flag;
-		flag |= aiProcess_Triangulate | aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipWindingOrder | aiProcess_MakeLeftHanded| aiProcess_FlipUVs;
+
 		//if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		//	flag |= aiProcess_FlipUVs;
-		const aiScene* scene = importer.ReadFile(path, flag);
+		const aiScene* scene = importer.ReadFile(path,
+			aiProcess_Triangulate |  
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_CalcTangentSpace | 
+			aiProcess_GenNormals |
+			aiProcess_MakeLeftHanded |
+			aiProcess_FlipUVs |
+			aiProcess_FlipWindingOrder);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -46,7 +60,7 @@ namespace QCat
 		for (uint32_t i = 0; i < node->mNumMeshes; ++i)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			meshes.push_back(ProcessMesh(mesh, scene));
+			meshes.push_back(ProcessMesh(node,mesh, scene));
 		}
 		// and also node can have child nodes, do this procedure recursively
 		for (uint32_t i = 0; i < node->mNumChildren; ++i)
@@ -55,8 +69,10 @@ namespace QCat
 		}
 
 	}
-	Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
+	Mesh Model::ProcessMesh(aiNode* node,aiMesh* mesh, const aiScene* scene)
 	{
+		glm::mat4 transform = Utils::ConvertToGlm(node->mTransformation);
+
 		std::vector<Mesh::Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<Mesh::Texture> textures;
@@ -157,7 +173,7 @@ namespace QCat
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		// TODO: Shader split..?
-		return Mesh(vertices, indices, mat, shader);
+		return Mesh(transform,vertices, indices, mat, shader);
 	}
 	std::vector<Mesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
 	{

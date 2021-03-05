@@ -117,8 +117,9 @@ namespace QCat
 		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
 		ReflectMaterial.SetTexture(m_cubeTexture, Material::MaterialType::Diffuse);
 		// model Load
-		//bagPack = Model::Create("Asset/model/backpack/backpack.obj");
-		//bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+		bagPack = Model::Create("Asset/model/muro/muro.obj");
+		bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
+		//bagPack->SetMaterial(Box);
 		//temMat = bagPack->GetMaterial();
 
 		m_LightShader->Bind();
@@ -171,7 +172,7 @@ namespace QCat
 		window2 = glm::vec3(0.3f, -2.75f, 0.3f);
 		window3 = glm::vec3(0.5f, -2.75f, -0.1f);
 
-		backpackPos = glm::vec3(2.0f, -2.0f, 0.0f);
+		backpackPos = glm::vec3(2.0f, -3.0f, 0.0f);
 		backpackRot = glm::vec3(0.0f);
 		ReflectObjPos = glm::vec3(0.5f, -2.0f, -0.5f);
 
@@ -279,9 +280,9 @@ namespace QCat
 		{
 			QCAT_PROFILE_SCOPE("Renderer Draw");
 			RenderCommand::SetDepthTest(true);
-			RenderCommand::SetBlend(true);
-			RenderCommand::SetBlendFunc(BlendFunc::BLEND_SRC_ALPHA, BlendFunc::BLEND_INV_SRC_ALPHA, BlendFunc::BLEND_ONE, BlendFunc::BLEND_ZERO);
-			RenderCommand::SetBlendOp(BlendOp::BLEND_ADD, BlendOp::BLEND_ADD);
+			//RenderCommand::SetBlend(true);
+			//RenderCommand::SetBlendFunc(BlendFunc::BLEND_SRC_ALPHA, BlendFunc::BLEND_INV_SRC_ALPHA, BlendFunc::BLEND_ONE, BlendFunc::BLEND_ZERO);
+			//RenderCommand::SetBlendOp(BlendOp::BLEND_ADD, BlendOp::BLEND_ADD);
 			RenderCommand::SetCullMode(CullMode::Back);
 
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
@@ -314,8 +315,6 @@ namespace QCat
 			m_quad->Bind();
 			RenderCommand::DrawIndexed(m_quad);
 			m_ScreenDepthShader->UnBind();
-
-			screenframeBuffer->UnBind();
 
 			// new framebuffer
 			framebuffer->Bind();
@@ -398,7 +397,9 @@ namespace QCat
 		ImGui::Checkbox("blinn", &blinn);
 		ImGui::Checkbox("gamaa Corretion", &gamma);
 		ImGui::DragFloat3("floor", glm::value_ptr(floor), 0.1f);
-		ImGui::DragFloat3("backpackRot", glm::value_ptr(backpackRot), 0.1f);
+		ImGui::DragFloat3("ModelPos", glm::value_ptr(backpackPos), 0.1f);
+		ImGui::DragFloat3("ModelRot", glm::value_ptr(backpackRot), 0.1f);
+
 		ImGui::DragFloat3("obj", glm::value_ptr(ReflectObjPos), 0.1f);
 		ImGui::DragFloat3("light", glm::value_ptr(LightPosition), 0.1f);
 		
@@ -569,9 +570,10 @@ namespace QCat
 		face->Draw(m_LightShader);
 		face->SetTranslation(grass3);
 		face->Draw(m_LightShader);
-		//bagPack->SetTranslation(backpackPos);
-		//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-		//bagPack->Draw(m_LightShader);
+		bagPack->SetTranslation(backpackPos);
+		bagPack->SetRotation(backpackRot);
+		bagPack->SetScale({ 1.f, 1.f, 1.f });
+		bagPack->Draw(m_LightShader);
 
 		/*RenderCommand::SetStencilTest(true);
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
@@ -625,9 +627,10 @@ namespace QCat
 		face->SetTranslation(grass3);
 		face->Draw(shader);
 
-		//bagPack->SetTranslation(backpackPos);
-		//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-		//bagPack->Draw(m_LightShader);
+		bagPack->SetTranslation(backpackPos);
+		bagPack->SetRotation(backpackRot);
+		bagPack->SetScale({ 1.f, 1.f, 1.f });
+		bagPack->Draw(shader);
 
 		/*RenderCommand::SetStencilTest(true);
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);

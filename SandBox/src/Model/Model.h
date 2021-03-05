@@ -16,8 +16,8 @@ namespace QCat
 		void SetRotation(const glm::vec3& rotation) { this->rotation = rotation; }
 		void SetTranslation(const glm::vec3& translation) {this->translation = translation;}
 
-		Material& GetMaterial() { return material; }
-
+		Material GetMaterial() { return material; }
+		void SetMaterial(const Material& mat) { material = mat; }
 		static Ref<Model> Create(const char* path);
 	private:
 		std::vector<Mesh> meshes;
@@ -25,7 +25,7 @@ namespace QCat
 
 		void LoadModel(const std::string& path);
 		void ProcessNode(aiNode* node, const aiScene* scene);
-		Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
+		Mesh ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene);
 		std::vector<Mesh::Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typename);
 
 		glm::vec3 translation = { 0.0f,0.0f,0.0f };
