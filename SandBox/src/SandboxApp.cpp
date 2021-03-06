@@ -12,6 +12,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Sandbox2D.h"
+#include "ModelTestScene.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -54,7 +55,7 @@ public:
 	Sandbox()
 	{
 		//PushLayer(new ExamLayer());
-		PushLayer(new QCat::Sandbox2D());
+		PushLayer(new QCat::ModelTestScene());
 	}
 	~Sandbox()
 	{

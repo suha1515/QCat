@@ -13,10 +13,12 @@ layout(location = 4) in vec3 a_BitTangent;
 uniform mat4 u_ViewProjection;
 uniform mat4 u_Transform;
 uniform vec3 viewPosition;
+uniform mat4 lightSpaceMatrix;
 
 out vec2 TexCoords;
 out vec3 v_Normal;
 out vec3 FragPos;
+out vec4 FragPosLightSpace;
 out mat3 TBN;
 
 void main()
@@ -26,6 +28,7 @@ void main()
 	v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
 	gl_Position = u_ViewProjection *u_Transform * vec4(a_Position, 1.0);
 	FragPos = vec3(u_Transform * vec4(a_Position,1.0));
+	FragPosLightSpace = lightSpaceMatrix * vec4(FragPos,1.0);
 
 	vec3 T = normalize(normalMatrix *a_Tangent);
 	vec3 B = normalize(normalMatrix *a_BitTangent);
@@ -90,6 +93,7 @@ layout(location = 0) out vec4 color;
 in vec3 v_Normal;
 in vec2 TexCoords;
 in vec3 FragPos;
+in vec4 FragPosLightSpace;
 in mat3 TBN;
 
 uniform Material material;
@@ -98,6 +102,37 @@ uniform DirLight dirLight;
 uniform vec3 viewPosition;
 uniform bool blinn;
 uniform bool gamma;
+
+uniform sampler2DShadow shadowMap;
+
+float ShadowCalculation(vec4 fragPosLightSpace,vec3 normal,vec3 lightDir)
+{
+	vec3 projCoords = fragPosLightSpace.xyz /fragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	if(projCoords.z>1.0)
+		return 0.0;
+	//float closestDepth = texture(shadowMap,projCoords.xy).r;
+	float currentDepth = projCoords.z;
+	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001f);  
+	bias = 0.0005f;
+
+	projCoords.z - bias;
+	float comparisonResult = 0.0;
+	vec2 texelSize = 1.0/ textureSize(shadowMap,0);
+	for(int x = -2;x<=2;++x)
+	{
+		for(int y=-2;y<=2;++y)
+		{
+			vec3 coords = vec3(projCoords.xy + vec2(x,y) * texelSize,currentDepth-bias);
+			comparisonResult += texture(shadowMap,coords);
+		}
+	}
+
+	comparisonResult /=25.0;
+
+	//shadow = currentDepth - bias > closestDepth ? 1.0:0.0;
+	return comparisonResult;
+}
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -156,11 +191,12 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 		 vec3 reflectDir = reflect(-lightDir, normal);
 		 spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	}
+	float shadow = ShadowCalculation(FragPosLightSpace,normal,lightDir);
     // combine results
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
     vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
-    return (ambient + (diffuse + specular));
+    return (ambient +(shadow)*(diffuse + specular));
 }
 
 // calculates the color when using a point light.
