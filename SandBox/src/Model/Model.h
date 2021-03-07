@@ -16,8 +16,6 @@ namespace QCat
 		void SetRotation(const glm::vec3& rotation) { this->rotation = rotation; }
 		void SetTranslation(const glm::vec3& translation) {this->translation = translation;}
 
-		Material GetMaterial() { return material; }
-		void SetMaterial(const Material& mat) { material = mat; }
 		static Ref<Model> Create(const char* path);
 	private:
 		std::vector<Mesh> meshes;
@@ -32,6 +30,5 @@ namespace QCat
 		glm::vec3 rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 scale = { 1.0f,1.0f,1.0f };
 
-		Material material;
 	};
 }

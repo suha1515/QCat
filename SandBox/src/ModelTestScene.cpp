@@ -31,11 +31,11 @@ namespace QCat
 		}
 		else
 		{
-
+			BlinnPhongShader = Shader::Create("blinn","Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl","Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
-
-		HumanModel = Model::Create("Asset/model/muro/muro.obj");
-		HumanModel->SetTranslation({ 0.0f,-1.0f,0.0f });
+		BlinnPhongShader->SetInt("material.diffuse",0,ShaderType::PS);
+		HumanModel = Model::Create("Asset/model/diona/Diona.fbx");
+		HumanModel->SetTranslation({ 0.0f,-3.0f,0.0f });
 		
 		RenderCommand::SetClearColor({ 0.1f,0.1f,0.1f,1.0f });
 	}
@@ -52,6 +52,7 @@ namespace QCat
 
 		glm::mat4 proj = glm::perspective(glm::radians(45.0f), 16.f / 9.f, 0.1f, 100.0f);
 		glm::mat4 view = glm::lookAt(camPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.f, 1.0f, 0.0f));
+		HumanModel->SetScale({ 0.5f,0.5f,0.5f });
 		HumanModel->SetRotation(modelRot);
 
 		BlinnPhongShader->Bind();
@@ -65,16 +66,15 @@ namespace QCat
 		BlinnPhongShader->SetFloat3("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f), ShaderType::PS);
 		BlinnPhongShader->SetFloat3("dirLight.specular", glm::vec3(1.0f,1.0f,1.0f), ShaderType::PS);
 
-		
 		HumanModel->Draw(BlinnPhongShader);
 
 
-		BlinnPhongShader->UnBind();
+	/*	BlinnPhongShader->UnBind();
 
 		visualizingNormalShader->Bind();
 		visualizingNormalShader->SetMat4("u_ViewProjection", proj * view, ShaderType::VS);
 		HumanModel->Draw(visualizingNormalShader);
-		visualizingNormalShader->UnBind();
+		visualizingNormalShader->UnBind();*/
 	}
 
 	void ModelTestScene::OnImGuiRender()

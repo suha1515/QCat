@@ -35,6 +35,7 @@ namespace QCat
 		glm::vec3 modelRot = { 0.0f,0.0f,0.0f };
 
 		float value = 0.0f;
+		Material mat;
 	};
 
 }

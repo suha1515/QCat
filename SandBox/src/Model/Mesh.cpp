@@ -26,8 +26,8 @@ namespace QCat
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
 
-		material.Bind();
 		m_VertexArray->Bind();
+		material.Bind();
 		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}

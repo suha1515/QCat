@@ -21,6 +21,7 @@ namespace QCat
 	void Model::Draw(const Ref<Shader>& shader)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+
 		for (uint32_t i = 0; i < meshes.size(); ++i)
 			meshes[i].Draw(shader, transform);
 	}
@@ -132,6 +133,8 @@ namespace QCat
 		if (mesh->mMaterialIndex >= 0)
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+			aiString name = material->GetName();
+
 			//std::vector<Mesh::Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 
 			//textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
@@ -146,22 +149,27 @@ namespace QCat
 			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == aiReturn_SUCCESS)
 			{
 				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
 				Ref<Texture2D> diffTexture = TextureLibrary::Load(texturePath);
 				mat.SetTexture(diffTexture, Material::MaterialType::Diffuse);
 			}
 			if (material->GetTexture(aiTextureType_SPECULAR, 0, &str) == aiReturn_SUCCESS)
 			{
 				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
 				Ref<Texture2D> specularTexture = TextureLibrary::Load(texturePath);
 				mat.SetTexture(specularTexture, Material::MaterialType::Specular);
 			}
 			if (material->GetTexture(aiTextureType_HEIGHT, 0, &str) == aiReturn_SUCCESS)
 			{
 				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
 				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
 				mat.SetTexture(normalTexture, Material::MaterialType::NormalMap);
 			}
-			this->material = mat;
 		}
 		Ref<Shader> shader;
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
