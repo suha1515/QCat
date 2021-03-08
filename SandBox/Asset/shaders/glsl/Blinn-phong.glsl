@@ -135,7 +135,6 @@ void main()
 		result = pow(result,vec3(1.0/2.2));
 	color = vec4(result,texcolor.a);
 	//color = vec4(norm,1.0f);
-	color = texcolor;
 }
 
 // calculates the color when using a directional light.

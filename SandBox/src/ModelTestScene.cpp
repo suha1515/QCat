@@ -31,6 +31,7 @@ namespace QCat
 		}
 		else
 		{
+			visualizingNormalShader = Shader::Create("visual","Asset/shaders/hlsl/GeometryShader/visualizeNormal_VS.hlsl", "Asset/shaders/hlsl/GeometryShader/visualizeNormal_PS.hlsl", "Asset/shaders/hlsl/GeometryShader/visualizeNormal_GS.hlsl");
 			BlinnPhongShader = Shader::Create("blinn","Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl","Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		BlinnPhongShader->SetInt("material.diffuse",0,ShaderType::PS);
@@ -69,12 +70,12 @@ namespace QCat
 		HumanModel->Draw(BlinnPhongShader);
 
 
-	/*	BlinnPhongShader->UnBind();
+		BlinnPhongShader->UnBind();
 
 		visualizingNormalShader->Bind();
 		visualizingNormalShader->SetMat4("u_ViewProjection", proj * view, ShaderType::VS);
 		HumanModel->Draw(visualizingNormalShader);
-		visualizingNormalShader->UnBind();*/
+		visualizingNormalShader->UnBind();
 	}
 
 	void ModelTestScene::OnImGuiRender()

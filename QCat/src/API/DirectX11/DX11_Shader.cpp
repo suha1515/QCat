@@ -44,36 +44,32 @@ namespace QCat
 		auto name = path.substr(lastSlash, count);
 		return name;
 	}
-	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromNative(const std::string& name, const std::string& src)
+	Ref<DX11Shader> DXShader::CreateShaderFromNative(const std::string& name, const std::string& src,DXshaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 		//auto lastUnderbar = name.find_last_of('_');
 		//std::string type = name.substr(lastUnderbar + 1, std::string::npos);
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
-		pBlob = Compile(DXshaderType::VS, src);
-		return std::make_shared<DX11VertexShader>(name, pBlob);
+		pBlob = Compile(type, src);
+		switch (type)
+		{
+		case DXshaderType::VS: return std::make_shared<DX11VertexShader>(name, pBlob);
+		case DXshaderType::PS: return std::make_shared<DX11PixelShader>(name, pBlob);
+		case DXshaderType::GS: return std::make_shared<DX11GeometryShader>(name, pBlob);
+		}
+		
 	}
-	Ref<DX11PixelShader> DXShader::CreatePixelShaderFromNative(const std::string& name, const std::string& src)
-	{
-		QCAT_PROFILE_FUNCTION();
-
-		Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
-		pBlob = Compile(DXshaderType::PS, src);
-		return std::make_shared<DX11PixelShader>(name, pBlob);
-	}
-	Ref<DX11VertexShader> DXShader::CreateVertexShaderFromFile(const std::string& path)
-	{
-		QCAT_PROFILE_FUNCTION();
-
-		const std::string name = GetShaderName(path);
-		return std::make_shared<DX11VertexShader>(name, path);
-	}
-	Ref<DX11PixelShader> DXShader::CreatePixelShaderFromFile(const std::string& path)
+	Ref<DX11Shader> DXShader::CreateShaderFromFile(const std::string& path,DXshaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		auto name = GetShaderName(path);
-		return std::make_shared<DX11PixelShader>(name, path);
+		switch (type)
+		{
+		case DXshaderType::VS: return std::make_shared<DX11VertexShader>(name, path);
+		case DXshaderType::PS: return std::make_shared<DX11PixelShader>(name, path);
+		case DXshaderType::GS: return std::make_shared<DX11GeometryShader>(name, path);
+		}
 	}
 	Microsoft::WRL::ComPtr<ID3DBlob> DXShader::Compile(const DXshaderType& type, const std::string& src)
 	{
@@ -109,39 +105,88 @@ namespace QCat
 				break;
 			}
 			case DXshaderType::GS:
+			{
+				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
+					nullptr, nullptr, "main", "gs_5_0",
+					D3DCOMPILE_ENABLE_STRICTNESS, 0,
+					&pBlob, nullptr);
+				if (FAILED(hr))
+				{
+					QCAT_CORE_ASSERT(false, errormsg);
+				}
+				return pBlob;
 				break;
+			}
 			}
 			QCAT_CORE_ASSERT(false, "Compile Faile!");
 			return pBlob;
 	}
-	DXShader::DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
+	DXShader::DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile, const std::string& geoFile)
 		:m_name(name)
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		auto begin = vertexFile.find_last_of('.');
 
-		std::string extension1 = vertexFile.substr(begin+1, vertexFile.length());
-			begin = pixelFile.find_last_of('.');
-		std::string extension2 = pixelFile.substr(begin+1, pixelFile.length());
-		if (extension1 == "hlsl" && extension2 == "hlsl")
+		
+		if (vertexFile != "")
 		{
-			std::string vertexSrc = ReadFile(vertexFile);
-			std::string pixelSrc = ReadFile(pixelFile);
-
-			std::string vertexName = GetShaderName(vertexFile);
-			std::string pixelName = GetShaderName(pixelFile);
-			pvs = CreateVertexShaderFromNative(vertexName, vertexSrc);
-			pps = CreatePixelShaderFromNative(pixelName, pixelSrc);
-		}
-		else if(extension1 == "cso" && extension2 == "cso")
-		{
-			pvs = CreateVertexShaderFromFile(vertexFile);
-			pps = CreatePixelShaderFromFile(pixelFile);
+			std::string extension = vertexFile.substr(begin + 1, vertexFile.length());
+			DXshaderType type = DXshaderType::VS;
+			if (extension == "hlsl")
+			{
+				std::string vertexName = GetShaderName(vertexFile);
+				std::string vertexSrc = ReadFile(vertexFile);
+				pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromNative(vertexName, vertexSrc, type));
+			}
+			else if (extension == "cso")
+				pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromFile(vertexFile, type));
+			else
+				QCAT_CORE_ASSERT(false, "Wrong extension! Vertex Shader Compile Error");
 		}
 		else
 		{
-			QCAT_CORE_ASSERT(false, "Wrong extension! Shader Compile Error");
+			pvs = nullptr;
+		}
+		begin = pixelFile.find_last_of('.');
+		if (pixelFile != "")
+		{
+			std::string extension = pixelFile.substr(begin + 1, pixelFile.length());
+			DXshaderType type = DXshaderType::PS;
+			if (extension == "hlsl")
+			{
+				std::string pixelSrc = ReadFile(pixelFile);
+				std::string pixelName = GetShaderName(pixelFile);
+				pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromNative(pixelName, pixelSrc, type));
+			}
+			else if (extension == "cso")
+				pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromFile(pixelFile, type));
+			else
+				QCAT_CORE_ASSERT(false, "Wrong extension! Pixel Shader Compile Error");
+		}
+		else
+		{
+			pps = nullptr;
+		}
+		begin = geoFile.find_last_of('.');
+		if (geoFile != "")
+		{
+			std::string extension = geoFile.substr(begin + 1, geoFile.length());
+			DXshaderType type = DXshaderType::GS;
+			if (extension == "hlsl")
+			{
+				std::string pixelSrc = ReadFile(geoFile);
+				std::string pixelName = GetShaderName(geoFile);
+				pgs = std::dynamic_pointer_cast<DX11GeometryShader>(CreateShaderFromNative(pixelName, pixelSrc, type));
+			}
+			else if (extension == "cso")
+				pgs = std::dynamic_pointer_cast<DX11GeometryShader>(CreateShaderFromFile(geoFile, type));
+			else
+				QCAT_CORE_ASSERT(false, "Wrong extension! geometry Shader Compile Error");
+		}
+		else
+		{
+			pgs = nullptr;
 		}
 		
 	}
@@ -152,13 +197,13 @@ namespace QCat
 
 		if (compile)
 		{
-			pvs = CreateVertexShaderFromNative(vertexName, vertexSrc);
-			pps = CreatePixelShaderFromNative(pixelName, pixelSrc);
+			pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromNative(vertexName, vertexSrc, DXshaderType::VS));
+			pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromNative(pixelName, pixelSrc, DXshaderType::PS));
 		}
 		else
 		{
-			pvs = CreateVertexShaderFromFile(vertexSrc);
-			pps = CreatePixelShaderFromFile(pixelSrc);
+			pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromFile(vertexSrc, DXshaderType::VS));
+			pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromFile(pixelSrc, DXshaderType::PS));
 		}
 	}
 	DXShader::~DXShader()
@@ -168,20 +213,32 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		pvs->Bind();
-		pps->Bind();
+		if(pvs)
+			pvs->Bind();
+		if(pgs)
+			pgs->Bind();
+		if(pps)
+			pps->Bind();
 	}
 	void DXShader::UpdateBuffer() const
 	{
-		pvs->UpdateBuffer();
-		pps->UpdateBuffer();
+		if(pvs)
+			pvs->UpdateBuffer();
+		if (pgs)
+			pgs->UpdateBuffer();
+		if(pps)
+			pps->UpdateBuffer();
 	}
 	void DXShader::UnBind() const
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		pvs->UnBind();
-		pps->UnBind();
+		if(pvs)
+			pvs->UnBind();
+		if(pgs)
+			pgs->UnBind();
+		if(pps)
+			pps->UnBind();
 	}
 	void DXShader::SetInt(const std::string& name, int value, ShaderType type)
 	{
@@ -273,29 +330,36 @@ namespace QCat
 	std::pair<Ref<DX11ConstantBuffer>, ElementRef> DXShader::FindVariable(const std::string& name, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();
-		std::unordered_map<std::string, Ref<DX11ConstantBuffer>>* constantBuffers;
+		std::unordered_map<std::string, Ref<DX11ConstantBuffer>>* constantBuffers = nullptr;
 		switch (type)
 		{
 		case ShaderType::VS:
+			if (pvs)
 			constantBuffers = &pvs->GetConstantBuffers();
 			break;
 		case ShaderType::PS:
+			if (pps)
 			constantBuffers = &pps->GetConstantBuffers();
 			break;
 		case ShaderType::GS:
-
+			if(pgs)
+				constantBuffers = &pgs->GetConstantBuffers();
 			break;
 		case ShaderType::CS:
 
 			break;
 		}
-		std::pair<Ref<DX11ConstantBuffer>, ElementRef> pair;
-		for (auto& iter : *constantBuffers)
+		if (constantBuffers !=nullptr)
 		{
-			auto ref = iter.second->FindVariable(name);
-			if (ref.Exists())
-				return { iter.second,ref };
+			std::pair<Ref<DX11ConstantBuffer>, ElementRef> pair;
+			for (auto& iter : *constantBuffers)
+			{
+				auto ref = iter.second->FindVariable(name);
+				if (ref.Exists())
+					return { iter.second,ref };
+			}
 		}
+		
 		return{ nullptr, ElementRef{} };
 	}
 	//void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
@@ -471,7 +535,58 @@ namespace QCat
 	{
 		gfx->GetContext()->PSSetShader(nullptr, nullptr, 0u);
 	}
+	DX11GeometryShader::DX11GeometryShader(const std::string& name, const std::string& path)
+	{
+		QCAT_PROFILE_FUNCTION();
 
+		type = DXshaderType::GS;
+		m_name = name;
+		this->gfx = QGfxDeviceDX11::GetInstance();
+		Microsoft::WRL::ComPtr<ID3DBlob> pBlobGeo;
+		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobGeo);
+		D3DReflect(pBlobGeo->GetBufferPointer(), pBlobGeo->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		MakeBufferElement();
+		HRESULT result = gfx->GetDevice()->CreateGeometryShader(pBlobGeo->GetBufferPointer(),
+			pBlobGeo->GetBufferSize(),
+			nullptr, &pGeometryShader);
+	}
+
+	DX11GeometryShader::DX11GeometryShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		type = DXshaderType::GS;
+		m_name = name;
+		this->gfx = QGfxDeviceDX11::GetInstance();
+		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		MakeBufferElement();
+		HRESULT result = gfx->GetDevice()->CreateGeometryShader(pBlob->GetBufferPointer(),
+			pBlob->GetBufferSize(),
+			nullptr, &pGeometryShader);
+	}
+
+	DX11GeometryShader::~DX11GeometryShader()
+	{
+	}
+
+	void DX11GeometryShader::Bind() const
+	{
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->Bind();
+		gfx->GetContext()->GSSetShader(pGeometryShader.Get(), nullptr, 0u);
+	}
+
+	void DX11GeometryShader::UpdateBuffer() const
+	{
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->FinalizeUpdate();
+	}
+
+	void DX11GeometryShader::UnBind() const
+	{
+		gfx->GetContext()->GSSetShader(nullptr, nullptr, 0u);
+
+	}
 	// recursivley access member in struct
 	void ShaderDataStructAdd(ElementLayout* layout,ID3D11ShaderReflectionType* type, D3D11_SHADER_TYPE_DESC typedesc)
 	{
@@ -596,6 +711,7 @@ namespace QCat
 				pConstantBuffer = std::make_shared<PixelConstantBuffer>(layout, i);
 				break;
 			case DXshaderType::GS:
+				pConstantBuffer = std::make_shared<GeometryConstantBuffer>(layout, i);
 				break;
 			}
 			AddConstantBuffer(constantbuffername, pConstantBuffer);
@@ -640,4 +756,5 @@ namespace QCat
 		return iter->second;
 	}
 
+	
 }

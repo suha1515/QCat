@@ -118,7 +118,7 @@ float3 CalcDirLight(DirLight light, float3 normal, float3 viewDir, float2 tc ,fl
 	float3 diffuse = light.diffuse * diff * diffuseTex.Sample(splr, tc).rgb;
 	float3 specular = light.specular * spec * specularTex.Sample(splr, tc).rgb;
 	//return (ambient + ((1.0f-shadow) *(diffuse + specular)));
-	return (ambient + (shadow) * (diffuse + specular));
+	return (ambient + (diffuse + specular));
 
 }
 // calculates the color when using a point light.

@@ -183,4 +183,19 @@ namespace QCat
 			pgfx->GetContext()->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
+	class QCAT_API GeometryConstantBuffer : public DX11ConstantBuffer
+	{
+	public:
+		using DX11ConstantBuffer::DX11ConstantBuffer;
+		virtual void Bind() override
+		{
+			QCAT_PROFILE_FUNCTION();
+			if (IsDataChanged)
+			{
+				UpdateData();
+				IsDataChanged = false;
+			}
+			pgfx->GetContext()->GSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
+		}
+	};
 }

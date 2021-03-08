@@ -10,26 +10,24 @@ namespace QCat
 	
 	class DX11VertexShader;
 	class DX11PixelShader;
+	class DX11GeometryShader;
 	struct ElementRef;
 	enum class DXshaderType
 	{
 		VS = 0, PS, GS
 	};
+	class DX11Shader;
 	class DXShader : public Shader
 	{
 	public:
 		static std::string GetShaderName(const std::string& path);
-		//static Ref<Shader> CreateShaderFromNative(const std::string& name, const std::string& src);
-		//static Ref<Shader> CreateShaderFromFile(const std::string& path);
-		static Ref<DX11VertexShader> CreateVertexShaderFromNative(const std::string& name, const std::string& src);
-		static Ref<DX11PixelShader> CreatePixelShaderFromNative(const std::string& name, const std::string& src);
-		static Ref<DX11VertexShader> CreateVertexShaderFromFile(const std::string& path);
-		static Ref<DX11PixelShader> CreatePixelShaderFromFile(const std::string& path);
+		static Ref<DX11Shader> CreateShaderFromNative(const std::string& name, const std::string& src,DXshaderType type);
+		static Ref<DX11Shader> CreateShaderFromFile(const std::string& path, DXshaderType type);
 		static Microsoft::WRL::ComPtr<ID3DBlob> Compile(const DXshaderType& type, const  std::string& src);
 		
 	public:
 		DXShader() = default;
-		DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile);
+		DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile,const std::string& geoFile = "");
 		DXShader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc,bool compile=false);
 		~DXShader();
 	public:
@@ -81,6 +79,7 @@ namespace QCat
 	private:
 		Ref<DX11VertexShader> pvs;
 		Ref<DX11PixelShader> pps;
+		Ref<DX11GeometryShader> pgs;
 		std::string m_name;
 	};
 	class DX11Shader
@@ -136,6 +135,25 @@ namespace QCat
 	private:
 		//PixelShader
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
+	};
+	class DX11GeometryShader : public DX11Shader
+	{
+	public:
+		DX11GeometryShader(const std::string& name, const std::string& path);
+		DX11GeometryShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob);
+		~DX11GeometryShader();
+	public:
+		Microsoft::WRL::ComPtr <ID3D11ShaderReflection>& GetReflector() { return pReflector; };
+	public:
+		virtual void Bind()const;
+		virtual void UpdateBuffer() const;
+		virtual void UnBind()const;
+
+		const std::string& GetName()const { return m_name; }
+	private:
+		//VertexShader
+		Microsoft::WRL::ComPtr<ID3D11GeometryShader> pGeometryShader;
+		std::vector<char> data;
 	};
 	
 }

@@ -40,7 +40,7 @@ namespace QCat
 
 		static Ref<Shader> Create(const std::string& filepath);
 		static Ref<Shader> Create(const std::string& vertexfilepath,const std::string& pixelfilepath);
-		static Ref<Shader> Create(const std::string& name,const std::string& vertexSrc, const std::string& pixelSrc);
+		static Ref<Shader> Create(const std::string& name,const std::string& vertexSrc, const std::string& pixelSrc,const std::string& geometrySrc="");
 		
 
 	};

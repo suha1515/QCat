@@ -21,7 +21,7 @@ namespace QCat
 		return nullptr;
 	}
 
-	Ref<Shader> Shader::Create(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc )
+	Ref<Shader> Shader::Create(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc, const std::string& geometrySrc)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -33,7 +33,7 @@ namespace QCat
 			break;
 		case RenderAPI::API::DirectX11:
 			{
-			return std::make_shared<DXShader>(name,vertexSrc, pixelSrc);
+			return std::make_shared<DXShader>(name,vertexSrc, pixelSrc, geometrySrc);
 			break;
 
 			}	
