@@ -29,6 +29,8 @@ void main()
 	//tex.y = tex.y * -1.0;
 	//tex.z = tex.z*-1.0;
 	//tex.x = tex.x*-1.0;
-	color = texture(skybox,tex);	
+	float red = texture(skybox,tex).r;
+
+	color = vec4(red,red,red,1.0f);	
 }
 

@@ -14,6 +14,7 @@ namespace QCat
 		// Defaults
 		Depth_Stencil,
 		Depth,
+		Depth_Cube,
 	};
 	enum class FramebufferTextureDataFormat	
 	{
