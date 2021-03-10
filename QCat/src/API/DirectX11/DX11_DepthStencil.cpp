@@ -11,7 +11,7 @@ namespace QCat
 			{
 			case DX11DepthStencil::Usage::DepthStencil:
 				return DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS;
-			case DX11DepthStencil::Usage::ShadowDepth:
+			case DX11DepthStencil::Usage::Depth:
 				return DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
 			}
 		}
@@ -21,7 +21,7 @@ namespace QCat
 			{
 			case DX11DepthStencil::Usage::DepthStencil:
 				return DXGI_FORMAT::DXGI_FORMAT_D24_UNORM_S8_UINT;
-			case DX11DepthStencil::Usage::ShadowDepth:
+			case DX11DepthStencil::Usage::Depth:
 				return DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT;
 			}
 		}
@@ -31,13 +31,62 @@ namespace QCat
 			{
 			case DX11DepthStencil::Usage::DepthStencil:
 				return DXGI_FORMAT::DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-			case DX11DepthStencil::Usage::ShadowDepth:
+			case DX11DepthStencil::Usage::Depth:
 				return DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
 			}
 		}
 	}
-	DX11DepthStencil::DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, Usage usage, int samples, bool bindShader)
-		:m_width(width), m_height(height),format(format),samples(samples),bindShader(bindShader),usage(usage)
+	DX11DepthStencil::DX11DepthStencil(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height, uint32_t mipLevel, uint32_t arraySize, Usage usage, int samples,int quality, bool bindShader)
+		:m_width(width), m_height(height),format(format),samples(samples),bindShader(bindShader),usage(usage),mipLevel(mipLevel),arraySize(arraySize),quality(quality)
+	{
+		textureDesc = {};
+		textureDesc.Width = m_width;
+		textureDesc.Height = m_height;
+		textureDesc.MipLevels = mipLevel;
+		textureDesc.ArraySize = arraySize;
+		textureDesc.Format = Utils::MapUsageTypeless(usage);
+		textureDesc.SampleDesc.Count = samples;
+		textureDesc.SampleDesc.Quality = quality;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | (bindShader ? D3D11_BIND_SHADER_RESOURCE : 0);
+
+		depthStencilViewDesc = {};
+		depthStencilViewDesc.Format = Utils::MapUsageTyped(usage);
+		depthStencilViewDesc.Flags = 0;
+		if (textureDesc.ArraySize > 1)
+		{
+			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+			depthStencilViewDesc.Texture2DArray.MipSlice = 0;
+			depthStencilViewDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
+		}
+		else
+		{
+			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			depthStencilViewDesc.Texture2D.MipSlice = 0;
+		}
+		
+
+		srvDesc = {};
+		srvDesc.Format = Utils::MapUsageColored(usage);
+		
+		if (textureDesc.ArraySize > 1)
+		{
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+			srvDesc.Texture2DArray.MostDetailedMip = 0;
+			srvDesc.Texture2DArray.MipLevels = 1;
+			srvDesc.Texture2DArray.ArraySize = textureDesc.ArraySize;
+		}
+		else
+		{
+			srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			srvDesc.Texture2D.MostDetailedMip = 0;
+			srvDesc.Texture2D.MipLevels = 1;
+		}
+		
+		Initialize(gfx);
+	}
+	DX11DepthStencil::DX11DepthStencil(QGfxDeviceDX11& gfx, Usage usage,D3D11_TEXTURE2D_DESC textureDesc, D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc, D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc)
+		:textureDesc(textureDesc),depthStencilViewDesc(depthStencilViewDesc),srvDesc(srvDesc),usage(usage)
 	{
 		Initialize(gfx);
 	}
@@ -52,38 +101,10 @@ namespace QCat
 			pShaderResourceView.Reset();
 		}
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
-		// Create Depth-Stencil Buffer
-		D3D11_TEXTURE2D_DESC descDepth = {};
-		descDepth.Width = m_width;
-		descDepth.Height = m_height;
-		descDepth.MipLevels = 1u;
-		descDepth.ArraySize = 1u;
-		descDepth.Format = Utils::MapUsageTypeless(usage);
-		descDepth.SampleDesc.Count = samples;
-		descDepth.SampleDesc.Quality = 0u;
-		descDepth.Usage = D3D11_USAGE_DEFAULT;
-		// TODO :split ShaderInput or not
-		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL| (bindShader? D3D11_BIND_SHADER_RESOURCE : 0);
-		gfx.GetDevice()->CreateTexture2D(&descDepth, nullptr, &pDepthStencil);
-
-		D3D11_DEPTH_STENCIL_VIEW_DESC descView = {};
-		descView.Format = Utils::MapUsageTyped(usage);
-		descView.Flags = 0;
-		descView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		descView.Texture2D.MipSlice = 0;
-		gfx.GetDevice()->CreateDepthStencilView(pDepthStencil.Get(), &descView, &pDepthStencilView);
-
-		// ShaderResorceView for DepthStencilView
-		Microsoft::WRL::ComPtr<ID3D11Resource> pRes;
-		pDepthStencilView->GetResource(&pRes);
-
-		// TODO: split Format for usage
-		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Format = Utils::MapUsageColored(usage);
-		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = 1;
-		gfx.GetDevice()->CreateShaderResourceView(pRes.Get(), &srvDesc, &pShaderResourceView);
+		gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pDepthStencil);
+		gfx.GetDevice()->CreateDepthStencilView(pDepthStencil.Get(), &depthStencilViewDesc, &pDepthStencilView);
+	
+		gfx.GetDevice()->CreateShaderResourceView(pDepthStencil.Get(), &srvDesc, &pShaderResourceView);
 	}
 	void DX11DepthStencil::Bind(QGfxDeviceDX11& gfx) const
 	{
@@ -103,7 +124,7 @@ namespace QCat
 	{
 		if(usage == Usage::DepthStencil)
 			gfx.GetContext()->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
-		else if(usage == Usage::ShadowDepth)
+		else if(usage == Usage::Depth)
 			gfx.GetContext()->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH ,1.0f,0.0f);
 	}
 	ID3D11ShaderResourceView* DX11DepthStencil::GetTexture() const

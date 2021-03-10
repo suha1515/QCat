@@ -43,6 +43,7 @@ cbuffer light : register(b0)
 {
 	PointLight pointLight;
 	DirLight   dirLight;
+	float far_plane;
 	bool	gamma;
 }
 cbuffer material : register(b1)
@@ -52,13 +53,26 @@ cbuffer material : register(b1)
 Texture2D diffuseTex;
 Texture2D specularTex;
 Texture2D normalMapTex;
-Texture2D shadowMapTex : register(t4);
+TextureCube shadowMapTex : register(t4);
 
 SamplerState splr : register(s0);
+//SamplerComparisonState shadowSampler : register(s4);
 struct PS_OUT
 {
 	float4 color :SV_TARGET0;
 };
+//shadow
+float ShadowCalculation(float3 fragPos,float3 lightPosition)
+{
+	float3 fragToLight = fragPos - lightPosition;
+	float closestDepth = shadowMapTex.Sample(splr, fragToLight).r;
+	closestDepth *= far_plane;
+	float currentDepth = length(fragToLight);
+	float bias = 0.001f;
+	float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+	return shadow;
+}
+
 // calculates the color when using a directional light.
 float3 CalcDirLight(DirLight light, float3 normal, float3 viewDir, float2 tc ,float4 fragPosLight, Texture2D diffuseTex,Texture2D specularTex)
 {
@@ -66,11 +80,10 @@ float3 CalcDirLight(DirLight light, float3 normal, float3 viewDir, float2 tc ,fl
 	// diffuse shading
 	float diff = max(dot(normal, lightDir), 0.0);
 	float spec;
-
 	float3 halfwayDir = normalize(lightDir + viewDir);
 	spec = pow(max(0.0f, dot(normal, halfwayDir)), material.shininess * 4);
 
-
+	
 	// combine results
 	float3 ambient = light.ambient * diffuseTex.Sample(splr,tc).rgb;
 	float3 diffuse = light.diffuse * diff * diffuseTex.Sample(splr, tc).rgb;
@@ -94,6 +107,7 @@ float3 CalcPointLight(PointLight light, float3 normal, float3 fragPos,float3 vie
 	// attenuation
 	float distance = length(light.position - fragPos);
 	float attenuation = 1.0 / (light.constant + light.Linear * distance + light.quadratic * (distance * distance));
+	float shadow = ShadowCalculation(fragPos,light.position);
 	// combine results
 	float3 ambient = light.ambient * diffuseTex.Sample(splr, tc).rgb;
 	float3 diffuse = light.diffuse * diff * diffuseTex.Sample(splr, tc).rgb;
@@ -101,7 +115,7 @@ float3 CalcPointLight(PointLight light, float3 normal, float3 fragPos,float3 vie
 	ambient *= attenuation;
 	diffuse *= attenuation;
 	specular *= attenuation;
-	return (ambient + diffuse + specular);
+	return (ambient + (1.0f-shadow) * (diffuse + specular));
 }
 // calculates the color when using a spot light.
 float3 CalcSpotLight(SpotLight light, float3 normal, float3 fragPos, float3 viewDir, float2 tc, Texture2D diffuseTex, Texture2D specularTex)
@@ -134,7 +148,6 @@ struct PSIn
 	float2 tc			     : Texcoord;
 	float3 normal		     : Normal;
 	float3 fragPos			 : FragPos;
-	float4 fragPosLightSpace : FragPosLightSpace;
 	float3x3 TBN		     : TBN;
 	float3 viewPosition      : ViewPos;
 	float4 pos :SV_Position;

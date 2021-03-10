@@ -76,7 +76,7 @@ namespace QCat
 		}
 	}
 
-	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& vertexFile, const std::string& pixelFile)
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& vertexFile, const std::string& pixelFile, const std::string& gsFile)
 	{
 		if (Get().Exists(name))
 		{
@@ -84,7 +84,7 @@ namespace QCat
 		}
 		else
 		{
-			auto shader = Shader::Create(name, vertexFile, pixelFile);
+			auto shader = Shader::Create(name, vertexFile, pixelFile, gsFile);
 			Add(name, shader);
 			return shader;
 		}

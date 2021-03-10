@@ -5,25 +5,26 @@
 namespace QCat
 {
 	namespace Utils {
-		static DXGI_FORMAT GetDataType(FramebufferTextureDataFormat format)
+		static DXGI_FORMAT GetDataType(TextureDataFormat format)
 		{
 			switch (format)
 			{
 				//32 bit
-			case FramebufferTextureDataFormat::RGBA8:			return DXGI_FORMAT_R8G8B8A8_UNORM;
-			case FramebufferTextureDataFormat::RED32_INTEGER:   return DXGI_FORMAT_R32_SINT;
+			case TextureDataFormat::RGBA8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case TextureDataFormat::RED32_INTEGER:   return DXGI_FORMAT_R32_SINT;
 				//24 bit
-			case FramebufferTextureDataFormat::RGB8:			return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case TextureDataFormat::RGB8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case TextureDataFormat::DEPTH24STENCIL8: return DXGI_FORMAT_R24G8_TYPELESS;
+			case TextureDataFormat::DEPTH32:		 return DXGI_FORMAT_R32_TYPELESS;
 
 			}
 		}
-		static bool IsDepthFormat(FramebufferTextureFormat format)
+		static bool IsDepthFormat(FramebufferUsage format)
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::Depth: return true;
-			case FramebufferTextureFormat::Depth_Stencil: return true;
-
+			case FramebufferUsage::Depth: return true;
+			case FramebufferUsage::Depth_Stencil: return true;
 			}
 			return false;
 		}
@@ -51,7 +52,7 @@ namespace QCat
 	{
 		for (auto spec : m_Specification.Attachments.Attachments)
 		{
-			if (!Utils::IsDepthFormat(spec.TextureFormat))
+			if (!Utils::IsDepthFormat(spec.usage))
 				m_ColorAttachmentSpecifications.emplace_back(spec);
 			else
 				m_DepthAttacmentSpecifications = spec;
@@ -81,12 +82,12 @@ namespace QCat
 			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
 			for (size_t i = 0; i < m_ColorAttachments.size(); ++i)
 			{
-				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
+				switch (m_ColorAttachmentSpecifications[i].textureType)
 				{
-				case FramebufferTextureFormat::Texture2D:
+				case TextureType::Texture2D:
 				{
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 1,
-						Utils::GetDataType(m_ColorAttachmentSpecifications[i].DataFormat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
+						Utils::GetDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
 
 					D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 					rtvDesc.Format = texdesc.Format;
@@ -97,10 +98,10 @@ namespace QCat
 					m_ColorAttachments[i].rendertargets.push_back(DX11RenderTarget::Create(((DX11Texture2D*)m_ColorAttachments[i].textures[0].get())->GetDXTexture(), rtvDesc));
 				}
 				break;
-				case FramebufferTextureFormat::CubeMap:
+				case TextureType::TextureCube:
 				{
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 6,
-						Utils::GetDataType(m_ColorAttachmentSpecifications[i].DataFormat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0,
+						Utils::GetDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0,
 						D3D11_RESOURCE_MISC_GENERATE_MIPS | D3D11_RESOURCE_MISC_TEXTURECUBE);
 
 					D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -121,15 +122,63 @@ namespace QCat
 				}
 			}
 		}
-		if (m_DepthAttacmentSpecifications.TextureFormat != FramebufferTextureFormat::None)
+		if (m_DepthAttacmentSpecifications.textureType!= TextureType::None)
 		{
-			switch (m_DepthAttacmentSpecifications.TextureFormat)
+			DX11DepthStencil::Usage usage;
+			DXGI_FORMAT textureformat;
+			DXGI_FORMAT DepthStencilViewformat;
+			DXGI_FORMAT shaderViewFormat;
+			if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
 			{
-			case FramebufferTextureFormat::Depth:
-				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height,DX11DepthStencil::Usage::ShadowDepth,m_Specification.Samples,true);
+				usage = DX11DepthStencil::Usage::Depth;
+				textureformat = DXGI_FORMAT_R32_TYPELESS;
+				DepthStencilViewformat = DXGI_FORMAT_D32_FLOAT;
+				shaderViewFormat = DXGI_FORMAT_R32_FLOAT;
+			}
+			else if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
+			{
+				usage = DX11DepthStencil::Usage::DepthStencil;
+				textureformat = DXGI_FORMAT_R24G8_TYPELESS;
+				DepthStencilViewformat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+				shaderViewFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+			}
+			switch (m_DepthAttacmentSpecifications.textureType)
+			{
+			case TextureType::Texture2D:
+				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height,0,1, usage,m_Specification.Samples,0,true);
 				break;
-			case FramebufferTextureFormat::Depth_Stencil:
-				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height, DX11DepthStencil::Usage::DepthStencil,m_Specification.Samples,true);
+			case TextureType::TextureCube:
+				D3D11_TEXTURE2D_DESC textureDesc = {};
+				textureDesc.Width = m_Specification.Width;
+				textureDesc.Height = m_Specification.Height;
+				textureDesc.MipLevels = 1;
+				textureDesc.ArraySize = 6;
+				textureDesc.Format = textureformat;
+				textureDesc.SampleDesc.Count = 1;
+				textureDesc.SampleDesc.Quality = 0;
+				textureDesc.Usage = D3D11_USAGE_DEFAULT;
+				textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+				textureDesc.CPUAccessFlags = 0;
+				textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+				D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+				dsvDesc.Flags = 0;
+				dsvDesc.Format = DepthStencilViewformat;
+				dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+				dsvDesc.Texture2DArray.ArraySize = 6;
+				dsvDesc.Texture2DArray.MipSlice = 0;
+				dsvDesc.Texture2DArray.FirstArraySlice = 0;
+
+				D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+				srvDesc.Format = shaderViewFormat;
+				srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+				srvDesc.Texture2DArray.ArraySize = 6;
+				srvDesc.Texture2DArray.MostDetailedMip = 0;
+				srvDesc.Texture2DArray.MipLevels = 1;
+
+				
+
+				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx,usage, textureDesc,dsvDesc,srvDesc);
 				break;
 			}
 			
@@ -183,7 +232,7 @@ namespace QCat
 	{
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 		int pixelData;
-		if (m_ColorAttachmentSpecifications[attachmentIndex].TextureFormat == FramebufferTextureFormat::CubeMap)
+		if (m_ColorAttachmentSpecifications[attachmentIndex].textureType == TextureType::TextureCube)
 		{
 			
 			((DX11TextureCube*)m_ColorAttachments[attachmentIndex].textures[0].get())->ReadData(z,x, y, &pixelData);
@@ -201,7 +250,7 @@ namespace QCat
 	{
 		for (int i = 0; i < m_ColorAttachmentSpecifications.size(); ++i)
 		{
-			if (m_ColorAttachmentSpecifications[i].TextureFormat == FramebufferTextureFormat::CubeMap)
+			if (m_ColorAttachmentSpecifications[i].textureType == TextureType::TextureCube)
 			{
 				m_ColorAttachments[i].attachTarget = faceindex;
 			}

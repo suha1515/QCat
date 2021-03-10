@@ -10,93 +10,91 @@ namespace QCat
 
 	namespace Utils{
 
-		static GLenum GetDataType(FramebufferTextureDataFormat format)
+		static GLenum GetDataType(TextureDataFormat format)
 		{
 			switch (format)
 			{
 				//32 bit
-			case FramebufferTextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
-			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_INT;
+			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
 				//24 bit
-			case FramebufferTextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
+			case TextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
 
 			}
 		}
-		static GLenum GetTextureTarget(FramebufferTextureFormat format,bool multisampled)
+		static GLenum GetTextureTarget(TextureType format,bool multisampled)
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::Texture2D:     return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case FramebufferTextureFormat::Depth:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case FramebufferTextureFormat::Depth_Stencil: return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case FramebufferTextureFormat::CubeMap:       return GL_TEXTURE_CUBE_MAP;
-			case FramebufferTextureFormat::Depth_Cube:     return GL_TEXTURE_CUBE_MAP;
+			case TextureType::Texture2D:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+			case TextureType::TextureArray:       return GL_TEXTURE_2D_ARRAY;
+			case TextureType::TextureCube:		  return GL_TEXTURE_CUBE_MAP;
 			}
 		}
-		static GLenum GetTextureFormat(FramebufferTextureDataFormat format)
+		static GLenum GetTextureFormat(TextureDataFormat format)
 		{
 			switch (format)
 			{
 				//32 bit
-			case FramebufferTextureDataFormat::RGBA8:			return GL_RGBA;
-			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_RED_INTEGER;
+			case TextureDataFormat::RGBA8:			 return GL_RGBA;
+			case TextureDataFormat::RED32_INTEGER:   return GL_RED_INTEGER;
 				//24 bit
-			case FramebufferTextureDataFormat::RGB8:			return GL_RGB;
+			case TextureDataFormat::RGB8:			 return GL_RGB;
 
 				//depth
-			case FramebufferTextureDataFormat::DEPTH32:			return GL_DEPTH_COMPONENT;
-			case FramebufferTextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH_STENCIL;
+			case TextureDataFormat::DEPTH32:		 return GL_DEPTH_COMPONENT;
+			case TextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH_STENCIL;
 			}
 
 		}
-		static GLenum GetTextureInternalFormat(FramebufferTextureDataFormat format)
+		static GLenum GetTextureInternalFormat(TextureDataFormat format)
 		{
 			switch (format)
 			{
 				
-				//32 bit
-			case FramebufferTextureDataFormat::RGBA8:			return GL_RGBA8;
-			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_R32I;
-				//24 bit
-			case FramebufferTextureDataFormat::RGB8:			return GL_RGB8;
+			//32 bit
+			case TextureDataFormat::RGBA8:			return GL_RGBA8;
+			case TextureDataFormat::RED32_INTEGER:  return GL_R32I;
+			//24 bit
+			case TextureDataFormat::RGB8:			return GL_RGB8;
 
 
-				//depth
-			case FramebufferTextureDataFormat::DEPTH32:			return GL_DEPTH_COMPONENT32;
-			case FramebufferTextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
+			//depth
+			case TextureDataFormat::DEPTH32:	     return GL_DEPTH_COMPONENT32;
+			case TextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
 			}
 		}
 
-		static GLenum GetTextureDataType(FramebufferTextureDataFormat format)
+		static GLenum GetTextureDataType(TextureDataFormat format)
 		{
 			switch (format)
 			{
 				//32 bit
-			case FramebufferTextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
-			case FramebufferTextureDataFormat::RED32_INTEGER:   return GL_INT;
+			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
 				//24 bit
-			case FramebufferTextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
+			case TextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
 
 
 				//depth
-			case FramebufferTextureDataFormat::DEPTH32:			return GL_FLOAT;
-			case FramebufferTextureDataFormat::DEPTH24STENCIL8: return GL_UNSIGNED_INT_24_8;
+			case TextureDataFormat::DEPTH32:		return GL_FLOAT;
+			case TextureDataFormat::DEPTH24STENCIL8: return GL_UNSIGNED_INT_24_8;
 			}
 		}
 	/*	static GLenum TextureTarget(bool multisampled)
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 		}*/
-		static void CreateTextures(FramebufferTextureFormat format,bool multisampled, uint32_t* outID, uint32_t count)
+		static void CreateTextures(TextureType format,bool multisampled, uint32_t* outID, uint32_t count)
 		{
 			glCreateTextures(GetTextureTarget(format,multisampled), count, outID);
 		}
-		static void BindTexture(FramebufferTextureFormat format,bool multisampled,uint32_t id)
+		static void BindTexture(TextureType format,bool multisampled,uint32_t id)
 		{
 			glBindTexture(GetTextureTarget(format,multisampled), id);
 		}
-		static void AttachColorTexture(FramebufferTextureFormat textureformat, FramebufferTextureDataFormat dataformat,
-			uint32_t id, int samples, uint32_t width, uint32_t height, int index)
+		static void AttachTexture(TextureType textureformat, TextureDataFormat dataformat,
+			uint32_t id, int samples, uint32_t width, uint32_t height,GLenum attachmenIndex)
 		{
 			bool multisampled = samples > 1;
 			if (multisampled)
@@ -113,10 +111,10 @@ namespace QCat
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GetTextureTarget(textureformat,multisampled), id, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmenIndex, GetTextureTarget(textureformat,multisampled), id, 0);
 
 		}
-		static void AttachTextureCube(FramebufferTextureFormat format,FramebufferTextureDataFormat dataformat,uint32_t id, uint32_t width, uint32_t height,GLenum attachmentType)
+		static void AttachTextureCube(TextureType format, TextureDataFormat dataformat,uint32_t id, uint32_t width, uint32_t height,GLenum attachmentType)
 		{
 			for (int i = 0; i < 6; ++i)
 			{
@@ -128,80 +126,28 @@ namespace QCat
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			
-			if (format == FramebufferTextureFormat::Depth_Cube)
-			{
-				//float borderColor[] = { 1.0f,1.0f,1.0f,1.0f };
-				//glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, borderColor);
-			}
-
 			glFramebufferTexture(GL_FRAMEBUFFER, attachmentType,id, 0);
-			//glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType,GL_TEXTURE_CUBE_MAP_POSITIVE_X,id, 0);
-
 		}
-		static void AttachDepthTexture(FramebufferTextureFormat textureformat,uint32_t id, int samples, FramebufferTextureDataFormat dataformat,GLenum attachmentType, uint32_t width, uint32_t height)
-		{
-			bool multisampled = samples > 1;
-			if (multisampled)
-			{
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples,GetTextureInternalFormat(dataformat), width, height, GL_FALSE);
-			}
-			else
-			{
-				glTexImage2D(GL_TEXTURE_2D, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GetTextureDataType(dataformat), nullptr);
-				if (textureformat == FramebufferTextureFormat::Depth)
-				{
-
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-					float borderColor[] = { 1.0f,1.0f,1.0f,1.0f };
-					glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-					// with this settings you cant use sampler2D use have to use shadow samplers
-					// for Hardware PCF ShadowSamplnig
-					// Comparison Mode Set
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-					
-					// Compare func set
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC,GL_LEQUAL);
-				}
-				else
-				{
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				}
-			}
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GetTextureTarget(textureformat, multisampled), id, 0);
-
-		}
-		static bool IsDepthFormat(FramebufferTextureFormat format)
+		static bool IsDepthFormat(FramebufferUsage format)
 		{
 			switch (format)
 			{
-			case FramebufferTextureFormat::Depth: return true;
-			case FramebufferTextureFormat::Depth_Stencil: return true;
-			case FramebufferTextureFormat::Depth_Cube: return true;
+			case FramebufferUsage::Depth: return true;
+			case FramebufferUsage::Depth_Stencil: return true;
 			}
 			return false;
 		}
-		static GLenum QCatTextureFormatToGL(FramebufferTextureDataFormat data)
+		static GLenum QCatTextureFormatToGL(TextureDataFormat data)
 		{
 			switch (data)
 			{
-			case FramebufferTextureDataFormat::RGBA8:			    return GL_RGBA;
-			case FramebufferTextureDataFormat::RED32_INTEGER:		return GL_RED_INTEGER;
+			case TextureDataFormat::RGBA8:			    return GL_RGBA;
+			case TextureDataFormat::RED32_INTEGER:		return GL_RED_INTEGER;
 
 			}
 			QCAT_CORE_ASSERT(false);
 			return 0;
 		}
-	
 	}
 
 	OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& spec)
@@ -209,7 +155,7 @@ namespace QCat
 	{
 		for (auto spec : m_Specification.Attachments.Attachments)
 		{
-			if (!Utils::IsDepthFormat(spec.TextureFormat))
+			if (!Utils::IsDepthFormat(spec.usage))
 				m_ColorAttachmentSpecifications.emplace_back(spec);
 			else
 				m_DepthAttacmentSpecifications = spec;
@@ -248,34 +194,37 @@ namespace QCat
 			for (size_t i =0;i< m_ColorAttachments.size();++i)
 			{
 				auto format = m_ColorAttachmentSpecifications[i];
-				Utils::CreateTextures(format.TextureFormat,multisample,&m_ColorAttachments[i], 1);
-				Utils::BindTexture(format.TextureFormat,multisample,m_ColorAttachments[i]);
-				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
+				Utils::CreateTextures(format.textureType,multisample,&m_ColorAttachments[i], 1);
+				Utils::BindTexture(format.textureType,multisample,m_ColorAttachments[i]);
+				switch (m_ColorAttachmentSpecifications[i].textureType)
 				{
-				case FramebufferTextureFormat::Texture2D:
-					Utils::AttachColorTexture(format.TextureFormat, format.DataFormat,m_ColorAttachments[i], m_Specification.Samples,m_Specification.Width, m_Specification.Height, i);
+				case TextureType::Texture2D:
+					Utils::AttachTexture(format.textureType, format.textureformat,m_ColorAttachments[i], m_Specification.Samples,m_Specification.Width, m_Specification.Height, GL_COLOR_ATTACHMENT0 +i);
 					break;
-				case FramebufferTextureFormat::CubeMap:
-					Utils::AttachTextureCube(format.TextureFormat, format.DataFormat, m_ColorAttachments[i], m_Specification.Width, m_Specification.Height,GL_COLOR_ATTACHMENT0 + i);
+				case TextureType::TextureCube:
+					Utils::AttachTextureCube(format.textureType, format.textureformat, m_ColorAttachments[i], m_Specification.Width, m_Specification.Height,GL_COLOR_ATTACHMENT0 + i);
 					break;
 				}
 			}
 		}
 		// if we have DepthAttachment
-		if (m_DepthAttacmentSpecifications.TextureFormat != FramebufferTextureFormat::None)
+		if (m_DepthAttacmentSpecifications.usage != FramebufferUsage::None)
 		{
 			auto format = m_DepthAttacmentSpecifications;
-			Utils::CreateTextures(format.TextureFormat,multisample, &m_DepthAttachment, 1);
-			Utils::BindTexture(format.TextureFormat,multisample, m_DepthAttachment);
-			switch (m_DepthAttacmentSpecifications.TextureFormat)
+			Utils::CreateTextures(format.textureType,multisample, &m_DepthAttachment, 1);
+			Utils::BindTexture(format.textureType,multisample, m_DepthAttachment);
+			GLenum attachmentInfo;
+			if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
+				attachmentInfo = GL_DEPTH_ATTACHMENT;
+			else if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
+				attachmentInfo = GL_DEPTH_STENCIL_ATTACHMENT;
+			switch (m_DepthAttacmentSpecifications.textureType)
 			{
-			case FramebufferTextureFormat::Depth_Stencil:
-				Utils::AttachDepthTexture(format.TextureFormat,m_DepthAttachment, m_Specification.Samples, format.DataFormat, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
-			case FramebufferTextureFormat::Depth:
-				Utils::AttachDepthTexture(format.TextureFormat, m_DepthAttachment, m_Specification.Samples, format.DataFormat, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+			case TextureType::Texture2D:
+				Utils::AttachTexture(format.textureType, format.textureformat, m_DepthAttachment, m_Specification.Samples, m_Specification.Width, m_Specification.Height,GL_DEPTH_ATTACHMENT);
 				break;
-			case FramebufferTextureFormat::Depth_Cube:
-				Utils::AttachTextureCube(format.TextureFormat,format.DataFormat, m_DepthAttachment, m_Specification.Width, m_Specification.Height, GL_DEPTH_ATTACHMENT);
+			case TextureType::TextureCube:
+				Utils::AttachTextureCube(format.textureType, format.textureformat, m_DepthAttachment, m_Specification.Width, m_Specification.Height, GL_DEPTH_ATTACHMENT);
 				break;
 			}
 		}
@@ -340,7 +289,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
-		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::GetTextureFormat(spec.DataFormat), Utils::GetDataType(spec.DataFormat), value);
+		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::GetTextureFormat(spec.textureformat), Utils::GetDataType(spec.textureformat), value);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 			QCAT_WARN("error code {1}", error);
@@ -351,14 +300,9 @@ namespace QCat
 
 		for (int i = 0; i < m_ColorAttachmentSpecifications.size(); ++i)
 		{
-			if (m_ColorAttachmentSpecifications[i].TextureFormat == FramebufferTextureFormat::CubeMap)
+			if (m_ColorAttachmentSpecifications[i].textureType == TextureType::TextureCube)
 			{
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, GL_TEXTURE_CUBE_MAP_POSITIVE_X+ faceindex, m_ColorAttachments[i], 0);
-			}
-			else if (m_ColorAttachmentSpecifications[i].TextureFormat == FramebufferTextureFormat::Depth_Cube)
-			{
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceindex, m_DepthAttachment, 0);
-
 			}
 		}	
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -386,19 +330,17 @@ namespace QCat
 		glClearColor(color.r, color.g, color.b, color.a);
 		if (m_ColorAttachments.size() > 0)
 		{
-			if(m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth_Stencil)
+			if(m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-			else if(m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth)
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			else if (m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth_Cube)
+			else if(m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		else if (m_ColorAttachments.size() == 0)
 		{
-			if(m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth)
+			if(m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
 				glClear(GL_DEPTH_BUFFER_BIT);
-			else if (m_DepthAttacmentSpecifications.TextureFormat == FramebufferTextureFormat::Depth_Cube)
-				glClear( GL_DEPTH_BUFFER_BIT);
+			else if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
+				glClear( GL_DEPTH_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);
 		}
 			
 	}

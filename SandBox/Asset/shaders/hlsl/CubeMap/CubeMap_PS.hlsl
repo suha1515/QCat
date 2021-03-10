@@ -15,6 +15,7 @@ struct PSIn
 PS_OUT main(PSIn input)
 {
 	PS_OUT output;
-	output.color = skybox.Sample(splr, input.tc);
+	float red = skybox.Sample(splr, input.tc).r;
+	output.color = float4(red, red, red, 1.0f);
 	return output;
 }

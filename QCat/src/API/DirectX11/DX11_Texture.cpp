@@ -100,7 +100,7 @@ namespace QCat
 
 		//Set SamplerState
 		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
-		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 		if (channels > 3)
 		{
 			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;

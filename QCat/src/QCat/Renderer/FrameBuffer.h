@@ -3,20 +3,17 @@
 
 namespace QCat
 {
-	enum class FramebufferTextureFormat
+	enum class FramebufferUsage
 	{
 		None = 0,
-		// 2D
-		Texture2D,
-		// CubeMap,
-		CubeMap,
-
-		// Defaults
-		Depth_Stencil,
-		Depth,
-		Depth_Cube,
+		Color, Depth, Depth_Stencil
 	};
-	enum class FramebufferTextureDataFormat	
+	enum class TextureType
+	{
+		None=0,
+		Texture2D,TextureArray,TextureCube
+	};
+	enum class TextureDataFormat
 	{
 		None =0,
 		// 32 bit
@@ -27,23 +24,24 @@ namespace QCat
 		DEPTH24STENCIL8,
 		DEPTH32
 	};
-	struct FramebufferTextureSpecification
+	struct FramebufferSpecification
 	{
-		FramebufferTextureSpecification() = default;
-		FramebufferTextureSpecification(FramebufferTextureFormat format, FramebufferTextureDataFormat dataformat)
-			: TextureFormat(format),DataFormat(dataformat){}
+		FramebufferSpecification() = default;
+		FramebufferSpecification(FramebufferUsage usage, TextureType textureType, TextureDataFormat dataFormat)
+			: usage(usage), textureType(textureType),textureformat(dataFormat){}
 
-		FramebufferTextureFormat TextureFormat = FramebufferTextureFormat::None;
-		FramebufferTextureDataFormat DataFormat = FramebufferTextureDataFormat::None;
+		FramebufferUsage usage = FramebufferUsage::None;
+		TextureType textureType = TextureType::None;
+		TextureDataFormat textureformat = TextureDataFormat::None;
 	};
 
 	struct FramebufferAttachmentSpecification
 	{
 		FramebufferAttachmentSpecification() = default;
-		FramebufferAttachmentSpecification( std::initializer_list<FramebufferTextureSpecification> attachments)
+		FramebufferAttachmentSpecification( std::initializer_list<FramebufferSpecification> attachments)
 			:Attachments(attachments){}
 
-		std::vector< FramebufferTextureSpecification> Attachments;
+		std::vector< FramebufferSpecification> Attachments;
 	};
 	struct FrameBufferSpecification
 	{

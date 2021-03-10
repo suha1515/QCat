@@ -54,7 +54,7 @@ namespace QCat
 		bool Exists(const std::string& name) const;
 		static Ref<Shader> Load(const std::string& filepath); 
 		static Ref<Shader> Load(const std::string& name ,const std::string& filepath);
-		static Ref<Shader> Load(const std::string& name, const std::string& filepath, const std::string& filepath2);
+		static Ref<Shader> Load(const std::string& name, const std::string& filepath, const std::string& filepath2,const std::string& gsFile="");
 
 		Ref<Shader> GetShader(const std::string& name);
 	private:

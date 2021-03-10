@@ -61,13 +61,18 @@ namespace QCat
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
+			m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_VS.hlsl", 
+																"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_PS.hlsl");
+			m_ShadowMappingShader = ShaderLibrary::Load("ShadowMapping", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_VS.hlsl", 
+																		"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_PS.hlsl"
+																		, "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_GS.hlsl");
+
+			
 			m_FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/PosNormTcFrag_TransInvTrans.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
 			m_ScreenShader = ShaderLibrary::Load("QuadShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 			m_SkyBoxShader = ShaderLibrary::Load("SkyBoxShader","Asset/shaders/hlsl/SkyBox_VS.hlsl","Asset/shaders/hlsl/SkyBox_PS.hlsl");
 			m_ReflectShader = ShaderLibrary::Load("ReflectShader", "Asset/shaders/hlsl/Reflect_VS.hlsl", "Asset/shaders/hlsl/Reflect_PS.hlsl");
 			m_CubeMapShader = ShaderLibrary::Load("CubeMapShader","Asset/shaders/hlsl/CubeMap/CubeMap_VS.hlsl", "Asset/shaders/hlsl/CubeMap/CubeMap_PS.hlsl");
-			m_ShadowMappingShader = ShaderLibrary::Load("ShadowMapping","Asset/shaders/hlsl/ShadowMap/ShadowMapping_VS.hlsl", "Asset/shaders/hlsl/ShadowMap/ShadowMapping_PS.hlsl");
 			m_ScreenDepthShader = ShaderLibrary::Load("ShadowMapScreen", "Asset/shaders/hlsl/ShadowMap/ScreenShadow_VS.hlsl", "Asset/shaders/hlsl/ShadowMap/ScreenShadow_PS.hlsl");
 		}
 
@@ -176,21 +181,20 @@ namespace QCat
 		ReflectObjPos = glm::vec3(0.5f, -2.0f, -0.5f);
 
 		FrameBufferSpecification spec;
-		spec.Attachments = { {FramebufferTextureFormat::Texture2D,FramebufferTextureDataFormat::RGBA8},
-							 {FramebufferTextureFormat::Depth_Stencil ,FramebufferTextureDataFormat::DEPTH24STENCIL8} };
+		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
+							 {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
 		framebuffer = FrameBuffer::Create(spec);
 
 		FrameBufferSpecification spec2;
-		spec2.Attachments = {{FramebufferTextureFormat::Depth_Cube ,FramebufferTextureDataFormat::DEPTH32} };
+		spec2.Attachments = {{FramebufferUsage::Depth,TextureType::TextureCube ,TextureDataFormat::DEPTH32} };
 		spec2.Width  = 2048;
 		spec2.Height = 2048;
 		DepthFrameBuffer = FrameBuffer::Create(spec2);
 
 		FrameBufferSpecification spec3;
-		spec3.Attachments = { 
-			{FramebufferTextureFormat::Texture2D,FramebufferTextureDataFormat::RGBA8} };
+		spec3.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8} };
 		spec3.Width = 1024;
 		spec3.Height = 1024;
 		screenframeBuffer = FrameBuffer::Create(spec3);
@@ -300,18 +304,37 @@ namespace QCat
 			float farplane = 25.0f;
 			glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearplane, farplane);
 			std::vector<glm::mat4> shadowTransforms;
-			shadowTransforms.push_back(shadowProj *
-				glm::lookAt(LightPosition, LightPosition + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-			shadowTransforms.push_back(shadowProj *
-				glm::lookAt(LightPosition, LightPosition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-			shadowTransforms.push_back(shadowProj *
-				glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-			shadowTransforms.push_back(shadowProj *
-				glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0,-1.0)));
-			shadowTransforms.push_back(shadowProj *
-				glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-			shadowTransforms.push_back(shadowProj *
-				glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+			if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+			{
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+			}
+			else
+			{
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, 1.0, 0.0)));
+				shadowTransforms.push_back(shadowProj *
+					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 1.0, 0.0)));
+			}
+			
 			m_ShadowMappingShader->Bind();
 			for (int i = 0; i < 6; ++i)
 				m_ShadowMappingShader->SetMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i], ShaderType::GS);
@@ -360,7 +383,6 @@ namespace QCat
 			RenderCommand::SetCullMode(CullMode::Front);
 			m_CubeMapShader->Bind();
 			m_CubeMapShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
-			m_CubeMapShader->SetFloat3("viewPosition", tc, ShaderType::PS);
 			transform = glm::translate(glm::mat4(1.0f), { -3.0f,-2.0f,-1.0f }) * 
 				glm::toMat4(glm::quat({ 0.0f,0.0f,0.0f })) * glm::scale(glm::mat4(1.0f), { 1.0f,1.0f,1.0f });
 			m_CubeMapShader->SetMat4("u_Transform", transform, ShaderType::VS);
@@ -369,6 +391,7 @@ namespace QCat
 			RenderCommand::SetCullMode(CullMode::None);
 			cube->GetVertexArray()->Bind();
 			RenderCommand::DrawIndexed(cube->GetVertexArray());
+			m_CubeMapShader->UpdateBuffer();
 			m_CubeMapShader->UnBind();
 
 			RenderSkyObj(camProj, viewMatrix, tc);

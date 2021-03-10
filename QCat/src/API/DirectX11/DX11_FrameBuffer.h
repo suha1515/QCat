@@ -43,8 +43,8 @@ namespace QCat
 	private:
 		FrameBufferSpecification m_Specification;
 
-		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
-		FramebufferTextureSpecification m_DepthAttacmentSpecifications = { FramebufferTextureFormat::None,FramebufferTextureDataFormat::None };
+		std::vector<FramebufferSpecification> m_ColorAttachmentSpecifications;
+		FramebufferSpecification m_DepthAttacmentSpecifications = { FramebufferUsage::None,TextureType::None,TextureDataFormat::None };
 
 		std::vector<RenderTargets> m_ColorAttachments;
 		Ref<DX11DepthStencil> m_DepthAttachment = 0, m_ColorAttachment = 0;
