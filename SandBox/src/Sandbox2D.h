@@ -126,10 +126,15 @@ namespace QCat
 		Material temMat;
 
 		//Model
-		Ref<Model> bagPack;
+		Ref<Model> diona;
+		Ref<Model> muro;
 
 		//Light
 		Light dirLight;
+
+		int depthBias=0;
+		float slopeBias = 0.0f;
+		float depthClamp = 0.0f;
 	};
 
 }

@@ -121,7 +121,7 @@ namespace QCat
 		rasterDesc.FillMode = Utils::FillModeToDx(desc.fillmode);
 		rasterDesc.CullMode = Utils::CullModeToDX(desc.cullmode);
 		rasterDesc.FrontCounterClockwise = desc.frontCounterClockWise;
-		rasterDesc.DepthBias = desc.DepthBias;
+		rasterDesc.DepthBias =desc.DepthBias;
 		rasterDesc.DepthBiasClamp = desc.DepthBiasClamp;
 		rasterDesc.SlopeScaledDepthBias = desc.SlopeScaledDepthBias;
 		rasterDesc.DepthClipEnable = desc.DepthClipEnable;

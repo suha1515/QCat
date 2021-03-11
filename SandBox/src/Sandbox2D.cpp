@@ -122,10 +122,10 @@ namespace QCat
 		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
 		ReflectMaterial.SetTexture(m_cubeTexture, Material::MaterialType::Diffuse);
 		// model Load
-		//bagPack = Model::Create("Asset/model/backpack/backpack.obj");
-		//bagPack->SetTranslation({ 0.0f,0.0f,0.0f });
-		//temMat = bagPack->GetMaterial();
-
+		diona = Model::Create("Asset/model/diona/diona.fbx");
+		diona->SetTranslation({ 0.0f,0.0f,0.0f });
+		muro = Model::Create("Asset/model/muro/muro.obj");
+	
 		m_LightShader->Bind();
 		m_LightShader->SetInt("material.diffuse", 0, ShaderType::PS);
 		m_LightShader->SetInt("material.specular", 1, ShaderType::PS);
@@ -176,7 +176,7 @@ namespace QCat
 		window2 = glm::vec3(0.3f, -2.75f, 0.3f);
 		window3 = glm::vec3(0.5f, -2.75f, -0.1f);
 
-		backpackPos = glm::vec3(2.0f, -2.0f, 0.0f);
+		backpackPos = glm::vec3(-1.f, -3.0f, 0.5f);
 		backpackRot = glm::vec3(0.0f);
 		ReflectObjPos = glm::vec3(0.5f, -2.0f, -0.5f);
 
@@ -285,12 +285,14 @@ namespace QCat
 			RenderCommand::SetBlend(true);
 			RenderCommand::SetBlendFunc(BlendFunc::BLEND_SRC_ALPHA, BlendFunc::BLEND_INV_SRC_ALPHA, BlendFunc::BLEND_ONE, BlendFunc::BLEND_ZERO);
 			RenderCommand::SetBlendOp(BlendOp::BLEND_ADD, BlendOp::BLEND_ADD);
+
+			
 			//RenderCommand::SetCullMode(CullMode::Back);
 
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
-			float near_plane = 1.0f, far_plane = 50.5f;
+			float near_plane = 0.5f, far_plane = 50.0f;
 			const glm::mat4 lightProjection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, near_plane, far_plane);
 			//const glm::mat4 lightProjection = camProj;
 			glm::mat4 lightView = glm::lookAt(glm::vec3(0.5f, 3.0f, -7.2f), glm::vec3(0.0f, -2.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -300,8 +302,8 @@ namespace QCat
 			DepthFrameBuffer->Clear();
 
 			// shader
-			float nearplane = 0.01f;
-			float farplane = 25.0f;
+			float nearplane = 0.5f;
+			float farplane = 50.0f;
 			glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearplane, farplane);
 			std::vector<glm::mat4> shadowTransforms;
 			if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
@@ -341,6 +343,9 @@ namespace QCat
 			m_ShadowMappingShader->SetFloat3("lightPos", LightPosition, ShaderType::PS);
 			m_ShadowMappingShader->SetFloat("far_plane", farplane, ShaderType::PS);
 
+			RenderCommand::SetDepthBias(depthBias);
+			RenderCommand::SetSlopeScaledDepthBias(slopeBias);
+			RenderCommand::SetDepthBiasClamp(depthClamp);
 			RenderScene(lightProjection, lightView, { 0.0f,0.0f,0.0f }, m_ShadowMappingShader);
 			m_ShadowMappingShader->UnBind();
 
@@ -352,8 +357,16 @@ namespace QCat
 			framebuffer->Clear();
 
 			m_LightShader->Bind();
+
+			RenderCommand::SetDepthBias(0);
+			RenderCommand::SetSlopeScaledDepthBias(0.0f);
+			RenderCommand::SetDepthBiasClamp(0.0f);
+
 			m_LightShader->SetFloat("far_plane", farplane, ShaderType::PS);
+			m_LightShader->SetFloat("near_plane", nearplane, ShaderType::PS);
 			DepthFrameBuffer->BindDepthTexture(4);
+			shadowSampler->Bind(4);
+
 			//shadowSampler->Bind(4);
 			RenderLightObj(camProj, viewMatrix, tc);
 			m_LightShader->UnBind();
@@ -445,6 +458,9 @@ namespace QCat
 		ImGui::DragFloat3("obj", glm::value_ptr(ReflectObjPos), 0.1f);
 		ImGui::DragFloat3("light", glm::value_ptr(LightPosition), 0.1f);
 		
+		ImGui::DragInt("Depth Bias", &depthBias);
+		ImGui::DragFloat("SlopeDepthBias", &slopeBias, 0.1f);
+		ImGui::DragFloat("DepthClamp", &depthClamp, 0.1f);
 
 		ImGui::End();
 	}
@@ -587,9 +603,12 @@ namespace QCat
 		face->Draw(m_LightShader);
 		face->SetTranslation(grass3);
 		face->Draw(m_LightShader);
-		//bagPack->SetTranslation(backpackPos);
-		//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-		//bagPack->Draw(m_LightShader);
+		diona->SetTranslation(backpackPos);
+		diona->SetScale({ 0.1f, 0.1f, 0.1f });
+		diona->Draw(m_LightShader);
+		muro->SetTranslation({ 2.0f, -3.0f, 0.0f });
+		muro->SetScale({ 1.0f,1.0f,1.0f });
+		muro->Draw(m_LightShader);
 
 		/*RenderCommand::SetStencilTest(true);
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
@@ -643,9 +662,13 @@ namespace QCat
 		face->SetTranslation(grass3);
 		face->Draw(shader);
 
-		//bagPack->SetTranslation(backpackPos);
-		//bagPack->SetScale({ 0.5f, 0.5f, 0.5f });
-		//bagPack->Draw(m_LightShader);
+		diona->SetTranslation(backpackPos);
+		diona->SetScale({ 0.1f, 0.1f, 0.1f });
+		diona->Draw(shader);
+
+		muro->SetTranslation({ 2.0f, -3.0f, 0.0f });
+		muro->SetScale({ 1.0f,1.0f,1.0f });
+		muro->Draw(shader);
 
 		/*RenderCommand::SetStencilTest(true);
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
@@ -667,3 +690,4 @@ namespace QCat
 	}
 
 }
+

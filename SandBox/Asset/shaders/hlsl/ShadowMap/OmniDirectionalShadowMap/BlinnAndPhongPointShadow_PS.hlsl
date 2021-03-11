@@ -44,6 +44,7 @@ cbuffer light : register(b0)
 	PointLight pointLight;
 	DirLight   dirLight;
 	float far_plane;
+	float near_plane;
 	bool	gamma;
 }
 cbuffer material : register(b1)
@@ -56,20 +57,31 @@ Texture2D normalMapTex;
 TextureCube shadowMapTex : register(t4);
 
 SamplerState splr : register(s0);
-//SamplerComparisonState shadowSampler : register(s4);
+SamplerComparisonState shadowSampler : register(s4);
 struct PS_OUT
 {
 	float4 color :SV_TARGET0;
 };
 //shadow
+float CalculationShadowDepth(const in float3 shadowPos)
+{
+	const float c1 = far_plane / (far_plane - near_plane);
+	const float c0 = -near_plane * far_plane / (far_plane - near_plane);
+	const float3 m = abs(shadowPos).xyz;
+	const float major = max(m.x, max(m.y, m.z));
+	return (c1 * major + c0) / major;
+}
 float ShadowCalculation(float3 fragPos,float3 lightPosition)
 {
 	float3 fragToLight = fragPos - lightPosition;
-	float closestDepth = shadowMapTex.Sample(splr, fragToLight).r;
-	closestDepth *= far_plane;
-	float currentDepth = length(fragToLight);
-	float bias = 0.001f;
-	float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+	//float closestDepth = shadowMapTex.Sample(splr, fragToLight).r;
+	//closestDepth *= far_plane;
+	//float currentDepth = length(fragToLight)/far_plane;
+	float bias = 0.00001f;
+	//float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
+	float shadow = 0.0f;
+	shadow += shadowMapTex.SampleCmpLevelZero(shadowSampler, fragToLight, CalculationShadowDepth(fragToLight)-bias);
+
 	return shadow;
 }
 
@@ -115,7 +127,7 @@ float3 CalcPointLight(PointLight light, float3 normal, float3 fragPos,float3 vie
 	ambient *= attenuation;
 	diffuse *= attenuation;
 	specular *= attenuation;
-	return (ambient + (1.0f-shadow) * (diffuse + specular));
+	return (ambient + (shadow) * (diffuse + specular));
 }
 // calculates the color when using a spot light.
 float3 CalcSpotLight(SpotLight light, float3 normal, float3 fragPos, float3 viewDir, float2 tc, Texture2D diffuseTex, Texture2D specularTex)

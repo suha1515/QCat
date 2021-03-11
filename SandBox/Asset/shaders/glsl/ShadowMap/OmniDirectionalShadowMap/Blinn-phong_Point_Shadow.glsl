@@ -74,19 +74,35 @@ uniform Material material;
 uniform PointLight pointLight;
 uniform vec3 viewPosition;
 uniform float far_plane;
+uniform float near_plane;
 uniform bool gamma;
 
-uniform samplerCube depthMap;
+uniform samplerCubeShadow depthMap;
 
+float CalculationShadowDepth(vec3 shadowPos)
+{
+	//0 to 1 for z
+	float c1 = far_plane / (far_plane - near_plane);
+	float c0 = -near_plane * far_plane / (far_plane - near_plane);
+	// -1 t0 1 for z
+	//float c1 = (far_plane + near_plane) / (far_plane - near_plane);
+	//float c0 = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+	vec3 m = abs(shadowPos).xyz;
+	float major = max(m.x, max(m.y, m.z));
+	return (c1 * major + c0) / major;
+}
 float ShadowCalculation(vec3 fragPos)
 {
-	vec3 fragToLight = fragPos - pointLight.position;
+	vec4 fragToLight = vec4(fragPos - pointLight.position,0.0f);
 	fragToLight.x*=-1.0;
-	float closestDepth = texture(depthMap,fragToLight).r;
-	closestDepth *= far_plane;
-	float currentDepth = length(fragToLight);
-	float bias = 0.001;
-	float shadow = currentDepth - bias > closestDepth ?1.0 : 0.0;
+	//float closestDepth = texture(depthMap,fragToLight).r;
+	//closestDepth *= far_plane;
+	//float currentDepth = length(fragToLight);
+	float bias = 0.0001;
+	//float shadow = currentDepth - bias > closestDepth ?1.0 : 0.0;
+	float currentDepth = CalculationShadowDepth(fragPos);
+	fragToLight.w = currentDepth - bias;
+	float shadow = texture(depthMap,fragToLight);
 	return shadow;
 }
 
@@ -147,5 +163,5 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     diffuse *= attenuation;
     specular *= attenuation;
 	float shadow = ShadowCalculation(fragPos);
-    return (ambient + (1.0-shadow) *(diffuse + specular));
+    return (ambient + (shadow) *(diffuse + specular));
 }

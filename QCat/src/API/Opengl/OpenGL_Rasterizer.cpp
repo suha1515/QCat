@@ -63,15 +63,33 @@ namespace QCat
 	}
 	void OpenGLRasterizer::SetDepthBias(int value)
 	{
-		desc.DepthBias = value;
+		int exvalue = value;
+		if (desc.DepthBias != value)
+		{
+			desc.DepthBias = value;
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffsetClamp(desc.SlopeScaledDepthBias, desc.DepthBias,desc.DepthBiasClamp);
+		}
 	}
 	void OpenGLRasterizer::SetDepthBiasClamp(float value)
 	{
-		desc.DepthBiasClamp = value;
+		int exvalue = value;
+		if (desc.DepthBiasClamp != value)
+		{
+			desc.DepthBiasClamp = value;
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffsetClamp(desc.SlopeScaledDepthBias, desc.DepthBias, desc.DepthBiasClamp);
+		}
 	}
 	void OpenGLRasterizer::SetSlopeScaledDepthBias(float value)
 	{
-		desc.SlopeScaledDepthBias = value;
+		int exvalue = value;
+		if (desc.SlopeScaledDepthBias != value)
+		{
+			desc.SlopeScaledDepthBias = value;
+			glEnable(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffsetClamp(desc.SlopeScaledDepthBias, desc.DepthBias, desc.DepthBiasClamp);
+		}
 	}
 	void OpenGLRasterizer::SetDepthClip(bool enable)
 	{

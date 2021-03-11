@@ -82,6 +82,8 @@ namespace QCat
 		SetCullMode(CullMode::Back);
 		SetFrontClockWise(false);
 
+
+
 #ifdef QCAT_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0);
