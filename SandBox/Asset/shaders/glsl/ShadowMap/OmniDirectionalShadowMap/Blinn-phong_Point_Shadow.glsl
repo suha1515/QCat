@@ -78,15 +78,12 @@ uniform float near_plane;
 uniform bool gamma;
 
 uniform samplerCubeShadow depthMap;
-
+//uniform samplerCube depthMap;
 float CalculationShadowDepth(vec3 shadowPos)
 {
-	//0 to 1 for z
-	float c1 = far_plane / (far_plane - near_plane);
-	float c0 = -near_plane * far_plane / (far_plane - near_plane);
 	// -1 t0 1 for z
-	//float c1 = (far_plane + near_plane) / (far_plane - near_plane);
-	//float c0 = -(2 * far_plane * near_plane) / (far_plane - near_plane);
+	float c1 = (far_plane + near_plane) / (far_plane - near_plane);
+	float c0 = -(2 * far_plane * near_plane) / (far_plane - near_plane);
 	vec3 m = abs(shadowPos).xyz;
 	float major = max(m.x, max(m.y, m.z));
 	return (c1 * major + c0) / major;
@@ -94,14 +91,11 @@ float CalculationShadowDepth(vec3 shadowPos)
 float ShadowCalculation(vec3 fragPos)
 {
 	vec4 fragToLight = vec4(fragPos - pointLight.position,0.0f);
+	float currentDepth = CalculationShadowDepth(fragToLight.xyz);
+	currentDepth = (currentDepth*0.5f) + 0.5f;
 	fragToLight.x*=-1.0;
-	//float closestDepth = texture(depthMap,fragToLight).r;
-	//closestDepth *= far_plane;
-	//float currentDepth = length(fragToLight);
-	float bias = 0.0001;
-	//float shadow = currentDepth - bias > closestDepth ?1.0 : 0.0;
-	float currentDepth = CalculationShadowDepth(fragPos);
-	fragToLight.w = currentDepth - bias;
+	float bias = 0.00001f;
+	fragToLight.w = currentDepth - bias ;
 	float shadow = texture(depthMap,fragToLight);
 	return shadow;
 }
@@ -139,7 +133,7 @@ void main()
 	if(gamma)
 		result = pow(result,vec3(1.0/2.2));
 	color = vec4(result,texcolor.a);
-	//color = vec4(norm,1.0f);
+	
 }
 
 // calculates the color when using a point light.

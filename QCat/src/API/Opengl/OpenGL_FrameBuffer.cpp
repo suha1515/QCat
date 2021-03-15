@@ -17,6 +17,10 @@ namespace QCat
 				//32 bit
 			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
 			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
+			case TextureDataFormat::RG16_Float:	    return GL_FLOAT;
+			case TextureDataFormat::RGBA32_Float:	return GL_FLOAT;
+
+
 				//24 bit
 			case TextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
 
@@ -38,8 +42,11 @@ namespace QCat
 				//32 bit
 			case TextureDataFormat::RGBA8:			 return GL_RGBA;
 			case TextureDataFormat::RED32_INTEGER:   return GL_RED_INTEGER;
+			case TextureDataFormat::RGBA32_Float:	 return GL_RGBA;
+
 				//24 bit
 			case TextureDataFormat::RGB8:			 return GL_RGB;
+			case TextureDataFormat::RG16_Float:	     return GL_RG;
 
 				//depth
 			case TextureDataFormat::DEPTH32:		 return GL_DEPTH_COMPONENT;
@@ -55,6 +62,10 @@ namespace QCat
 			//32 bit
 			case TextureDataFormat::RGBA8:			return GL_RGBA8;
 			case TextureDataFormat::RED32_INTEGER:  return GL_R32I;
+			case TextureDataFormat::RG16_Float:	    return GL_RG16F;
+			case TextureDataFormat::RGBA32_Float:	return GL_RGBA32F;
+
+
 			//24 bit
 			case TextureDataFormat::RGB8:			return GL_RGB8;
 
@@ -72,6 +83,9 @@ namespace QCat
 				//32 bit
 			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
 			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
+			case TextureDataFormat::RG16_Float:	    return GL_FLOAT;
+			case TextureDataFormat::RGBA32_Float:	return GL_FLOAT;
+
 				//24 bit
 			case TextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
 
@@ -281,8 +295,15 @@ namespace QCat
 
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		int pixelData;
-		glReadPixels(x, y, 1, 1,GL_RED_INTEGER,GL_INT,&pixelData);
+		glReadPixels(x, y,1, 1,GL_RED_INTEGER,GL_INT,&pixelData);
 		return pixelData;
+	}
+	void OpenGLFrameBuffer::ReadPixel(uint32_t attachmentIndex, TextureDataFormat format, void* value, int x, int y, int z)
+	{
+		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glReadPixels(x, y, 1, 1, Utils::GetTextureFormat(format),Utils::GetTextureDataType(format), &value);
 	}
 	void OpenGLFrameBuffer::ClearAttachment(uint32_t attachmentIndex, const void* value)
 	{

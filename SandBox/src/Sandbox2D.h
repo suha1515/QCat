@@ -132,9 +132,9 @@ namespace QCat
 		//Light
 		Light dirLight;
 
-		int depthBias=0;
-		float slopeBias = 0.0f;
-		float depthClamp = 0.0f;
+		int depthBias=40;
+		float slopeBias = 1.0f;
+		float depthClamp = 1.0f;
 	};
 
 }

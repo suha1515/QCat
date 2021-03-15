@@ -18,5 +18,4 @@
 #if defined(QCAT_DX11)
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #elif defined(QCAT_OPENGL)
-//#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #endif

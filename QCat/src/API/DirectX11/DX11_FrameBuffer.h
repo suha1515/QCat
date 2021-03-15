@@ -25,6 +25,7 @@ namespace QCat
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) override;
+		virtual void ReadPixel(uint32_t attachmentIndex, TextureDataFormat format, void* value, int x, int y, int z = 0)override {};
 
 		virtual void AttachCubeMapByIndex(uint32_t faceindex)override;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;

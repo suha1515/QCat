@@ -61,8 +61,10 @@ namespace QCat
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_VS.hlsl", 
-																"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_PS.hlsl");
+			m_LightShader = ShaderLibrary::Load("LightShader", "BlinnAndPhongPointShadow_VS.cso", 
+																"BlinnAndPhongPointShadow_PS.cso");
+			//m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_VS.hlsl",
+			//	"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_PS.hlsl");
 			m_ShadowMappingShader = ShaderLibrary::Load("ShadowMapping", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_VS.hlsl", 
 																		"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_PS.hlsl"
 																		, "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_GS.hlsl");
@@ -152,7 +154,7 @@ namespace QCat
 
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
-		sphere = CreateRef<Sphere>(glm::vec3(-0.1f, -2.6f, -1.0f), m_FlatShader, 0.1f);
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f,-2.7f,-0.9f), m_FlatShader, 0.1f);
 		LightPosition = sphere->GetTranslation();
 		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
 		cube->SetScale({ 0.5f,0.5f,0.5f });
@@ -188,7 +190,8 @@ namespace QCat
 		framebuffer = FrameBuffer::Create(spec);
 
 		FrameBufferSpecification spec2;
-		spec2.Attachments = {{FramebufferUsage::Depth,TextureType::TextureCube ,TextureDataFormat::DEPTH32} };
+		spec2.Attachments = {
+							  {FramebufferUsage::Depth,TextureType::TextureCube ,TextureDataFormat::DEPTH32} };
 		spec2.Width  = 2048;
 		spec2.Height = 2048;
 		DepthFrameBuffer = FrameBuffer::Create(spec2);
@@ -292,7 +295,7 @@ namespace QCat
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
-			float near_plane = 0.5f, far_plane = 50.0f;
+			float near_plane = 0.0001f, far_plane = 100.0f;
 			const glm::mat4 lightProjection = glm::ortho(-5.0f, 5.0f, -5.0f, 5.0f, near_plane, far_plane);
 			//const glm::mat4 lightProjection = camProj;
 			glm::mat4 lightView = glm::lookAt(glm::vec3(0.5f, 3.0f, -7.2f), glm::vec3(0.0f, -2.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -302,9 +305,10 @@ namespace QCat
 			DepthFrameBuffer->Clear();
 
 			// shader
-			float nearplane = 0.5f;
+			float nearplane = 0.01f;
 			float farplane = 50.0f;
 			glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearplane, farplane);
+
 			std::vector<glm::mat4> shadowTransforms;
 			if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 			{
@@ -337,6 +341,13 @@ namespace QCat
 					glm::lookAt(LightPosition, LightPosition + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 1.0, 0.0)));
 			}
 			
+			glm::vec4 vector1 = { 0.0437f,-0.2996f,0.9f,1.0f};
+			glm::vec4 vector2 = { 4.0f,1.f,2.0f,1.0f };
+
+			vector1  += glm::vec4(LightPosition, 0.0f);
+			vector1 = shadowTransforms[4] * vector1;
+			vector2 = shadowProj * vector2;
+
 			m_ShadowMappingShader->Bind();
 			for (int i = 0; i < 6; ++i)
 				m_ShadowMappingShader->SetMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i], ShaderType::GS);
@@ -365,9 +376,9 @@ namespace QCat
 			m_LightShader->SetFloat("far_plane", farplane, ShaderType::PS);
 			m_LightShader->SetFloat("near_plane", nearplane, ShaderType::PS);
 			DepthFrameBuffer->BindDepthTexture(4);
-			shadowSampler->Bind(4);
-
 			//shadowSampler->Bind(4);
+
+			shadowSampler->Bind(4);
 			RenderLightObj(camProj, viewMatrix, tc);
 			m_LightShader->UnBind();
 			RenderNonLightObj(camProj, viewMatrix, tc);
@@ -410,6 +421,10 @@ namespace QCat
 			RenderSkyObj(camProj, viewMatrix, tc);
 
 			framebuffer->UnBind();
+
+			
+
+
 			RenderCommand::SetDefaultFrameBuffer();
 
 			RenderCommand::SetBlend(false);
