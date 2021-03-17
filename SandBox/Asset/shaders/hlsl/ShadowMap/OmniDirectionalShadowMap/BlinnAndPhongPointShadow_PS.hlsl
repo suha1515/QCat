@@ -62,6 +62,13 @@ struct PS_OUT
 {
 	float4 color :SV_TARGET0;
 };
+const static float3 gridSamplingDisk[20] = {
+	{ 1, 1, 1}, { 1,-1, 1}, {-1,-1, 1}, {-1, 1, 1},
+	{ 1, 1,-1}, { 1,-1,-1}, {-1,-1,-1}, {-1, 1,-1},
+	{ 1, 1, 0}, { 1,-1, 0}, {-1,-1, 0}, {-1, 1, 0},
+	{ 1, 0, 1}, {-1, 0, 1}, { 1, 0,-1}, {-1, 0,-1},
+	{ 0, 1, 1}, { 0,-1, 1}, { 0,-1,-1}, { 0, 1,-1},
+};
 //shadow
 float CalculationShadowDepth(const in float3 shadowPos)
 {
@@ -74,14 +81,26 @@ float CalculationShadowDepth(const in float3 shadowPos)
 float ShadowCalculation(float3 fragPos,float3 lightPosition)
 {
 	float3 fragToLight = fragPos - lightPosition;
+	float currentDepth = CalculationShadowDepth(fragToLight);
+	float width;
+	shadowMapTex.GetDimensions(width, width);
+	float textureSize = 1.0f / width;
+	fragToLight = normalize(fragToLight);
 	//float closestDepth = shadowMapTex.Sample(splr, fragToLight).r;
 	//closestDepth *= far_plane;
 	//float currentDepth = length(fragToLight)/far_plane;
 	float bias = 0.00001f;
-	//float shadow = currentDepth - bias > closestDepth ? 1.0f : 0.0f;
 	float shadow = 0.0f;
-	shadow += shadowMapTex.SampleCmpLevelZero(shadowSampler, fragToLight, CalculationShadowDepth(fragToLight)-bias);
-
+	
+	//shadow = currentDepth - bias > closestDepth ? 0.0f : 1.0f;
+	
+	for (int i = 0; i < 20; ++i)
+	{
+		float3 dir = fragToLight + gridSamplingDisk[i]* (textureSize*2);
+		shadow += shadowMapTex.SampleCmpLevelZero(shadowSampler, dir, currentDepth - bias);
+	}
+	shadow /= 20.0f;
+	//shadow = shadowMapTex.SampleCmpLevelZero(shadowSampler, fragToLight, currentDepth - bias);
 	return shadow;
 }
 

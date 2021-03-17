@@ -64,6 +64,7 @@ struct PointLight
 };
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out vec4 color2;
 
 in vec3 v_Normal;
 in vec2 TexCoords;
@@ -79,6 +80,15 @@ uniform bool gamma;
 
 uniform samplerCubeShadow depthMap;
 //uniform samplerCube depthMap;
+
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);   
 float CalculationShadowDepth(vec3 shadowPos)
 {
 	// -1 t0 1 for z
@@ -94,9 +104,20 @@ float ShadowCalculation(vec3 fragPos)
 	float currentDepth = CalculationShadowDepth(fragToLight.xyz);
 	currentDepth = (currentDepth*0.5f) + 0.5f;
 	fragToLight.x*=-1.0;
-	float bias = 0.00001f;
+	float bias = 0.0001f;
+	fragToLight = normalize(fragToLight);
 	fragToLight.w = currentDepth - bias ;
-	float shadow = texture(depthMap,fragToLight);
+	int samples  = 20;
+	vec2 size = textureSize(depthMap,0);
+	float diskRadius = 1.0f/size.x;
+	//diskRadius = 0.002
+	float shadow=0.0f;
+	
+	for(int i=0;i<20;++i)
+	{
+		shadow += texture(depthMap, fragToLight + vec4(sampleOffsetDirections[i]* (diskRadius*2.0f),0.0f));
+	}
+	shadow /=20.0f;
 	return shadow;
 }
 
@@ -133,7 +154,9 @@ void main()
 	if(gamma)
 		result = pow(result,vec3(1.0/2.2));
 	color = vec4(result,texcolor.a);
-	
+	float value = ShadowCalculation(FragPos);
+	color2 = vec4(value,value,value,1.0f);
+
 }
 
 // calculates the color when using a point light.

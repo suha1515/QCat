@@ -61,10 +61,10 @@ namespace QCat
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			m_LightShader = ShaderLibrary::Load("LightShader", "BlinnAndPhongPointShadow_VS.cso", 
-																"BlinnAndPhongPointShadow_PS.cso");
-			//m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_VS.hlsl",
-			//	"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_PS.hlsl");
+			//m_LightShader = ShaderLibrary::Load("LightShader", "BlinnAndPhongPointShadow_VS.cso", 
+																//"BlinnAndPhongPointShadow_PS.cso");
+			m_LightShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_VS.hlsl",
+				"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/BlinnAndPhongPointShadow_PS.hlsl");
 			m_ShadowMappingShader = ShaderLibrary::Load("ShadowMapping", "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_VS.hlsl", 
 																		"Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_PS.hlsl"
 																		, "Asset/shaders/hlsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping_GS.hlsl");
@@ -103,7 +103,7 @@ namespace QCat
 		// Box specular
 		Ref<Texture2D> boxSpecular = TextureLibrary::Load("Asset/textures/container2_specular.png");
 		// Sky Box
-		std::vector<std::string> imagePath =
+		/*std::vector<std::string> imagePath =
 		{
 			"Asset/textures/skybox/right.jpg",
 			"Asset/textures/skybox/left.jpg",
@@ -111,6 +111,15 @@ namespace QCat
 			"Asset/textures/skybox/bottom.jpg",
 			"Asset/textures/skybox/front.jpg",
 			"Asset/textures/skybox/back.jpg",
+		};*/
+		std::vector<std::string> imagePath =
+		{
+			"Asset/textures/Lycksele/posx.jpg",
+			"Asset/textures/Lycksele/negx.jpg",
+			"Asset/textures/Lycksele/posy.jpg",
+			"Asset/textures/Lycksele/negy.jpg",
+			"Asset/textures/Lycksele/posz.jpg",
+			"Asset/textures/Lycksele/negz.jpg",
 		};
 		m_cubeTexture = TextureCube::Create(imagePath);
 
@@ -184,6 +193,7 @@ namespace QCat
 
 		FrameBufferSpecification spec;
 		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
+							 {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
 							 {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
@@ -249,9 +259,9 @@ namespace QCat
 		desc.MAG = Filtering::LINEAR;
 		desc.MIP = Filtering::NONE;
 
-		desc.addressU = WrapingMode::BORDER;
-		desc.addressV = WrapingMode::BORDER;
-		desc.addressW = WrapingMode::BORDER;
+		desc.addressU = WrapingMode::CLAMP;
+		desc.addressV = WrapingMode::CLAMP;
+		desc.addressW = WrapingMode::CLAMP;
 
 		desc.mode = FilterMode::COMPARISON;
 		desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
