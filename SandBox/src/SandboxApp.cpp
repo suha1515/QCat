@@ -57,8 +57,8 @@ public:
 	{
 		//PushLayer(new ExamLayer());
 		//PushLayer(new QCat::ModelTestScene());
-		//PushLayer(new QCat::Sandbox2D());
-		PushLayer(new QCat::TestScene());
+		PushLayer(new QCat::Sandbox2D());
+		//PushLayer(new QCat::TestScene());
 	}
 	~Sandbox()
 	{

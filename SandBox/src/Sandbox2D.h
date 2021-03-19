@@ -59,6 +59,8 @@ namespace QCat
 		Ref<Shader> m_ReflectShader;
 		Ref<Shader> m_CubeMapShader;
 		Ref<Shader> m_ShadowMappingShader;
+		Ref<Shader> m_BlinnPhongParallax;
+		Ref<Texture2D> heightMap;
 
 		Ref<FrameBuffer> framebuffer;
 		Ref<FrameBuffer> screenframeBuffer;

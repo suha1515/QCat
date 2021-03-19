@@ -58,6 +58,7 @@ namespace QCat
 			m_CubeMapShader = ShaderLibrary::Load("Asset/shaders/glsl/CubeMap.glsl");
 			m_ShadowMappingShader = ShaderLibrary::Load("Asset/shaders/glsl/ShadowMap/OmniDirectionalShadowMap/PointShadowMapping.glsl");
 			m_ScreenDepthShader = ShaderLibrary::Load("Asset/shaders/glsl/ShadowMap/SingleQuadShadow.glsl");
+			m_BlinnPhongParallax = ShaderLibrary::Load("Asset/shaders/glsl/ParrallaxMapping/Blinn-phong-Parrallax-PointShadow.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
@@ -95,13 +96,16 @@ namespace QCat
 		// window Texture
 		Ref<Texture2D> windowTexture = TextureLibrary::Load("Asset/textures/blending_transparent_window.png");
 		// Brickwall Texture
-		Ref<Texture2D> brickTexture = TextureLibrary::Load("Asset/textures/brickwall.jpg");
+		Ref<Texture2D> brickTexture = TextureLibrary::Load("Asset/textures/bricks2.jpg");
 		// Brickwall normalmap
-		Ref<Texture2D> brickNormalMap = TextureLibrary::Load("Asset/textures/brickwall_normal.jpg");
+		Ref<Texture2D> brickNormalMap = TextureLibrary::Load("Asset/textures/bricks2_normal.jpg");
 		// Box diffuse
 		Ref<Texture2D> boxDiffuse = TextureLibrary::Load("Asset/textures/container2.png");
 		// Box specular
 		Ref<Texture2D> boxSpecular = TextureLibrary::Load("Asset/textures/container2_specular.png");
+		// heightMap
+		heightMap = TextureLibrary::Load("Asset/textures/bricks2_disp.jpg");
+
 		// Sky Box
 		/*std::vector<std::string> imagePath =
 		{
@@ -142,6 +146,13 @@ namespace QCat
 		m_LightShader->SetInt("material.specular", 1, ShaderType::PS);
 		m_LightShader->SetInt("material.normal", 2, ShaderType::PS);
 		m_LightShader->SetInt("depthMap", 4, ShaderType::PS);
+
+		m_BlinnPhongParallax->Bind();
+		m_BlinnPhongParallax->SetInt("material.diffuse", 0, ShaderType::PS);
+		m_BlinnPhongParallax->SetInt("material.specular", 1, ShaderType::PS);
+		m_BlinnPhongParallax->SetInt("material.normal", 2, ShaderType::PS);
+		m_BlinnPhongParallax->SetInt("depthMap", 4, ShaderType::PS);
+		m_BlinnPhongParallax->SetInt("heightMap", 5, ShaderType::PS);
 
 		m_ScreenShader->Bind();
 		m_ScreenShader->SetInt("screenTexture", 0, ShaderType::PS);
@@ -391,6 +402,36 @@ namespace QCat
 			shadowSampler->Bind(4);
 			RenderLightObj(camProj, viewMatrix, tc);
 			m_LightShader->UnBind();
+			m_BlinnPhongParallax->Bind();
+			DepthFrameBuffer->BindDepthTexture(4);
+			heightMap->Bind(5);
+
+			m_BlinnPhongParallax->SetFloat("far_plane", 50.0f, ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat("near_plane", 0.01f, ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat("height_scale", 0.1f, ShaderType::PS);
+			m_BlinnPhongParallax->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
+			m_BlinnPhongParallax->SetFloat3("viewPosition", tc, ShaderType::VS);
+			m_BlinnPhongParallax->SetBool("gamma", gamma, ShaderType::PS);
+
+			// Point Light 1
+			m_BlinnPhongParallax->SetFloat3("pointLight.position", LightPosition, ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f), ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+
+			m_BlinnPhongParallax->SetFloat("pointLight.constant", constant, ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat("pointLight.Linear", Linear, ShaderType::PS);
+			m_BlinnPhongParallax->SetFloat("pointLight.quadratic", quadratic, ShaderType::PS);
+
+			face->SetMaterial(brick);
+			face->SetTranslation(brickwall);
+			face->SetRotation(floorRot);
+			face->SetScale({ 5.0f,3.0f,1.0f });
+			face->MaterialBind();
+			face->Draw(m_BlinnPhongParallax);
+
+			m_BlinnPhongParallax->UnBind();
+
 			RenderNonLightObj(camProj, viewMatrix, tc);
 			DepthFrameBuffer->UnBindTexture();
 			//shadowSampler->UnBind();
@@ -614,12 +655,6 @@ namespace QCat
 		face->SetRotation({ 1.6f,0.0f,0.0f });
 		face->MaterialBind();
 		face->Draw(m_LightShader);
-		face->SetMaterial(brick);
-		face->SetTranslation(brickwall);
-		face->SetRotation(floorRot);
-		face->SetScale({ 5.0f,3.0f,1.0f });
-		face->MaterialBind();
-		face->Draw(m_LightShader);
 
 		face->SetMaterial(grass);
 		face->SetScale({ 0.5f,0.5f,0.5f });
@@ -680,16 +715,20 @@ namespace QCat
 		face->SetTranslation(brickwall);
 		face->SetRotation(floorRot);
 		face->SetScale({ 5.0f,3.0f,1.0f });
+		face->MaterialBind();
 		face->Draw(shader);
 
 		face->SetMaterial(grass);
 		face->SetScale({ 0.5f,0.5f,0.5f });
 		face->SetRotation({ 0.0f,0.0f,0.0f });
 		face->SetTranslation(grass1);
+		face->MaterialBind();
 		face->Draw(shader);
 		face->SetTranslation(grass2);
+		face->MaterialBind();
 		face->Draw(shader);
 		face->SetTranslation(grass3);
+		face->MaterialBind();
 		face->Draw(shader);
 
 		diona->SetTranslation(backpackPos);
