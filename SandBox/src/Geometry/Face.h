@@ -19,6 +19,7 @@ namespace QCat
 
 		const Material& GetMaterial() { return material; }
 		void SetMaterial(Material& mat) { material = mat; }
+		void MaterialBind();
 	public:
 		void ImguiRender(const char* name);
 	private:

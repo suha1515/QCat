@@ -612,21 +612,26 @@ namespace QCat
 		face->SetTranslation(floor);
 		face->SetScale({ 20.0f,20.0f,20.0f });
 		face->SetRotation({ 1.6f,0.0f,0.0f });
+		face->MaterialBind();
 		face->Draw(m_LightShader);
 		face->SetMaterial(brick);
 		face->SetTranslation(brickwall);
 		face->SetRotation(floorRot);
 		face->SetScale({ 5.0f,3.0f,1.0f });
+		face->MaterialBind();
 		face->Draw(m_LightShader);
 
 		face->SetMaterial(grass);
 		face->SetScale({ 0.5f,0.5f,0.5f });
 		face->SetRotation({ 0.0f,0.0f,0.0f });
 		face->SetTranslation(grass1);
+		face->MaterialBind();
 		face->Draw(m_LightShader);
 		face->SetTranslation(grass2);
+		face->MaterialBind();
 		face->Draw(m_LightShader);
 		face->SetTranslation(grass3);
+		face->MaterialBind();
 		face->Draw(m_LightShader);
 		diona->SetTranslation(backpackPos);
 		diona->SetScale({ 0.1f, 0.1f, 0.1f });

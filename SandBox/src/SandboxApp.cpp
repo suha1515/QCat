@@ -13,6 +13,7 @@
 
 #include "Sandbox2D.h"
 #include "ModelTestScene.h"
+#include "TestScene.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -56,7 +57,8 @@ public:
 	{
 		//PushLayer(new ExamLayer());
 		//PushLayer(new QCat::ModelTestScene());
-		PushLayer(new QCat::Sandbox2D());
+		//PushLayer(new QCat::Sandbox2D());
+		PushLayer(new QCat::TestScene());
 	}
 	~Sandbox()
 	{

@@ -163,10 +163,14 @@ namespace QCat
 			shader->SetBool("material.normalMap", false, ShaderType::PS);
 		}
 
-		material.Bind();
 		m_VertexArray->Bind();
 		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
+	}
+
+	void Face::MaterialBind()
+	{
+		material.Bind();
 	}
 
 	void Face::ImguiRender(const char* name)
