@@ -121,6 +121,38 @@ float CalculationShadowDepth(vec3 shadowPos)
 	float major = max(m.x, max(m.y, m.z));
 	return (c1 * major + c0) / major;
 }
+float ParallaxShadow(vec3 lightdir,vec2 texCoords)
+{
+	vec3 tanlightDir = normalize(TBN * lightdir);
+	// Steep ParrallaxMapping
+	float numLayers =10;
+	const float minLayers = 8.0;
+	const float maxLayers = 32.0;
+	numLayers = mix(maxLayers, minLayers, max(dot(vec3(0.0, 0.0, 1.0), lightdir), 0.0)); 
+
+	float currentLayerDepth = 0.0f;
+	float shadowFactor = 0.0f;
+	
+	vec2 currentTexCoords = texCoords;
+	float currentDepthMapValue = texture(heightMap,currentTexCoords).r;
+
+	currentLayerDepth = currentDepthMapValue;
+	float layerDepth = (1.0f-currentDepthMapValue)/numLayers;
+	layerDepth = 1.0f/numLayers;
+	vec2 P = tanlightDir.xy * height_scale;
+	vec2 deltaTexCoords = P / numLayers;
+
+	while(currentLayerDepth <= currentDepthMapValue && currentLayerDepth>=0.0f)
+	{
+		currentTexCoords += deltaTexCoords;
+		currentDepthMapValue = texture(heightMap,currentTexCoords).r;
+		currentLayerDepth -=layerDepth;
+		shadowFactor+=1.0f;
+	}
+	shadowFactor /=numLayers;
+	
+	return shadowFactor;
+}
 float ShadowCalculation(vec3 fragPos)
 {
 	vec4 fragToLight = vec4(fragPos - pointLight.position,0.0f);
@@ -262,5 +294,8 @@ vec3 CalcPointLight(PointLight light,vec2 texCoords, vec3 normal, vec3 fragPos, 
     diffuse *= attenuation;
     specular *= attenuation;
 	float shadow = ShadowCalculation(fragPos);
-    return (ambient +(shadow)* (diffuse + specular));
+	//shadow = 1.0f;
+	float shadowFactor = 1.0f;
+	//shadowFactor = ParallaxShadow(lightDir,texCoords);
+    return (ambient +(shadow * shadowFactor)* (diffuse + specular));
 }
