@@ -28,22 +28,27 @@ namespace QCat
 
 	private:
 		Ref<Face> face;
+		Ref<Cube> cube;
 		Ref<Shader> BlinnPhongShader;
-		Ref<Shader> BlinnPhongParallax;
+		Ref<Shader> screenShader;
 
-		Material brick;
-		Material brick2;
+		Ref<VertexArray> m_quad;
+		Material floor;
 
-		Ref<Texture2D> heightMap;
+		Ref<Texture2D> floorTexture;
 
 		Ref<Scene> m_ActiveScene;
 
+		Ref<FrameBuffer> offrendering;
+
+		Light light[4];
 		//light
 		glm::vec3 LightPosition;
 		float constant = 1.0f;
 		float Linear = 0.09f;
 		float quadratic = 0.032f;
 		float height = 0.01f;
+		float exposure = 1.0f;
 		//Camera
 		Entity m_Camera;
 		float cameraSpeed;

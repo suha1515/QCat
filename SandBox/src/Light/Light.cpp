@@ -10,12 +10,6 @@ namespace QCat
 		info.ambient = lightAmbient;
 		info.lightPosition = position;
 	}
-	void Light::Bind()
-	{
-	}
-	void Light::Draw(const glm::mat4& cameraTransform, const glm::mat4& proj)
-	{
-	}
 	void Light::ImGuiRender(const char* name)
 	{
 		ImGui::Begin(name);
@@ -25,11 +19,12 @@ namespace QCat
 		ImGui::ColorEdit3("Specular Color", glm::value_ptr(info.specular),0.1f);
 
 		ImGui::DragFloat3("Light Direction", glm::value_ptr(info.lightDirection), 0.1f);
+		ImGui::DragFloat3("Light Position", glm::value_ptr(info.lightPosition), 0.1f);
 
 		ImGui::DragFloat("spotlight cutoff", &info.cutoff, 0.01f);
-		ImGui::DragFloat("point light constant",  &info.constant);
-		ImGui::DragFloat("point light linear",    &info.linear);
-		ImGui::DragFloat("point light quadratic", &info.quadratic);
+		ImGui::DragFloat("point light constant",  &info.constant,0.1f);
+		ImGui::DragFloat("point light linear",    &info.linear, 0.1f);
+		ImGui::DragFloat("point light quadratic", &info.quadratic, 0.1f);
 
 
 		ImGui::End();

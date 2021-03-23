@@ -14,17 +14,17 @@ namespace QCat
 		LightInfo()
 		{
 			diffuse = { 1.0f,1.0f,1.0f };
-			ambient = { 0.0f,0.0f,0.0f };
+			ambient = { 0.2f,0.2f,0.2f };
 			specular = { 1.0f,1.0f,1.0f };
 
 			lightPosition = { 0.0f, 0.0f, 0.0f };
 			lightDirection = { 1.0f,0.0f,0.0f };
 
-			constant = 0.0;
-			linear = 0.0f;
-			quadratic = 0.0f;
-			cutoff = 0.0f;
-			outerCutOff = 0.0f;
+			constant = 1.0f;
+			linear = 0.09f;
+			quadratic = 0.032f;
+			cutoff = glm::cos(glm::radians(12.5f));
+			outerCutOff = glm::cos(glm::radians(17.5f));
 		}
 		glm::vec3 diffuse;
 		glm::vec3 ambient;
@@ -47,12 +47,15 @@ namespace QCat
 		LightInfo Getinfo() const { return info; }
 		void SetDirection(const glm::vec3& dir) { info.lightDirection = dir; }
 		void SetPosition(const glm::vec3& pos) { info.lightPosition = pos; }
-		void Bind();
-		void Draw(const glm::mat4& cameraTransform, const glm::mat4& proj);
+		void SetDiffuse(const glm::vec3& diffuse) { info.diffuse = diffuse; }
+		void SetAmbient(const glm::vec3& ambient) { info.ambient = ambient; }
+		void SetSpecular(const glm::vec3& specular) { info.specular = specular; }
+
+		void SetLightinfo(LightInfo& info) { this->info = info; }
 		void ImGuiRender(const char* name);
-	private:
-		uint32_t uniformBlockID;
 		LightInfo info;
+	private:
+		
 		
 		glm::vec3 rotation;
 	};

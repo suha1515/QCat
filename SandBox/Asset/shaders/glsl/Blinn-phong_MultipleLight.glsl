@@ -93,7 +93,8 @@ in vec3 FragPos;
 in mat3 TBN;
 
 uniform Material material;
-uniform PointLight pointLight;
+uniform PointLight pointLight[4];
+uniform DirLight dirLight;
 uniform vec3 viewPosition;
 uniform bool gamma;
 uniform bool flip;
@@ -130,7 +131,8 @@ void main()
 	// dir light
 	//result +=CalcDirLight(dirLight,norm,viewDir);
 	 //point light
-	result +=CalcPointLight(pointLight,norm,FragPos,viewDir);
+	for(int i=0;i<4;++i)
+		result +=CalcPointLight(pointLight[i],norm,FragPos,viewDir);
 
 	if(gamma)
 		result = pow(result,vec3(1.0/2.2));

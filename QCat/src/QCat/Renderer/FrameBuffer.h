@@ -17,7 +17,7 @@ namespace QCat
 	{
 		None = 0,
 		// 32 bit
-		RGBA8, RED32_INTEGER, RG16_Float, RGBA32_Float,
+		RGBA8, RED32_INTEGER, RG16_Float, RGBA32_Float,RGBA16_Float,
 		// 24bit
 		RGB8,
 		// DepthStencil

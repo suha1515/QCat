@@ -34,14 +34,13 @@ namespace QCat
 		//Shader
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			BlinnPhongShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong.glsl");
-			BlinnPhongParallax = ShaderLibrary::Load("Asset/shaders/glsl/ParrallaxMapping/Blinn-phong-Parrallax.glsl");
+			BlinnPhongShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong_MultipleLight.glsl");
+			screenShader = ShaderLibrary::Load("Asset/shaders/glsl/Hdr/HdrShader.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			BlinnPhongShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl" );
-			BlinnPhongParallax = ShaderLibrary::Load("parallax","Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl",
-												"Asset/shaders/hlsl/ParallaxMapping/BlinnAndPhongParallax_PS.hlsl");
+			BlinnPhongShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_Multiplelight_PS.hlsl" );
+			screenShader = ShaderLibrary::Load("HDRShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/HDR/HdrShader_PS.hlsl");
 
 		}
 
@@ -50,33 +49,83 @@ namespace QCat
 		BlinnPhongShader->SetInt("material.specular", 1, ShaderType::PS);
 		BlinnPhongShader->SetInt("material.normal", 2, ShaderType::PS);
 
-		BlinnPhongParallax->Bind();
-		BlinnPhongParallax->SetInt("material.diffuse", 0, ShaderType::PS);
-		BlinnPhongParallax->SetInt("material.specular", 1, ShaderType::PS);
-		BlinnPhongParallax->SetInt("material.normal", 2, ShaderType::PS);
-		BlinnPhongParallax->SetInt("heightMap", 4, ShaderType::PS);
+		screenShader->Bind();
+		screenShader->SetInt("hdrBuffer", 0, ShaderType::PS);
 
-		// Brickwall Texture
-		Ref<Texture2D> brickTexture = TextureLibrary::Load("Asset/textures/brickwall.jpg");
-		// Brickwall normalmap
-		Ref<Texture2D> brickNormalMap = TextureLibrary::Load("Asset/textures/brickwall_normal.jpg");
+		//floor Texture
+		floorTexture = TextureLibrary::Load("Asset/textures/floor.png",false,true);
 
-		// Brickwall2 Texture
-		Ref<Texture2D> brickTexture2 = TextureLibrary::Load("Asset/textures/bricks2.jpg");
-		// Brickwall2 normalmap
-		Ref<Texture2D> brickNormalMap2 = TextureLibrary::Load("Asset/textures/bricks2_normal.jpg");
-
-		heightMap = TextureLibrary::Load("Asset/textures/bricks2_disp.jpg");
-
-		brick.SetTexture(brickTexture, Material::MaterialType::Diffuse);
-		brick.SetTexture(brickNormalMap, Material::MaterialType::NormalMap);
-
-		brick2.SetTexture(brickTexture2, Material::MaterialType::Diffuse);
-		brick2.SetTexture(brickNormalMap2, Material::MaterialType::NormalMap);
-
-
-		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader, brick, 1);
+		floor.SetTexture(floorTexture, Material::MaterialType::Diffuse);
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader);
 		LightPosition = glm::vec3(0.0f, 0.0f, -2.0f);
+
+		LightInfo info;
+		info.lightPosition = glm::vec3(0.0f, 0.0f, 4.5f);
+		info.diffuse = glm::vec3(200.0f, 200.0f, 200.0f);
+		info.constant = 0.1f;
+		info.linear = 2.0f;
+		info.quadratic = 12.0f;
+		
+		light[0].SetLightinfo(info);
+
+		light[1].SetPosition(glm::vec3(-0.4f, -0.4f, -3.0f));
+		light[2].SetPosition(glm::vec3(0.4f, -0.4f, -2.0f));
+		light[3].SetPosition(glm::vec3(-0.4f, -0.4f, -0.5f));
+
+		light[1].SetDiffuse(glm::vec3(0.4f, 0.0f, 0.0f));
+		light[2].SetDiffuse(glm::vec3(0.0f, 0.4f, 0.0f));
+		light[3].SetDiffuse(glm::vec3(0.0f, 0.0f, 0.4f));
+
+		light[1].SetSpecular(glm::vec3(0.4f, 0.0f, 0.0f));
+		light[2].SetSpecular(glm::vec3(0.0f, 0.4f, 0.0f));
+		light[3].SetSpecular(glm::vec3(0.0f, 0.0f, 0.4f));
+
+		for (int i = 1; i < 4; ++i)
+		{
+			light[i].info.constant = 0.1f;
+			light[i].info.linear = 2.0f;
+			light[i].info.quadratic = 4.0f;
+		}
+
+		FrameBufferSpecification spec;
+		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float},
+						 {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
+		spec.Width = 1600;
+		spec.Height = 900;
+		offrendering = FrameBuffer::Create(spec);
+
+
+		m_quad = VertexArray::Create();
+
+		static float bias = 0.0f;
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			bias = 1.0f;
+		}
+		float quadVertices[] =
+		{
+			-1.0f, 1.0f,  0.0f,0.0f + bias,//0
+			-1.0f,-1.0f,  0.0f,1.0f - bias,//1
+			 1.0f,-1.0f,  1.0f,1.0f - bias,//2
+			 1.0f, 1.0f,  1.0f,0.0f + bias // 3
+		};
+
+		Ref<VertexBuffer> quadBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
+
+		quadBuffer->SetLayout(BufferLayout::Create({
+			{ShaderDataType::Float2,"a_Position"},
+			{ShaderDataType::Float2,"a_TexCoords"} }, screenShader
+			));
+
+		unsigned int indices[] =
+		{
+			1,0,3,1,3,2
+		};
+		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, 6);
+
+		m_quad->AddVertexBuffer(quadBuffer);
+		m_quad->SetIndexBuffer(indexBuffer);
+		m_quad->UnBind();
 	}
 
 	void TestScene::OnDetach()
@@ -98,50 +147,61 @@ namespace QCat
 			QCat::RenderCommand::Clear();
 		}
 		{
+			RenderCommand::SetCullMode(CullMode::None);
+			RenderCommand::SetDepthTest(true);
+
 			QCAT_PROFILE_SCOPE("Renderer Draw");
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
+			offrendering->Bind();
+			offrendering->Clear();
+
 			BlinnPhongShader->Bind();
 			BlinnPhongShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
 			BlinnPhongShader->SetFloat3("viewPosition", tc, ShaderType::VS);
-			// Point Light 
-			BlinnPhongShader->SetFloat3("pointLight.position", LightPosition, ShaderType::PS);
-			BlinnPhongShader->SetFloat3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f), ShaderType::PS);
-			BlinnPhongShader->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
-			BlinnPhongShader->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+			for (int i = 0; i < 4; ++i)
+			{
+				std::string lightname = "pointLight[" + std::to_string(i) + "].";
+				// Point Light 
+				BlinnPhongShader->SetFloat3(lightname +"position",light[i].Getinfo().lightPosition, ShaderType::PS);
+				BlinnPhongShader->SetFloat3(lightname +"ambient", light[i].Getinfo().ambient, ShaderType::PS);
+				BlinnPhongShader->SetFloat3(lightname +"diffuse", light[i].Getinfo().diffuse, ShaderType::PS);
+				BlinnPhongShader->SetFloat3(lightname +"specular", light[i].Getinfo().specular, ShaderType::PS);
 
-			BlinnPhongShader->SetFloat("pointLight.constant", constant, ShaderType::PS);
-			BlinnPhongShader->SetFloat("pointLight.Linear", Linear, ShaderType::PS);
-			BlinnPhongShader->SetFloat("pointLight.quadratic", quadratic, ShaderType::PS);
-
+				BlinnPhongShader->SetFloat(lightname + "constant", light[i].Getinfo().constant, ShaderType::PS);
+				BlinnPhongShader->SetFloat(lightname + "Linear", light[i].Getinfo().linear, ShaderType::PS);
+				BlinnPhongShader->SetFloat(lightname + "quadratic", light[i].Getinfo().quadratic, ShaderType::PS);
+			}
+			/*BlinnPhongShader->SetBool("flip", false, ShaderType::PS);
 			face->SetTranslation({ -1.0f,0.0f,0.0f });
 			face->SetMaterial(brick2);
 			face->MaterialBind();
-			face->Draw(BlinnPhongShader);
+			face->Draw(BlinnPhongShader);*/
+
+			BlinnPhongShader->SetBool("flip",true,ShaderType::PS);
+			cube->SetTranslation({ 0.0f,0.0f,0.0f });
+			cube->SetScale({ 1.0f,1.0f,10.0f });
+			cube->SetMaterial(floor);
+			cube->Draw(BlinnPhongShader);
+
 			BlinnPhongShader->UnBind();
+			offrendering->UnBind();
 
-			BlinnPhongParallax->Bind();
-			BlinnPhongParallax->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
-			BlinnPhongParallax->SetFloat3("viewPosition", tc, ShaderType::VS);
-			BlinnPhongParallax->SetFloat("height_scale",height, ShaderType::PS);
-			// Point Light 
-			BlinnPhongParallax->SetFloat3("pointLight.position", LightPosition, ShaderType::PS);
-			BlinnPhongParallax->SetFloat3("pointLight.ambient", glm::vec3(0.2f, 0.2f, 0.2f), ShaderType::PS);
-			BlinnPhongParallax->SetFloat3("pointLight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
-			BlinnPhongParallax->SetFloat3("pointLight.specular", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
+			RenderCommand::SetDefaultFrameBuffer();
 
-			BlinnPhongParallax->SetFloat("pointLight.constant", constant, ShaderType::PS);
-			BlinnPhongParallax->SetFloat("pointLight.Linear", Linear, ShaderType::PS);
-			BlinnPhongParallax->SetFloat("pointLight.quadratic", quadratic, ShaderType::PS);
-
-			face->SetTranslation({ 1.0f,0.0f,0.0f });
-			face->SetMaterial(brick2);
-			face->MaterialBind();
-			heightMap->Bind(4);
-			face->Draw(BlinnPhongParallax);
-			BlinnPhongParallax->UnBind();
-		}
+			RenderCommand::SetDepthTest(false);
+			screenShader->Bind();
+			screenShader->SetFloat("exposure", exposure, ShaderType::PS);
+			offrendering->BindColorTexture(0, 0);
+			//floorTexture->Bind(0);
+			m_quad->Bind();
+			screenShader->UpdateBuffer();
+			RenderCommand::DrawIndexed(m_quad);
+			screenShader->UnBind();
+			offrendering->UnBindTexture();
+			
+		}	
 	}
 
 	void TestScene::OnImGuiRender()
@@ -168,8 +228,15 @@ namespace QCat
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
 		ImGui::DragFloat3("lightPosition", glm::value_ptr(LightPosition), 0.1f);
 		ImGui::DragFloat("Height", &height, 0.01f);
+		ImGui::DragFloat("Exposure", &exposure, 0.1f);
 		
 		ImGui::End();
+
+		for (int i = 0; i < 4; ++i)
+		{
+			std::string lightname = "pointLight[" + std::to_string(i) + "]";
+			light[i].ImGuiRender(lightname.c_str());
+		}
 	}
 
 	void TestScene::OnEvent(QCat::Event& e)
@@ -182,8 +249,14 @@ namespace QCat
 	bool TestScene::OnWindowResize(WindowResizeEvent& e)
 	{
 		QCAT_PROFILE_FUNCTION();
+		FrameBufferSpecification spec = offrendering->GetSpecification();
 		uint32_t width = e.GetWidth();
 		uint32_t height = e.GetHeight();
+		if (width > 0.0f && height > 0.0f && (spec.Width != width || spec.Height != height))
+		{
+			offrendering->Resize(width, height);
+		}
+
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			return false;

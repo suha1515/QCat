@@ -17,6 +17,9 @@ namespace QCat
 			case TextureDataFormat::DEPTH24STENCIL8: return DXGI_FORMAT_R24G8_TYPELESS;
 			case TextureDataFormat::DEPTH32:		 return DXGI_FORMAT_R32_TYPELESS;
 
+			case TextureDataFormat::RGBA16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
+			case TextureDataFormat::RGBA32_Float:    return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
 			}
 		}
 		static bool IsDepthFormat(FramebufferUsage format)

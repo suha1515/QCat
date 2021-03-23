@@ -19,6 +19,7 @@ namespace QCat
 			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
 			case TextureDataFormat::RG16_Float:	    return GL_FLOAT;
 			case TextureDataFormat::RGBA32_Float:	return GL_FLOAT;
+			case TextureDataFormat::RGBA16_Float:	return GL_FLOAT;
 
 
 				//24 bit
@@ -43,6 +44,7 @@ namespace QCat
 			case TextureDataFormat::RGBA8:			 return GL_RGBA;
 			case TextureDataFormat::RED32_INTEGER:   return GL_RED_INTEGER;
 			case TextureDataFormat::RGBA32_Float:	 return GL_RGBA;
+			case TextureDataFormat::RGBA16_Float:    return GL_RGBA;
 
 				//24 bit
 			case TextureDataFormat::RGB8:			 return GL_RGB;
@@ -63,6 +65,7 @@ namespace QCat
 			case TextureDataFormat::RGBA8:			return GL_RGBA8;
 			case TextureDataFormat::RED32_INTEGER:  return GL_R32I;
 			case TextureDataFormat::RG16_Float:	    return GL_RG16F;
+			case TextureDataFormat::RGBA16_Float:   return GL_RGBA16F;
 			case TextureDataFormat::RGBA32_Float:	return GL_RGBA32F;
 
 
@@ -84,6 +87,7 @@ namespace QCat
 			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
 			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
 			case TextureDataFormat::RG16_Float:	    return GL_FLOAT;
+			case TextureDataFormat::RGBA16_Float:   return GL_FLOAT;
 			case TextureDataFormat::RGBA32_Float:	return GL_FLOAT;
 
 				//24 bit
