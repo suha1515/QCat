@@ -17,9 +17,9 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 		pgfx = QGfxDeviceDX11::GetInstance();
 		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
-		samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 		samplerDesc.BorderColor[0] = 1.0f;
 		samplerDesc.BorderColor[1] = 1.0f;
 		samplerDesc.BorderColor[2] = 1.0f;

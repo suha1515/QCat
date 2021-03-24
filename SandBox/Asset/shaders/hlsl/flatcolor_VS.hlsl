@@ -1,11 +1,11 @@
 
 cbuffer u_ViewProjection : register(b0)
 {
-	matrix viewProj;
+	matrix u_ViewProjection;
 }
 cbuffer u_Transform : register(b1)
 {
-	matrix transform;
+	matrix u_Transform;
 	matrix u_invTransform;
 }
 struct VSOut

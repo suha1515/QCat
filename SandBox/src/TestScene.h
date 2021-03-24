@@ -27,10 +27,15 @@ namespace QCat
 		void CameraUpdate(QCat::Timestep ts);
 
 	private:
-		Ref<Face> face;
+		
 		Ref<Cube> cube;
+		Ref<Sphere> sphere;
+
 		Ref<Shader> BlinnPhongShader;
 		Ref<Shader> screenShader;
+		Ref<Shader> FlatShader;
+		Ref<Shader> GaussianBlur;
+		Ref<Shader> BloomShader;
 
 		Ref<VertexArray> m_quad;
 		Material floor;
@@ -40,6 +45,9 @@ namespace QCat
 		Ref<Scene> m_ActiveScene;
 
 		Ref<FrameBuffer> offrendering;
+		Ref<FrameBuffer> pingpongBuffer[2];
+		bool first_iteration = true;
+		bool horizontal = false;
 
 		Light light[4];
 		//light

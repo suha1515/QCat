@@ -36,12 +36,17 @@ namespace QCat
 		{
 			BlinnPhongShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong_MultipleLight.glsl");
 			screenShader = ShaderLibrary::Load("Asset/shaders/glsl/Hdr/HdrShader.glsl");
+			FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/Blur/BrightFlatColor.glsl");
+			GaussianBlur = ShaderLibrary::Load("Asset/shaders/glsl/Blur/GaussianBlur.glsl");
+			BloomShader = ShaderLibrary::Load("Asset/shaders/glsl/Blur/HdrBloom.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			BlinnPhongShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_Multiplelight_PS.hlsl" );
+			BlinnPhongShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/HDR/BlinnAndPhong_Multiplelight_Bright_PS.hlsl" );
 			screenShader = ShaderLibrary::Load("HDRShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/HDR/HdrShader_PS.hlsl");
-
+			FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/flatcolor_VS.hlsl", "Asset/shaders/hlsl/Blur/LightBox_PS.hlsl");
+			GaussianBlur = ShaderLibrary::Load("Gaussian", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/Blur/GaussianBlur_PS.hlsl");
+			BloomShader = ShaderLibrary::Load("BloomShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/Blur/HdrShaderBloom_PS.hlsl");
 		}
 
 		BlinnPhongShader->Bind();
@@ -51,6 +56,13 @@ namespace QCat
 
 		screenShader->Bind();
 		screenShader->SetInt("hdrBuffer", 0, ShaderType::PS);
+
+		GaussianBlur->Bind();
+		GaussianBlur->SetInt("image", 0, ShaderType::PS);
+
+		BloomShader->Bind();
+		BloomShader->SetInt("hdrBuffer", 0, ShaderType::PS);
+		BloomShader->SetInt("bloomBlur", 1, ShaderType::PS);
 
 		//floor Texture
 		floorTexture = TextureLibrary::Load("Asset/textures/floor.png",false,true);
@@ -89,11 +101,19 @@ namespace QCat
 
 		FrameBufferSpecification spec;
 		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float},
-						 {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
+							 {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float},
+						     {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
 		offrendering = FrameBuffer::Create(spec);
 
+		FrameBufferSpecification spec2;
+		spec2.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float} };
+		spec2.Width = 1600;
+		spec2.Height = 900;
+
+		pingpongBuffer[0] = FrameBuffer::Create(spec2);
+		pingpongBuffer[1] = FrameBuffer::Create(spec2);
 
 		m_quad = VertexArray::Create();
 
@@ -126,6 +146,8 @@ namespace QCat
 		m_quad->AddVertexBuffer(quadBuffer);
 		m_quad->SetIndexBuffer(indexBuffer);
 		m_quad->UnBind();
+
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f,0.0f,0.0f), FlatShader, 0.1f);
 	}
 
 	void TestScene::OnDetach()
@@ -143,7 +165,7 @@ namespace QCat
 		{
 			QCAT_PROFILE_SCOPE("Renderer Prep");
 			
-			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+			QCat::RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 			QCat::RenderCommand::Clear();
 		}
 		{
@@ -155,7 +177,7 @@ namespace QCat
 			auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
 			offrendering->Bind();
-			offrendering->Clear();
+			offrendering->Clear({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 			BlinnPhongShader->Bind();
 			BlinnPhongShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
@@ -186,19 +208,79 @@ namespace QCat
 			cube->Draw(BlinnPhongShader);
 
 			BlinnPhongShader->UnBind();
+
+			RenderCommand::SetCullMode(CullMode::Back);
+			FlatShader->Bind();
+			FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
+			FlatShader->SetFloat4("u_color", glm::vec4(5.0f, 5.0f, 5.0f, 1.0f), ShaderType::PS);
+			sphere->SetTranslation(light[0].info.lightPosition);
+			sphere->SetScale({ 0.5f,0.5f,0.5f });
+			sphere->Draw(FlatShader);
+
+			FlatShader->SetFloat4("u_color", glm::vec4(10.0f, 0.0f, 0.0f, 1.0f), ShaderType::PS);
+			sphere->SetTranslation(light[1].info.lightPosition);
+			sphere->Draw(FlatShader);
+
+			FlatShader->SetFloat4("u_color", glm::vec4(0.0f, 5.0f, 0.0f, 1.0f), ShaderType::PS);
+			sphere->SetTranslation(light[2].info.lightPosition);
+			sphere->Draw(FlatShader);
+
+			FlatShader->SetFloat4("u_color", glm::vec4(0.0f, 0.0f, 15.0f, 1.0f), ShaderType::PS);
+			sphere->SetTranslation(light[3].info.lightPosition);
+			sphere->Draw(FlatShader);
+
+			FlatShader->UnBind();
 			offrendering->UnBind();
 
+			GaussianBlur->Bind();
+			for (int i = 0; i < 10; ++i)
+			{
+				int index = 0;
+				if (horizontal)
+				{
+					index = 0;
+					horizontal = false;
+				}
+				else
+				{
+					index = 1;
+					horizontal = true;
+				}
+				pingpongBuffer[index]->Bind();
+				GaussianBlur->SetBool("horizontal", horizontal,ShaderType::PS);
+				if (first_iteration)
+				{
+					offrendering->BindColorTexture(0, 1);
+					first_iteration = false;
+				}
+				else
+				{
+					if (index == 0)
+						pingpongBuffer[1]->BindColorTexture(0, 0);
+					else
+						pingpongBuffer[0]->BindColorTexture(0, 0);
+				}
+				m_quad->Bind();
+				GaussianBlur->UpdateBuffer();
+				RenderCommand::DrawIndexed(m_quad);
+				pingpongBuffer[index]->UnBind();
+			}	
+			first_iteration = true;
+			GaussianBlur->UnBind();
+
+			RenderCommand::Clear();
 			RenderCommand::SetDefaultFrameBuffer();
 
 			RenderCommand::SetDepthTest(false);
-			screenShader->Bind();
-			screenShader->SetFloat("exposure", exposure, ShaderType::PS);
+			BloomShader->Bind();
+			BloomShader->SetFloat("exposure", exposure, ShaderType::PS);
 			offrendering->BindColorTexture(0, 0);
+			pingpongBuffer[0]->BindColorTexture(1, 0);
 			//floorTexture->Bind(0);
 			m_quad->Bind();
-			screenShader->UpdateBuffer();
+			BloomShader->UpdateBuffer();
 			RenderCommand::DrawIndexed(m_quad);
-			screenShader->UnBind();
+			BloomShader->UnBind();
 			offrendering->UnBindTexture();
 			
 		}	

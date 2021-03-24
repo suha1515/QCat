@@ -355,10 +355,12 @@ namespace QCat
 		glClearColor(color.r, color.g, color.b, color.a);
 		if (m_ColorAttachments.size() > 0)
 		{
-			if(m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
+			if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-			else if(m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
+			else if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			else
+				glClear(GL_COLOR_BUFFER_BIT);
 		}
 		else if (m_ColorAttachments.size() == 0)
 		{

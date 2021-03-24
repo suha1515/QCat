@@ -222,7 +222,11 @@ namespace QCat
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 
-		gfx.GetContext()->OMSetRenderTargets(0, nullptr, nullptr);
+		ID3D11RenderTargetView* nullRTV = nullptr;
+		gfx.GetContext()->OMSetRenderTargets(1, &nullRTV, nullptr);
+
+		ID3D11ShaderResourceView* const pSRV[1] = { NULL };
+		gfx.GetContext()->PSSetShaderResources(0, 1, pSRV);
 	}
 	void DX11FrameBuffer::Resize(uint32_t width, uint32_t height)
 	{
@@ -309,7 +313,7 @@ namespace QCat
 		{
 			for (int i = 0; i < rendertarget.rendertargets.size(); ++i)
 			{
-				rendertarget.rendertargets[rendertarget.attachTarget]->Clear(gfx, { 0.1f,0.1f,0.1f,1.0f });
+				rendertarget.rendertargets[rendertarget.attachTarget]->Clear(gfx, color);
 			}
 		}
 		if(m_DepthAttachment)

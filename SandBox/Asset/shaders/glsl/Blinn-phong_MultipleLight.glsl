@@ -86,6 +86,7 @@ struct PointLight
 //};
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out vec4 BrightColor;
 
 in vec3 v_Normal;
 in vec2 TexCoords;
@@ -137,6 +138,12 @@ void main()
 	if(gamma)
 		result = pow(result,vec3(1.0/2.2));
 	color = vec4(result,texcolor.a);
+
+	float brightness = dot(color.rgb,vec3(0.2126,0.7152,0.0722));
+	if(brightness>1.0)
+		BrightColor = vec4(color.rgb,1.0f);
+	else
+		BrightColor = vec4(0.0f,0.0f,0.0f,0.0f);
 	//color = vec4(norm,1.0f);
 }
 
