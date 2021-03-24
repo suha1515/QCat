@@ -148,6 +148,9 @@ namespace QCat
 		m_quad->UnBind();
 
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f,0.0f,0.0f), FlatShader, 0.1f);
+
+		Sampler_Desc desc;
+		linearClamp = SamplerState::Create(desc);
 	}
 
 	void TestScene::OnDetach()
@@ -233,6 +236,7 @@ namespace QCat
 			offrendering->UnBind();
 
 			GaussianBlur->Bind();
+			linearClamp->Bind(0);
 			for (int i = 0; i < 10; ++i)
 			{
 				int index = 0;

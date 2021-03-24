@@ -4,6 +4,7 @@
 #include "DX11_DepthStencil.h"
 #include "DX11_RenderTarget.h"
 #include "DX11_Texture.h"
+#include "DX11_Sampler.h"
 
 namespace QCat
 {

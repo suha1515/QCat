@@ -9,6 +9,7 @@
 #include "Model/Model.h"
 #include "CubeMap/CubeMap.h"
 
+
 namespace QCat
 {
 	class TestScene : public Layer
@@ -36,6 +37,8 @@ namespace QCat
 		Ref<Shader> FlatShader;
 		Ref<Shader> GaussianBlur;
 		Ref<Shader> BloomShader;
+
+		Ref<SamplerState> linearClamp;
 
 		Ref<VertexArray> m_quad;
 		Material floor;

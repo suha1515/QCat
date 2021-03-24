@@ -10,7 +10,7 @@ namespace QCat
 		virtual ~OpenGLSampler();
 
 		virtual void Bind(unsigned int slot)override;
-		virtual void UnBind() override;
+		virtual void UnBind(unsigned int slot) override;
 	
 		void Invalidate();
 	private:

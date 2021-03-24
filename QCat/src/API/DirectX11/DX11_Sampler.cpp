@@ -269,7 +269,7 @@ namespace QCat
 	{
 		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(slot, 1u, pSamplerState.GetAddressOf());
 	}
-	void DX11Sampler::UnBind()
+	void DX11Sampler::UnBind(unsigned int slot)
 	{
 	}
 	void DX11Sampler::Invalidate()

@@ -107,9 +107,9 @@ namespace QCat
 	{
 		glBindSampler(textureId, id);
 	}
-	void OpenGLSampler::UnBind()
+	void OpenGLSampler::UnBind(unsigned int slot)
 	{
-		glBindSampler(0, 0);
+		glBindSampler(slot, 0);
 	}
 	void OpenGLSampler::Invalidate()
 	{

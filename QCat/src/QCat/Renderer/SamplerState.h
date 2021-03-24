@@ -63,7 +63,7 @@ namespace QCat
 		virtual ~SamplerState() = default;
 
 		virtual void Bind(unsigned int slot) = 0;
-		virtual void UnBind() = 0;
+		virtual void UnBind(unsigned int slot) = 0;
 
 		static Ref<SamplerState> Create(Sampler_Desc desc);
 	protected:
