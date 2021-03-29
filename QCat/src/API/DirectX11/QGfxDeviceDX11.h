@@ -54,6 +54,10 @@ namespace QCat {
 
 		void SetSamplerState(D3D11_SAMPLER_DESC& samplerDesc);
 		void BindSamplerState();
+
+		ID3D11Texture2D* GetBackBuffer() { return backBuffer.Get(); }
+		ID3D11Texture2D* GetDepthStencilBuffer() { return depthStencil.Get(); }
+
 	public:
 		ComPtr<ID3D11Device>& GetDevice();
 		ComPtr<ID3D11DeviceContext>& GetContext();
@@ -81,6 +85,7 @@ namespace QCat {
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> pSamplerState;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDSState;
 		bool m_BlendEnable = false;
+
 	private:
 		static QGfxDeviceDX11* Instance;
 	};

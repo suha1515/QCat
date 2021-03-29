@@ -64,6 +64,9 @@ namespace QCat
 		virtual void SetBlendOp( BlendOp colorOp, BlendOp alphaOp) = 0;
 		virtual void SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp) = 0;
 
+		// Default FrameBuffer
+		virtual void* GetDefaultFrameBuffer() = 0;
+
 		inline static API GetAPI() { return s_api; }
 	private:
 		static API s_api;

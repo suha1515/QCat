@@ -1,5 +1,6 @@
 #pragma once
 #include "QCat/Renderer/RenderAPI.h"
+#include "QCat/Renderer/FrameBuffer.h"
 
 namespace QCat
 {
@@ -49,11 +50,16 @@ namespace QCat
 		virtual void SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) override;
 		virtual void SetBlendOp(BlendOp colorOp, BlendOp alphaOp) override;
 		virtual void SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp) override;
+
+		//Defualt FrameBuffer
+		virtual void* GetDefaultFrameBuffer() override ;
 	private:
 		QGfxDeviceDX11* pgfx;
 		glm::vec4 color;
 		Ref<DepthStencil> m_DepthStencilState;
 		Ref<Blender> m_BlenderState;
 		Ref<Rasterizer> m_RasterizState;
+
+		Ref<FrameBuffer> m_FrameBuffer;
 	};
 }

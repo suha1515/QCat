@@ -14,8 +14,10 @@ namespace QCat
 	}
 	void DX11RenderAPI::Init()
 	{
+
 		QCAT_PROFILE_FUNCTION();
 		pgfx = QGfxDeviceDX11::GetInstance();
+
 		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -196,5 +198,9 @@ namespace QCat
 	void DX11RenderAPI::SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp)
 	{
 		m_BlenderState->SetBlendOp(index, colorOp, alphaOp);
+	}
+	void* DX11RenderAPI::GetDefaultFrameBuffer()
+	{
+		return nullptr;
 	}
 }

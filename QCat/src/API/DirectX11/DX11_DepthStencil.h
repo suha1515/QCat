@@ -23,7 +23,8 @@ namespace QCat
 		void Resize(QGfxDeviceDX11& gfx, uint32_t width, uint32_t height);
 
 		void Clear(QGfxDeviceDX11& gfx);
-		ID3D11ShaderResourceView* GetTexture() const;
+		ID3D11ShaderResourceView* GetTextureView() const;
+		ID3D11Texture2D* GetTexture() const;
 		ID3D11DepthStencilView* GetDepthStencil() const;
 	private:
 		uint32_t m_width;
@@ -37,6 +38,8 @@ namespace QCat
 		Usage usage;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pShaderResourceView;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencilTexture;
+
 		D3D11_TEXTURE2D_DESC textureDesc;
 		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;

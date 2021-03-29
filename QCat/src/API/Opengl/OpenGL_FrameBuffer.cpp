@@ -371,4 +371,20 @@ namespace QCat
 		}
 			
 	}
+	void OpenGLFrameBuffer::CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit bufferbit, void* destBuffer)
+	{
+		GLint Buffer=0;
+		if (destBuffer != nullptr)
+		 Buffer = (GLint)destBuffer;
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, Buffer);
+		GLbitfield bit=0;	
+		switch (bufferbit)
+		{
+		case BufferBit::Color:  bit = GL_COLOR_BUFFER_BIT; break;
+		case BufferBit::Depth:  bit = GL_DEPTH_BUFFER_BIT; break; 
+		case BufferBit::Stencil: bit = GL_STENCIL_BUFFER_BIT; break;
+		}
+		glBlitFramebuffer(srcx0, srcy0, srcx1, srcy1, dstx0, dsty0, dstx1, dsty1, bit, GL_NEAREST);
+	}
 }

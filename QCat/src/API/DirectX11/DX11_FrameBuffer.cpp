@@ -190,6 +190,12 @@ namespace QCat
 	void DX11FrameBuffer::Bind()
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		ID3D11RenderTargetView* nullRTV[8] = { nullptr };
+		gfx.GetContext()->OMSetRenderTargets(8, nullRTV, nullptr);
+
+		ID3D11ShaderResourceView* const pSRV[16] = { NULL };
+		gfx.GetContext()->PSSetShaderResources(0, 16, pSRV);
+
 		std::vector<ID3D11RenderTargetView*> m_RenderTargets;
 		for (auto& rendertarget : m_ColorAttachments)
 		{
@@ -222,11 +228,11 @@ namespace QCat
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 
-		ID3D11RenderTargetView* nullRTV = nullptr;
-		gfx.GetContext()->OMSetRenderTargets(1, &nullRTV, nullptr);
+		ID3D11RenderTargetView* nullRTV[8] = { nullptr };
+		gfx.GetContext()->OMSetRenderTargets(8, nullRTV, nullptr);
 
-		ID3D11ShaderResourceView* const pSRV[1] = { NULL };
-		gfx.GetContext()->PSSetShaderResources(0, 1, pSRV);
+		ID3D11ShaderResourceView* const pSRV[16] = { NULL };
+		gfx.GetContext()->PSSetShaderResources(0, 16, pSRV);
 	}
 	void DX11FrameBuffer::Resize(uint32_t width, uint32_t height)
 	{
@@ -318,5 +324,50 @@ namespace QCat
 		}
 		if(m_DepthAttachment)
 			m_DepthAttachment->Clear(gfx);
+	}
+	void DX11FrameBuffer::CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit bufferbit, void* destBuffer)
+	{
+		D3D11_BOX box;
+		box.left = srcx0;
+		box.right = srcx1;
+		box.top = srcy0;
+		box.bottom = srcy1;
+		box.front = 0;
+		box.back = 1;
+		if (destBuffer == nullptr)
+		{
+			switch (bufferbit)
+			{
+			case BufferBit::Color:
+			{
+				Ref<DX11Texture2D> srcTex = std::static_pointer_cast<DX11Texture2D>(m_ColorAttachments[0].textures[0]);
+				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(QGfxDeviceDX11::GetInstance()->GetBackBuffer(), 0, dstx0, dsty0, 0, srcTex->GetDXTexture(), 0, &box);
+			}
+			case BufferBit::Depth:
+			{
+				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(QGfxDeviceDX11::GetInstance()->GetDepthStencilBuffer(), 0, 0, 0, 0, m_DepthAttachment->GetTexture(), 0, NULL);
+			}
+			}
+		}
+		else
+		{
+			DX11FrameBuffer* framebuffer = (DX11FrameBuffer*)destBuffer;
+
+			switch (bufferbit)
+			{
+			case BufferBit::Color:
+			{
+				Ref<DX11Texture2D> destTex = std::static_pointer_cast<DX11Texture2D>(framebuffer->m_ColorAttachments[0].textures[0]);
+				Ref<DX11Texture2D> srcTex = std::static_pointer_cast<DX11Texture2D>(m_ColorAttachments[0].textures[0]);
+				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(destTex->GetDXTexture(), 0, dstx0, dsty0, 0, srcTex->GetDXTexture(), 0, &box);
+			}
+			case BufferBit::Depth:
+			{
+				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(framebuffer->m_DepthAttachment->GetTexture(), 0, 0, 0, 0, m_DepthAttachment->GetTexture(), 0, NULL);
+			}
+			case BufferBit::Stencil:break;
+			}
+
+		}
 	}
 }

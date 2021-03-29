@@ -40,6 +40,7 @@ namespace QCat {
 		this->width = width;
 		this->height = height;
 		UINT createDeviceFlags = 0;
+
 	#ifdef QCAT_DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
@@ -233,7 +234,7 @@ namespace QCat {
 		descView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descView.Texture2D.MipSlice = 0;
 
-		hr = device->CreateDepthStencilView(depthStencil.Get(), nullptr, &depthStencilView);
+		hr = device->CreateDepthStencilView(depthStencil.Get(), &descView, &depthStencilView);
 		if (FAILED(hr))
 		{
 			std::stringstream ss;

@@ -43,6 +43,9 @@ namespace QCat
 		virtual void SetBlendFunc(uint32_t index, BlendFunc srcColor, BlendFunc dstColor, BlendFunc srcAlpha, BlendFunc dstAlpha) override;
 		virtual void SetBlendOp(BlendOp colorOp, BlendOp alphaOp) override;
 		virtual void SetBlendOp(uint32_t index, BlendOp colorOp, BlendOp alphaOp) override;
+
+		//Default FrameBuffer
+		virtual void* GetDefaultFrameBuffer() override { return 0; }
 	private:
 		Ref<DepthStencil> m_DepthStencilState;
 		Ref<Blender> m_BlenderState;

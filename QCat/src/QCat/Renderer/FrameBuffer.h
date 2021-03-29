@@ -3,6 +3,10 @@
 
 namespace QCat
 {
+	enum class BufferBit
+	{
+		Color,Depth,Stencil
+	};
 	enum class FramebufferUsage
 	{
 		None = 0,
@@ -76,6 +80,8 @@ namespace QCat
 
 		virtual void UnBindTexture() = 0;
 		virtual void Clear(glm::vec4 color = {0.1f,0.1f,0.1f,1.0f }) const = 0;
+
+		virtual void CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit buffer, void* destBuffer) =0;
 		//virtual FrameBufferSpecification& GetSpecification() = 0;
 		virtual const FrameBufferSpecification& GetSpecification() const = 0;
 		static Ref <FrameBuffer> Create(const FrameBufferSpecification& spec);

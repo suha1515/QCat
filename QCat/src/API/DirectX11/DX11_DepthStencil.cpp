@@ -100,11 +100,10 @@ namespace QCat
 			pDepthStencilView.Reset();
 			pShaderResourceView.Reset();
 		}
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
-		gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pDepthStencil);
-		gfx.GetDevice()->CreateDepthStencilView(pDepthStencil.Get(), &depthStencilViewDesc, &pDepthStencilView);
+		gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pDepthStencilTexture);
+		gfx.GetDevice()->CreateDepthStencilView(pDepthStencilTexture.Get(), &depthStencilViewDesc, &pDepthStencilView);
 	
-		gfx.GetDevice()->CreateShaderResourceView(pDepthStencil.Get(), &srvDesc, &pShaderResourceView);
+		gfx.GetDevice()->CreateShaderResourceView(pDepthStencilTexture.Get(), &srvDesc, &pShaderResourceView);
 	}
 	void DX11DepthStencil::Bind(QGfxDeviceDX11& gfx) const
 	{
@@ -127,9 +126,13 @@ namespace QCat
 		else if(usage == Usage::Depth)
 			gfx.GetContext()->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH ,1.0f,0.0f);
 	}
-	ID3D11ShaderResourceView* DX11DepthStencil::GetTexture() const
+	ID3D11ShaderResourceView* DX11DepthStencil::GetTextureView() const
 	{
 		return pShaderResourceView.Get();
+	}
+	ID3D11Texture2D* DX11DepthStencil::GetTexture() const
+	{
+		return pDepthStencilTexture.Get();
 	}
 	ID3D11DepthStencilView* DX11DepthStencil::GetDepthStencil() const
 	{

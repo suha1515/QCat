@@ -25,6 +25,7 @@ namespace QCat
 			quadratic = 0.032f;
 			cutoff = glm::cos(glm::radians(12.5f));
 			outerCutOff = glm::cos(glm::radians(17.5f));
+			radius = 0.0f;
 		}
 		glm::vec3 diffuse;
 		glm::vec3 ambient;
@@ -37,6 +38,7 @@ namespace QCat
 		float quadratic = 0.032f;
 		float cutoff = glm::cos(glm::radians(12.5f));
 		float outerCutOff = glm::cos(glm::radians(17.5f));
+		float radius = 0.0f;
 		LightType type = LightType::Directional;
 	};
 	class Light

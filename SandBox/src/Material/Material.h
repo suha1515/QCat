@@ -18,10 +18,10 @@ namespace QCat
 			:ambient(ambient),diffuse(diffuse), specular(specular),shininess(shininess)
 		{
 			m_WhiteTexture  = Texture2D::Create(1, 1);
-			byte r = 125;
-			byte g = 125;
-			byte b = 125;
-			byte a = 125;
+			byte r = 255;
+			byte g = 255;
+			byte b = 255;
+			byte a = 255;
 
 			//unsigned int whiteTextureData = 0xffffffff;
 			unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
