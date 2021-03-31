@@ -13,7 +13,7 @@ namespace QCat
 		virtual void Bind(unsigned int slot) override;
 		virtual void UnBind(unsigned int slot) override;
 
-		void Invalidate();
+		void Invalidate() override;
 	private:
 		Microsoft::WRL::ComPtr< ID3D11SamplerState> pSamplerState;
 	};

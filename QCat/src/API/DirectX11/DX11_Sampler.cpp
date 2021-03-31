@@ -267,6 +267,11 @@ namespace QCat
 	}
 	void DX11Sampler::Bind(unsigned int slot)
 	{
+		if (IsChanged)
+		{
+			Invalidate();
+			IsChanged = false;
+		}
 		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(slot, 1u, pSamplerState.GetAddressOf());
 	}
 	void DX11Sampler::UnBind(unsigned int slot)

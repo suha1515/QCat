@@ -18,7 +18,7 @@ struct PSIn
 	float4 position : SV_POSITION;
 };
 
-const static int NUM_LIGHT = 64;
+const static int NUM_LIGHT = 1;
 
 Texture2D gPosition;
 Texture2D gNormal;
@@ -67,10 +67,11 @@ float4 main(PSIn input) : SV_TARGET
 	[unroll]
 	for (int i = 0; i < NUM_LIGHT; ++i)
 	{
-		float distance = length(pointLight[i].position - FragPos);
-		if (distance < pointLight[i].radius)
+		//float distance = length(pointLight[i].position - FragPos);
+		//if (distance < pointLight[i].radius)
 			result += CalcPointLight(pointLight[i], Normal, FragPos, viewDir, DiffuseSpec);
 	}
+
 
 	return float4(result, 1.0f);
 }

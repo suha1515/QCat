@@ -197,7 +197,7 @@ namespace QCat
 
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
-
+		shader->SetFloat3("material.diffuse", material.diffuse, ShaderType::PS);
 
 		if (material.IsThereTexture(Material::MaterialType::NormalMap))
 		{

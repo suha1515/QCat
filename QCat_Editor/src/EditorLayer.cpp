@@ -27,9 +27,9 @@ namespace QCat
 		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png");
 
 		FrameBufferSpecification fbSpec;
-		fbSpec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
-							   {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RED32_INTEGER},
-							   {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
+		fbSpec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8},
+							   {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER},
+							   {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8} };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = FrameBuffer::Create(fbSpec);

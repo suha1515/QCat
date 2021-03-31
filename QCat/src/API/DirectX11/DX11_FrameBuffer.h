@@ -26,7 +26,7 @@ namespace QCat
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) override;
-		virtual void ReadPixel(uint32_t attachmentIndex, TextureDataFormat format, void* value, int x, int y, int z = 0)override {};
+		virtual void ReadPixel(uint32_t attachmentIndex, TextureFormat format, void* value, int x, int y, int z = 0)override {};
 
 		virtual void AttachCubeMapByIndex(uint32_t faceindex)override;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
@@ -48,7 +48,7 @@ namespace QCat
 		FrameBufferSpecification m_Specification;
 
 		std::vector<FramebufferSpecification> m_ColorAttachmentSpecifications;
-		FramebufferSpecification m_DepthAttacmentSpecifications = { FramebufferUsage::None,TextureType::None,TextureDataFormat::None };
+		FramebufferSpecification m_DepthAttacmentSpecifications = { FramebufferUsage::None,TextureType::None,TextureFormat::None };
 
 		std::vector<RenderTargets> m_ColorAttachments;
 		Ref<DX11DepthStencil> m_DepthAttachment = 0, m_ColorAttachment = 0;

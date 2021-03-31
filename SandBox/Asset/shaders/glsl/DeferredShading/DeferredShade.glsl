@@ -39,7 +39,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D aAlbedoSpec;
 
-const int NUM_LIGHT = 64;
+const int NUM_LIGHT = 1;
 uniform PointLight pointLight[NUM_LIGHT];
 uniform vec3 viewPosition;
 
@@ -55,8 +55,8 @@ void main()
     vec3 viewDir = normalize(viewPosition - FragPos);
     for(int i=0;i<NUM_LIGHT;++i)
     { 
-        float distance = length(pointLight[i].position - FragPos);
-        if(distance < pointLight[i].radius)
+        //float distance = length(pointLight[i].position - FragPos);
+        //if(distance < pointLight[i].radius)
              result +=CalcPointLight(pointLight[i],Normal,FragPos,viewDir,DiffuseSpec);   
     }
     
@@ -72,7 +72,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir,ve
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
 	vec3 halfwayDir = normalize(lightDir + viewDir);
-	float spec = pow(max(dot(normal,halfwayDir),0.0),16.0);
+	float spec = pow(max(dot(normal,halfwayDir),0.0),64.0);
     // attenuation
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.Linear * distance + light.quadratic * (distance * distance));    

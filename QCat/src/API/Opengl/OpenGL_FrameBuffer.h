@@ -17,14 +17,14 @@ namespace QCat
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) override;
-		virtual void ReadPixel(uint32_t attachmentIndex, TextureDataFormat format, void* value, int x, int y, int z = 0) override;
+		virtual void ReadPixel(uint32_t attachmentIndex, TextureFormat format, void* value, int x, int y, int z = 0) override;
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value)  override;
 
 		virtual void AttachCubeMapByIndex(uint32_t faceindex) override;
 
 		virtual void* GetColorAttachmentRendererID(uint32_t index = 0) const override;
-		virtual void* GetDepthAttachmentRendererID() const override { return reinterpret_cast<void*>(m_DepthAttachment); }
+		virtual void* GetDepthAttachmentRendererID() const override { return m_DepthAttachment->GetTexture(); }
 
 		virtual void  SaveColorBuffer(uint32_t index = 0) const override {}
 		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
@@ -41,9 +41,9 @@ namespace QCat
 		FrameBufferSpecification m_Specification;
 
 		std::vector<FramebufferSpecification> m_ColorAttachmentSpecifications;
-		FramebufferSpecification m_DepthAttacmentSpecifications = { FramebufferUsage::None,TextureType::None,TextureDataFormat::None };
+		FramebufferSpecification m_DepthAttacmentSpecifications = { FramebufferUsage::None,TextureType::None,TextureFormat::None };
 
-		std::vector<uint32_t> m_ColorAttachments;
-		uint32_t m_DepthAttachment = 0,m_ColorAttachment=0;
+		std::vector<Ref<Texture>> m_ColorAttachments;
+		Ref<Texture> m_DepthAttachment = 0,m_ColorAttachment=0;
 	};
 }

@@ -3,6 +3,7 @@
 #include "DepthStencil.h"
 #include "Rasterizer.h"
 #include "Blend.h"
+#include "enums.h"
 
 namespace QCat
 {

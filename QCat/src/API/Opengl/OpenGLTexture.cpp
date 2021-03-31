@@ -1,11 +1,13 @@
 #include "qcpch.h"
 #include "OpenGLTexture.h"
-
 #include "stb_image.h"
+#include "API/Opengl/OpenglUtils.h"
+#include "API/Opengl/Opengl_Sampler.h"
 
 namespace QCat
 {
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool flip, bool gammaCorrection)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples , bool flip, bool gammaCorrection)
+		:mipLevel(mipLevel),samples(samples),flip(flip),gammaCorrection(gammaCorrection)
 	{
 		QCAT_PROFILE_FUNCTION();
 
@@ -37,52 +39,69 @@ namespace QCat
 			break;
 		}
 		m_InternalFormat = imageformat;
-		m_DataFormat = dataformat;
+		m_Format = dataformat;
 		QCAT_CORE_ASSERT(imageformat & dataformat, "Format is not supported!");
 
 		// Texture Create
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
-		glTextureStorage2D(m_renderID, 1,imageformat, m_width, m_height);
 
-		// Texture Filtering
-		glTextureParameteri(m_renderID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_renderID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		if (m_DataFormat == GL_RGB)
-		{
-			glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-		else if (m_DataFormat == GL_RGBA)
-		{
-			glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
+		bool multisampled = samples > 1;
+		if (multisampled)
+			glTextureStorage2DMultisample(m_renderID, samples, m_InternalFormat, m_width, m_height, true);
+		else
+			glTextureStorage2D(m_renderID, mipLevel, m_InternalFormat, m_width, m_height);
 		
 		// Upload Texture
 		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, dataformat, GL_UNSIGNED_BYTE,data);
 
+		if (mipLevel > 1)
+			glGenerateTextureMipmap(m_renderID);
 		// free loaded image
 		stbi_image_free(data);
 
+		
+		sampler = OpenGLSampler::Create(desc);
 	}
-	OpenGLTexture2D::OpenGLTexture2D(unsigned int width, unsigned int height)
-		:m_width(width),m_height(height)
+	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples, void* pData)
+		:m_width(width),m_height(height), mipLevel(mipLevel), samples(samples)
+	{
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
+
+		m_InternalFormat = Utils::GetTextureInternalFormat(format);
+		m_Format = Utils::GetTextureFormat(format);
+
+		bool multisampled = samples > 1;
+		if (multisampled)
+			glTextureStorage2DMultisample(m_renderID, samples, m_InternalFormat, m_width, m_height, true);
+		else
+			glTextureStorage2D(m_renderID, mipLevel, m_InternalFormat, m_width, m_height);
+
+		GLenum dataFormat = Utils::GetTextureDataFormat(format);
+		if(pData!=nullptr)
+			glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, dataFormat,pData);
+
+		if(mipLevel>1)
+			glGenerateTextureMipmap(m_renderID);
+
+		sampler = OpenGLSampler::Create(desc);
+	}
+	OpenGLTexture2D::OpenGLTexture2D(Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel,unsigned int samples)
+		:m_width(width),m_height(height),mipLevel(mipLevel),samples(samples)
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
+		m_InternalFormat = GL_RGBA8, m_Format = GL_RGBA;
 
 		// Texture Create
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
-		glTextureStorage2D(m_renderID, 1, m_InternalFormat, m_width, m_height);
 
-		// Texture Filtering
-		glTextureParameteri(m_renderID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_renderID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		bool multisampled = samples > 1;
+		if (multisampled)
+			glTextureStorage2DMultisample(m_renderID, samples, m_InternalFormat, m_width, m_height, true);
+		else
+			glTextureStorage2D(m_renderID, mipLevel, m_InternalFormat, m_width, m_height);
 
-		glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_renderID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		sampler = OpenGLSampler::Create(desc);
 	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
@@ -94,9 +113,9 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		unsigned int bpc = m_DataFormat == GL_RGBA ? 4 : 3;
+		unsigned int bpc = m_Format == GL_RGBA ? 4 : 3;
 		QCAT_CORE_ASSERT(size == m_width * m_height * bpc,"Data must be entire texture!");
-		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_DataFormat, GL_UNSIGNED_BYTE, pData);
+		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, GL_UNSIGNED_BYTE, pData);
 	}
 	void OpenGLTexture2D::Bind(unsigned int slot) const
 	{
@@ -104,8 +123,10 @@ namespace QCat
 
 		// 1st parameter is for slot
 		glBindTextureUnit(slot, m_renderID);
+		sampler->Bind(slot);
 	}
-	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, bool flip , bool gammaCorrection)
+	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
+		:flip(flip),gammaCorrection(gammaCorrection)
 	{
 		QCAT_PROFILE_FUNCTION();
 
@@ -118,11 +139,12 @@ namespace QCat
 		else
 			stbi_set_flip_vertically_on_load(1);
 		int width, height, channels;
+		
 		for (uint32_t i = 0; i < imgPathes.size(); ++i)
 		{
 
 			stbi_uc* data = nullptr;
-			GLenum imageformat = 0, dataformat = 0;
+			GLenum imageformat = 0,format = 0;
 			{
 				QCAT_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
 				data = stbi_load(imgPathes[i].c_str(), &width, &height, &channels, 0);
@@ -130,26 +152,42 @@ namespace QCat
 				{
 				case 4:
 					imageformat = gammaCorrection ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-					dataformat = GL_RGBA;
+					format = GL_RGBA;
 					break;
 				case 3:
 					imageformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
-					dataformat = GL_RGB;
+					format = GL_RGB;
 					break;
 				}
 			}
 			QCAT_CORE_ASSERT(data, "Failed to load Image!");
 			m_width = width;
 			m_height = height;
-
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, imageformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
+			m_InternalFormat[i] = imageformat;
+			m_Format[i] = format;
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,mipLevels - 1, m_InternalFormat[i], width, height, 0, m_Format[i], GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		glGenerateTextureMipmap(m_renderID);
+
+		sampler = OpenGLSampler::Create(desc);
+	}
+	OpenGLCubeMapTexture::OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevels, void* pData)
+		:m_width(width),m_height(height), mipLevel(mipLevels)
+	{
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_renderID);
+
+		GLenum internalFormat= Utils::GetTextureInternalFormat(format);
+		GLenum textureformat = Utils::GetTextureFormat(format);
+		GLenum dataFormat = Utils::GetTextureDataFormat(format);
+		for (int i = 0; i < 6; ++i)
+		{
+			m_InternalFormat[i] = internalFormat;
+			m_Format[i] = textureformat;
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipLevel - 1, m_InternalFormat[i], m_width, m_height, 0, m_Format[i], dataFormat, pData);
+		}
+		sampler = OpenGLSampler::Create(desc);
 	}
 	OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
 	{
@@ -168,6 +206,8 @@ namespace QCat
 		//glBindTextureUnit(slot, m_renderID);
 		glActiveTexture(GL_TEXTURE0+slot);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
+
+		sampler->Bind(slot);
 	}
 	
 }

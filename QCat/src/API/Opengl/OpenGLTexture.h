@@ -1,13 +1,14 @@
 #pragma once
 #include "QCat/Renderer/Texture.h"
-#include <glad/glad.h> 
+#include <glad/glad.h>
 namespace QCat
 {
 	class OpenGLTexture2D :public Texture2D
 	{
 	public:
-		OpenGLTexture2D(const std::string& path, bool flip =false, bool gammaCorrection = false);
-		OpenGLTexture2D(unsigned int width,unsigned int height);
+		OpenGLTexture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel=1,unsigned int samples=1, bool flip = false, bool gammaCorrection = false);
+		OpenGLTexture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
+		OpenGLTexture2D(Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1);
 
 		virtual ~OpenGLTexture2D();
 
@@ -35,13 +36,17 @@ namespace QCat
 	private:
 		unsigned int m_width,m_height;
 		unsigned int m_renderID;
-		GLenum m_InternalFormat, m_DataFormat;
+		unsigned int mipLevel,samples;
+		bool flip=false, gammaCorrection = false;
+		GLenum m_InternalFormat, m_Format;
 	};
 
 	class OpenGLCubeMapTexture : public TextureCube
 	{
 	public:
-		OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, bool flip = false, bool gammaCorrection = false);
+		OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels=1, bool flip = false, bool gammaCorrection = false);
+		OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevels = 1, void* pData = nullptr);
+
 		virtual ~OpenGLCubeMapTexture();
 
 		virtual unsigned int GetWidth() const override { return m_width; }
@@ -60,7 +65,9 @@ namespace QCat
 		}
 	private:
 		unsigned int m_width, m_height;
+		unsigned int mipLevel;
 		unsigned int m_renderID;
-		GLenum m_InternalFormat, m_DataFormat;
+;		GLenum m_InternalFormat[6], m_Format[6];
+bool flip = false, gammaCorrection = false;
 	};
 }

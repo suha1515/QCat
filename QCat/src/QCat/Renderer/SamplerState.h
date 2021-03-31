@@ -1,26 +1,8 @@
 #pragma once
-#include "enums.h"
 #include <numeric>
-
+#include "QCat/Renderer/enums.h"
 namespace QCat
 {
-	enum class Filtering
-	{
-		NONE=0,POINT,LINEAR, ANISOTROPIC
-	};
-	enum class Filter
-	{
-		NONE=0,MIN,MAG,MIP
-	};
-	enum class FilterMode
-	{
-		NONE=0,COMPARISON,MINIMUM,MAXIMUM
-	};
-	enum class WrapingMode
-	{
-		REPEAT=0,MIRROR,CLAMP,BORDER,MIRROR_ONCE
-	};
-
 	struct Sampler_Desc
 	{
 		Sampler_Desc() = default;
@@ -65,8 +47,27 @@ namespace QCat
 		virtual void Bind(unsigned int slot) = 0;
 		virtual void UnBind(unsigned int slot) = 0;
 
+		virtual void Invalidate() = 0;
+
+		void SetMinFilter(Filtering filtering);
+		void SetMagFilter(Filtering filtering);
+		void SetMipFilter(Filtering filtering);
+		void SetFilterMode(FilterMode mode);
+
+		void SetTextureWrapperU(WrapingMode wrapmode);
+		void SetTextureWrapperV(WrapingMode wrapmode);
+		void SetTextureWrapperW(WrapingMode wrapmode);
+
+		void SetMipLodBias(float bias);
+		void SetMaxAnisotropy(unsigned int max);
+		void SetComparisonFunc(COMPARISON_FUNC func);
+		void SetBorderColor(float* borderColor);
+		void SetMinLod(float minLod);
+		void SetMaxLod(float maxLod);
+
 		static Ref<SamplerState> Create(Sampler_Desc desc);
 	protected:
 		Sampler_Desc desc;
+		bool IsChanged = false;
 	};
 }

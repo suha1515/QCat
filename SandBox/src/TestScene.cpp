@@ -36,10 +36,13 @@ namespace QCat
 		m_Camera = m_ActiveScene->CreateEntity("Camera");
 		
 		auto& tc = m_Camera.GetComponent<TransformComponent>();
-		tc.Translation = { 5.0f,0.1f,-0.1f };
+		tc.Translation = { 2.3f,0.1f,-3.0f };
 		auto& camera = m_Camera.AddComponent<CameraComponent>();
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.01f, 100.0f);
+
+		//model load
+		//backpack = Model::Create("Asset/model/backpack/backpack.obj");
 
 		//Shader
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
@@ -51,7 +54,7 @@ namespace QCat
 			FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/FlatColor.glsl");
 			GaussianBlur = ShaderLibrary::Load("Asset/shaders/glsl/Blur/GaussianBlur.glsl");
 			BloomShader = ShaderLibrary::Load("Asset/shaders/glsl/Blur/HdrBloom.glsl");
-			GeometryPass = ShaderLibrary::Load("Asset/shaders/glsl/DeferredShading/GeometryPass.glsl");
+			GeometryPass = ShaderLibrary::Load("Asset/shaders/glsl/DeferredShading/GeometryPass_difspecnorm.glsl");
 			DeferredLighting = ShaderLibrary::Load("Asset/shaders/glsl/DeferredShading/DeferredShade.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
@@ -66,7 +69,7 @@ namespace QCat
 			BloomShader = ShaderLibrary::Load("BloomShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/Blur/HdrShaderBloom_PS.hlsl");
 
 			DeferredLighting = ShaderLibrary::Load("DeferredLight", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/DeferredShading/DeferredShade.hlsl");
-			GeometryPass = ShaderLibrary::Load("GeoMeteryPass", "Asset/shaders/hlsl/flatcolor_VS.hlsl", "Asset/shaders/hlsl/DeferredShading/GeometryPass.hlsl");
+			GeometryPass = ShaderLibrary::Load("GeoMeteryPass", "Asset/shaders/hlsl/PosNormTexTanBi_FragTexTbnNorm_VS.hlsl", "Asset/shaders/hlsl/DeferredShading/GeometryPass.hlsl");
 			
 		}
 
@@ -91,6 +94,7 @@ namespace QCat
 		GeometryPass->Bind();
 		GeometryPass->SetInt("texture_diffuse", 0, ShaderType::PS);
 		GeometryPass->SetInt("texture_specular", 1, ShaderType::PS);
+		GeometryPass->SetInt("texture_normal", 2, ShaderType::PS);
 
 
 		DeferredLighting->Bind();
@@ -99,81 +103,41 @@ namespace QCat
 		DeferredLighting->SetInt("aAlbedoSpec", 2, ShaderType::PS);
 
 		//floor Texture
-		floorTexture = TextureLibrary::Load("Asset/textures/floor.png");
-		Ref<Texture2D> brickTex = TextureLibrary::Load("Asset/textures/brickwall.jpg");
+		Sampler_Desc desc;
+		floorTexture = TextureLibrary::Load("Asset/textures/floor.png",desc);
+		Ref<Texture2D> brickTex = TextureLibrary::Load("Asset/textures/brickwall.jpg", desc);
 		//Ref<Texture2D> brickNormTex = TextureLibrary::Load("Asset/textures/Terracotta_Tiles_002_Normal.jpg");
 
 		floor.SetTexture(floorTexture, Material::MaterialType::Diffuse);
+		floor.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 		brick.SetTexture(brickTex, Material::MaterialType::Diffuse);
+		noTex.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 		//brick.SetTexture(brickNormTex, Material::MaterialType::NormalMap);
 
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader);
-		LightPosition = glm::vec3(0.0f, 0.0f, -2.0f);
-
-		LightInfo info;
-
-		for (int i = 0; i < 64; ++i)
-		{
-			float x = GetRandomNumber(-2.5f, 2.5f);
-			float y = GetRandomNumber(-1.4f, 0.0f);
-			float z = GetRandomNumber( 0.7f, 4.0f);
-			light[i].SetPosition(glm::vec3(x,y,z));
-			
-			float r = GetRandomNumber(0.4f, 1.0f);
-			float g = GetRandomNumber(0.4f, 1.0f);
-			float b = GetRandomNumber(0.4f, 1.0f);
-			light[i].SetDiffuse(glm::vec3(r, g, b));
-			light[i].SetSpecular(glm::vec3(r, g, b));
-
-			light[i].info.constant = constant;
-			light[i].info.linear = Linear;
-			light[i].info.quadratic = quadratic;
-
-			float lightMax = std::fmaxf(std::fmaxf(r, g), b);
-			light[i].info.radius = (-Linear + std::sqrtf(Linear * Linear - 4 * quadratic * (constant - (256.0f / 5.0f) * lightMax)))
-				/ (2 * quadratic);
-		}
-
-	/*	info.lightPosition = glm::vec3(1.3f, -1.5f, 1.5f);
-		info.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 		
-		light[0].SetLightinfo(info);
+		LightPosition = glm::vec3(-1.4f, -1.1f, 1.9f);
+			
+		light[0].info.lightPosition = LightPosition;
+		light[0].info.linear = 0.09f;
+		light[0].info.constant = 1.0f;
+		light[0].info.quadratic = 0.032f;
+		light[0].info.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+		light[0].info.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+		light[0].info.specular = glm::vec3(1.0f, 1.0f, 1.0f);
 
-		light[1].SetPosition(glm::vec3( 0.0f, -1.5f, 3.3f));
-		light[2].SetPosition(glm::vec3(-1.2f, -1.5f, 1.7f));
-		light[3].SetPosition(glm::vec3( 1.6f, -1.5f, 2.7f));
-
-		light[1].SetDiffuse(glm::vec3(1.f, 0.0f, 0.0f));
-		light[2].SetDiffuse(glm::vec3(0.0f, 1.f, 0.0f));
-		light[3].SetDiffuse(glm::vec3(0.0f, 0.0f, 1.f));
-
-		light[1].SetSpecular(glm::vec3(1.f, 0.0f, 0.0f));
-		light[2].SetSpecular(glm::vec3(0.0f, 1.f, 0.0f));
-		light[3].SetSpecular(glm::vec3(0.0f, 0.0f,1.f));
-
-		for (int i = 1; i < 4; ++i)
-		{
-			light[i].info.constant = 0.1f;
-			light[i].info.linear = 2.0f;
-			light[i].info.quadratic = 4.0f;
-		}*/
+		float lightMax = std::fmaxf(std::fmaxf(light[0].info.diffuse.r, light[0].info.diffuse.g), light[0].info.diffuse.b);
+		light[0].info.radius = (-Linear + std::sqrtf(Linear * Linear - 4 * quadratic * (constant - (256.0f / 5.0f) * lightMax)))
+			/ (2 * quadratic);
 
 		FrameBufferSpecification spec;
-		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float},
-							 {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float},
-							 {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
-							 {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
+		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA16_Float},
+							 {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA16_Float},
+							 {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8},
+							 {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
 		offrendering = FrameBuffer::Create(spec);
-
-		FrameBufferSpecification spec2;
-		spec2.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA16_Float} };
-		spec2.Width = 1600;
-		spec2.Height = 900;
-
-		pingpongBuffer[0] = FrameBuffer::Create(spec2);
-		pingpongBuffer[1] = FrameBuffer::Create(spec2);
 
 		m_quad = VertexArray::Create();
 
@@ -212,7 +176,6 @@ namespace QCat
 
 		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader, floor);
 
-		Sampler_Desc desc;
 		linearClamp = SamplerState::Create(desc);
 	}
 
@@ -236,6 +199,7 @@ namespace QCat
 		}
 		{
 			RenderCommand::SetDepthTest(true);
+			RenderCommand::SetCullMode(CullMode::None);
 
 			QCAT_PROFILE_SCOPE("Renderer Draw");
 			const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
@@ -245,8 +209,33 @@ namespace QCat
 			offrendering->Clear();
 			GeometryPass->Bind();
 			GeometryPass->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
+			GeometryPass->SetBool("flip", true, ShaderType::PS);
 
-			face->SetTranslation({ 0.0f,-2.0f,3.0f });
+			cube->SetTranslation({ 0.0f,0.0f,0.0f });
+			cube->SetScale({ 10.0f,5.0f,10.0f });
+			cube->SetMaterial(floor);
+			cube->Draw(GeometryPass);
+
+			GeometryPass->SetBool("flip", false, ShaderType::PS);
+
+			noTex.diffuse = (glm::vec3(1.0f, 1.0f, 0.0f));
+			cube->SetTranslation({ -2.f,-2.f,3.0f });
+			cube->SetScale({1.0f,1.0f,1.0f});
+			cube->SetMaterial(noTex);
+			cube->Draw(GeometryPass);
+
+			noTex.diffuse = (glm::vec3(1.0f, 0.0f, 1.0f));
+			cube->SetTranslation({ -3.5f,-2.f, 1.0f});
+			cube->SetScale({ 1.0f,1.0f,1.0f });
+			cube->SetMaterial(noTex);
+			cube->Draw(GeometryPass);
+			//backpack->SetTranslation(backpackPos);
+			//backpack->SetRotation(backpackRot);
+			//backpack->SetScale({ 0.5f,0.5f,0.5f });
+			//backpack->Draw(GeometryPass);
+
+
+			/*face->SetTranslation({ 0.0f,-2.0f,3.0f });
 			face->SetScale({ 5.0f,5.0f,5.0f });
 			face->SetRotation({ 1.6f,0.0f,0.0f });
 			face->MaterialBind();
@@ -263,7 +252,7 @@ namespace QCat
 						sphere->Draw(GeometryPass);
 					}
 				}
-			}
+			}*/
 
 			GeometryPass->UnBind();
 			offrendering->UnBind();
@@ -273,7 +262,7 @@ namespace QCat
 			DeferredLighting->Bind();
 			DeferredLighting->SetFloat3("viewPosition", tc, ShaderType::PS);
 
-			for (int i = 0; i < 64; ++i)
+			for (int i = 0; i < 1; ++i)
 			{
 				std::string lightname = "pointLight[" + std::to_string(i) + "].";
 				// Point Light 
@@ -282,9 +271,9 @@ namespace QCat
 				DeferredLighting->SetFloat3(lightname + "diffuse" , light[i].Getinfo().diffuse, ShaderType::PS);
 				DeferredLighting->SetFloat3(lightname + "specular", light[i].Getinfo().specular, ShaderType::PS);
 
-				DeferredLighting->SetFloat(lightname + "constant" , constant, ShaderType::PS);
-				DeferredLighting->SetFloat(lightname + "Linear"   , Linear, ShaderType::PS);
-				DeferredLighting->SetFloat(lightname + "quadratic", quadratic, ShaderType::PS);
+				DeferredLighting->SetFloat(lightname + "constant", light[i].info.constant , ShaderType::PS);
+				DeferredLighting->SetFloat(lightname + "Linear"   , light[i].info.linear, ShaderType::PS);
+				DeferredLighting->SetFloat(lightname + "quadratic", light[i].info.quadratic, ShaderType::PS);
 				DeferredLighting->SetFloat(lightname + "radius", light[i].info.radius, ShaderType::PS);
 			}
 			offrendering->BindColorTexture(0,0);
@@ -301,7 +290,7 @@ namespace QCat
 			FlatShader->Bind();
 			FlatShader->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
 			sphere->SetScale({ 0.5f,0.5f,0.5f });
-			for (int i = 0; i < 64; ++i)
+			for (int i = 0; i < 1; ++i)
 			{
 				FlatShader->SetFloat4("u_color", glm::vec4(light[i].info.diffuse, 1.0f), ShaderType::PS);
 				sphere->SetTranslation(light[i].info.lightPosition);
@@ -345,14 +334,12 @@ namespace QCat
 			sceneCamera->SetPerspectiveVerticalFov(fov);
 		}
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
-		ImGui::DragFloat("constant", &constant, 0.01f);
-		ImGui::DragFloat("linear", &Linear, 0.01f);
-		ImGui::DragFloat("quadratic",&quadratic, 0.01f);
-		
+		ImGui::DragFloat3("backpackPos", glm::value_ptr(backpackPos), 0.1f);
+		ImGui::DragFloat3("backpackRot", glm::value_ptr(backpackRot), 0.1f);
 		
 		ImGui::End();
 
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < 1; ++i)
 		{
 			std::string lightname = "pointLight[" + std::to_string(i) + "]";
 			light[i].ImGuiRender(lightname.c_str());

@@ -89,6 +89,7 @@ namespace QCat
 		BasicMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		ReflectMaterial = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		CubeMapMat = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
+
 		// wood Texture
 		Ref<Texture2D> woodTexture = TextureLibrary::Load("Asset/textures/floor.png");
 		// grass Texture
@@ -125,7 +126,8 @@ namespace QCat
 			"Asset/textures/Lycksele/posz.jpg",
 			"Asset/textures/Lycksele/negz.jpg",
 		};
-		m_cubeTexture = TextureCube::Create(imagePath);
+		Sampler_Desc desc;
+		m_cubeTexture = TextureCube::Create(imagePath,desc);
 
 		// quad Texture
 		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
@@ -203,22 +205,22 @@ namespace QCat
 		ReflectObjPos = glm::vec3(0.5f, -2.0f, -0.5f);
 
 		FrameBufferSpecification spec;
-		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
-							 {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8},
-							 {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureDataFormat::DEPTH24STENCIL8} };
+		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8},
+							 {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8},
+							 {FramebufferUsage::Depth_Stencil ,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
 		framebuffer = FrameBuffer::Create(spec);
 
 		FrameBufferSpecification spec2;
 		spec2.Attachments = {
-							  {FramebufferUsage::Depth,TextureType::TextureCube ,TextureDataFormat::DEPTH32} };
+							  {FramebufferUsage::Depth,TextureType::TextureCube ,TextureFormat::DEPTH32} };
 		spec2.Width  = 2048;
 		spec2.Height = 2048;
 		DepthFrameBuffer = FrameBuffer::Create(spec2);
 
 		FrameBufferSpecification spec3;
-		spec3.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureDataFormat::RGBA8} };
+		spec3.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8} };
 		spec3.Width = 1024;
 		spec3.Height = 1024;
 		screenframeBuffer = FrameBuffer::Create(spec3);
@@ -255,7 +257,6 @@ namespace QCat
 		m_quad->SetIndexBuffer(indexBuffer);
 		m_quad->UnBind();
 
-		Sampler_Desc desc;
 		desc.MIN = Filtering::POINT;
 		desc.MAG = Filtering::POINT;
 		desc.MIP = Filtering::NONE;

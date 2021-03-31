@@ -1,27 +1,12 @@
 #include "qcpch.h"
 #include "DX11_FrameBuffer.h"
 #include "QCat/Renderer/RenderCommand.h"
+#include "API/DirectX11/DXUtils.h"
 
 namespace QCat
 {
 	namespace Utils {
-		static DXGI_FORMAT GetDataType(TextureDataFormat format)
-		{
-			switch (format)
-			{
-				//32 bit
-			case TextureDataFormat::RGBA8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
-			case TextureDataFormat::RED32_INTEGER:   return DXGI_FORMAT_R32_SINT;
-				//24 bit
-			case TextureDataFormat::RGB8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
-			case TextureDataFormat::DEPTH24STENCIL8: return DXGI_FORMAT_R24G8_TYPELESS;
-			case TextureDataFormat::DEPTH32:		 return DXGI_FORMAT_R32_TYPELESS;
-
-			case TextureDataFormat::RGBA16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
-			case TextureDataFormat::RGBA32_Float:    return DXGI_FORMAT_R32G32B32A32_FLOAT;
-
-			}
-		}
+	
 		static bool IsDepthFormat(FramebufferUsage format)
 		{
 			switch (format)
@@ -89,22 +74,24 @@ namespace QCat
 				{
 				case TextureType::Texture2D:
 				{
+					Sampler_Desc desc;
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 1,
-						Utils::GetDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
+						Utils::GetDirectDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
 
 					D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 					rtvDesc.Format = texdesc.Format;
 					rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 					rtvDesc.Texture2D = D3D11_TEX2D_RTV{ 0 };
 
-					m_ColorAttachments[i].textures.push_back(CreateRef<DX11Texture2D>(texdesc));
+					m_ColorAttachments[i].textures.push_back(CreateRef<DX11Texture2D>(texdesc, desc));
 					m_ColorAttachments[i].rendertargets.push_back(DX11RenderTarget::Create(((DX11Texture2D*)m_ColorAttachments[i].textures[0].get())->GetDXTexture(), rtvDesc));
 				}
 				break;
 				case TextureType::TextureCube:
 				{
+					Sampler_Desc desc;
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 6,
-						Utils::GetDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0,
+						Utils::GetDirectDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0,
 						D3D11_RESOURCE_MISC_GENERATE_MIPS | D3D11_RESOURCE_MISC_TEXTURECUBE);
 
 					D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -113,7 +100,7 @@ namespace QCat
 					rtvDesc.Texture2DArray.ArraySize = 1;
 					rtvDesc.Texture2DArray.MipSlice = 0;
 
-					m_ColorAttachments[i].textures.push_back(CreateRef<DX11TextureCube>(texdesc));
+					m_ColorAttachments[i].textures.push_back(CreateRef<DX11TextureCube>(texdesc,desc));
 					m_ColorAttachments[i].rendertargets.resize(6);
 					for (int j= 0; j < 6; ++j)
 					{

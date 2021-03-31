@@ -1,5 +1,6 @@
 #pragma once
 #include "RenderAPI.h"
+#include "enums.h"
 
 namespace QCat
 {

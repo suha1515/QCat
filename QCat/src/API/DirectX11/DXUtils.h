@@ -1,0 +1,44 @@
+#pragma once
+#include "QCat/Renderer/enums.h"
+#include "QCat/Core/Assert.h"
+#include "API/DirectX11/QGfxDeviceDX11.h"
+namespace QCat
+{
+	namespace Utils
+	{
+		static DXGI_FORMAT GetDirectDataType(TextureFormat format)
+		{
+			switch (format)
+			{
+				//32 bit
+			case TextureFormat::RGBA8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case TextureFormat::RED32_INTEGER:   return DXGI_FORMAT_R32_SINT;
+				//24 bit
+			case TextureFormat::RGB8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case TextureFormat::DEPTH24STENCIL8: return DXGI_FORMAT_R24G8_TYPELESS;
+			case TextureFormat::DEPTH32:		 return DXGI_FORMAT_R32_TYPELESS;
+
+			case TextureFormat::RGBA16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
+			case TextureFormat::RGBA32_Float:    return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+			}
+		}
+		static unsigned long long GetDataSize(TextureFormat format)
+		{
+			switch (format)
+			{
+				//32 bit
+			case TextureFormat::RGBA8:			 return sizeof(unsigned int);
+			case TextureFormat::RED32_INTEGER:   return sizeof(int);
+				//24 bit
+			case TextureFormat::RGB8:			 return sizeof(unsigned int);
+			case TextureFormat::DEPTH24STENCIL8: return sizeof(unsigned int);
+			case TextureFormat::DEPTH32:		 return sizeof(unsigned int);
+
+			case TextureFormat::RGBA16_Float:    return sizeof(float);
+			case TextureFormat::RGBA32_Float:    return sizeof(float);;
+
+			}
+		}
+	}
+}

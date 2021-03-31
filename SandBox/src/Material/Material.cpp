@@ -4,21 +4,22 @@ namespace QCat
 {
 	void Material::SetTexture(const std::string& path, MaterialType type)
 	{
+		Sampler_Desc desc;
 		switch (type)
 		{
 		case MaterialType::None: QCAT_CORE_ASSERT(false);
 			break;
 		case MaterialType::Diffuse:
-			m_DiffuseTexture = Texture2D::Create(path);
+			m_DiffuseTexture = Texture2D::Create(path, desc);
 			break;
 		case MaterialType::Specular:
-			m_SpecularTexture = Texture2D::Create(path);
+			m_SpecularTexture = Texture2D::Create(path, desc);
 			break;
 		case MaterialType::NormalMap:
-			m_NormalMapTexture = Texture2D::Create(path);
+			m_NormalMapTexture = Texture2D::Create(path, desc);
 			break;
 		case MaterialType::Emission:
-			m_EmissionTexture = Texture2D::Create(path);
+			m_EmissionTexture = Texture2D::Create(path, desc);
 			break;
 		}
 	}

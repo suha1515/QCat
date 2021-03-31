@@ -72,13 +72,14 @@ namespace QCat
 
 			offset += 4;
 		}
+		Sampler_Desc desc;
 		//indexBuffer
 		Ref<IndexBuffer> quadIB;
 		quadIB = IndexBuffer::Create(quadIndices,s_data.MaxIndices);
 		s_data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[]quadIndices;
 		
-		s_data.whiteTexture = Texture2D::Create(1, 1);
+		s_data.whiteTexture = Texture2D::Create(desc,1, 1);
 		unsigned int whiteTextureData = 0xffffffff;
 		s_data.whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
 

@@ -8,7 +8,8 @@ namespace QCat
 	};
 	CubeMap::CubeMap(const std::vector<std::string> imgPathes, const Ref<Shader> shader)
 	{
-		m_cubeTexture = TextureCube::Create(imgPathes);
+		Sampler_Desc desc;
+		m_cubeTexture = TextureCube::Create(imgPathes,desc);
 		// VertexArray
 		m_VertexArray = VertexArray::Create();
 

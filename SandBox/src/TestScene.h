@@ -31,6 +31,9 @@ namespace QCat
 		Ref<Face> face;
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
+		Ref<Model> backpack;
+		glm::vec3 backpackPos = { -1.5f,-2.0f,1.5f };
+		glm::vec3 backpackRot = { 1.6f,1.3f,0.0f };
 
 		Ref<Shader> BlinnPhongShader;
 		Ref<Shader> screenShader;
@@ -47,6 +50,7 @@ namespace QCat
 		Ref<VertexArray> m_quad;
 		Material floor;
 		Material brick;
+		Material noTex;
 
 		Ref<Texture2D> floorTexture;
 
@@ -57,7 +61,7 @@ namespace QCat
 		bool first_iteration = true;
 		bool horizontal = false;
 
-		Light light[128];
+		Light light[1];
 		//light
 		glm::vec3 LightPosition;
 		float constant = 0.1f;
@@ -72,7 +76,7 @@ namespace QCat
 		float lastX, lastY;
 		float yaw = 90.f, pitch = -30.0f;
 		glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::vec3 cameraFront = glm::vec3(-0.8f, -0.2f, 0.4f);
+		glm::vec3 cameraFront = glm::vec3(-0.6f, -0.3f, 0.7f);
 		glm::vec3 cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
 		glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::mat4 viewMatrix;

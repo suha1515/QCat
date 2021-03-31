@@ -25,6 +25,7 @@
 #include "QCat/Scene/Components.h"
 
 //--Renderer-----------------------------//
+#include "QCat/Renderer/enums.h"
 #include "QCat/Renderer/Renderer.h"
 #include "QCat/Renderer/Renderer2D.h"
 #include "QCat/Renderer/RenderCommand.h"
@@ -35,7 +36,6 @@
 #include "QCat/Renderer/FrameBuffer.h"
 #include "QCat/Renderer/VertexArray.h"
 #include "QCat/Renderer/OrthographicCamera.h"
-
 #include "QCat/Renderer/SamplerState.h"
 //--Renderer-----------------------------//
 //--API----------------------------------//

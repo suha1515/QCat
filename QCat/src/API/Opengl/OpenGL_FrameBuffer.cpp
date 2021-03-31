@@ -1,7 +1,6 @@
 #include "qcpch.h"
 #include "OpenGL_FrameBuffer.h"
-
-#include <glad/glad.h>
+#include "API/Opengl/OpenglUtils.h"
 
 namespace QCat
 {
@@ -9,96 +8,7 @@ namespace QCat
 	static const uint32_t s_MaxFramebufferSize = 8192;
 
 	namespace Utils{
-
-		static GLenum GetDataType(TextureDataFormat format)
-		{
-			switch (format)
-			{
-				//32 bit
-			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
-			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
-			case TextureDataFormat::RG16_Float:	    return GL_FLOAT;
-			case TextureDataFormat::RGBA32_Float:	return GL_FLOAT;
-			case TextureDataFormat::RGBA16_Float:	return GL_FLOAT;
-
-
-				//24 bit
-			case TextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
-
-			}
-		}
-		static GLenum GetTextureTarget(TextureType format,bool multisampled)
-		{
-			switch (format)
-			{
-			case TextureType::Texture2D:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case TextureType::TextureArray:       return GL_TEXTURE_2D_ARRAY;
-			case TextureType::TextureCube:		  return GL_TEXTURE_CUBE_MAP;
-			}
-		}
-		static GLenum GetTextureFormat(TextureDataFormat format)
-		{
-			switch (format)
-			{
-				//32 bit
-			case TextureDataFormat::RGBA8:			 return GL_RGBA;
-			case TextureDataFormat::RED32_INTEGER:   return GL_RED_INTEGER;
-			case TextureDataFormat::RGBA32_Float:	 return GL_RGBA;
-			case TextureDataFormat::RGBA16_Float:    return GL_RGBA;
-
-				//24 bit
-			case TextureDataFormat::RGB8:			 return GL_RGB;
-			case TextureDataFormat::RG16_Float:	     return GL_RG;
-
-				//depth
-			case TextureDataFormat::DEPTH32:		 return GL_DEPTH_COMPONENT;
-			case TextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH_STENCIL;
-			}
-
-		}
-		static GLenum GetTextureInternalFormat(TextureDataFormat format)
-		{
-			switch (format)
-			{
-				
-			//32 bit
-			case TextureDataFormat::RGBA8:			return GL_RGBA8;
-			case TextureDataFormat::RED32_INTEGER:  return GL_R32I;
-			case TextureDataFormat::RG16_Float:	    return GL_RG16F;
-			case TextureDataFormat::RGBA16_Float:   return GL_RGBA16F;
-			case TextureDataFormat::RGBA32_Float:	return GL_RGBA32F;
-
-
-			//24 bit
-			case TextureDataFormat::RGB8:			return GL_RGB8;
-
-
-			//depth
-			case TextureDataFormat::DEPTH32:	     return GL_DEPTH_COMPONENT32;
-			case TextureDataFormat::DEPTH24STENCIL8: return GL_DEPTH24_STENCIL8;
-			}
-		}
-
-		static GLenum GetTextureDataType(TextureDataFormat format)
-		{
-			switch (format)
-			{
-				//32 bit
-			case TextureDataFormat::RGBA8:			return GL_UNSIGNED_BYTE;
-			case TextureDataFormat::RED32_INTEGER:  return GL_INT;
-			case TextureDataFormat::RG16_Float:	    return GL_FLOAT;
-			case TextureDataFormat::RGBA16_Float:   return GL_FLOAT;
-			case TextureDataFormat::RGBA32_Float:	return GL_FLOAT;
-
-				//24 bit
-			case TextureDataFormat::RGB8:			return GL_UNSIGNED_BYTE;
-
-
-				//depth
-			case TextureDataFormat::DEPTH32:		return GL_FLOAT;
-			case TextureDataFormat::DEPTH24STENCIL8: return GL_UNSIGNED_INT_24_8;
-			}
-		}
+	
 	/*	static GLenum TextureTarget(bool multisampled)
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -111,39 +21,12 @@ namespace QCat
 		{
 			glBindTexture(GetTextureTarget(format,multisampled), id);
 		}
-		static void AttachTexture(TextureType textureformat, TextureDataFormat dataformat,
-			uint32_t id, int samples, uint32_t width, uint32_t height,GLenum attachmenIndex)
+		static void AttachTexture(TextureType textureformat,uint32_t id,bool multisampled, GLenum attachmenIndex)
 		{
-			bool multisampled = samples > 1;
-			if (multisampled)
-			{
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GetTextureInternalFormat(dataformat), width, height, GL_FALSE);
-			}
-			else
-			{
-				glTexImage2D(GL_TEXTURE_2D, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GetTextureDataType(dataformat), nullptr);
-
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			}
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmenIndex, GetTextureTarget(textureformat,multisampled), id, 0);
-
 		}
-		static void AttachTextureCube(TextureType format, TextureDataFormat dataformat,uint32_t id, uint32_t width, uint32_t height,GLenum attachmentType)
+		static void AttachTextureCube(TextureType format, uint32_t id,GLenum attachmentType)
 		{
-			for (int i = 0; i < 6; ++i)
-			{
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GetTextureInternalFormat(dataformat), width, height, 0, GetTextureFormat(dataformat), GetTextureDataType(dataformat), nullptr);
-			}
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			
 			glFramebufferTexture(GL_FRAMEBUFFER, attachmentType,id, 0);
 		}
 		static bool IsDepthFormat(FramebufferUsage format)
@@ -155,12 +38,12 @@ namespace QCat
 			}
 			return false;
 		}
-		static GLenum QCatTextureFormatToGL(TextureDataFormat data)
+		static GLenum QCatTextureFormatToGL(TextureFormat data)
 		{
 			switch (data)
 			{
-			case TextureDataFormat::RGBA8:			    return GL_RGBA;
-			case TextureDataFormat::RED32_INTEGER:		return GL_RED_INTEGER;
+			case TextureFormat::RGBA8:			    return GL_RGBA;
+			case TextureFormat::RED32_INTEGER:		return GL_RED_INTEGER;
 
 			}
 			QCAT_CORE_ASSERT(false);
@@ -183,8 +66,6 @@ namespace QCat
 	OpenGLFrameBuffer::~OpenGLFrameBuffer()
 	{
 		glDeleteFramebuffers(1 ,&m_RendererID);
-		glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
-		glDeleteTextures(1, &m_DepthAttachment);
 	}
 	void OpenGLFrameBuffer::Invalidate()
 	{
@@ -192,11 +73,8 @@ namespace QCat
 		{
 			// when resizeBuffer we need to delete everything in Framebuffer Class
 			glDeleteFramebuffers(1, &m_RendererID);
-			glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
-			glDeleteTextures(1, &m_DepthAttachment);
-
 			m_ColorAttachments.clear();
-			m_DepthAttachment = 0;
+			m_DepthAttachment.reset();
 		}
 		glCreateFramebuffers(1, &m_RendererID);
 		// bind Framebuffer
@@ -207,20 +85,31 @@ namespace QCat
 		// if we have colorattchments
 		if (m_ColorAttachmentSpecifications.size())
 		{
-			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
 			// Attachments
-			for (size_t i =0;i< m_ColorAttachments.size();++i)
+			for (size_t i =0;i< m_ColorAttachmentSpecifications.size();++i)
 			{
 				auto format = m_ColorAttachmentSpecifications[i];
-				Utils::CreateTextures(format.textureType,multisample,&m_ColorAttachments[i], 1);
-				Utils::BindTexture(format.textureType,multisample,m_ColorAttachments[i]);
 				switch (m_ColorAttachmentSpecifications[i].textureType)
 				{
 				case TextureType::Texture2D:
-					Utils::AttachTexture(format.textureType, format.textureformat,m_ColorAttachments[i], m_Specification.Samples,m_Specification.Width, m_Specification.Height, GL_COLOR_ATTACHMENT0 +i);
-					break;
+				{
+					Sampler_Desc desc;
+					Ref<Texture2D> texture = Texture2D::Create(format.textureformat, desc, m_Specification.Width, m_Specification.Height, 1, m_Specification.Samples);
+					GLint id = (GLint)texture->GetTexture();
+					Utils::BindTexture(format.textureType, multisample, id);
+					Utils::AttachTexture(format.textureType, id, multisample, GL_COLOR_ATTACHMENT0 + i);
+					m_ColorAttachments.push_back(texture);
+				}
+				break;
 				case TextureType::TextureCube:
-					Utils::AttachTextureCube(format.textureType, format.textureformat, m_ColorAttachments[i], m_Specification.Width, m_Specification.Height,GL_COLOR_ATTACHMENT0 + i);
+				{
+					Sampler_Desc desc;
+					Ref<TextureCube> textureCube = TextureCube::Create(format.textureformat, desc, m_Specification.Width, m_Specification.Height);
+					GLint id = (GLint)textureCube->GetTexture();
+					Utils::BindTexture(format.textureType, multisample, id);
+					Utils::AttachTextureCube(format.textureType, id, GL_COLOR_ATTACHMENT0 + i);
+					m_ColorAttachments.push_back(textureCube);
+				}
 					break;
 				}
 			}
@@ -229,8 +118,7 @@ namespace QCat
 		if (m_DepthAttacmentSpecifications.usage != FramebufferUsage::None)
 		{
 			auto format = m_DepthAttacmentSpecifications;
-			Utils::CreateTextures(format.textureType,multisample, &m_DepthAttachment, 1);
-			Utils::BindTexture(format.textureType,multisample, m_DepthAttachment);
+			
 			GLenum attachmentInfo;
 			if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
 				attachmentInfo = GL_DEPTH_ATTACHMENT;
@@ -239,10 +127,22 @@ namespace QCat
 			switch (m_DepthAttacmentSpecifications.textureType)
 			{
 			case TextureType::Texture2D:
-				Utils::AttachTexture(format.textureType, format.textureformat, m_DepthAttachment, m_Specification.Samples, m_Specification.Width, m_Specification.Height,GL_DEPTH_ATTACHMENT);
+			{
+				Sampler_Desc desc;
+				m_DepthAttachment = Texture2D::Create(format.textureformat,desc, m_Specification.Width, m_Specification.Height, 1, m_Specification.Samples);
+				GLint id = (GLint)m_DepthAttachment->GetTexture();
+				Utils::BindTexture(format.textureType, multisample, id);
+				Utils::AttachTexture(format.textureType, id, multisample, attachmentInfo);
+			}
 				break;
 			case TextureType::TextureCube:
-				Utils::AttachTextureCube(format.textureType, format.textureformat, m_DepthAttachment, m_Specification.Width, m_Specification.Height, GL_DEPTH_ATTACHMENT);
+			{
+				Sampler_Desc desc;
+				m_DepthAttachment = TextureCube::Create(format.textureformat,desc, m_Specification.Width, m_Specification.Height);
+				GLint id = (GLint)m_DepthAttachment->GetTexture();
+				Utils::BindTexture(format.textureType, multisample, id);
+				Utils::AttachTexture(format.textureType, id, multisample, attachmentInfo);
+			}
 				break;
 			}
 		}
@@ -302,19 +202,19 @@ namespace QCat
 		glReadPixels(x, y,1, 1,GL_RED_INTEGER,GL_INT,&pixelData);
 		return pixelData;
 	}
-	void OpenGLFrameBuffer::ReadPixel(uint32_t attachmentIndex, TextureDataFormat format, void* value, int x, int y, int z)
+	void OpenGLFrameBuffer::ReadPixel(uint32_t attachmentIndex, TextureFormat format, void* value, int x, int y, int z)
 	{
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glReadPixels(x, y, 1, 1, Utils::GetTextureFormat(format),Utils::GetTextureDataType(format), &value);
+		glReadPixels(x, y, 1, 1, Utils::GetTextureFormat(format),Utils::GetTextureDataFormat(format), &value);
 	}
 	void OpenGLFrameBuffer::ClearAttachment(uint32_t attachmentIndex, const void* value)
 	{
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
-		glClearTexImage(m_ColorAttachments[attachmentIndex], 0, Utils::GetTextureFormat(spec.textureformat), Utils::GetDataType(spec.textureformat), value);
+		glClearTexImage((GLint)m_ColorAttachments[attachmentIndex]->GetTexture(), 0, Utils::GetTextureFormat(spec.textureformat), Utils::GetOpengLDataType(spec.textureformat), value);
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 			QCAT_WARN("error code {1}", error);
@@ -327,7 +227,7 @@ namespace QCat
 		{
 			if (m_ColorAttachmentSpecifications[i].textureType == TextureType::TextureCube)
 			{
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, GL_TEXTURE_CUBE_MAP_POSITIVE_X+ faceindex, m_ColorAttachments[i], 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 +i, GL_TEXTURE_CUBE_MAP_POSITIVE_X+ faceindex, (GLint)m_ColorAttachments[i]->GetTexture(), 0);
 			}
 		}	
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -336,19 +236,18 @@ namespace QCat
 	void* OpenGLFrameBuffer::GetColorAttachmentRendererID(uint32_t index) const
 	{
 		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
-		uint32_t id = m_ColorAttachments[index];
-		return reinterpret_cast<void*>(id);
+		return m_ColorAttachments[index]->GetTexture();
 	}
 
 	void OpenGLFrameBuffer::BindColorTexture(uint32_t slot, uint32_t index) const
 	{
 		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
 
-		glBindTextureUnit(slot, m_ColorAttachments[index]);
+		m_ColorAttachments[index]->Bind(slot);
 	}
 	void OpenGLFrameBuffer::BindDepthTexture(uint32_t slot) const
 	{
-		 glBindTextureUnit(slot, m_DepthAttachment); 
+		m_DepthAttachment->Bind(slot);
 	}
 	void OpenGLFrameBuffer::Clear(glm::vec4 color) const
 	{

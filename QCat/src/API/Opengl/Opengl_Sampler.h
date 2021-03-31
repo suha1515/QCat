@@ -12,7 +12,7 @@ namespace QCat
 		virtual void Bind(unsigned int slot)override;
 		virtual void UnBind(unsigned int slot) override;
 	
-		void Invalidate();
+		void Invalidate() override;
 	private:
 		unsigned int id=0;
 	};

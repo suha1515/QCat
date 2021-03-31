@@ -32,8 +32,8 @@
 
 #include "QCat/Debug/Instrumentor.h"
 
-
 #include<glm/glm.hpp>
+
 
 
 #ifdef QCAT_PLATFORM_WINDOWS

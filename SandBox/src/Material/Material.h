@@ -17,7 +17,8 @@ namespace QCat
 		Material(glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,float shininess)
 			:ambient(ambient),diffuse(diffuse), specular(specular),shininess(shininess)
 		{
-			m_WhiteTexture  = Texture2D::Create(1, 1);
+			Sampler_Desc desc;
+			m_WhiteTexture  = Texture2D::Create(desc ,1, 1);
 			byte r = 255;
 			byte g = 255;
 			byte b = 255;

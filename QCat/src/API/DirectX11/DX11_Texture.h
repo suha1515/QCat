@@ -14,9 +14,10 @@ namespace QCat
 	class DX11Texture2D : public Texture2D
 	{
 	public:
-		DX11Texture2D(unsigned int width,unsigned int height);
-		DX11Texture2D(const std::string& path, bool flip=false,bool gamacorrection = false);
-		DX11Texture2D(D3D11_TEXTURE2D_DESC textureDesc, bool flip = false, bool gammaCorrection = false);
+		DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
+		DX11Texture2D(Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1);
+		DX11Texture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip=false,bool gamacorrection = false);
+		DX11Texture2D(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip = false, bool gammaCorrection = false);
 		virtual ~DX11Texture2D();
 
 		virtual unsigned int GetWidth() const override { return m_width; }
@@ -41,14 +42,14 @@ namespace QCat
 		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
-		Microsoft::WRL::ComPtr< ID3D11SamplerState> pSamplerState;
 		DXGI_FORMAT m_dataFormat;
 	};
 	class DX11TextureCube : public TextureCube
 	{
 	public:
-		DX11TextureCube(const std::vector<std::string>& imgPathes, bool flip = false, bool gammaCorrection = false);
-		DX11TextureCube(D3D11_TEXTURE2D_DESC textureDesc,bool flip = false, bool gammaCorrection = false);
+		DX11TextureCube(const std::vector<std::string>& imgPathes, Sampler_Desc desc, unsigned int mipLevel = 1, bool flip = false, bool gammaCorrection = false);
+		DX11TextureCube(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, void* pData = nullptr);
+		DX11TextureCube(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip = false, bool gammaCorrection = false);
 
 		~DX11TextureCube() = default;
 
@@ -72,7 +73,6 @@ namespace QCat
 		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
-		Microsoft::WRL::ComPtr< ID3D11SamplerState> pSamplerState;
 		DXGI_FORMAT m_dataFormat;
 
 	};

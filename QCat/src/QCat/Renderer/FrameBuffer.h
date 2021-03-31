@@ -1,42 +1,18 @@
 #pragma once
 #include "QCat/Core/QCatCore.h"
+#include "QCat/Renderer/enums.h"
 
 namespace QCat
 {
-	enum class BufferBit
-	{
-		Color,Depth,Stencil
-	};
-	enum class FramebufferUsage
-	{
-		None = 0,
-		Color, Depth, Depth_Stencil
-	};
-	enum class TextureType
-	{
-		None=0,
-		Texture2D,TextureArray,TextureCube
-	};
-	enum class TextureDataFormat
-	{
-		None = 0,
-		// 32 bit
-		RGBA8, RED32_INTEGER, RG16_Float, RGBA32_Float,RGBA16_Float,
-		// 24bit
-		RGB8,
-		// DepthStencil
-		DEPTH24STENCIL8,
-		DEPTH32
-	};
 	struct FramebufferSpecification
 	{
 		FramebufferSpecification() = default;
-		FramebufferSpecification(FramebufferUsage usage, TextureType textureType, TextureDataFormat dataFormat)
+		FramebufferSpecification(FramebufferUsage usage, TextureType textureType, TextureFormat dataFormat)
 			: usage(usage), textureType(textureType),textureformat(dataFormat){}
 
 		FramebufferUsage usage = FramebufferUsage::None;
 		TextureType textureType = TextureType::None;
-		TextureDataFormat textureformat = TextureDataFormat::None;
+		TextureFormat textureformat = TextureFormat::None;
 	};
 
 	struct FramebufferAttachmentSpecification
@@ -65,7 +41,7 @@ namespace QCat
 
 		virtual void Resize(uint32_t width,uint32_t height)=0;
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) = 0;
-		virtual void ReadPixel(uint32_t attachmentIndex, TextureDataFormat format,void* value, int x, int y, int z = 0) = 0;
+		virtual void ReadPixel(uint32_t attachmentIndex, TextureFormat format,void* value, int x, int y, int z = 0) = 0;
 
 		virtual void AttachCubeMapByIndex(uint32_t faceindex) = 0;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value) = 0;
