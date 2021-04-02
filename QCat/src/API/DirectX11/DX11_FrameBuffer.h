@@ -14,6 +14,11 @@ namespace QCat
 		std::vector<Ref<Texture>> textures;
 		int attachTarget = 0;
 	};
+	struct DepthStencilTarget
+	{
+		Ref<DX11DepthStencil> depthStencil;
+		Ref<Texture>		  texture;
+	};
 	class DX11FrameBuffer : public FrameBuffer
 	{
 	public:
@@ -42,6 +47,10 @@ namespace QCat
 
 		virtual void UnBindTexture() override;
 		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;
+
+		virtual Ref<Texture> GetColorTexture(uint32_t index = 0) const override;
+		virtual Ref<Texture> GetDepthTexture()const override;
+
 		virtual void CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit buffer, void* destBuffer) override;
 
 	private:
@@ -51,6 +60,6 @@ namespace QCat
 		FramebufferSpecification m_DepthAttacmentSpecifications = { FramebufferUsage::None,TextureType::None,TextureFormat::None };
 
 		std::vector<RenderTargets> m_ColorAttachments;
-		Ref<DX11DepthStencil> m_DepthAttachment = 0, m_ColorAttachment = 0;
+		DepthStencilTarget m_DepthAttachment;
 	};
 }

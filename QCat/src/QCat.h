@@ -23,6 +23,9 @@
 #include "QCat/Scene/Entity.h"
 #include "QCat/Scene/ScriptableEntity.h"
 #include "QCat/Scene/Components.h"
+//--Utility------------------------------//
+#include "QCat/Uitiliy/Math.h"
+//---------------------------------------//
 
 //--Renderer-----------------------------//
 #include "QCat/Renderer/enums.h"

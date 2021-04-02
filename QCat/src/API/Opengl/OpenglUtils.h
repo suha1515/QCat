@@ -103,10 +103,11 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case TextureFormat::RED32_FLOAT:	return GL_FLOAT;
 			case TextureFormat::RED32_INTEGER:  return GL_INT;
-			case TextureFormat::RG16_Float:	    return GL_FLOAT;
+			case TextureFormat::RG16_Float:	    return GL_HALF_FLOAT;
 			case TextureFormat::RGBA32_Float:	return GL_FLOAT;
-			case TextureFormat::RGBA16_Float:	return GL_FLOAT;
+			case TextureFormat::RGBA16_Float:	return GL_HALF_FLOAT;
 
 				//24 bit
 			case TextureFormat::RGB8:			return GL_UNSIGNED_BYTE;
@@ -128,6 +129,7 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			 return GL_RGBA;
+			case TextureFormat::RED32_FLOAT:	 return GL_RED;
 			case TextureFormat::RED32_INTEGER:   return GL_RED_INTEGER;
 			case TextureFormat::RGBA32_Float:	 return GL_RGBA;
 			case TextureFormat::RGBA16_Float:    return GL_RGBA;
@@ -147,6 +149,7 @@ namespace QCat
 
 				//32 bit
 			case TextureFormat::RGBA8:			return GL_RGBA8;
+			case TextureFormat::RED32_FLOAT:	return GL_R32F;
 			case TextureFormat::RED32_INTEGER:  return GL_R32I;
 			case TextureFormat::RG16_Float:	    return GL_RG16F;
 			case TextureFormat::RGBA16_Float:   return GL_RGBA16F;
@@ -169,18 +172,18 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case TextureFormat::RED32_FLOAT:	return GL_FLOAT;
 			case TextureFormat::RED32_INTEGER:  return GL_INT;
-			case TextureFormat::RG16_Float:	    return GL_FLOAT;
-			case TextureFormat::RGBA16_Float:   return GL_FLOAT;
+			case TextureFormat::RG16_Float:	    return GL_HALF_FLOAT;
+			case TextureFormat::RGBA16_Float:   return GL_HALF_FLOAT;
 			case TextureFormat::RGBA32_Float:	return GL_FLOAT;
 
 				//24 bit
 			case TextureFormat::RGB8:			return GL_UNSIGNED_BYTE;
 
-
 				//depth
 			case TextureFormat::DEPTH32:		return GL_FLOAT;
-			case TextureFormat::DEPTH24STENCIL8: return GL_UNSIGNED_INT_24_8;
+			case TextureFormat::DEPTH24STENCIL8:return GL_UNSIGNED_INT_24_8;
 			}
 		}
 	}

@@ -18,6 +18,11 @@ namespace QCat
 		QCAT_CORE_ASSERT(false, "Error! Creating SamplerState");
 		return nullptr;
     }
+	void SamplerState::SetSamplerDesc(Sampler_Desc desc)
+	{
+		this->desc = desc;
+		Invalidate();
+	}
 	void SamplerState::SetMinFilter(Filtering filtering)
 	{
 		if (desc.MIN != filtering)

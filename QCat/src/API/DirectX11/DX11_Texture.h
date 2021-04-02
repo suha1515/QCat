@@ -10,7 +10,6 @@ namespace QCat
 	// Texture2D[] is each Textures dont have to be same foramt or data but Texture2DArray must be same
 	// so when you use Texute2D[] in your hlsl code each Texture2D has own slot for using
 	// Like Texuture2D[0]'s slot 0 and Texture2D[1]'s slot is 1
-
 	class DX11Texture2D : public Texture2D
 	{
 	public:

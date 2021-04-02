@@ -12,7 +12,7 @@ namespace QCat
 			None=0,Diffuse,Specular,NormalMap,Emission
 		};
 		Material()
-			:Material({0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f},32.f)
+			:Material({0.2f,0.2f,0.2f},{1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f},32.f)
 		{}
 		Material(glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,float shininess)
 			:ambient(ambient),diffuse(diffuse), specular(specular),shininess(shininess)

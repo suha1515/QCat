@@ -37,13 +37,14 @@ namespace QCat
 
 		Ref<Shader> BlinnPhongShader;
 		Ref<Shader> screenShader;
-		Ref<Shader> HdrFlatShader;
 		Ref<Shader> FlatShader;
-		Ref<Shader> GaussianBlur;
-		Ref<Shader> BloomShader;
 		Ref<Shader> GeometryPass;
 		Ref<Shader> DeferredLighting;
-		Ref<Shader> screenHDR;
+		Ref<Shader> SSaoWrite;
+		Ref<Shader> SSaoBlur;
+		Ref<Shader> SSaoLight;
+		Ref<Shader> SSaogeo;
+		glm::vec2 screenSize=glm::vec2(0.0f,0.0f);
 	
 		Ref<SamplerState> linearClamp;
 
@@ -53,13 +54,18 @@ namespace QCat
 		Material noTex;
 
 		Ref<Texture2D> floorTexture;
+		//Noise for SSAO
+		Ref<Texture2D> noiseTexture;
+		std::vector<glm::vec3> ssaokernel;
+		std::vector<glm::vec4> ssaoNoise;
 
 		Ref<Scene> m_ActiveScene;
 
 		Ref<FrameBuffer> offrendering;
-		Ref<FrameBuffer> pingpongBuffer[2];
-		bool first_iteration = true;
-		bool horizontal = false;
+		Ref<FrameBuffer> ssao, ssaoBlur;
+
+		float radius = 0.5f;
+		float bias = 0.025f;
 
 		Light light[1];
 		//light

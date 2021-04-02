@@ -35,6 +35,9 @@ namespace QCat
 		virtual void UnBindTexture() override {};
 		virtual void Clear(glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) const override;
 
+		virtual Ref<Texture> GetColorTexture(uint32_t index = 0) const override;
+		virtual Ref<Texture> GetDepthTexture()const override;
+
 		virtual void CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit buffer,void* destBuffer) override;
 	private:
 		uint32_t m_RendererID=0;

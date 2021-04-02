@@ -24,6 +24,7 @@ namespace QCat
 		// Float
 		virtual void SetFloat(const std::string& name, const float& value, ShaderType type) =0;
 		virtual void SetFloatArray(const std::string name, float* values, unsigned int count, ShaderType type) = 0;
+		virtual void SetFloat2(const std::string& name, const glm::vec2& value, ShaderType type) = 0;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value, ShaderType type) = 0;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value, ShaderType type) = 0;
 

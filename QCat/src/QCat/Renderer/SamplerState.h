@@ -49,6 +49,7 @@ namespace QCat
 
 		virtual void Invalidate() = 0;
 
+		void SetSamplerDesc(Sampler_Desc desc);
 		void SetMinFilter(Filtering filtering);
 		void SetMagFilter(Filtering filtering);
 		void SetMipFilter(Filtering filtering);

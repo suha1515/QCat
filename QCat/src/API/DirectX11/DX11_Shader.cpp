@@ -273,6 +273,15 @@ namespace QCat
 			ref.second[i] = values[i];
 		}
 	}
+	void DXShader::SetFloat2(const std::string& name, const glm::vec2& value, ShaderType type)
+	{
+		QCAT_PROFILE_FUNCTION();
+		auto ref = FindVariable(name, type);
+		if (!ref.first)
+			return;
+		ref.first->IsDataChanged = true;
+		ref.second = value;
+	}
 	void DXShader::SetFloat3(const std::string& name, const glm::vec3& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();

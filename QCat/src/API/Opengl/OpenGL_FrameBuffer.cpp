@@ -270,6 +270,15 @@ namespace QCat
 		}
 			
 	}
+	Ref<Texture> OpenGLFrameBuffer::GetColorTexture(uint32_t index) const
+	{
+		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
+		return m_ColorAttachments[index];
+	}
+	Ref<Texture> OpenGLFrameBuffer::GetDepthTexture() const
+	{
+		return m_DepthAttachment;
+	}
 	void OpenGLFrameBuffer::CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit bufferbit, void* destBuffer)
 	{
 		GLint Buffer=0;

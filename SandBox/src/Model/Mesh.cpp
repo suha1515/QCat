@@ -2,9 +2,8 @@
 
 namespace QCat
 {
-	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material material, const Ref<Shader>& shader)
+	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader)
 	{
-		this->material = material;
 		this->transform = transform;
 		Initialize(shader, vertices,indices);
 	}
@@ -15,19 +14,7 @@ namespace QCat
 		shader->SetMat4("u_Transform", finalTransform, ShaderType::VS);
 		shader->SetMat4("u_invTransform", glm::inverse(finalTransform), ShaderType::VS);
 
-		if (material.IsThereTexture(Material::MaterialType::NormalMap))
-		{
-			shader->SetBool("material.normalMap", true, ShaderType::PS);
-		}
-		else
-		{
-			shader->SetBool("material.normalMap", false, ShaderType::PS);
-		}
-		// material
-		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
-
 		m_VertexArray->Bind();
-		material.Bind();
 		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}

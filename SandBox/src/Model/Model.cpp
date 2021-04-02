@@ -23,7 +23,21 @@ namespace QCat
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 
 		for (uint32_t i = 0; i < meshes.size(); ++i)
+		{
+			if (mat.IsThereTexture(Material::MaterialType::NormalMap))
+			{
+				shader->SetBool("material.normalMap", true, ShaderType::PS);
+			}
+			else
+			{
+				shader->SetBool("material.normalMap", false, ShaderType::PS);
+			}
+			// material
+			shader->SetFloat("material.shininess", mat.shininess, ShaderType::PS);
+			mat.Bind();
 			meshes[i].Draw(shader, transform);
+		}
+			
 	}
 	Ref<Model> Model::Create(const char* path)
 	{
@@ -77,7 +91,6 @@ namespace QCat
 		std::vector<Mesh::Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<Mesh::Texture> textures;
-		Material mat;
 		// Vertex information
 		for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
 		{
@@ -181,7 +194,7 @@ namespace QCat
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		// TODO: Shader split..?
-		return Mesh(transform,vertices, indices, mat, shader);
+		return Mesh(transform,vertices, indices, shader);
 	}
 	std::vector<Mesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
 	{

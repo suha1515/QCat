@@ -58,9 +58,9 @@ namespace QCat
 		{
 			m_ColorAttachments.clear();
 		}
-		if (m_DepthAttachment)
+		if (m_DepthAttachment.depthStencil)
 		{
-			m_DepthAttachment.reset();
+			m_DepthAttachment.depthStencil.reset();
 		}
 
 		bool multisample = m_Specification.Samples > 1;
@@ -75,6 +75,13 @@ namespace QCat
 				case TextureType::Texture2D:
 				{
 					Sampler_Desc desc;
+					desc.MIN = Filtering::POINT;
+					desc.MIP = Filtering::POINT;
+					desc.MAG = Filtering::POINT;
+					desc.addressU = WrapingMode::CLAMP;
+					desc.addressV = WrapingMode::CLAMP;
+					desc.addressW = WrapingMode::CLAMP;
+
 					D3D11_TEXTURE2D_DESC texdesc = Utils::CreateTexture2Desc(m_Specification.Width, m_Specification.Height, 1, 1,
 						Utils::GetDirectDataType(m_ColorAttachmentSpecifications[i].textureformat), m_Specification.Samples, 0, D3D11_USAGE_DEFAULT, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE, 0, 0);
 
@@ -132,25 +139,41 @@ namespace QCat
 				DepthStencilViewformat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 				shaderViewFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 			}
+			auto format = m_DepthAttacmentSpecifications.textureformat;
+			D3D11_TEXTURE2D_DESC texDesc = {};
+			texDesc.Width = m_Specification.Width;
+			texDesc.Height = m_Specification.Height;
+			texDesc.MipLevels = 1;
+			texDesc.ArraySize = 1;
+			texDesc.Format = Utils::GetDirectDataType(format);
+			texDesc.SampleDesc.Count = m_Specification.Samples;
+			texDesc.SampleDesc.Quality = 0;
+			texDesc.Usage = D3D11_USAGE_DEFAULT;
+			texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 			switch (m_DepthAttacmentSpecifications.textureType)
-			{
+			{					
 			case TextureType::Texture2D:
-				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx, m_Specification.Width, m_Specification.Height,0,1, usage,m_Specification.Samples,0,true);
+			{
+				Sampler_Desc desc;
+				desc.MIN = Filtering::POINT;
+				desc.MIP = Filtering::POINT;
+				desc.MAG = Filtering::POINT;
+				desc.addressU = WrapingMode::CLAMP;
+				desc.addressV = WrapingMode::CLAMP;
+				desc.addressW = WrapingMode::CLAMP;
+				texDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+				Ref<DX11Texture2D> texture = CreateRef<DX11Texture2D>(texDesc, desc, m_Specification.Width, m_Specification.Height);
+				m_DepthAttachment.texture = texture;
+				m_DepthAttachment.depthStencil = CreateRef<DX11DepthStencil>(gfx, texture->GetDXTexture(), usage);
+			}
 				break;
 			case TextureType::TextureCube:
-				D3D11_TEXTURE2D_DESC textureDesc = {};
-				textureDesc.Width = m_Specification.Width;
-				textureDesc.Height = m_Specification.Height;
-				textureDesc.MipLevels = 1;
-				textureDesc.ArraySize = 6;
-				textureDesc.Format = textureformat;
-				textureDesc.SampleDesc.Count = 1;
-				textureDesc.SampleDesc.Quality = 0;
-				textureDesc.Usage = D3D11_USAGE_DEFAULT;
-				textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-				textureDesc.CPUAccessFlags = 0;
-				textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
-
+			{
+				Sampler_Desc desc;
+				texDesc.ArraySize = 6;
+				texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+				texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+				Ref<DX11TextureCube> texturecube = CreateRef<DX11TextureCube>(texDesc, desc, m_Specification.Width, m_Specification.Height);
 				D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 				dsvDesc.Flags = 0;
 				dsvDesc.Format = DepthStencilViewformat;
@@ -159,16 +182,9 @@ namespace QCat
 				dsvDesc.Texture2DArray.MipSlice = 0;
 				dsvDesc.Texture2DArray.FirstArraySlice = 0;
 
-				D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-				srvDesc.Format = shaderViewFormat;
-				srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-				srvDesc.Texture2DArray.ArraySize = 6;
-				srvDesc.Texture2DArray.MostDetailedMip = 0;
-				srvDesc.Texture2DArray.MipLevels = 1;
-
-				
-
-				m_DepthAttachment = CreateRef<DX11DepthStencil>(gfx,usage, textureDesc,dsvDesc,srvDesc);
+				m_DepthAttachment.texture = texturecube;
+				m_DepthAttachment.depthStencil = CreateRef<DX11DepthStencil>(gfx,texturecube->GetDXTexture(),dsvDesc,usage);
+			}		
 				break;
 			}
 			
@@ -190,16 +206,16 @@ namespace QCat
 		}
 		if (m_ColorAttachments.size() > 0)
 		{
-			if(m_DepthAttachment)
-				gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], m_DepthAttachment->GetDepthStencil());
+			if(m_DepthAttachment.depthStencil)
+				gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], m_DepthAttachment.depthStencil->GetDepthStencil());
 			else
 				gfx.GetContext()->OMSetRenderTargets(m_RenderTargets.size(), &m_RenderTargets[0], nullptr);
 		}
 		else
 		{
 			// only for depth buffer
-			if (m_ColorAttachments.empty() && m_DepthAttachment)
-				m_DepthAttachment->Bind(gfx);
+			if (m_ColorAttachments.empty() && m_DepthAttachment.depthStencil)
+				m_DepthAttachment.depthStencil->Bind(gfx);
 		}
 		// configure viewport
 		D3D11_VIEWPORT vp;
@@ -278,16 +294,15 @@ namespace QCat
 		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
 
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
-		ID3D11ShaderResourceView* srv= (ID3D11ShaderResourceView*)(m_ColorAttachments[index].textures[0]->GetTexture());
-
-		gfx.GetContext()->PSSetShaderResources(slot, 1u, &srv);
+		m_ColorAttachments[index].textures[0]->Bind(slot);
 	}
 	void DX11FrameBuffer::BindDepthTexture(uint32_t slot) const
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
-		ID3D11ShaderResourceView* srv = (ID3D11ShaderResourceView*)(m_DepthAttachment->GetTexture());
+		/*ID3D11ShaderResourceView* srv = (ID3D11ShaderResourceView*)(m_DepthAttachment.texture->GetTexture());
 
-		gfx.GetContext()->PSSetShaderResources(slot, 1u, &srv);
+		gfx.GetContext()->PSSetShaderResources(slot, 1u, &srv);*/
+		m_DepthAttachment.texture->Bind(slot);
 	}
 	void DX11FrameBuffer::UnBindTexture()
 	{
@@ -309,8 +324,16 @@ namespace QCat
 				rendertarget.rendertargets[rendertarget.attachTarget]->Clear(gfx, color);
 			}
 		}
-		if(m_DepthAttachment)
-			m_DepthAttachment->Clear(gfx);
+		if(m_DepthAttachment.depthStencil)
+			m_DepthAttachment.depthStencil->Clear(gfx);
+	}
+	Ref<Texture> DX11FrameBuffer::GetColorTexture(uint32_t index) const
+	{
+		return m_ColorAttachments[index].textures[0];
+	}
+	Ref<Texture> DX11FrameBuffer::GetDepthTexture() const
+	{
+		return m_DepthAttachment.texture;
 	}
 	void DX11FrameBuffer::CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit bufferbit, void* destBuffer)
 	{
@@ -331,8 +354,8 @@ namespace QCat
 				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(QGfxDeviceDX11::GetInstance()->GetBackBuffer(), 0, dstx0, dsty0, 0, srcTex->GetDXTexture(), 0, &box);
 			}
 			case BufferBit::Depth:
-			{
-				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(QGfxDeviceDX11::GetInstance()->GetDepthStencilBuffer(), 0, 0, 0, 0, m_DepthAttachment->GetTexture(), 0, NULL);
+			{	Ref<DX11Texture2D> srcTex = std::static_pointer_cast<DX11Texture2D>(m_DepthAttachment.texture);
+				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(QGfxDeviceDX11::GetInstance()->GetDepthStencilBuffer(), 0, 0, 0, 0, srcTex->GetDXTexture(), 0, NULL);
 			}
 			}
 		}
@@ -350,7 +373,10 @@ namespace QCat
 			}
 			case BufferBit::Depth:
 			{
-				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(framebuffer->m_DepthAttachment->GetTexture(), 0, 0, 0, 0, m_DepthAttachment->GetTexture(), 0, NULL);
+				Ref<DX11Texture2D> destTex = std::static_pointer_cast<DX11Texture2D>(framebuffer->m_DepthAttachment.texture);
+				Ref<DX11Texture2D> srcTex = std::static_pointer_cast<DX11Texture2D>(m_DepthAttachment.texture);
+				QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(
+					destTex->GetDXTexture(), 0, 0, 0, 0, srcTex->GetDXTexture(), 0, NULL);
 			}
 			case BufferBit::Stencil:break;
 			}

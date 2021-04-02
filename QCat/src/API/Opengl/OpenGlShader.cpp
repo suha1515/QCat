@@ -218,6 +218,12 @@ namespace QCat
 
 		UploadUniformFloatArray(name, values, count);
 	}
+	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value, ShaderType type)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		UploadUniformFloat2(name, value);
+	}
 	void OpenGLShader::SetFloat3(const std::string& name,const glm::vec3& value, ShaderType type)
 	{
 		QCAT_PROFILE_FUNCTION();

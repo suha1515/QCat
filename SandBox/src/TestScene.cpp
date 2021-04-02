@@ -3,6 +3,7 @@
 #include <Imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/detail/type_half.hpp>
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Shader.h"
 #include "API/DirectX11/DX11_Blender.h"
@@ -26,8 +27,12 @@ namespace QCat
 	TestScene::TestScene()
 		:Layer("TestScene")
 	{
+		
 	}
-
+	float lerp(float a, float b, float f)
+	{
+		return a + f * (b - a);
+	}
 	void TestScene::OnAttach()
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -42,35 +47,37 @@ namespace QCat
 		camera.Camera.SetPerspective(glm::radians(30.0f), 0.01f, 100.0f);
 
 		//model load
-		//backpack = Model::Create("Asset/model/backpack/backpack.obj");
+		backpack = Model::Create("Asset/model/backpack/backpack.obj");
 
 		//Shader
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
 			BlinnPhongShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong_MultipleLight.glsl");
-			screenHDR = ShaderLibrary::Load("Asset/shaders/glsl/Hdr/HdrShader.glsl");
 			screenShader = ShaderLibrary::Load("Asset/Shaders/glsl/SingleQuad.glsl");
 			//FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/Blur/BrightFlatColor.glsl");
 			FlatShader = ShaderLibrary::Load("Asset/shaders/glsl/FlatColor.glsl");
-			GaussianBlur = ShaderLibrary::Load("Asset/shaders/glsl/Blur/GaussianBlur.glsl");
-			BloomShader = ShaderLibrary::Load("Asset/shaders/glsl/Blur/HdrBloom.glsl");
 			GeometryPass = ShaderLibrary::Load("Asset/shaders/glsl/DeferredShading/GeometryPass_difspecnorm.glsl");
 			DeferredLighting = ShaderLibrary::Load("Asset/shaders/glsl/DeferredShading/DeferredShade.glsl");
+			SSaoWrite = ShaderLibrary::Load("Asset/shaders/glsl/SSAO/SSAO.glsl");
+			SSaoBlur = ShaderLibrary::Load("Asset/shaders/glsl/SSAO/SSAO_Blur.glsl");
+			SSaoLight = ShaderLibrary::Load("Asset/shaders/glsl/SSAO/SSAO_Lighting.glsl");
+			SSaogeo = ShaderLibrary::Load("Asset/shaders/glsl/SSAO/SSAO_geometry.glsl");
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			BlinnPhongShader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/HDR/BlinnAndPhong_Multiplelight_Bright_PS.hlsl" );
-			screenHDR = ShaderLibrary::Load("HDRShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/HDR/HdrShader_PS.hlsl");
 			screenShader = ShaderLibrary::Load("ScreenShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SingleQuad_PS.hlsl");
 			//FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/flatcolor_VS.hlsl", "Asset/shaders/hlsl/Blur/LightBox_PS.hlsl");
 			FlatShader = ShaderLibrary::Load("FlatShader", "Asset/shaders/hlsl/flatcolor_VS.hlsl", "Asset/shaders/hlsl/flatcolor_PS.hlsl");
-
-			GaussianBlur = ShaderLibrary::Load("Gaussian", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/Blur/GaussianBlur_PS.hlsl");
-			BloomShader = ShaderLibrary::Load("BloomShader", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/Blur/HdrShaderBloom_PS.hlsl");
-
 			DeferredLighting = ShaderLibrary::Load("DeferredLight", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/DeferredShading/DeferredShade.hlsl");
 			GeometryPass = ShaderLibrary::Load("GeoMeteryPass", "Asset/shaders/hlsl/PosNormTexTanBi_FragTexTbnNorm_VS.hlsl", "Asset/shaders/hlsl/DeferredShading/GeometryPass.hlsl");
-			
+			//SSaoWrite = ShaderLibrary::Load("SsaoWrite","Asset/shaders/hlsl/SingleQuad_VS.hlsl","SSAO_PS.cso");
+			SSaoWrite = ShaderLibrary::Load("SsaoWrite", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SSAO/SSAO_PS.hlsl");
+			SSaoBlur = ShaderLibrary::Load("SsaoBlur", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SSAO/SSAO_Blur_PS.hlsl");
+			SSaoLight = ShaderLibrary::Load("SsaoLight", "Asset/shaders/hlsl/SingleQuad_VS.hlsl", "Asset/shaders/hlsl/SSAO/SSAO_Lighting_PS.hlsl");
+			SSaogeo = ShaderLibrary::Load("SsaoGeo", "Asset/shaders/hlsl/SSAO/SSAO_geometry_VS.hlsl", "Asset/shaders/hlsl/SSAO/SSAO_geometry_PS.hlsl");
+			//SSaogeo = ShaderLibrary::Load("SsaoGeo", "SSAO_geometry_VS.cso", "SSAO_geometry_PS.cso");
+
 		}
 
 		BlinnPhongShader->Bind();
@@ -81,38 +88,42 @@ namespace QCat
 		screenShader->Bind();
 		screenShader->SetInt("screenTexture", 0, ShaderType::PS);
 
-		screenHDR->Bind();
-		screenHDR->SetInt("hdrBuffer", 0, ShaderType::PS);
-
-		GaussianBlur->Bind();
-		GaussianBlur->SetInt("image", 0, ShaderType::PS);
-
-		BloomShader->Bind();
-		BloomShader->SetInt("hdrBuffer", 0, ShaderType::PS);
-		BloomShader->SetInt("bloomBlur", 1, ShaderType::PS);
-
-		GeometryPass->Bind();
-		GeometryPass->SetInt("texture_diffuse", 0, ShaderType::PS);
-		GeometryPass->SetInt("texture_specular", 1, ShaderType::PS);
-		GeometryPass->SetInt("texture_normal", 2, ShaderType::PS);
-
+		SSaogeo->Bind();
+		SSaogeo->SetInt("texture_diffuse", 0, ShaderType::PS);
+		SSaogeo->SetInt("texture_specular", 1, ShaderType::PS);
+		SSaogeo->SetInt("texture_normal", 2, ShaderType::PS);
 
 		DeferredLighting->Bind();
 		DeferredLighting->SetInt("gPosition", 0, ShaderType::PS);
 		DeferredLighting->SetInt("gNormal", 1, ShaderType::PS);
 		DeferredLighting->SetInt("aAlbedoSpec", 2, ShaderType::PS);
 
+		SSaoWrite->Bind();
+		SSaoWrite->SetInt("gPosition", 0, ShaderType::PS);
+		SSaoWrite->SetInt("gNormal", 1, ShaderType::PS);
+		SSaoWrite->SetInt("texNoise", 2, ShaderType::PS);
+
+		SSaoBlur->Bind();
+		SSaoBlur->SetInt("ssaoInput", 0, ShaderType::PS);
+
+		SSaoLight->Bind();
+		SSaoLight->SetInt("gPosition", 0, ShaderType::PS);
+		SSaoLight->SetInt("gNormal", 1, ShaderType::PS);
+		SSaoLight->SetInt("gAlbedo", 2, ShaderType::PS);
+		SSaoLight->SetInt("ssao", 3, ShaderType::PS);
+
 		//floor Texture
 		Sampler_Desc desc;
 		floorTexture = TextureLibrary::Load("Asset/textures/floor.png",desc);
-		Ref<Texture2D> brickTex = TextureLibrary::Load("Asset/textures/brickwall.jpg", desc);
-		//Ref<Texture2D> brickNormTex = TextureLibrary::Load("Asset/textures/Terracotta_Tiles_002_Normal.jpg");
+		Ref<Texture2D> brickTex = TextureLibrary::Load("Asset/textures/bricks2.jpg", desc);
+		Ref<Texture2D> brickNormTex = TextureLibrary::Load("Asset/textures/bricks2_normal.jpg");
 
 		floor.SetTexture(floorTexture, Material::MaterialType::Diffuse);
 		floor.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 		brick.SetTexture(brickTex, Material::MaterialType::Diffuse);
 		noTex.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		//brick.SetTexture(brickNormTex, Material::MaterialType::NormalMap);
+		brick.SetTexture(brickNormTex, Material::MaterialType::NormalMap);
+		brick.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader);
 		
@@ -123,7 +134,7 @@ namespace QCat
 		light[0].info.constant = 1.0f;
 		light[0].info.quadratic = 0.032f;
 		light[0].info.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		light[0].info.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+		light[0].info.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
 		light[0].info.specular = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		float lightMax = std::fmaxf(std::fmaxf(light[0].info.diffuse.r, light[0].info.diffuse.g), light[0].info.diffuse.b);
@@ -134,11 +145,32 @@ namespace QCat
 		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA16_Float},
 							 {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA16_Float},
 							 {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8},
+							 {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA16_Float},
 							 {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8} };
 		spec.Width = 1600;
 		spec.Height = 900;
 		offrendering = FrameBuffer::Create(spec);
+		Sampler_Desc nearClamp;
+		nearClamp.MIN = Filtering::POINT;
+		nearClamp.MAG = Filtering::POINT;
+		nearClamp.addressU = WrapingMode::CLAMP;
+		nearClamp.addressV = WrapingMode::CLAMP;
+		offrendering->GetColorTexture(0)->sampler->SetSamplerDesc(nearClamp);
 
+		spec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_FLOAT}};
+		spec.Width = 1600;
+		spec.Height = 900;
+		screenSize.x = 1600;
+		screenSize.y = 900;
+		Sampler_Desc nearPoint;
+		nearPoint.MIN = Filtering::POINT;
+		nearPoint.MAG = Filtering::POINT;
+		ssao = FrameBuffer::Create(spec);
+		ssaoBlur = FrameBuffer::Create(spec);
+		ssao->GetColorTexture(0)->sampler->SetSamplerDesc(nearPoint);
+		ssaoBlur->GetColorTexture(0)->sampler->SetSamplerDesc(nearPoint);
+		
+	
 		m_quad = VertexArray::Create();
 
 		static float bias = 0.0f;
@@ -177,6 +209,47 @@ namespace QCat
 		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader, floor);
 
 		linearClamp = SamplerState::Create(desc);
+
+		// generate Sample kernel
+		std::uniform_real_distribution<float> randomFloat(0.0f, 1.0f);
+		std::default_random_engine generator;
+		for (int i = 0; i < 128; ++i)
+		{
+			glm::vec3 sample(randomFloat(generator) * 2.0f - 1.0f, 
+							randomFloat(generator) * 2.0f - 1.0f, 
+							randomFloat(generator));
+			sample = glm::normalize(sample);
+			sample *= randomFloat(generator);
+			float scale = float(i) / 64.0f;
+
+			scale = lerp(0.1f, 1.0f, scale * scale);
+			sample *= scale;
+			ssaokernel.push_back(sample);
+		}
+
+		//SSAO noise Texture
+		for (int i = 0; i < 16; ++i)
+		{
+			glm::vec4 noise({ randomFloat(generator) * 2.0f - 1.0f,randomFloat(generator) * 2.0f - 1.0f
+				,0.0f,0.0f});
+			ssaoNoise.push_back(noise);
+		}
+		f16Vec4 b[16];
+		for(int i=0;i<16;++i)
+		{
+			b[i] = ssaoNoise[i];
+		}
+			 
+		TextureFormat format = TextureFormat::RGBA16_Float;
+		Sampler_Desc desc2;
+		desc2.MIN = Filtering::POINT;
+		desc2.MAG = Filtering::POINT;
+		desc2.MIP = Filtering::POINT;
+		desc2.addressU = WrapingMode::REPEAT;
+		desc2.addressV = WrapingMode::REPEAT;
+		desc2.addressW = WrapingMode::REPEAT;
+		noiseTexture = Texture2D::Create(format, desc2, 4, 4,1,1, &b[0]);
+
 	}
 
 	void TestScene::OnDetach()
@@ -207,82 +280,95 @@ namespace QCat
 
 			offrendering->Bind();
 			offrendering->Clear();
-			GeometryPass->Bind();
-			GeometryPass->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
-			GeometryPass->SetBool("flip", true, ShaderType::PS);
+			SSaogeo->Bind();
+			SSaogeo->SetMat4("view", viewMatrix, ShaderType::VS);
+			SSaogeo->SetMat4("invView", glm::inverse(viewMatrix), ShaderType::VS);
+			SSaogeo->SetMat4("proj", camProj , ShaderType::VS);
+
+			SSaogeo->SetBool("flip", true, ShaderType::VS);
 
 			cube->SetTranslation({ 0.0f,0.0f,0.0f });
-			cube->SetScale({ 10.0f,5.0f,10.0f });
+			cube->SetScale({ 20.0f,5.0f,20.0f });
 			cube->SetMaterial(floor);
-			cube->Draw(GeometryPass);
+			cube->Draw(SSaogeo);
 
-			GeometryPass->SetBool("flip", false, ShaderType::PS);
+			SSaogeo->SetBool("flip", false, ShaderType::VS);
 
 			noTex.diffuse = (glm::vec3(1.0f, 1.0f, 0.0f));
-			cube->SetTranslation({ -2.f,-2.f,3.0f });
+			cube->SetTranslation({ -2.5f,-2.f,-1.0f });
 			cube->SetScale({1.0f,1.0f,1.0f});
-			cube->SetMaterial(noTex);
-			cube->Draw(GeometryPass);
+			cube->SetMaterial(brick);
+			cube->Draw(SSaogeo);
 
 			noTex.diffuse = (glm::vec3(1.0f, 0.0f, 1.0f));
 			cube->SetTranslation({ -3.5f,-2.f, 1.0f});
 			cube->SetScale({ 1.0f,1.0f,1.0f });
-			cube->SetMaterial(noTex);
-			cube->Draw(GeometryPass);
-			//backpack->SetTranslation(backpackPos);
-			//backpack->SetRotation(backpackRot);
-			//backpack->SetScale({ 0.5f,0.5f,0.5f });
-			//backpack->Draw(GeometryPass);
+			cube->SetMaterial(brick);
+			cube->Draw(SSaogeo);
 
+			backpack->SetTranslation(backpackPos);
+			backpack->SetRotation(backpackRot);
+			backpack->SetScale({ 0.5f,0.5f,0.5f });
+			backpack->Draw(SSaogeo);
 
-			/*face->SetTranslation({ 0.0f,-2.0f,3.0f });
-			face->SetScale({ 5.0f,5.0f,5.0f });
-			face->SetRotation({ 1.6f,0.0f,0.0f });
-			face->MaterialBind();
-			face->Draw(GeometryPass);
-
-			sphere->SetScale({ 1.5f,1.5f,1.5f });
-			for (int i = 0; i < 5; ++i)
-			{
-				for (int j = 0; j < 4; ++j)
-				{
-					for (int k = 0; k < 4; ++k)
-					{
-						sphere->SetTranslation({ -2.0f + (1.0f * i),-1.6f + (0.5f * k),4.0f - (1.0f * j) });
-						sphere->Draw(GeometryPass);
-					}
-				}
-			}*/
-
-			GeometryPass->UnBind();
+			SSaogeo->UnBind();
 			offrendering->UnBind();
+
+			// use G-Buffer to render SSAO Texture
+			ssao->Bind();
+			ssao->Clear();
+			SSaoWrite->Bind();
+			offrendering->BindColorTexture(0, 0);
+			offrendering->BindColorTexture(1, 1);
+			noiseTexture->Bind(2);
+			for (int i = 0; i < 128; ++i)
+				SSaoWrite->SetFloat3("samples[" + std::to_string(i) + "]", ssaokernel[i],ShaderType::PS);
+			SSaoWrite->SetMat4("Projection", camProj, ShaderType::PS);
+			SSaoWrite->SetFloat2("screenSize",screenSize, ShaderType::PS);
+			SSaoWrite->SetFloat("radius", radius, ShaderType::PS);
+			SSaoWrite->SetFloat("bias", bias, ShaderType::PS);
+
+			m_quad->Bind();
+			RenderCommand::DrawIndexed(m_quad);
+			SSaoWrite->UnBind();
+			ssao->UnBind();
+
+			ssaoBlur->Bind();
+			SSaoBlur->Bind();
+			ssao->BindColorTexture(0, 0);
+			m_quad->Bind();
+			RenderCommand::DrawIndexed(m_quad);
+			SSaoBlur->UnBind();
+			ssaoBlur->UnBind();
 
 			RenderCommand::SetDefaultFrameBuffer();
 
-			DeferredLighting->Bind();
-			DeferredLighting->SetFloat3("viewPosition", tc, ShaderType::PS);
+			SSaoLight->Bind();
+			SSaoLight->SetFloat3("viewPosition", tc, ShaderType::PS);
 
 			for (int i = 0; i < 1; ++i)
 			{
 				std::string lightname = "pointLight[" + std::to_string(i) + "].";
 				// Point Light 
-				DeferredLighting->SetFloat3(lightname + "position", light[i].Getinfo().lightPosition, ShaderType::PS);
-				DeferredLighting->SetFloat3(lightname + "ambient" , light[i].Getinfo().ambient, ShaderType::PS);
-				DeferredLighting->SetFloat3(lightname + "diffuse" , light[i].Getinfo().diffuse, ShaderType::PS);
-				DeferredLighting->SetFloat3(lightname + "specular", light[i].Getinfo().specular, ShaderType::PS);
+				SSaoLight->SetFloat3(lightname + "position",  glm::vec3(viewMatrix * glm::vec4(light[i].Getinfo().lightPosition,1.0f)), ShaderType::PS);
+				SSaoLight->SetFloat3(lightname + "ambient" , light[i].Getinfo().ambient, ShaderType::PS);
+				SSaoLight->SetFloat3(lightname + "diffuse" , light[i].Getinfo().diffuse, ShaderType::PS);
+				SSaoLight->SetFloat3(lightname + "specular", light[i].Getinfo().specular, ShaderType::PS);
 
-				DeferredLighting->SetFloat(lightname + "constant", light[i].info.constant , ShaderType::PS);
-				DeferredLighting->SetFloat(lightname + "Linear"   , light[i].info.linear, ShaderType::PS);
-				DeferredLighting->SetFloat(lightname + "quadratic", light[i].info.quadratic, ShaderType::PS);
-				DeferredLighting->SetFloat(lightname + "radius", light[i].info.radius, ShaderType::PS);
+				SSaoLight->SetFloat(lightname + "constant", light[i].info.constant , ShaderType::PS);
+				SSaoLight->SetFloat(lightname + "Linear"   , light[i].info.linear, ShaderType::PS);
+				SSaoLight->SetFloat(lightname + "quadratic", light[i].info.quadratic, ShaderType::PS);
+				SSaoLight->SetFloat(lightname + "radius", light[i].info.radius, ShaderType::PS);
 			}
 			offrendering->BindColorTexture(0,0);
 			offrendering->BindColorTexture(1,1);
 			offrendering->BindColorTexture(2,2);
+			ssaoBlur->BindColorTexture(3, 0);
 
 			m_quad->Bind();
 			RenderCommand::DrawIndexed(m_quad);
 			DeferredLighting->UnBind();
+
 
 			FrameBufferSpecification spec = offrendering->GetSpecification();
 			offrendering->CopyFrameBuffer(0, 0, spec.Width, spec.Height, 0, 0, spec.Width, spec.Height, BufferBit::Depth, nullptr);
@@ -298,17 +384,11 @@ namespace QCat
 			}
 			FlatShader->UnBind();
 
-			//BloomShader->Bind();
-			//BloomShader->SetFloat("exposure", exposure, ShaderType::PS);
-			//offrendering->BindColorTexture(0, 0);
-			//pingpongBuffer[0]->BindColorTexture(1, 0);
-			////floorTexture->Bind(0);
-			//m_quad->Bind();
-			//BloomShader->UpdateBuffer();
-			//RenderCommand::DrawIndexed(m_quad);
-			//BloomShader->UnBind();
-			//offrendering->UnBindTexture();
-			
+			/*screenShader->Bind();
+			ssaoBlur->BindColorTexture(0, 0);
+			m_quad->Bind();
+			RenderCommand::DrawIndexed(m_quad);
+			screenShader->UnBind();*/
 		}	
 	}
 
@@ -336,6 +416,8 @@ namespace QCat
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront),0.1f);
 		ImGui::DragFloat3("backpackPos", glm::value_ptr(backpackPos), 0.1f);
 		ImGui::DragFloat3("backpackRot", glm::value_ptr(backpackRot), 0.1f);
+		ImGui::DragFloat("radius", &radius, 0.01f);
+		ImGui::DragFloat("bias", &bias, 0.01f);
 		
 		ImGui::End();
 
@@ -359,11 +441,13 @@ namespace QCat
 		FrameBufferSpecification spec = offrendering->GetSpecification();
 		uint32_t width = e.GetWidth();
 		uint32_t height = e.GetHeight();
+		screenSize = glm::vec2(width, height);
 		if (width > 0.0f && height > 0.0f && (spec.Width != width || spec.Height != height))
 		{
 			offrendering->Resize(width, height);
+			ssao->Resize(width, height);
+			ssaoBlur->Resize(width, height);
 		}
-
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
 		{
 			return false;
