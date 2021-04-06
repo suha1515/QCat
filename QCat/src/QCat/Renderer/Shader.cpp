@@ -7,13 +7,15 @@
 
 namespace QCat
 {
+
 	Ref<Shader> Shader::Create(const std::string& filepath)
 	{
+
 		switch (Renderer::GetAPI())
 		{
 		case RenderAPI::API::None:    QCAT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RenderAPI::API::OpenGL:  return std::make_shared<OpenGLShader>(filepath);
-		case RenderAPI::API::DirectX11: //return DXShader::CreateShaderFromFile(filepath);
+		case RenderAPI::API::DirectX11: return std::make_shared<DXShader>(filepath);
 			break;
 		}
 
@@ -29,7 +31,7 @@ namespace QCat
 			QCAT_CORE_ASSERT(false, "RendererAPI is none!");
 			break;
 		case RenderAPI::API::OpenGL:
-			return std::make_shared<OpenGLShader>(name,vertexSrc, pixelSrc);
+			return std::make_shared<OpenGLShader>(name,vertexSrc, geometrySrc,pixelSrc);
 			break;
 		case RenderAPI::API::DirectX11:
 			{

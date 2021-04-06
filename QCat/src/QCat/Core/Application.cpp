@@ -17,10 +17,10 @@ std::wstring ToWide(const std::string& narrow)
 namespace QCat
 {
 	Application* Application::instance = nullptr;
-	Application::Application(const std::string& name)
+	Application::Application(const std::string& name, RenderAPI::API api)
 	{
 		QCAT_PROFILE_FUNCTION();
-
+		RenderAPI::SetRenderAPI(api);
 		QCAT_CORE_ASSERT(!instance, "Application already exsists! ");
 		instance = this;
 

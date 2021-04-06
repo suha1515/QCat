@@ -15,7 +15,7 @@ namespace QCat
 		glm::vec3 BiTangent;
 	};
 
-	Sphere::Sphere(const glm::vec3& position, const Ref<Shader>& shader, float radius, int sectorCount, int stackCount)
+	Sphere::Sphere(const glm::vec3& position,float radius, int sectorCount, int stackCount)
 		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f)),
 		material(glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f)
 	{
@@ -182,6 +182,12 @@ namespace QCat
 		// IndexBuffer
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
+
+		// Shader for layout signature
+		Ref<Shader> vertexShader;
+		if(RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		Ref<Shader> vertexShader = ShaderLibrary::Load("Asset/shaders/hlsl/Blinn-phong.hlsl");
+
 		// InputLayout
 		vertexBuffer->SetLayout(BufferLayout::Create(
 			{ { ShaderDataType::Float3, "a_Position"},
@@ -189,7 +195,7 @@ namespace QCat
 			  { ShaderDataType::Float2, "a_TexCoord"},
 			  { ShaderDataType::Float3, "a_Tangent"},
 			  { ShaderDataType::Float3, "a_BiTangent"}
-			}, shader
+			}, vertexShader
 		));
 
 		m_VertexArray->AddVertexBuffer(vertexBuffer);

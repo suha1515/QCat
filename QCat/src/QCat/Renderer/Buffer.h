@@ -1,5 +1,6 @@
 #pragma once
 #include "Shader.h"
+#include "QCat/Core/Assert.h"
 
 namespace QCat
 {

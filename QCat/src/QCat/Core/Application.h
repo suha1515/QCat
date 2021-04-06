@@ -9,13 +9,14 @@
 #include <wrl.h>
 #include "QCat/Uitiliy/Timestep.h"
 #include "QCat/Uitiliy/Timer.h"
+#include "QCat/Renderer/RenderAPI.h"
 
 namespace QCat
 {
 	class QCAT_API Application
 	{
 	public:
-		Application(const std::string& name="QCat App");
+		Application(const std::string& name="QCat App",RenderAPI::API api = RenderAPI::API::OpenGL);
 		virtual ~Application();
 
 		void Run();

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "QCat.h"
-#include "Geometry/Cube.h"
-#include "Geometry/Sphere.h"
-#include "Geometry/Face.h"
-#include "Light/Light.h"
+#include "../Geometry/Cube.h"
+#include "../Geometry/Sphere.h"
+#include "../Geometry/Face.h"
+#include "../Light/Light.h"
 #include "QCat/Renderer/DepthStencil.h"
-#include "Model/Model.h"
-#include "CubeMap/CubeMap.h"
+#include "../Model/Model.h"
+#include "../CubeMap/CubeMap.h"
 
 namespace QCat
 {

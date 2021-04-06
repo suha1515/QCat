@@ -9,7 +9,7 @@ namespace QCat
 	{
 	public:
 		OpenGLShader(const std::string& filepath);
-		OpenGLShader(const std::string& name ,const std::string& vertexSrc, const std::string& pixelSrc);
+		OpenGLShader(const std::string& name ,const std::string& vertexSrc,const std::string& geometrySrc,const std::string& pixelSrc);
 		virtual ~OpenGLShader();
 
 		virtual void Bind() const override;

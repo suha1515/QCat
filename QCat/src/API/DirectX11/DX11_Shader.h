@@ -14,21 +14,39 @@ namespace QCat
 	struct ElementRef;
 	enum class DXshaderType
 	{
-		VS = 0, PS, GS
+		None =0,VS, PS, GS
 	};
 	class DX11Shader;
 	class DXShader : public Shader
 	{
+	private:
+		struct ErrorInfo
+		{
+			std::string profile;
+			std::string meesage;
+		};
+		struct Data
+		{
+			Ref<DX11VertexShader> pvs;
+			Ref<DX11PixelShader> pps;
+			Ref<DX11GeometryShader> pgs;
+		};
+		static const DXShader* s_CurrentlyBound;
 	public:
+		static const DXShader* CurrentlyBound() { return s_CurrentlyBound; }
 		static std::string GetShaderName(const std::string& path);
-		static Ref<DX11Shader> CreateShaderFromNative(const std::string& name, const std::string& src,DXshaderType type);
+		static Ref<DX11Shader> CreateShaderFromNative(const std::string& name, const std::string& src, DXshaderType type);
 		static Ref<DX11Shader> CreateShaderFromFile(const std::string& path, DXshaderType type);
 		static Microsoft::WRL::ComPtr<ID3DBlob> Compile(const DXshaderType& type, const  std::string& src);
+	private:
+		std::unordered_map<DXshaderType, std::string> PreProcess(const std::string& source);
+		static Microsoft::WRL::ComPtr<ID3DBlob> Compile(const std::string& src, const std::string& profile, const std::string& main, ErrorInfo& info);
+
 		
 	public:
 		DXShader() = default;
+		DXShader(const std::string& shaderPath);
 		DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile,const std::string& geoFile = "");
-		DXShader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc,bool compile=false);
 		~DXShader();
 	public:
 		virtual void Bind()const override;
@@ -53,35 +71,16 @@ namespace QCat
 
 		virtual const std::string& GetName()const override { return m_name; }
 	public:
-		//void UpdateConstantBuffer(const std::string& uniformname, const::std::string& name, const void* pdata);
-
 		std::pair<Ref<DX11ConstantBuffer>,ElementRef> FindVariable(const std::string& name, ShaderType type);
-	/*	template<typename T>
-		void UpdateConstantBuffer(const std::string& uniformname, const T& pdata, ShaderType type)
-		{
-			QCAT_PROFILE_FUNCTION();
-
-			auto& vsConstantBuffers = pvs->GetConstantBuffers();
-			for (auto& iter : vsConstantBuffers)
-			{
-				iter.second->UpdateElement(uniformname, pdata);
-			}
-			auto& psConstantBuffers = pps->GetConstantBuffers();
-			for (auto& iter : psConstantBuffers)
-			{
-				iter.second->UpdateElement(uniformname, pdata);
-			}
-		}*/
 		bool UpdateVertexConstantBuffer(const std::string& name,const void* data);
 		bool UpdatePixelConstantBuffer(const std::string& name,const void* data);
-		std::vector<char>& GetVerexData();
-	protected:
-		
+
+
+		inline Data& GetData() const { return m_Data; }
 	private:
-		Ref<DX11VertexShader> pvs;
-		Ref<DX11PixelShader> pps;
-		Ref<DX11GeometryShader> pgs;
+	private:
 		std::string m_name;
+		mutable Data m_Data;
 	};
 	class DX11Shader
 	{

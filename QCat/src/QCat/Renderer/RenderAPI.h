@@ -69,6 +69,7 @@ namespace QCat
 		virtual void* GetDefaultFrameBuffer() = 0;
 
 		inline static API GetAPI() { return s_api; }
+		inline static void SetRenderAPI(API api) { s_api = api; }
 	private:
 		static API s_api;
 		

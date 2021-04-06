@@ -45,7 +45,7 @@ namespace QCat
 				0,element.offset,D3D11_INPUT_PER_VERTEX_DATA,0 });
 		}
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateInputLayout(inputLayoutDesc.data(), m_elements.size()
-			, vertexShader->GetVerexData().data(), vertexShader->GetVerexData().size(), &pInputLayout
+			, vertexShader->GetData().pvs->GetData().data(), vertexShader->GetData().pvs->GetData().size(), &pInputLayout
 		);
 	}
 	DX11_InputLayout::~DX11_InputLayout()

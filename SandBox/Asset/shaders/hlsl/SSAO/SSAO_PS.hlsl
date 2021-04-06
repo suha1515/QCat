@@ -50,6 +50,6 @@ float main(float2 tc : Texcoord) : SV_TARGET
 		occlusion += (sampleDepth <= samplePos.z + bias ? 1.0f : 0.0f) * rangeCheck;
 	}
 	occlusion = 1.0f - (occlusion / kernelSize);
-	occlusion = pow(occlusion, 2.0f);
+
 	return occlusion;
 }

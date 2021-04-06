@@ -4,6 +4,19 @@
 
 namespace QCat
 {
+	const DXShader* DXShader::s_CurrentlyBound = nullptr;
+	static DXshaderType ShaderTypeFromString(const std::string& type)
+	{
+		if (type == "vertex")
+			return DXshaderType::VS;
+		if (type == "fragment" || type == "pixel")
+			return DXshaderType::PS;
+		if (type == "geometry")
+			return DXshaderType::GS;
+
+		QCAT_CORE_ASSERT(false, "Unknown shader Type!");
+		return DXshaderType::None;
+	}
 	std::string ReadFile(const std::string& filepath)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -27,6 +40,7 @@ namespace QCat
 		}
 		return result;
 	}
+	
 	std::wstring ToWide(const std::string& narrow)
 	{
 		wchar_t wide[512];
@@ -76,13 +90,17 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 			char* errormsg = nullptr;
 			Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
+			UINT flag = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef  QCAT_DEBUG
+			flag |= D3DCOMPILE_DEBUG;
+#endif //  QCAT_DEBUG
 			switch (type)
 			{
 			case DXshaderType::VS:
 			{
 				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
 					nullptr, nullptr, "main", "vs_5_0",
-					D3DCOMPILE_ENABLE_STRICTNESS, 0,
+					flag, 0,
 					&pBlob, nullptr);
 				if (FAILED(hr))
 				{
@@ -95,7 +113,7 @@ namespace QCat
 			{
 				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
 					nullptr, nullptr, "main", "ps_5_0",
-					D3DCOMPILE_ENABLE_STRICTNESS, 0,
+					flag, 0,
 					&pBlob, nullptr);
 				if (FAILED(hr))
 				{
@@ -108,7 +126,7 @@ namespace QCat
 			{
 				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
 					nullptr, nullptr, "main", "gs_5_0",
-					D3DCOMPILE_ENABLE_STRICTNESS, 0,
+					flag, 0,
 					&pBlob, nullptr);
 				if (FAILED(hr))
 				{
@@ -120,6 +138,103 @@ namespace QCat
 			}
 			QCAT_CORE_ASSERT(false, "Compile Faile!");
 			return pBlob;
+	}
+	std::unordered_map<DXshaderType, std::string> DXShader::PreProcess(const std::string& source)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		std::unordered_map<DXshaderType, std::string> shaderSources;
+
+		const char* typeToken = "#type";
+		const char* modelToken = "#model";
+		size_t typeTokenLength = strlen(typeToken);
+		size_t pos = source.find(typeToken, 0);
+		while (pos != std::string::npos)
+		{
+			size_t endofline = source.find_first_of("\r\n", pos);
+			QCAT_CORE_ASSERT(endofline != std::string::npos, "Syntax error");
+
+			size_t begin = pos + typeTokenLength + 1;
+			std::string type = source.substr(begin, endofline - begin);
+			QCAT_CORE_ASSERT((int)ShaderTypeFromString(type), "Invalid shader type specified!");
+
+			size_t nextLinePos = source.find_first_not_of("\r\n", endofline);
+			pos = source.find(typeToken, nextLinePos);
+
+			shaderSources[ShaderTypeFromString(type)] = 
+				source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+	
+		}
+		return shaderSources;
+	}
+	Microsoft::WRL::ComPtr<ID3DBlob> DXShader::Compile(const std::string& src, const std::string& profile, const std::string& main, ErrorInfo& info)
+	{
+		Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob;
+		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+		UINT flag = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef  QCAT_DEBUG
+		flag |= D3DCOMPILE_DEBUG;
+#endif //  QCAT_DEBUG
+
+		HRESULT status = D3DCompile(src.c_str(), src.size(), NULL, NULL, NULL, main.c_str(), profile.c_str(), flag, 0, &shaderBlob, &errorBlob);
+		if (status != S_OK)
+			info.meesage = "Reading shader code failed";
+		if (errorBlob)
+		{
+			info.profile += profile + "\n";
+			if (errorBlob->GetBufferSize())
+			{
+				info.meesage = profile+"Shader Compile Error!\n";
+				info.meesage += (const char*)errorBlob->GetBufferPointer();
+				QCAT_CORE_ERROR(info.meesage);
+			}
+		}
+		if (status == S_OK)
+			return shaderBlob;
+		return nullptr;
+	}
+	DXShader::DXShader(const std::string& shaderPath)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		auto begin = shaderPath.find_last_of('.');
+		std::string extension = shaderPath.substr(begin + 1, shaderPath.length());
+		std::string source;
+		if (extension == "hlsl")
+		{
+			source = ReadFile(shaderPath);
+			auto shaderSources = PreProcess(source);
+			
+			std::string sourcecode = shaderSources[DXshaderType::VS];
+			ErrorInfo info;
+			Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob;
+			if (sourcecode != "")
+			{
+				shaderBlob = Compile(sourcecode, "vs_5_0", "VSMain", info);
+				m_Data.pvs = CreateRef<DX11VertexShader>("", shaderBlob);
+			}
+			sourcecode = shaderSources[DXshaderType::GS];
+			if (sourcecode != "")
+			{
+				shaderBlob = Compile(sourcecode, "gs_5_0", "GSMain", info);
+				m_Data.pgs = CreateRef<DX11GeometryShader>("", shaderBlob);
+			}
+			sourcecode = shaderSources[DXshaderType::PS];
+			if (sourcecode != "")
+			{
+				shaderBlob = Compile(sourcecode, "ps_5_0", "PSMain", info);
+				m_Data.pps = CreateRef<DX11PixelShader>("", shaderBlob);
+			}
+		}
+		else 
+		{
+			QCAT_CORE_ASSERT(false, "Wrong format for DXShader");
+		}
+		auto lastSlash = shaderPath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = shaderPath.rfind('.');
+		auto count = lastDot == std::string::npos ? shaderPath.size() - lastSlash : lastDot - lastSlash;
+		m_name = shaderPath.substr(lastSlash, count);
 	}
 	DXShader::DXShader(const std::string& name, const std::string& vertexFile, const std::string& pixelFile, const std::string& geoFile)
 		:m_name(name)
@@ -137,16 +252,16 @@ namespace QCat
 			{
 				std::string vertexName = GetShaderName(vertexFile);
 				std::string vertexSrc = ReadFile(vertexFile);
-				pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromNative(vertexName, vertexSrc, type));
+				m_Data.pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromNative(vertexName, vertexSrc, type));
 			}
 			else if (extension == "cso")
-				pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromFile(vertexFile, type));
+				m_Data.pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromFile(vertexFile, type));
 			else
 				QCAT_CORE_ASSERT(false, "Wrong extension! Vertex Shader Compile Error");
 		}
 		else
 		{
-			pvs = nullptr;
+			m_Data.pvs = nullptr;
 		}
 		begin = pixelFile.find_last_of('.');
 		if (pixelFile != "")
@@ -157,16 +272,16 @@ namespace QCat
 			{
 				std::string pixelSrc = ReadFile(pixelFile);
 				std::string pixelName = GetShaderName(pixelFile);
-				pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromNative(pixelName, pixelSrc, type));
+				m_Data.pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromNative(pixelName, pixelSrc, type));
 			}
 			else if (extension == "cso")
-				pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromFile(pixelFile, type));
+				m_Data.pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromFile(pixelFile, type));
 			else
 				QCAT_CORE_ASSERT(false, "Wrong extension! Pixel Shader Compile Error");
 		}
 		else
 		{
-			pps = nullptr;
+			m_Data.pps = nullptr;
 		}
 		begin = geoFile.find_last_of('.');
 		if (geoFile != "")
@@ -177,68 +292,54 @@ namespace QCat
 			{
 				std::string pixelSrc = ReadFile(geoFile);
 				std::string pixelName = GetShaderName(geoFile);
-				pgs = std::dynamic_pointer_cast<DX11GeometryShader>(CreateShaderFromNative(pixelName, pixelSrc, type));
+				m_Data.pgs = std::dynamic_pointer_cast<DX11GeometryShader>(CreateShaderFromNative(pixelName, pixelSrc, type));
 			}
 			else if (extension == "cso")
-				pgs = std::dynamic_pointer_cast<DX11GeometryShader>(CreateShaderFromFile(geoFile, type));
+				m_Data.pgs = std::dynamic_pointer_cast<DX11GeometryShader>(CreateShaderFromFile(geoFile, type));
 			else
 				QCAT_CORE_ASSERT(false, "Wrong extension! geometry Shader Compile Error");
 		}
 		else
 		{
-			pgs = nullptr;
+			m_Data.pgs = nullptr;
 		}
 		
 	}
-	DXShader::DXShader(const std::string& name, const std::string& vertexName, const std::string& vertexSrc, const std::string& pixelName, const std::string& pixelSrc, bool compile)
-		: m_name(name)
-	{
-		QCAT_PROFILE_FUNCTION();
 
-		if (compile)
-		{
-			pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromNative(vertexName, vertexSrc, DXshaderType::VS));
-			pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromNative(pixelName, pixelSrc, DXshaderType::PS));
-		}
-		else
-		{
-			pvs = std::dynamic_pointer_cast<DX11VertexShader>(CreateShaderFromFile(vertexSrc, DXshaderType::VS));
-			pps = std::dynamic_pointer_cast<DX11PixelShader>(CreateShaderFromFile(pixelSrc, DXshaderType::PS));
-		}
-	}
 	DXShader::~DXShader()
 	{
 	}
 	void DXShader::Bind() const
 	{
 		QCAT_PROFILE_FUNCTION();
+		s_CurrentlyBound = this;
 
-		if(pvs)
-			pvs->Bind();
-		if(pgs)
-			pgs->Bind();
-		if(pps)
-			pps->Bind();
+		if(m_Data.pvs)
+			m_Data.pvs->Bind();
+		if(m_Data.pgs)
+			m_Data.pgs->Bind();
+		if(m_Data.pps)
+			m_Data.pps->Bind();
 	}
 	void DXShader::UpdateBuffer() const
 	{
-		if(pvs)
-			pvs->UpdateBuffer();
-		if (pgs)
-			pgs->UpdateBuffer();
-		if(pps)
-			pps->UpdateBuffer();
+		if(m_Data.pvs)
+			m_Data.pvs->UpdateBuffer();
+		if (m_Data.pgs)
+			m_Data.pgs->UpdateBuffer();
+		if(m_Data.pps)
+			m_Data.pps->UpdateBuffer();
 	}
 	void DXShader::UnBind() const
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		if(pvs)
-			pvs->UnBind();
-		if(pgs)
-			pgs->UnBind();
-		if(pps)
-			pps->UnBind();
+		if(m_Data.pvs)
+			m_Data.pvs->UnBind();
+		if(m_Data.pgs)
+			m_Data.pgs->UnBind();
+		if(m_Data.pps)
+			m_Data.pps->UnBind();
 	}
 	void DXShader::SetInt(const std::string& name, int value, ShaderType type)
 	{
@@ -343,16 +444,16 @@ namespace QCat
 		switch (type)
 		{
 		case ShaderType::VS:
-			if (pvs)
-			constantBuffers = &pvs->GetConstantBuffers();
+			if (m_Data.pvs)
+			constantBuffers = &m_Data.pvs->GetConstantBuffers();
 			break;
 		case ShaderType::PS:
-			if (pps)
-			constantBuffers = &pps->GetConstantBuffers();
+			if (m_Data.pps)
+			constantBuffers = &m_Data.pps->GetConstantBuffers();
 			break;
 		case ShaderType::GS:
-			if(pgs)
-				constantBuffers = &pgs->GetConstantBuffers();
+			if(m_Data.pgs)
+				constantBuffers = &m_Data.pgs->GetConstantBuffers();
 			break;
 		case ShaderType::CS:
 
@@ -371,34 +472,6 @@ namespace QCat
 		
 		return{ nullptr, ElementRef{} };
 	}
-	//void DXShader::UpdateConstantBuffer(const std::string& uniformname, const::std::string& valuename, const void* pdata)
-	//{
-	//	/*QCAT_PROFILE_FUNCTION();
-
-	//	bool suceed = true;
-	//	Ref<DX11ConstantBuffer>& constantbuf = pvs->GetConstantBuffer(uniformname);
-	//	if (constantbuf)
-	//	{
-	//		suceed = true;
-	//		constantbuf->UpdateElement(valuename, pdata);
-	//	}
-	//	else
-	//		suceed = false;
-
-	//	constantbuf = pps->GetConstantBuffer(uniformname);
-	//	if (constantbuf)
-	//	{
-	//		suceed = true;
-	//		constantbuf->UpdateElement(valuename, pdata);
-	//	}
-	//	else
-	//		suceed = false;
-	//	if (!suceed)
-	//	{
-	//		QCAT_CORE_ERROR("{0} cant be find from all of {1}'s {2} constantbuffer", valuename,m_name, uniformname);
-	//	}*/
-	//}
-	
 	bool DXShader::UpdateVertexConstantBuffer(const std::string& name, const void* data)
 	{
 		//QCAT_PROFILE_FUNCTION();
@@ -426,11 +499,7 @@ namespace QCat
 		return false;
 
 	}
-	std::vector<char>& DXShader::GetVerexData()
-	{
-		// TODO: 여기에 반환 구문을 삽입합니다.
-		return pvs->GetData();
-	}
+
 	DX11VertexShader::DX11VertexShader(const std::string& name, const std::string& path)
 	{
 		QCAT_PROFILE_FUNCTION();

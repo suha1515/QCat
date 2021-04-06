@@ -1,4 +1,4 @@
-#include "TestScene.h"
+#include "../Header/TestScene.h"
 
 #include <Imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -203,7 +203,7 @@ namespace QCat
 		m_quad->SetIndexBuffer(indexBuffer);
 		m_quad->UnBind();
 
-		sphere = CreateRef<Sphere>(glm::vec3(0.0f,0.0f,0.0f), FlatShader, 0.1f);
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f,0.0f,0.0f), 0.1f);
 		sphere->SetMaterial(brick);
 
 		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader, floor);
@@ -263,13 +263,10 @@ namespace QCat
 		// Update
 		CameraUpdate(ts);
 	
-		QCat::Renderer2D::ResetStats();
-		{
-			QCAT_PROFILE_SCOPE("Renderer Prep");
+		QCAT_PROFILE_SCOPE("Renderer Prep");
 			
-			QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-			QCat::RenderCommand::Clear();
-		}
+		QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		QCat::RenderCommand::Clear();
 		{
 			RenderCommand::SetDepthTest(true);
 			RenderCommand::SetCullMode(CullMode::None);
@@ -384,11 +381,11 @@ namespace QCat
 			}
 			FlatShader->UnBind();
 
-			/*screenShader->Bind();
+			screenShader->Bind();
 			ssaoBlur->BindColorTexture(0, 0);
 			m_quad->Bind();
 			RenderCommand::DrawIndexed(m_quad);
-			screenShader->UnBind();*/
+			screenShader->UnBind();
 		}	
 	}
 

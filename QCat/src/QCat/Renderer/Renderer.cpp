@@ -5,6 +5,7 @@
 #include "API/DirectX11/DX11_Shader.h"
 
 #include "Renderer2D.h"
+#include "RenderAPI.h"
 namespace QCat
 {
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;

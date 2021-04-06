@@ -72,7 +72,6 @@ void main()
 {
 	
 	vec3 norm;
-	gTangent = T;
 	if(material.normalMap)
 	{
 		norm = texture(texture_normal,TexCoords).rgb;

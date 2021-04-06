@@ -2,6 +2,8 @@
 #include "RenderAPI.h"
 #include "enums.h"
 
+#include "API/Opengl/OpenGL_RenderAPI.h"
+#include "API/DirectX11/DX11_RenderAPI.h"
 namespace QCat
 {
 	class RenderCommand
@@ -9,6 +11,10 @@ namespace QCat
 	public:
 		inline static void Init()
 		{
+			if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+				s_renderAPI = new DX11RenderAPI;
+			else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+				s_renderAPI = new OpenGLRenderAPI;
 			s_renderAPI->Init();
 		}
 		inline static void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)

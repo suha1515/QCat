@@ -1,4 +1,4 @@
-#include "Sandbox2D.h"
+#include "../Header/Sandbox2D.h"
 
 #include <Imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -176,7 +176,7 @@ namespace QCat
 
 		face = CreateRef<Face>(glm::vec3(0.0f, -3.0f, 0.0f),m_LightShader,woodFloor,1);
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
-		sphere = CreateRef<Sphere>(glm::vec3(0.0f,-2.7f,-0.9f), m_FlatShader, 0.1f);
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f,-2.7f,-0.9f), 0.1f);
 		LightPosition = sphere->GetTranslation();
 		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
 		cube->SetScale({ 0.5f,0.5f,0.5f });

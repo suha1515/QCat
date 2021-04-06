@@ -12,6 +12,8 @@
 
 #include "QCat/Core/Log.h"
 
+#include "QCat/Renderer/RenderAPI.h"
+
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 namespace QCat
 {
@@ -78,11 +80,17 @@ namespace QCat
 		ShowWindow(hWnd, SW_SHOWDEFAULT);
 		UpdateWindow(hWnd);
 
-#if defined(QCAT_DX11)
-		pGfx = std::make_unique<QGfxDeviceDX11>();
-#elif defined(QCAT_OPENGL)
-		pGfx = std::make_unique<QCatOpengl>();
-#endif
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			pGfx = std::make_unique<QGfxDeviceDX11>();
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			pGfx = std::make_unique<QCatOpengl>();
+		}
+		
+
 		pGfx->Init(hWnd);
 
 		// Raw값을 받아올 장치에대해 세부화한다

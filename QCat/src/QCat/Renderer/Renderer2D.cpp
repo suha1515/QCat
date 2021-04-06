@@ -87,13 +87,17 @@ namespace QCat
 		for (uint32_t i = 0; i < s_data.MaxTextureSlot; ++i)
 			samplers[i] = i;
 
-#if defined(QCAT_DX11)
-		s_data.TextureShader = Shader::Create("Texture", "Asset/shaders/hlsl/Square_VS.hlsl", "Asset/shaders/hlsl/Square_PS.hlsl");
-#elif defined(QCAT_OPENGL)
-		s_data.TextureShader = Shader::Create("Asset/shaders/glsl/Texture.glsl");
-		s_data.TextureShader->Bind();
-		s_data.TextureShader->SetIntArray("u_Textures", samplers, s_data.MaxTextureSlot,ShaderType::PS);
-#endif
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			s_data.TextureShader = Shader::Create("Texture", "Asset/shaders/hlsl/Square_VS.hlsl", "Asset/shaders/hlsl/Square_PS.hlsl");
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			s_data.TextureShader = Shader::Create("Asset/shaders/glsl/Texture.glsl");
+			s_data.TextureShader->Bind();
+			s_data.TextureShader->SetIntArray("u_Textures", samplers, s_data.MaxTextureSlot, ShaderType::PS);
+		}
+		
 		s_data.QuadVertexBuffer->SetLayout(BufferLayout::Create({
 			{ ShaderDataType::Float3, "a_Position"},
 			{ ShaderDataType::Float4, "a_Color"},

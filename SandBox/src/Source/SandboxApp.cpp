@@ -11,9 +11,10 @@
 #include "QCat/Renderer/Shader.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Sandbox2D.h"
-#include "ModelTestScene.h"
-#include "TestScene.h"
+#include "../Header/Sandbox2D.h"
+#include "../Header/ModelTestScene.h"
+#include "../Header/TestScene.h"
+#include "../Header/PbrTest.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -54,11 +55,13 @@ class Sandbox : public QCat::Application
 {
 public:
 	Sandbox()
+		:Application("QCat App",QCat::RenderAPI::API::DirectX11)
 	{
 		//PushLayer(new ExamLayer());
 		//PushLayer(new QCat::ModelTestScene());
 		//PushLayer(new QCat::Sandbox2D());
-		PushLayer(new QCat::TestScene());
+		//PushLayer(new QCat::TestScene());
+		PushLayer(new QCat::PbrTest());
 	}
 	~Sandbox()
 	{
