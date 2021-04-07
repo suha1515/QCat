@@ -7,9 +7,9 @@ namespace QCat
 	class Material
 	{
 	public:
-		enum class MaterialType
+		enum class TextureType
 		{
-			None=0,Diffuse,Specular,NormalMap,Emission
+			None=0,Diffuse,Specular,Normal, Metallic, Roughness, AmbientOcclusion,Emission
 		};
 		Material()
 			:Material({0.2f,0.2f,0.2f},{1.0f,1.0f,1.0f},{1.0f,1.0f,1.0f},32.f)
@@ -18,7 +18,6 @@ namespace QCat
 			:ambient(ambient),diffuse(diffuse), specular(specular),shininess(shininess)
 		{
 			Sampler_Desc desc;
-			m_WhiteTexture  = Texture2D::Create(desc ,1, 1);
 			byte r = 255;
 			byte g = 255;
 			byte b = 255;
@@ -26,22 +25,21 @@ namespace QCat
 
 			//unsigned int whiteTextureData = 0xffffffff;
 			unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
-
-			m_WhiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
+			m_WhiteTexture = TextureLibrary::Load("white1x1tex", TextureFormat::RGBA8, 1, 1, &whiteTextureData);
 		}
-		void SetTexture(const std::string& path,MaterialType type);
-		void SetTexture(const Ref<Texture>& texture, MaterialType type);
+		void SetTexture(const std::string& texturepath, Sampler_Desc& desc, TextureType type);
+		void SetTexture(const Ref<Texture>& texture, TextureType type);
 
 		void SetDiffuse(const glm::vec3& color) { diffuse = color; }
 		void SetAmbient(const glm::vec3& color) { ambient = color; }
 		void SetSpecular(const glm::vec3& color) { specular = color; }
 		void SetShininess(const float shininess) { this->shininess = shininess; }
 
-		Ref<Texture> GetTexture(MaterialType type);
+		Ref<Texture> GetTexture(TextureType type);
 
-		bool IsThereTexture(MaterialType type);
+		bool IsThereTexture(TextureType type);
 		void Bind();
-		void Bind(int slot,MaterialType type);
+		void Bind(unsigned int slot, TextureType type);
 	public:
 		//Material& operator== (const Material& mat)
 		//{
@@ -60,6 +58,11 @@ namespace QCat
 		Ref<Texture> m_SpecularTexture;
 		Ref<Texture> m_NormalMapTexture;
 		Ref<Texture> m_EmissionTexture;
+		// PBR texture
+		Ref<Texture> m_MetallicTexture;
+		Ref<Texture> m_RoughnessTexture;
+		Ref<Texture> m_AmbientOcclusionTexture;
+		// Default
 		Ref<Texture> m_WhiteTexture;
 
 	};

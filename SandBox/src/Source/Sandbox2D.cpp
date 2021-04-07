@@ -79,7 +79,7 @@ namespace QCat
 			m_ScreenDepthShader = ShaderLibrary::Load("ShadowMapScreen", "Asset/shaders/hlsl/ShadowMap/ScreenShadow_VS.hlsl", "Asset/shaders/hlsl/ShadowMap/ScreenShadow_PS.hlsl");
 		}
 
-		//material.SetTexutre("Asset/textures/matrix.jpg", Material::MaterialType::Emission);
+		//material.SetTexutre("Asset/textures/matrix.jpg", Material::TextureType::Emission);
 
 		woodFloor = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
 		grass     = Material(glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f), 32.f);
@@ -130,14 +130,14 @@ namespace QCat
 		m_cubeTexture = TextureCube::Create(imagePath,desc);
 
 		// quad Texture
-		woodFloor.SetTexture(woodTexture, Material::MaterialType::Diffuse);
-		grass.SetTexture(grassTexture, Material::MaterialType::Diffuse);
-		window.SetTexture(windowTexture, Material::MaterialType::Diffuse);
-		brick.SetTexture(brickTexture, Material::MaterialType::Diffuse);
-		brick.SetTexture(brickNormalMap, Material::MaterialType::NormalMap);
-		Box.SetTexture(boxDiffuse, Material::MaterialType::Diffuse);
-		Box.SetTexture(boxSpecular, Material::MaterialType::Specular);
-		ReflectMaterial.SetTexture(m_cubeTexture, Material::MaterialType::Diffuse);
+		woodFloor.SetTexture(woodTexture, Material::TextureType::Diffuse);
+		grass.SetTexture(grassTexture, Material::TextureType::Diffuse);
+		window.SetTexture(windowTexture, Material::TextureType::Diffuse);
+		brick.SetTexture(brickTexture, Material::TextureType::Diffuse);
+		brick.SetTexture(brickNormalMap, Material::TextureType::Normal);
+		Box.SetTexture(boxDiffuse, Material::TextureType::Diffuse);
+		Box.SetTexture(boxSpecular, Material::TextureType::Specular);
+		ReflectMaterial.SetTexture(m_cubeTexture, Material::TextureType::Diffuse);
 		// model Load
 		diona = Model::Create("Asset/model/diona/diona.fbx");
 		diona->SetTranslation({ 0.0f,0.0f,0.0f });
@@ -445,7 +445,7 @@ namespace QCat
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), ReflectObjPos) * glm::scale(glm::mat4(1.0f), { 2.0f,2.0f,2.0f });
 			m_ReflectShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			m_ReflectShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-			ReflectMaterial.Bind(0, Material::MaterialType::Diffuse);
+			ReflectMaterial.Bind(0, Material::TextureType::Diffuse);
 			m_ReflectShader->UpdateBuffer();
 			sphere->GetVertexArray()->Bind();
 			RenderCommand::DrawIndexed(sphere->GetVertexArray());
@@ -463,7 +463,7 @@ namespace QCat
 				glm::toMat4(glm::quat({ 0.0f,0.0f,0.0f })) * glm::scale(glm::mat4(1.0f), { 1.0f,1.0f,1.0f });
 			m_CubeMapShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			DepthFrameBuffer->BindDepthTexture(0);
-			//ReflectMaterial.Bind(0, Material::MaterialType::Diffuse);
+			//ReflectMaterial.Bind(0, Material::TextureType::Diffuse);
 			RenderCommand::SetCullMode(CullMode::None);
 			cube->GetVertexArray()->Bind();
 			RenderCommand::DrawIndexed(cube->GetVertexArray());
@@ -485,7 +485,7 @@ namespace QCat
 				RenderCommand::SetDepthTest(false);
 				m_quad->Bind();
 				framebuffer->BindColorTexture(0, 0);
-				//woodFloor.GetTexture(Material::MaterialType::Diffuse)->Bind(0);
+				//woodFloor.GetTexture(Material::TextureType::Diffuse)->Bind(0);
 				RenderCommand::DrawIndexed(m_quad);
 				m_ScreenShader->UnBind();
 				framebuffer->UnBindTexture();
@@ -671,10 +671,10 @@ namespace QCat
 		face->Draw(m_LightShader);
 		diona->SetTranslation(backpackPos);
 		diona->SetScale({ 0.1f, 0.1f, 0.1f });
-		diona->Draw(m_LightShader);
+		diona->Draw();
 		muro->SetTranslation({ 2.0f, -3.0f, 0.0f });
 		muro->SetScale({ 1.0f,1.0f,1.0f });
-		muro->Draw(m_LightShader);
+		muro->Draw();
 
 		/*RenderCommand::SetStencilTest(true);
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
@@ -733,11 +733,11 @@ namespace QCat
 
 		diona->SetTranslation(backpackPos);
 		diona->SetScale({ 0.1f, 0.1f, 0.1f });
-		diona->Draw(shader);
+		diona->Draw();
 
 		muro->SetTranslation({ 2.0f, -3.0f, 0.0f });
 		muro->SetScale({ 1.0f,1.0f,1.0f });
-		muro->Draw(shader);
+		muro->Draw();
 
 		/*RenderCommand::SetStencilTest(true);
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);

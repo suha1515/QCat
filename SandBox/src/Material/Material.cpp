@@ -2,103 +2,134 @@
 
 namespace QCat
 {
-	void Material::SetTexture(const std::string& path, MaterialType type)
+	void Material::SetTexture(const std::string& texturepath, Sampler_Desc& desc, TextureType type)
 	{
-		Sampler_Desc desc;
 		switch (type)
 		{
-		case MaterialType::None: QCAT_CORE_ASSERT(false);
+		case TextureType::None: QCAT_CORE_ASSERT(false);
 			break;
-		case MaterialType::Diffuse:
-			m_DiffuseTexture = Texture2D::Create(path, desc);
+		case TextureType::Diffuse:
+			m_DiffuseTexture = Texture2D::Create(texturepath, desc);
 			break;
-		case MaterialType::Specular:
-			m_SpecularTexture = Texture2D::Create(path, desc);
+		case TextureType::Specular:
+			m_SpecularTexture = Texture2D::Create(texturepath, desc);
 			break;
-		case MaterialType::NormalMap:
-			m_NormalMapTexture = Texture2D::Create(path, desc);
+		case TextureType::Normal:
+			m_NormalMapTexture = Texture2D::Create(texturepath, desc);
 			break;
-		case MaterialType::Emission:
-			m_EmissionTexture = Texture2D::Create(path, desc);
+		case TextureType::Metallic:
+			m_MetallicTexture = Texture2D::Create(texturepath, desc);
+			break;
+		case TextureType::Roughness:
+			m_RoughnessTexture = Texture2D::Create(texturepath, desc);
+			break;
+		case TextureType::AmbientOcclusion:
+			m_AmbientOcclusionTexture = Texture2D::Create(texturepath, desc);
+			break;
+		case TextureType::Emission:
+			m_EmissionTexture = Texture2D::Create(texturepath, desc);
 			break;
 		}
 	}
 
-	void Material::SetTexture(const Ref<Texture>& texture, MaterialType type)
+	void Material::SetTexture(const Ref<Texture>& texture, TextureType type)
 	{
 		switch (type)
 		{
-		case MaterialType::None: QCAT_CORE_ASSERT(false);
+		case TextureType::None: QCAT_CORE_ASSERT(false);
 			break;
-		case MaterialType::Diffuse:
+		case TextureType::Diffuse:
 			m_DiffuseTexture = texture;
 			break;
-		case MaterialType::Specular:
+		case TextureType::Specular:
 			m_SpecularTexture = texture;
 			break;
-		case MaterialType::NormalMap:
+		case TextureType::Normal:
 			m_NormalMapTexture = texture;
 			break;
-		case MaterialType::Emission:
+		case TextureType::Metallic:
+			m_MetallicTexture = texture;
+			break;
+		case TextureType::Roughness:
+			m_RoughnessTexture = texture;
+			break;
+		case TextureType::AmbientOcclusion:
+			m_AmbientOcclusionTexture = texture;
+			break;
+		case TextureType::Emission:
 			m_EmissionTexture = texture;
 			break;
 		}
 	}
 
-	Ref<Texture> Material::GetTexture(MaterialType type)
+	Ref<Texture> Material::GetTexture(TextureType type)
 	{
 		switch (type)
 		{
-		case MaterialType::None: QCAT_CORE_ASSERT(false);
+		case TextureType::None: QCAT_CORE_ASSERT(false);
 			break;
-		case MaterialType::Diffuse:
+		case TextureType::Diffuse:
 			return m_DiffuseTexture;
 			break;
-		case MaterialType::Specular:
+		case TextureType::Specular:
 			return m_SpecularTexture;
 			break;
-		case MaterialType::NormalMap:
+		case TextureType::Normal:
 			return m_NormalMapTexture;
 			break;
-		case MaterialType::Emission:
+		case TextureType::Metallic:
+			return m_MetallicTexture;
+			break;
+		case TextureType::Roughness:
+			return m_RoughnessTexture;
+			break;
+		case TextureType::AmbientOcclusion:
+			return m_AmbientOcclusionTexture;
+			break;
+		case TextureType::Emission:
 			return m_EmissionTexture;
 			break;
 		}
 		return nullptr;
 	}
 
-	bool Material::IsThereTexture(MaterialType type)
+	bool Material::IsThereTexture(TextureType type)
 	{
+		bool value = false;
 		switch (type)
 		{
-		case MaterialType::None: QCAT_CORE_ASSERT(false);
+		case TextureType::None: QCAT_CORE_ASSERT(false);
 			break;
-		case MaterialType::Diffuse:
+		case TextureType::Diffuse:
 			if (m_DiffuseTexture)
-				return true;
-			else
-				return false;
+				value = true;
 			break;
-		case MaterialType::Specular:
+		case TextureType::Specular:
 			if (m_SpecularTexture)
-				return true;
-			else
-				return false;
+				value = true;
 			break;
-		case MaterialType::NormalMap:
+		case TextureType::Normal:
 			if (m_NormalMapTexture)
-				return true;
-			else
-				return false;
+				value = true;
 			break;
-		case MaterialType::Emission:
+		case TextureType::Metallic:
+			if (m_MetallicTexture)
+				value = true;
+			break;
+		case TextureType::Roughness:
+			if (m_RoughnessTexture)
+				value = true;
+			break;
+		case TextureType::AmbientOcclusion:
+			if (m_AmbientOcclusionTexture)
+				value = true;
+			break;
+		case TextureType::Emission:
 			if (m_EmissionTexture)
-				return true;
-			else
-				return false;
+				value = true;
 			break;
 		}
-		return false;
+		return value;
 	}
 
 	void Material::Bind()
@@ -115,31 +146,70 @@ namespace QCat
 			m_NormalMapTexture->Bind(2);
 		else
 			m_WhiteTexture->Bind(2);
-		if (m_EmissionTexture)
-			m_EmissionTexture->Bind(3);
+		if (m_MetallicTexture)
+			m_MetallicTexture->Bind(3);
 		else
 			m_WhiteTexture->Bind(3);
+		if (m_RoughnessTexture)
+			m_RoughnessTexture->Bind(4);
+		else
+			m_WhiteTexture->Bind(4);
+		if (m_AmbientOcclusionTexture)
+			m_AmbientOcclusionTexture->Bind(5);
+		else
+			m_WhiteTexture->Bind(5);
+		if (m_EmissionTexture)
+			m_EmissionTexture->Bind(6);
+		else
+			m_WhiteTexture->Bind(6);
 	}
-	void Material::Bind(int slot,MaterialType type)
+	void Material::Bind(unsigned int slot, TextureType type)
 	{
 		switch (type)
 		{
-		case MaterialType::None: 
+		case TextureType::None: QCAT_CORE_ASSERT(false);
 			break;
-		case MaterialType::Diffuse:
-			m_DiffuseTexture->Bind(slot);
+		case TextureType::Diffuse:
+			if (m_DiffuseTexture)	m_DiffuseTexture->Bind(slot);else
+				m_WhiteTexture->Bind(slot);
 			break;
-		case MaterialType::Specular:
-			m_SpecularTexture->Bind(slot);
+		case TextureType::Specular:
+			if (m_SpecularTexture)
+				m_SpecularTexture->Bind(slot);
+			else
+				m_WhiteTexture->Bind(slot);
 			break;
-		case MaterialType::NormalMap:
-			m_NormalMapTexture->Bind(slot);
+		case TextureType::Normal:
+			if (m_NormalMapTexture)
+				m_NormalMapTexture->Bind(slot);
+			else
+				m_WhiteTexture->Bind(slot);
 			break;
-		case MaterialType::Emission:
-			m_EmissionTexture->Bind(slot);
+		case TextureType::Metallic:
+			if (m_MetallicTexture)
+				m_MetallicTexture->Bind(slot);
+			else
+				m_WhiteTexture->Bind(slot);
+			break;
+		case TextureType::Roughness:
+			if (m_RoughnessTexture)
+				m_RoughnessTexture->Bind(slot);
+			else
+				m_WhiteTexture->Bind(slot);
+			break;
+		case TextureType::AmbientOcclusion:
+			if (m_AmbientOcclusionTexture)
+				m_AmbientOcclusionTexture->Bind(slot);
+			else
+				m_WhiteTexture->Bind(slot);
+			break;
+		case TextureType::Emission:
+			if (m_EmissionTexture)
+				m_EmissionTexture->Bind(slot);
+			else
+				m_WhiteTexture->Bind(slot);
 			break;
 		}
-		
 	}
 }
 

@@ -154,7 +154,7 @@ namespace QCat
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
 
-		if (material.IsThereTexture(Material::MaterialType::NormalMap))
+		if (material.IsThereTexture(Material::TextureType::Normal))
 		{
 			shader->SetBool("material.normalMap", true, ShaderType::PS);
 		}

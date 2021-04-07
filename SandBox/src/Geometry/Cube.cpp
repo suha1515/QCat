@@ -22,7 +22,7 @@ namespace QCat
 		/*Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
 		unsigned int whiteTextureData = 0xffffffff;
 		whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
-		material.SetTexture(whiteTexture, Material::MaterialType::Specular);*/
+		material.SetTexture(whiteTexture, Material::TextureType::Specular);*/
 
 
 		// VertexArray
@@ -198,7 +198,7 @@ namespace QCat
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
 
-		if (material.IsThereTexture(Material::MaterialType::NormalMap))
+		if (material.IsThereTexture(Material::TextureType::Normal))
 		{
 			shader->SetBool("material.normalMap", true, ShaderType::PS);
 		}

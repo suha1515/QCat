@@ -67,14 +67,14 @@ namespace QCat
 		BlinnPhongShader->SetFloat3("dirLight.ambient", glm::vec3(0.3f, 0.3f, 0.3f), ShaderType::PS);
 		BlinnPhongShader->SetFloat3("dirLight.specular", glm::vec3(1.0f,1.0f,1.0f), ShaderType::PS);
 
-		HumanModel->Draw(BlinnPhongShader);
+		HumanModel->Draw();
 
 
 		BlinnPhongShader->UnBind();
 
 		visualizingNormalShader->Bind();
 		visualizingNormalShader->SetMat4("u_ViewProjection", proj * view, ShaderType::VS);
-		HumanModel->Draw(visualizingNormalShader);
+		HumanModel->Draw();
 		visualizingNormalShader->UnBind();
 	}
 

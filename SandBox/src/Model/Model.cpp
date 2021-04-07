@@ -18,25 +18,8 @@ namespace QCat
 	{
 		LoadModel(path);
 	}
-	void Model::Draw(const Ref<Shader>& shader)
+	void Model::Draw()
 	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
-
-		for (uint32_t i = 0; i < meshes.size(); ++i)
-		{
-			if (mat.IsThereTexture(Material::MaterialType::NormalMap))
-			{
-				shader->SetBool("material.normalMap", true, ShaderType::PS);
-			}
-			else
-			{
-				shader->SetBool("material.normalMap", false, ShaderType::PS);
-			}
-			// material
-			shader->SetFloat("material.shininess", mat.shininess, ShaderType::PS);
-			mat.Bind();
-			meshes[i].Draw(shader, transform);
-		}
 			
 	}
 	Ref<Model> Model::Create(const char* path)
@@ -165,7 +148,7 @@ namespace QCat
 				//texturePath = str.C_Str();
 
 				Ref<Texture2D> diffTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(diffTexture, Material::MaterialType::Diffuse);
+				mat.SetTexture(diffTexture, Material::TextureType::Diffuse);
 			}
 			if (material->GetTexture(aiTextureType_SPECULAR, 0, &str) == aiReturn_SUCCESS)
 			{
@@ -173,7 +156,7 @@ namespace QCat
 				//texturePath = str.C_Str();
 
 				Ref<Texture2D> specularTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(specularTexture, Material::MaterialType::Specular);
+				mat.SetTexture(specularTexture, Material::TextureType::Specular);
 			}
 			if (material->GetTexture(aiTextureType_HEIGHT, 0, &str) == aiReturn_SUCCESS)
 			{
@@ -181,7 +164,7 @@ namespace QCat
 				//texturePath = str.C_Str();
 
 				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(normalTexture, Material::MaterialType::NormalMap);
+				mat.SetTexture(normalTexture, Material::TextureType::Normal);
 			}
 			if (material->GetTexture(aiTextureType_METALNESS, 0, &str) == aiReturn_SUCCESS)
 			{
@@ -189,7 +172,7 @@ namespace QCat
 				//texturePath = str.C_Str();
 
 				Ref<Texture2D> metallicTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(metallicTexture, Material::MaterialType::NormalMap);
+				mat.SetTexture(metallicTexture, Material::TextureType::Metallic);
 			}
 			//roughness
 			if (material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &str) == aiReturn_SUCCESS)
@@ -198,7 +181,7 @@ namespace QCat
 				//texturePath = str.C_Str();
 
 				Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(roughnessTexture, Material::MaterialType::NormalMap);
+				mat.SetTexture(roughnessTexture, Material::TextureType::Roughness);
 			}
 			//ao
 			if (material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str) == aiReturn_SUCCESS)
@@ -207,7 +190,7 @@ namespace QCat
 				//texturePath = str.C_Str();
 
 				Ref<Texture2D> ambientOcclusionTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(ambientOcclusionTexture, Material::MaterialType::NormalMap);
+				mat.SetTexture(ambientOcclusionTexture, Material::TextureType::AmbientOcclusion);
 			}
 		}
 		Ref<Shader> shader;

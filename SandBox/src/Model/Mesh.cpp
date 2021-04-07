@@ -8,14 +8,9 @@ namespace QCat
 		Initialize(shader, vertices,indices);
 	}
 
-	void Mesh::Draw(const Ref<Shader>& shader,const glm::mat4& transform)
+	void Mesh::Draw()
 	{
-		glm::mat4 finalTransform = transform * this->transform;
-		shader->SetMat4("u_Transform", finalTransform, ShaderType::VS);
-		shader->SetMat4("u_invTransform", glm::inverse(finalTransform), ShaderType::VS);
-
 		m_VertexArray->Bind();
-		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 	void Mesh::Initialize(const Ref<Shader>& shader, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
@@ -47,6 +42,10 @@ namespace QCat
 
 		//unbind
 		m_VertexArray->UnBind();
+	}
+	const glm::mat4& Mesh::GetTransform()
+	{
+		return transform;
 	}
 }
 

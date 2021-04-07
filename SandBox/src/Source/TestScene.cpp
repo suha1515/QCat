@@ -118,11 +118,11 @@ namespace QCat
 		Ref<Texture2D> brickTex = TextureLibrary::Load("Asset/textures/bricks2.jpg", desc);
 		Ref<Texture2D> brickNormTex = TextureLibrary::Load("Asset/textures/bricks2_normal.jpg");
 
-		floor.SetTexture(floorTexture, Material::MaterialType::Diffuse);
+		floor.SetTexture(floorTexture, Material::TextureType::Diffuse);
 		floor.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		brick.SetTexture(brickTex, Material::MaterialType::Diffuse);
+		brick.SetTexture(brickTex, Material::TextureType::Diffuse);
 		noTex.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		brick.SetTexture(brickNormTex, Material::MaterialType::NormalMap);
+		brick.SetTexture(brickNormTex, Material::TextureType::Normal);
 		brick.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader);
@@ -305,7 +305,7 @@ namespace QCat
 			backpack->SetTranslation(backpackPos);
 			backpack->SetRotation(backpackRot);
 			backpack->SetScale({ 0.5f,0.5f,0.5f });
-			backpack->Draw(SSaogeo);
+			backpack->Draw();
 
 			SSaogeo->UnBind();
 			offrendering->UnBind();

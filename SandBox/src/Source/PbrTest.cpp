@@ -35,10 +35,10 @@ namespace QCat
 
 
 		Sampler_Desc desc;
-		pbrmat.SetTexture("Asset/textures/rusted_iron/albedo.png", desc, PBRMaterial::TextureType::Albedo);
-		pbrmat.SetTexture("Asset/textures/rusted_iron/normal.png", desc, PBRMaterial::TextureType::Normal);
-		pbrmat.SetTexture("Asset/textures/rusted_iron/metallic.png", desc, PBRMaterial::TextureType::Metallic);
-		pbrmat.SetTexture("Asset/textures/rusted_iron/roughness.png", desc, PBRMaterial::TextureType::Roughness);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/albedo.png", desc, Material::TextureType::Diffuse);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/normal.png", desc, Material::TextureType::Normal);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/metallic.png", desc, Material::TextureType::Metallic);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/roughness.png", desc, Material::TextureType::Roughness);
 
 		//Brick.m_DiffuseTexture = brick;
 		//Brick.m_NormalMapTexture = brick_normal;
@@ -93,13 +93,17 @@ namespace QCat
 				PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
 				PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 				// material
-				if (pbrmat.IsThereTexture(PBRMaterial::TextureType::Normal))
+				if (pbrmat.IsThereTexture(Material::TextureType::Normal))
 					PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
 				else
 					PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
 				PBRshader->UpdateBuffer();
 
-				pbrmat.Bind();
+				pbrmat.Bind(0,Material::TextureType::Diffuse);
+				pbrmat.Bind(1, Material::TextureType::Normal);
+				pbrmat.Bind(2, Material::TextureType::Metallic);
+				pbrmat.Bind(3, Material::TextureType::Roughness);
+				pbrmat.Bind(4, Material::TextureType::AmbientOcclusion);
 				sphere->Draw(PBRshader);
 			}
 		}
