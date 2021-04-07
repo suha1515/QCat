@@ -197,7 +197,6 @@ namespace QCat
 
 		// material
 		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
-		shader->SetFloat3("material.diffuse", material.diffuse, ShaderType::PS);
 
 		if (material.IsThereTexture(Material::MaterialType::NormalMap))
 		{
@@ -210,7 +209,6 @@ namespace QCat
 
 		material.Bind();
 		m_VertexArray->Bind();
-		shader->UpdateBuffer();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 	void Cube::ImguiRender(const char* name)

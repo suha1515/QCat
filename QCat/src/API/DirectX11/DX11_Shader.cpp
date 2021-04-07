@@ -184,9 +184,11 @@ namespace QCat
 			info.profile += profile + "\n";
 			if (errorBlob->GetBufferSize())
 			{
-				info.meesage = profile+"Shader Compile Error!\n";
-				info.meesage += (const char*)errorBlob->GetBufferPointer();
+				std::string msg = (const char*)errorBlob->GetBufferPointer();
+				info.meesage = profile + "Shader Compile Error!\n";
+				info.meesage += msg;
 				QCAT_CORE_ERROR(info.meesage);
+				QCAT_CORE_ASSERT(msg.find("warning", 0) != std::string::npos,"Shader Error!")
 			}
 		}
 		if (status == S_OK)
@@ -550,14 +552,14 @@ namespace QCat
 	
 	void DX11VertexShader::Bind() const
 	{
-		for (auto& buf : m_ConstantBuffers)
-			buf.second->Bind();
 		gfx->GetContext()->VSSetShader(pVertexShader.Get(), nullptr, 0u);
 	}
 	void DX11VertexShader::UpdateBuffer() const
 	{
 		for (auto& buf : m_ConstantBuffers)
 			buf.second->FinalizeUpdate();
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->Bind();
 	}
 	void DX11VertexShader::UnBind() const
 	{
@@ -600,14 +602,14 @@ namespace QCat
 	}
 	void DX11PixelShader::Bind() const
 	{
-		for (auto& buf : m_ConstantBuffers)
-			buf.second->Bind();
 		gfx->GetContext()->PSSetShader(pPixelShader.Get(), nullptr, 0u);
 	}
 	void DX11PixelShader::UpdateBuffer() const
 	{
 		for (auto& buf : m_ConstantBuffers)
 			buf.second->FinalizeUpdate();
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->Bind();
 	}
 	void DX11PixelShader::UnBind() const
 	{
@@ -649,8 +651,6 @@ namespace QCat
 
 	void DX11GeometryShader::Bind() const
 	{
-		for (auto& buf : m_ConstantBuffers)
-			buf.second->Bind();
 		gfx->GetContext()->GSSetShader(pGeometryShader.Get(), nullptr, 0u);
 	}
 
@@ -658,6 +658,8 @@ namespace QCat
 	{
 		for (auto& buf : m_ConstantBuffers)
 			buf.second->FinalizeUpdate();
+		for (auto& buf : m_ConstantBuffers)
+			buf.second->Bind();
 	}
 
 	void DX11GeometryShader::UnBind() const

@@ -22,6 +22,9 @@ namespace QCat
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 	{
 		QCAT_PROFILE_FUNCTION();
+		auto begin = filepath.find_last_of('.');
+		std::string extension = filepath.substr(begin + 1, filepath.length());
+		QCAT_CORE_ASSERT(extension == "glsl", "Wrong format for DXShader");
 
 		std::string source = ReadFile(filepath);
 		auto shaderSources = PreProcess(source);

@@ -25,25 +25,30 @@ namespace QCat
 		void OnEvent(Event& e) override;
 		bool OnWindowResize(WindowResizeEvent& e);
 		void CameraUpdate(QCat::Timestep ts);
+
 	private:
 		//Scene
 		Ref<Scene> m_ActiveScene;
 
 		Ref<Sphere> sphere;
+		Ref<Cube> cube;
 
 		Ref<Shader> PBRshader;
+		Ref<Shader> Flatcolor;
 		Material Color;
+		Material Brick;
 
 		//light
 		Light light[4];
+		glm::vec3 lightPosition;
 		
 		//Camera
 		Entity m_Camera;
 		float cameraSpeed;
 		float lastX, lastY;
-		float yaw = 90.f, pitch = -30.0f;
+		float yaw = 90.f, pitch = 0.0f;
 		glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::vec3 cameraFront = glm::vec3(-0.6f, -0.3f, 0.7f);
+		glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
 		glm::vec3 cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
 		glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::mat4 viewMatrix;

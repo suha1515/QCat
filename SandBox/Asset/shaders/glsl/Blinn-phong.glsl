@@ -23,7 +23,7 @@ void main()
 {
 	TexCoords = a_TexCoord;
 	mat3 normalMatrix = mat3(transpose(inverse(u_Transform)));
-	v_Normal = mat3(transpose(inverse(u_Transform))) * a_Normal;
+	v_Normal =normalMatrix * a_Normal;
 	gl_Position = u_ViewProjection *u_Transform * vec4(a_Position, 1.0);
 	FragPos = vec3(u_Transform * vec4(a_Position,1.0));
 
@@ -94,7 +94,7 @@ in mat3 TBN;
 
 uniform Material material;
 uniform PointLight pointLight;
-uniform vec3 viewPosition;
+uniform vec3 u_viewPosition;
 uniform bool gamma;
 uniform bool flip;
 
@@ -110,7 +110,7 @@ void main()
 		discard;
 	vec3 norm;
 	vec3 viewDir;
-	viewDir =  normalize(viewPosition - FragPos);
+	viewDir =  normalize(u_viewPosition - FragPos);
 	if(!material.normalMap)
 	{
 	   norm = normalize(v_Normal);
