@@ -696,7 +696,6 @@ namespace QCat
 		m_FlatShader->SetMat4("u_ViewProjection", proj * view, ShaderType::VS);
 		m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
 		sphere->SetTranslation(LightPosition);
-		sphere->SetMaterial(BasicMaterial);
 		sphere->SetScale({ 1.0f,1.0f,1.0f });
 		sphere->Draw(m_FlatShader);
 		m_FlatShader->UnBind();
@@ -753,7 +752,6 @@ namespace QCat
 		cube->Draw(shader);
 
 		sphere->SetTranslation(LightPosition);
-		sphere->SetMaterial(BasicMaterial);
 		sphere->SetScale({ 1.0f,1.0f,1.0f });
 		sphere->Draw(shader);
 		shader->UnBind();

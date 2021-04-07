@@ -24,18 +24,22 @@ namespace QCat
 		//PBRshader = ShaderLibrary::Load("Blinn-Phong", "Asset/shaders/glsl/VertexShader/World_TexNormFragTbn_Out.glsl",
 		//	"Asset/shaders/glsl/PixelShader/Blinn-phong.glsl");
 		Flatcolor = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/FlatColor.hlsl" : "Asset/shaders/glsl/FlatColor.glsl");
-		PBRshader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBRColor_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBRColor_PointLight.glsl");
+		PBRshader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBR_PointLight.glsl");
+
 		PBRshader->Bind();
-		PBRshader->SetInt("material.diffuse", 0, ShaderType::PS);
-		PBRshader->SetInt("material.specular", 1, ShaderType::PS);
-		PBRshader->SetInt("material.normal", 2, ShaderType::PS);
+		PBRshader->SetInt("material.albedoMap", 0, ShaderType::PS);
+		PBRshader->SetInt("material.normalMap", 1, ShaderType::PS);
+		PBRshader->SetInt("material.metallicMap", 2, ShaderType::PS);
+		PBRshader->SetInt("material.roughnessMap", 3, ShaderType::PS);
+		PBRshader->SetInt("material.aoMap", 4, ShaderType::PS);
+
 
 		Sampler_Desc desc;
-		Ref<Texture2D> brick = TextureLibrary::Load("Asset/textures/bricks2.jpg", desc);
-		Ref<Texture2D> brick_normal = TextureLibrary::Load("Asset/textures/bricks2_normal.jpg",desc);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/albedo.png", desc, PBRMaterial::TextureType::Albedo);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/normal.png", desc, PBRMaterial::TextureType::Normal);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/metallic.png", desc, PBRMaterial::TextureType::Metallic);
+		pbrmat.SetTexture("Asset/textures/rusted_iron/roughness.png", desc, PBRMaterial::TextureType::Roughness);
 
-		Brick.SetTexture(brick, Material::MaterialType::Diffuse);
-		Brick.SetTexture(brick_normal, Material::MaterialType::NormalMap);
 		//Brick.m_DiffuseTexture = brick;
 		//Brick.m_NormalMapTexture = brick_normal;
 
@@ -51,10 +55,6 @@ namespace QCat
 		light[3].info.diffuse = { 300.0f,300.0f,300.0f };
 
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
-		sphere->SetMaterial(Color);
-
-		cube = CreateRef<Cube>(glm::vec3(1.0f, 0.0f, 0.0f), PBRshader);
-		cube->SetMaterial(Color);
 	}
 
 	void PbrTest::OnDetach()
@@ -81,39 +81,25 @@ namespace QCat
 			std::string lightname = "pointLight[" + std::to_string(i) + "].";
 			PBRshader->SetFloat3(lightname +"position", light[i].info.lightPosition, ShaderType::PS);
 			PBRshader->SetFloat3(lightname +"diffuse", light[i].info.diffuse, ShaderType::PS);
-			PBRshader->SetFloat3(lightname +"specular", light[i].info.specular, ShaderType::PS);
-			PBRshader->SetFloat3(lightname +"ambient", light[i].info.ambient, ShaderType::PS);
-
-			PBRshader->SetFloat(lightname +"constant", light[i].info.constant, ShaderType::PS);
-			PBRshader->SetFloat(lightname +"Linear", light[i].info.linear, ShaderType::PS);
-			PBRshader->SetFloat(lightname +"quadratic", light[i].info.quadratic, ShaderType::PS);
 		}
 		
-
-		PBRshader->SetFloat("material.ao", 1.0f, ShaderType::PS);
-		PBRshader->SetFloat3("material.albedo", { 0.5f,0.0f,0.0f }, ShaderType::PS);
-
 		sphere->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 		for (int i = 0; i < 7; ++i)
 		{
-			PBRshader->SetFloat("material.metallic", (float)i / (float)7, ShaderType::PS);
 			for (int j = 0; j < 7; ++j)
 			{
-				float roughness = glm::clamp((float)j / (float)7, 0.05f, 1.0f);
-				PBRshader->SetFloat("material.roughness", roughness, ShaderType::PS);
-
 				sphere->SetTranslation(glm::vec3(-1.05f+j*0.3f, 1.05f-i*0.3f, 0.0f));
 				glm::mat4 transform = sphere->GetTransform();
 				PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
 				PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 				// material
-				PBRshader->SetFloat("material.shininess", Color.shininess, ShaderType::PS);
-				if (Color.IsThereTexture(Material::MaterialType::NormalMap))
-					PBRshader->SetBool("material.normalMap", true, ShaderType::PS);
+				if (pbrmat.IsThereTexture(PBRMaterial::TextureType::Normal))
+					PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
 				else
-					PBRshader->SetBool("material.normalMap", false, ShaderType::PS);
+					PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
 				PBRshader->UpdateBuffer();
 
+				pbrmat.Bind();
 				sphere->Draw(PBRshader);
 			}
 		}

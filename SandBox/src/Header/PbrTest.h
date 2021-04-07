@@ -8,6 +8,7 @@
 #include "QCat/Renderer/DepthStencil.h"
 #include "../Model/Model.h"
 #include "../CubeMap/CubeMap.h"
+#include "../Material/PBRMaterial.h"
 
 namespace QCat
 {
@@ -35,8 +36,8 @@ namespace QCat
 
 		Ref<Shader> PBRshader;
 		Ref<Shader> Flatcolor;
-		Material Color;
-		Material Brick;
+		
+		PBRMaterial pbrmat;
 
 		//light
 		Light light[4];

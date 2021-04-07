@@ -37,6 +37,10 @@ namespace QCat
 			imageformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
 			dataformat = GL_RGB;
 			break;
+		case 1:
+			imageformat = GL_R32F;
+			dataformat = GL_RED;
+			break;
 		}
 		m_InternalFormat = imageformat;
 		m_Format = dataformat;

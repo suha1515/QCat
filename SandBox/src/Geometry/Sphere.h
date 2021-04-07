@@ -1,7 +1,6 @@
 #pragma once
 
 #include "QCat.h"
-#include "../Material/Material.h"
 namespace QCat
 {
 	struct LightInfo;
@@ -16,12 +15,10 @@ namespace QCat
 		const glm::mat4& GetTransform();
 		void Draw(const Ref<Shader>& shader);
 
-		void SetMaterial(const Material& mat) { this->material = mat; }
 		glm::vec3 GetTranslation() { return translation; }
 
 		Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
 
-		Material& GetMaterial() { return material; }
 	public:
 		void ImguiRender(const char* name);
 	private:
@@ -32,7 +29,7 @@ namespace QCat
 		glm::vec3 rotation;
 		glm::vec3 scale;
 
-		Material material;
+		
 	};
 	
 }

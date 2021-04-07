@@ -183,6 +183,32 @@ namespace QCat
 				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
 				mat.SetTexture(normalTexture, Material::MaterialType::NormalMap);
 			}
+			if (material->GetTexture(aiTextureType_METALNESS, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
+				Ref<Texture2D> metallicTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(metallicTexture, Material::MaterialType::NormalMap);
+			}
+			//roughness
+			if (material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
+				Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(roughnessTexture, Material::MaterialType::NormalMap);
+			}
+			//ao
+			if (material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
+				Ref<Texture2D> ambientOcclusionTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(ambientOcclusionTexture, Material::MaterialType::NormalMap);
+			}
 		}
 		Ref<Shader> shader;
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)

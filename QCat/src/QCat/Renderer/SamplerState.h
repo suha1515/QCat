@@ -23,8 +23,8 @@ namespace QCat
 		Filtering MIP = Filtering::LINEAR;
 		FilterMode mode = FilterMode::NONE;
 
-		WrapingMode addressU = WrapingMode::CLAMP;
-		WrapingMode addressV = WrapingMode::CLAMP;
+		WrapingMode addressU = WrapingMode::REPEAT;
+		WrapingMode addressV = WrapingMode::REPEAT;
 		WrapingMode addressW = WrapingMode::CLAMP;
 
 		float MipLodBias = 0.0f;

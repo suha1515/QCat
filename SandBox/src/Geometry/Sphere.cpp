@@ -16,8 +16,7 @@ namespace QCat
 	};
 
 	Sphere::Sphere(const glm::vec3& position,float radius, int sectorCount, int stackCount)
-		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f)),
-		material(glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(1.0f, 0.5f, 0.31f), glm::vec3(0.5f, 0.5f, 0.5f), 32.0f)
+		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
 	{
 		//material.SetTexture("Asset/textures/container2.png", Material::MaterialType::Diffuse);
 		//material.SetTexture("Asset/textures/container2_specular.png", Material::MaterialType::Specular);

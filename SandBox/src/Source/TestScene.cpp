@@ -204,7 +204,6 @@ namespace QCat
 		m_quad->UnBind();
 
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f,0.0f,0.0f), 0.1f);
-		sphere->SetMaterial(brick);
 
 		face = CreateRef<Face>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader, floor);
 
