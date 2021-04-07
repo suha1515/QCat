@@ -53,6 +53,10 @@ namespace QCat
 		{
 			return Get().Load_(path, desc,mipLevel,samples,flip,gamaCorrection);
 		}
+		static Ref<Texture2D> Load(const std::string& name, TextureFormat format, unsigned int width, unsigned int height,void* pData, Sampler_Desc desc = {},unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
+		{
+			return Get().Load_(name, format,width,height,pData,desc, mipLevel, samples, flip);
+		}
 	private:
 		static TextureLibrary& Get()
 		{
@@ -73,6 +77,19 @@ namespace QCat
 			{
 				Ref<Texture2D> texture = Texture2D::Create(path, desc,mipLevel,samples,flip, gamaCorrection);
 				m_Textures[path] = texture;
+				return texture;
+			}
+		}
+		Ref<Texture2D> Load_(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc,unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
+		{
+			if (Exists(name))
+			{
+				return m_Textures[name];
+			}
+			else
+			{
+				Ref<Texture2D> texture = Texture2D::Create(format,desc,width,height, mipLevel, samples,pData);
+				m_Textures[name] = texture;
 				return texture;
 			}
 		}

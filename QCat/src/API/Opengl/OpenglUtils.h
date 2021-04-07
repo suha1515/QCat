@@ -103,6 +103,8 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case TextureFormat::RGBA8_SRGB:		return GL_UNSIGNED_BYTE;
+
 			case TextureFormat::RED32_FLOAT:	return GL_FLOAT;
 			case TextureFormat::RED32_INTEGER:  return GL_INT;
 			case TextureFormat::RG16_Float:	    return GL_HALF_FLOAT;
@@ -129,6 +131,7 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			 return GL_RGBA;
+			case TextureFormat::RGBA8_SRGB:		 return GL_RGBA;
 			case TextureFormat::RED32_FLOAT:	 return GL_RED;
 			case TextureFormat::RED32_INTEGER:   return GL_RED_INTEGER;
 			case TextureFormat::RGBA32_Float:	 return GL_RGBA;
@@ -149,6 +152,7 @@ namespace QCat
 
 				//32 bit
 			case TextureFormat::RGBA8:			return GL_RGBA8;
+			case TextureFormat::RGBA8_SRGB:		return GL_SRGB8_ALPHA8;
 			case TextureFormat::RED32_FLOAT:	return GL_R32F;
 			case TextureFormat::RED32_INTEGER:  return GL_R32I;
 			case TextureFormat::RG16_Float:	    return GL_RG16F;
@@ -172,6 +176,8 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			return GL_UNSIGNED_BYTE;
+			case TextureFormat::RGBA8_SRGB:		return GL_UNSIGNED_BYTE;
+
 			case TextureFormat::RED32_FLOAT:	return GL_FLOAT;
 			case TextureFormat::RED32_INTEGER:  return GL_INT;
 			case TextureFormat::RG16_Float:	    return GL_HALF_FLOAT;

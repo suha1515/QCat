@@ -6,15 +6,35 @@ namespace QCat
 {
 	namespace Utils
 	{
+		static UINT GetMemoryPitch(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+				//32 bit
+			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM:			 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:		 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R32_SINT:					 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT:				 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS:			 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS:				 return 4;
+
+			case DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT:		 return 8;
+			case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:		 return 16;
+			
+				
+
+			}
+		}
 		static DXGI_FORMAT GetDirectDataType(TextureFormat format)
 		{
 			switch (format)
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
+			case TextureFormat::RGBA8_SRGB:		 return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 			case TextureFormat::RED32_INTEGER:   return DXGI_FORMAT_R32_SINT;
 			case TextureFormat::RED32_FLOAT:	 return DXGI_FORMAT_R32_FLOAT;
-				//24 bit
+
 			case TextureFormat::RGB8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
 			case TextureFormat::DEPTH24STENCIL8: return DXGI_FORMAT_R24G8_TYPELESS;
 			case TextureFormat::DEPTH32:		 return DXGI_FORMAT_R32_TYPELESS;
@@ -30,6 +50,8 @@ namespace QCat
 			{
 				//32 bit
 			case TextureFormat::RGBA8:			 return sizeof(unsigned int);
+			case TextureFormat::RGBA8_SRGB:		 return sizeof(unsigned int);
+
 			case TextureFormat::RED32_INTEGER:   return sizeof(int);
 			case TextureFormat::RED32_FLOAT:	 return sizeof(float);
 				//24 bit

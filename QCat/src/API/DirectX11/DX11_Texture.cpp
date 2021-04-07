@@ -87,7 +87,7 @@ namespace QCat
 		// Create Texture and update it
 		D3D11_SUBRESOURCE_DATA subResource;
 		subResource.pSysMem = data;
-		subResource.SysMemPitch = textureDesc.Width * 4;
+		subResource.SysMemPitch = textureDesc.Width * Utils::GetMemoryPitch(textureDesc.Format);
 		subResource.SysMemSlicePitch = 0;
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, &subResource, &pTexture);
 		//QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, m_width *sizeof(unsigned int), 0u);
@@ -159,7 +159,7 @@ namespace QCat
 		{
 			unsigned long long datasize = Utils::GetDataSize(format);
 			data.pSysMem = pData;
-			data.SysMemPitch = 32;
+			data.SysMemPitch = m_width * Utils::GetMemoryPitch(textureDesc.Format) ;
 			data.SysMemSlicePitch = 0;
 			//QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, pData, m_width * 8, 0u);
 		}
