@@ -100,9 +100,37 @@ namespace QCat
 					PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
 				else
 					PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
-				PBRshader->UpdateBuffer();
+				
+				if (pbrmat.IsThereTexture(Material::TextureType::Diffuse))
+					PBRshader->SetBool("material.IsAlbedoMap", true, ShaderType::PS);
+				else
+				{
+					PBRshader->SetBool("material.IsAlbedoMap", false, ShaderType::PS);
+					PBRshader->SetFloat3("material.albedo", pbrmat.diffuse, ShaderType::PS);
+				}
+				if (pbrmat.IsThereTexture(Material::TextureType::Metallic))
+					PBRshader->SetBool("material.IsMetallicMap", true, ShaderType::PS);
+				else
+				{
+					PBRshader->SetBool("material.IsMetallicMap", false, ShaderType::PS);
+					PBRshader->SetFloat("material.metallic", pbrmat.metallic, ShaderType::PS);
+				}
+				if (pbrmat.IsThereTexture(Material::TextureType::Roughness))
+					PBRshader->SetBool("material.IsRoughnessMap", true, ShaderType::PS);
+				else
+				{
+					PBRshader->SetBool("material.IsRoughnessMap", false, ShaderType::PS);
+					PBRshader->SetFloat("material.roughness", pbrmat.roughness, ShaderType::PS);
+				}
+				if (pbrmat.IsThereTexture(Material::TextureType::AmbientOcclusion))
+					PBRshader->SetBool("material.IsAoMap", true, ShaderType::PS);
+				else
+					PBRshader->SetBool("material.IsAoMap", false, ShaderType::PS);
+					PBRshader->SetFloat("material.ambientocclusion", pbrmat.ao, ShaderType::PS);
+			
 
-				pbrmat.Bind(0,Material::TextureType::Diffuse);
+				PBRshader->UpdateBuffer();
+				pbrmat.Bind(0, Material::TextureType::Diffuse);
 				pbrmat.Bind(1, Material::TextureType::Normal);
 				pbrmat.Bind(2, Material::TextureType::Metallic);
 				pbrmat.Bind(3, Material::TextureType::Roughness);
@@ -119,13 +147,41 @@ namespace QCat
 			glm::mat4 transform = helmet->GetTransform() * mesh.GetTransform();
 			PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
 			PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
+			Material& helmetMat = mesh.GetMaterial();
 			// material
-			if (pbrmat.IsThereTexture(Material::TextureType::Normal))
+			if (helmetMat.IsThereTexture(Material::TextureType::Normal))
 				PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
 			else
 				PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
+			if (helmetMat.IsThereTexture(Material::TextureType::Diffuse))
+				PBRshader->SetBool("material.IsAlbedoMap", true, ShaderType::PS);
+			else
+			{
+				PBRshader->SetBool("material.IsAlbedoMap", false, ShaderType::PS);
+				PBRshader->SetFloat3("material.albedo", helmetMat.diffuse, ShaderType::PS);
+			}
+			if (helmetMat.IsThereTexture(Material::TextureType::Metallic))
+				PBRshader->SetBool("material.IsMetallicMap", true, ShaderType::PS);
+			else
+			{
+				PBRshader->SetBool("material.IsMetallicMap", false, ShaderType::PS);
+				PBRshader->SetFloat("material.metallic", helmetMat.metallic, ShaderType::PS);
+			}
+			if (helmetMat.IsThereTexture(Material::TextureType::Roughness))
+				PBRshader->SetBool("material.IsRoughnessMap", true, ShaderType::PS);
+			else
+			{
+				PBRshader->SetBool("material.IsRoughnessMap", false, ShaderType::PS);
+				PBRshader->SetFloat("material.roughness", helmetMat.roughness, ShaderType::PS);
+			}
+			if (helmetMat.IsThereTexture(Material::TextureType::AmbientOcclusion))
+				PBRshader->SetBool("material.IsAoMap", true, ShaderType::PS);
+			else
+				PBRshader->SetBool("material.IsAoMap", false, ShaderType::PS);
+			PBRshader->SetFloat("material.ambientocclusion", helmetMat.ao, ShaderType::PS);
+
 			PBRshader->UpdateBuffer();		
-			Material& helmetMat = mesh.GetMaterial();
+			
 			helmetMat.Bind(0, Material::TextureType::Diffuse);
 			helmetMat.Bind(1, Material::TextureType::Normal);
 			helmetMat.Bind(2, Material::TextureType::Metallic);

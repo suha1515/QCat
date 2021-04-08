@@ -47,8 +47,17 @@ struct Material
 	sampler2D roughnessMap;
 	sampler2D aoMap;
 
+	vec3 albedo;
 	float shininess;
+	float metallic;
+	float roughness;
+	float ambientocclusion;
+
+	bool IsAlbedoMap;
 	bool IsNormalMap;
+	bool IsMetallicMap;
+	bool IsRoughnessMap;
+	bool IsAoMap;
 };
 struct PointLight
 {
@@ -112,10 +121,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {
-	vec3 albedo = pow(texture(material.albedoMap, TexCoords).rgb,vec3(2.2));
-	float metallic = texture(material.metallicMap, TexCoords).r;
-	float roughness = texture(material.roughnessMap, TexCoords).r;
-	float ao = texture(material.aoMap, TexCoords).r;
+	vec3 albedo = material.IsAlbedoMap ? pow(texture(material.albedoMap, TexCoords).rgb,vec3(2.2)) : material.albedo;
+	float metallic = material.IsMetallicMap ? texture(material.metallicMap, TexCoords).r : material.metallic;
+	float roughness = material.IsRoughnessMap ? texture(material.roughnessMap, TexCoords).r : material.roughness;
+	float ao = material.IsAoMap ? texture(material.aoMap, TexCoords).r : material.ambientocclusion;
 
 	vec3 N;
 	vec3 V;
