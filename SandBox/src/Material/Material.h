@@ -50,9 +50,9 @@ namespace QCat
 		glm::vec3 diffuse;
 		glm::vec3 specular;
 		float shininess =32.0f;
-		float metallic;
-		float roughness;
-		float ao;
+		float metallic = 1.0f;
+		float roughness = 1.0f;
+		float ao = 1.0f;
 
 		Ref<Texture> m_DiffuseTexture;
 		Ref<Texture> m_SpecularTexture;

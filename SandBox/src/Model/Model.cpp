@@ -18,6 +18,13 @@ namespace QCat
 	{
 		LoadModel(path);
 	}
+	const glm::mat4 Model::GetTransform()
+	{
+		glm::mat4 transform = 
+			glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+
+		return transform;
+	}
 	void Model::Draw()
 	{
 			
@@ -123,7 +130,7 @@ namespace QCat
 			for (uint32_t j = 0; j < face.mNumIndices; ++j)
 				indices.emplace_back(face.mIndices[j]);
 		}
-
+		Material mat;
 		// Material info
 		// like node , mesh only has material index so to get real material infomation we need to index scene's mMaterial
 		if (mesh->mMaterialIndex >= 0)
@@ -131,15 +138,64 @@ namespace QCat
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 			aiString name = material->GetName();
 
-			//std::vector<Mesh::Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+			/*for (int i = 0; i < 19; ++i)
+			{
+				unsigned int numTextures = material->GetTextureCount((aiTextureType)i);
+				bool aa = true;
+			}
+				aiColor3D color(0.f, 0.f, 0.f);
+				bool success = false;
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, color))
+				{
+					success = true;
+				}
+				if(aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, color))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, color))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_TRANSPARENT, color))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_REFLECTIVE, color))
+				{
+					success = true;
+				}
+				float value = 0.0f;
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_OPACITY, value))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_TRANSPARENCYFACTOR, value))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_BUMPSCALING, value))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_SHININESS, value))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_REFLECTIVITY, value))
+				{
+					success = true;
+				}
+				if (aiReturn_SUCCESS == material->Get(AI_MATKEY_SHININESS_STRENGTH, value))
+				{
+					success = true;
+				}*/
 
-			//textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-
-			//std::vector<Mesh::Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-			//textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-
-			//std::vector<Mesh::Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-			//textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+			
 			aiString str;
 			std::string texturePath;
 			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == aiReturn_SUCCESS)
@@ -165,6 +221,62 @@ namespace QCat
 
 				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
 				mat.SetTexture(normalTexture, Material::TextureType::Normal);
+			}
+			if (material->GetTexture(aiTextureType_AMBIENT, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_BASE_COLOR, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_DISPLACEMENT, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_EMISSION_COLOR, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_EMISSIVE, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_LIGHTMAP, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_NORMALS, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
+				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(normalTexture, Material::TextureType::Normal);
+			}
+			if (material->GetTexture(aiTextureType_REFLECTION, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_OPACITY, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
+			}
+			if (material->GetTexture(aiTextureType_SHININESS, 0, &str) == aiReturn_SUCCESS)
+			{
+				texturePath = path + '/' + str.C_Str();
+				//texturePath = str.C_Str();
+
+				Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
+				mat.SetTexture(roughnessTexture, Material::TextureType::Roughness);
+			}
+			if (material->GetTexture(aiTextureType_UNKNOWN, 0, &str) == aiReturn_SUCCESS)
+			{
+				QCAT_CORE_ASSERT(false, "Find other imgageType");
 			}
 			if (material->GetTexture(aiTextureType_METALNESS, 0, &str) == aiReturn_SUCCESS)
 			{
@@ -203,7 +315,7 @@ namespace QCat
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		// TODO: Shader split..?
-		return Mesh(transform,vertices, indices, shader);
+		return Mesh(transform,vertices, indices, shader,mat);
 	}
 	std::vector<Mesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
 	{

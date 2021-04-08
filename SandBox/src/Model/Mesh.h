@@ -19,13 +19,14 @@ namespace QCat
 			std::string type;
 			Ref<Texture2D> texture;
 		};
-		Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices,std::vector<unsigned int>& indices,const Ref<Shader>& shader);
+		Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices,std::vector<unsigned int>& indices,const Ref<Shader>& shader,const Material& mat);
 		void Draw();
 		void Initialize(const Ref<Shader>& shader, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
-
-		const glm::mat4& GetTransform();
+		Material& GetMaterial() { return mat; }
+		const glm::mat4 GetTransform();
 	private:
 		Ref<VertexArray> m_VertexArray;
 		glm::mat4 transform = glm::mat4(1.0f);
+		Material mat;
 	};
 }

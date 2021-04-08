@@ -26,6 +26,9 @@ namespace QCat
 		Flatcolor = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/FlatColor.hlsl" : "Asset/shaders/glsl/FlatColor.glsl");
 		PBRshader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBR_PointLight.glsl");
 
+		helmet = Model::Create("Asset/model/gun2/gun2.fbx");
+		helmet->SetTranslation({ 0.0f,0.0f,-1.0f });
+		helmet->SetScale({ 0.01f,0.01f,0.01f });
 		PBRshader->Bind();
 		PBRshader->SetInt("material.albedoMap", 0, ShaderType::PS);
 		PBRshader->SetInt("material.normalMap", 1, ShaderType::PS);
@@ -107,6 +110,29 @@ namespace QCat
 				sphere->Draw(PBRshader);
 			}
 		}
+
+		std::vector<Mesh>& meshes = helmet->GetMeshes();
+		
+		helmet->SetRotation(rotation);
+		for (auto& mesh : meshes)
+		{
+			glm::mat4 transform = helmet->GetTransform() * mesh.GetTransform();
+			PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
+			PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
+			// material
+			if (pbrmat.IsThereTexture(Material::TextureType::Normal))
+				PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
+			else
+				PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
+			PBRshader->UpdateBuffer();		
+			Material& helmetMat = mesh.GetMaterial();
+			helmetMat.Bind(0, Material::TextureType::Diffuse);
+			helmetMat.Bind(1, Material::TextureType::Normal);
+			helmetMat.Bind(2, Material::TextureType::Metallic);
+			helmetMat.Bind(3, Material::TextureType::Roughness);
+			helmetMat.Bind(4, Material::TextureType::AmbientOcclusion);
+			mesh.Draw();
+		}
 		PBRshader->UnBind();
 
 		Flatcolor->Bind();
@@ -149,6 +175,8 @@ namespace QCat
 		}
 		ImGui::DragFloat3("cameraFront", glm::value_ptr(cameraFront), 0.1f);
 		ImGui::DragFloat3("lightPos", glm::value_ptr(light[0].info.lightPosition), 0.1f);
+		ImGui::DragFloat3("helmet rot", glm::value_ptr(rotation), 0.1f);
+
 		ImGui::End();
 	}
 

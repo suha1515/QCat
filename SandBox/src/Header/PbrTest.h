@@ -33,6 +33,9 @@ namespace QCat
 
 		Ref<Sphere> sphere;
 		Ref<Cube> cube;
+		
+		Ref<Model> helmet;
+		glm::vec3 rotation = { 0.0f,3.2f,0.0f };
 
 		Ref<Shader> PBRshader;
 		Ref<Shader> Flatcolor;

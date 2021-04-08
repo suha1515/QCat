@@ -2,8 +2,9 @@
 
 namespace QCat
 {
-	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader)
+	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader, const Material& mat)
 	{
+		this->mat = mat;
 		this->transform = transform;
 		Initialize(shader, vertices,indices);
 	}
@@ -38,12 +39,11 @@ namespace QCat
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
-		
-
+	
 		//unbind
 		m_VertexArray->UnBind();
 	}
-	const glm::mat4& Mesh::GetTransform()
+	const glm::mat4 Mesh::GetTransform()
 	{
 		return transform;
 	}
