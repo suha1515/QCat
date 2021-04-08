@@ -39,6 +39,8 @@ namespace QCat
 
 		Ref<Shader> PBRshader;
 		Ref<Shader> Flatcolor;
+		Ref<Shader> HdrToCube;
+		Ref<Texture2D> HDRImage;
 		
 		Material pbrmat;
 

@@ -178,7 +178,7 @@ namespace QCat
 		face->SetScale({ 5.0f, 5.0f, 5.0f });
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f,-2.7f,-0.9f), 0.1f);
 		LightPosition = sphere->GetTranslation();
-		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f), m_LightShader);
+		cube = CreateRef<Cube>(glm::vec3(-1.6f, -2.6f, -0.6f));
 		cube->SetScale({ 0.5f,0.5f,0.5f });
 
 		
@@ -680,13 +680,11 @@ namespace QCat
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
 		RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 		RenderCommand::SetStencilWriteMask(0xFF);*/
-		cube->SetMaterial(Box);
 		cube->SetScale({ 0.5f, 0.5f, 0.5f });
 		cube->SetTranslation(cube1);
-		cube->Draw(m_LightShader);
-		cube->SetMaterial(brick);
+		cube->Draw();
 		cube->SetTranslation(cube2);
-		cube->Draw(m_LightShader);
+		cube->Draw();
 	}
 
 	void Sandbox2D::RenderNonLightObj(const glm::mat4& proj, const glm::mat4& view, const glm::vec3& camPos)
@@ -743,13 +741,11 @@ namespace QCat
 		RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1);
 		RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::KEEP, STENCIL_OP::REPLACE);
 		RenderCommand::SetStencilWriteMask(0xFF);*/
-		cube->SetMaterial(Box);
 		cube->SetScale({ 0.5f, 0.5f, 0.5f });
 		cube->SetTranslation(cube1);
-		cube->Draw(shader);
-		cube->SetMaterial(brick);
+		cube->Draw();
 		cube->SetTranslation(cube2);
-		cube->Draw(shader);
+		cube->Draw();
 
 		sphere->SetTranslation(LightPosition);
 		sphere->SetScale({ 1.0f,1.0f,1.0f });

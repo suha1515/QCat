@@ -41,10 +41,6 @@ void main()
 #version 330 core
 struct Material
 {
-	sampler2D diffuse;
-	sampler2D specular;
-	sampler2D normal;
-	sampler2D emission;
 	float shininess;
 
 	vec3 albedo;
@@ -57,14 +53,7 @@ struct Material
 struct PointLight
 {
 	vec3 position;
-
-	float constant;
-	float Linear;
-	float quadratic;
-
-	vec3 ambient;
 	vec3 diffuse;
-	vec3 specular;
 };
 
 layout(location = 0) out vec4 color;

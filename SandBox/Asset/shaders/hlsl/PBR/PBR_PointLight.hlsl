@@ -58,7 +58,17 @@ struct PointLight
 };
 struct Material
 {
+	float3 albedo;
+	float shininess;
+	float metallic;
+	float roughness;
+	float ambientocclusion;
+
+	bool IsAlbedoMap;
 	bool IsNormalMap;
+	bool IsMetallicMap;
+	bool IsRoughnessMap;
+	bool IsAoMap;
 };
 cbuffer light : register(b0)
 {
@@ -136,10 +146,10 @@ PS_OUT PSMain(PSIn input)
 {
 	PS_OUT output;
 
-	float3 albedo = pow(albedoMap.Sample(splr, input.tc).rgb, 2.2f);
-	float metallic = metallicMap.Sample(splr, input.tc).r;
-	float roughness = roughnessMap.Sample(splr, input.tc).r;
-	float ao = aoMap.Sample(splr, input.tc).r;
+	float3 albedo = material.IsAlbedoMap ? pow(albedoMap.Sample(splr, input.tc).rgb, 2.2f) : material.albedo;
+	float metallic = material.IsMetallicMap ? metallicMap.Sample(splr, input.tc).r : material.metallic;
+	float roughness = material.IsRoughnessMap ? roughnessMap.Sample(splr, input.tc).r : material.roughness;
+	float ao = material.IsAoMap ? aoMap.Sample(splr, input.tc).r : material.ambientocclusion;
 
 	float4 color;
 	float3 N;

@@ -125,7 +125,7 @@ namespace QCat
 		brick.SetTexture(brickNormTex, Material::TextureType::Normal);
 		brick.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 
-		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f), BlinnPhongShader);
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 		
 		LightPosition = glm::vec3(-1.4f, -1.1f, 1.9f);
 			
@@ -285,22 +285,19 @@ namespace QCat
 
 			cube->SetTranslation({ 0.0f,0.0f,0.0f });
 			cube->SetScale({ 20.0f,5.0f,20.0f });
-			cube->SetMaterial(floor);
-			cube->Draw(SSaogeo);
+			cube->Draw();
 
 			SSaogeo->SetBool("flip", false, ShaderType::VS);
 
 			noTex.diffuse = (glm::vec3(1.0f, 1.0f, 0.0f));
 			cube->SetTranslation({ -2.5f,-2.f,-1.0f });
 			cube->SetScale({1.0f,1.0f,1.0f});
-			cube->SetMaterial(brick);
-			cube->Draw(SSaogeo);
+			cube->Draw();
 
 			noTex.diffuse = (glm::vec3(1.0f, 0.0f, 1.0f));
 			cube->SetTranslation({ -3.5f,-2.f, 1.0f});
 			cube->SetScale({ 1.0f,1.0f,1.0f });
-			cube->SetMaterial(brick);
-			cube->Draw(SSaogeo);
+			cube->Draw();
 
 			backpack->SetTranslation(backpackPos);
 			backpack->SetRotation(backpackRot);

@@ -10,41 +10,64 @@ namespace QCat
 		:mipLevel(mipLevel),samples(samples),flip(flip),gammaCorrection(gammaCorrection)
 	{
 		QCAT_PROFILE_FUNCTION();
-
+		auto begin = path.find_last_of('.');
+		std::string extension = path.substr(begin + 1, path.length());
 		int width, height, channels;
 		if(!flip)
 			stbi_set_flip_vertically_on_load(0);
 		else
 			stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = nullptr;
+		void* pData;
+		//stbi_uc* data = nullptr;
+		//float* fdata = nullptr;
 		{
 			QCAT_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+			if (extension != "hdr")
+			{
+				pData = stbi_load(path.c_str(), &width, &height, &channels, 0);
+				QCAT_CORE_ASSERT(pData, "Failed to load Image!");
+			}
+			else
+			{
+				pData = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+				QCAT_CORE_ASSERT(pData, "Failed to load HDR image!");
+			}
 		}
-		
-		QCAT_CORE_ASSERT(data, "Failed to load Image!");
 		m_width = width;
 		m_height = height;
 
-		GLenum imageformat=0, dataformat=0;
-		switch (channels)
+		GLenum Internalformat=0, format=0,dataFormat=0;
 		{
-		case 4:
-			imageformat = gammaCorrection ? GL_SRGB8_ALPHA8: GL_RGBA8;
-			dataformat = GL_RGBA;
-			break;
-		case 3:
-			imageformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
-			dataformat = GL_RGB;
-			break;
-		case 1:
-			imageformat = GL_R32F;
-			dataformat = GL_RED;
-			break;
+			if (extension != "hdr")
+			{
+				switch (channels)
+				{
+				case 4:
+					Internalformat = gammaCorrection ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+					format = GL_RGBA;
+					break;
+				case 3:
+					Internalformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
+					format = GL_RGB;
+					break;
+				case 1:
+					Internalformat = GL_R32F;
+					format = GL_RED;
+					break;
+				}
+				dataFormat = GL_UNSIGNED_BYTE;
+			}
+			else
+			{
+				Internalformat = GL_RGB16F;
+				format = GL_RGB;
+				dataFormat = GL_FLOAT;
+			}
+			
 		}
-		m_InternalFormat = imageformat;
-		m_Format = dataformat;
-		QCAT_CORE_ASSERT(imageformat & dataformat, "Format is not supported!");
+		m_InternalFormat = Internalformat;
+		m_Format = format;
+		QCAT_CORE_ASSERT(Internalformat & format, "Format is not supported!");
 
 		// Texture Create
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
@@ -56,14 +79,13 @@ namespace QCat
 			glTextureStorage2D(m_renderID, mipLevel, m_InternalFormat, m_width, m_height);
 		
 		// Upload Texture
-		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, dataformat, GL_UNSIGNED_BYTE,data);
+		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, dataFormat, pData);
 
 		if (mipLevel > 1)
 			glGenerateTextureMipmap(m_renderID);
 		// free loaded image
-		stbi_image_free(data);
+		stbi_image_free(pData);
 
-		
 		sampler = OpenGLSampler::Create(desc);
 	}
 	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples, void* pData)

@@ -14,9 +14,8 @@ namespace QCat
 		glm::vec3 Tangent;
 		glm::vec3 BiTangent;
 	};
-	Cube::Cube(const glm::vec3& position,const Ref<Shader>& shader)
+	Cube::Cube(const glm::vec3& position)
 		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
-		,material(glm::vec3(1.0f,0.5f,0.31f),glm::vec3(1.0f,0.5f,0.31f),glm::vec3(0.5f,0.5f,0.5f),32.0f)
 	{
 
 		/*Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
@@ -162,6 +161,9 @@ namespace QCat
 		
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(Indices, sizeof(Indices) / sizeof(uint32_t));
 
+		Ref<Shader> vertexShader;
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+			vertexShader = ShaderLibrary::Load("Blinn-Phong", "Asset/shaders/hlsl/Blinn-Phong.hlsl");
 		// layout
 		vertexBuffer->SetLayout(BufferLayout::Create(
 				{ { ShaderDataType::Float3, "a_Position"},
@@ -169,7 +171,7 @@ namespace QCat
 				  { ShaderDataType::Float2, "a_TexCoord"},
 				  { ShaderDataType::Float3, "a_Tangent"},
 				  { ShaderDataType::Float3, "a_BiTangent"},
-				}, shader));
+				}, vertexShader));
 		
 
 		m_VertexArray->AddVertexBuffer(vertexBuffer);
@@ -189,25 +191,12 @@ namespace QCat
 	{
 		this->translation = translation;
 	}
-	void Cube::Draw(const Ref<Shader>& shader)
+	const glm::mat4 Cube::GetTransform()
 	{
-		glm::mat4 transform= glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
-		shader->SetMat4("u_Transform", transform, ShaderType::VS);
-		shader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-
-		// material
-		shader->SetFloat("material.shininess", material.shininess, ShaderType::PS);
-
-		if (material.IsThereTexture(Material::TextureType::Normal))
-		{
-			shader->SetBool("material.normalMap", true, ShaderType::PS);
-		}
-		else
-		{
-			shader->SetBool("material.normalMap", false, ShaderType::PS);
-		}
-
-		material.Bind();
+		return glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+	}
+	void Cube::Draw()
+	{
 		m_VertexArray->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}

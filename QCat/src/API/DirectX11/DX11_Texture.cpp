@@ -3,6 +3,7 @@
 #include "stb_image.h"
 #include "DXUtils.h"
 #include "DX11_Sampler.h"
+#include "QCat/Uitiliy/Float16.h"
 namespace QCat
 {
 	DX11Texture2D::DX11Texture2D(Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel , unsigned int samples )
@@ -54,18 +55,50 @@ namespace QCat
 			stbi_set_flip_vertically_on_load(0);
 		else
 			stbi_set_flip_vertically_on_load(1);
-		
-		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-		if (gamacorrection)
+		auto begin = path.find_last_of('.');
+		std::string extension = path.substr(begin + 1, path.length());
+		void* pData;
+		Float16* float16Array=nullptr;
+			if (extension != "hdr")
+			{
+				pData = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+				QCAT_CORE_ASSERT(pData, "Failed to load Image!");
+
+			}
+			else
+			{
+				pData  = stbi_loadf(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+				QCAT_CORE_ASSERT(pData, "Failed to load HDR image!");
+				
+				float16Array = new Float16[width * height * 4];
+				for (unsigned int i = 0; i < width*height*4; i++)
+				{
+					float16Array[i] = ((float*)pData)[i];
+				}
+			}
+
 		{
-			m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			if (extension != "hdr")
+			{
+				switch (channels)
+				{
+				case 4:
+					m_dataFormat = gamacorrection ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+					break;
+				case 3:
+					m_dataFormat = gamacorrection ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+					break;
+				case 1:
+					m_dataFormat = DXGI_FORMAT_R32_FLOAT;
+					break;
+				}
+			}
+			else
+			{
+				m_dataFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+				//m_dataFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+			}
 		}
-		else
-		{
-			m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		}
-		
-		QCAT_CORE_ASSERT(data, "Failed to load Image!");
 		m_width = width;
 		m_height = height;
 		
@@ -86,12 +119,17 @@ namespace QCat
 
 		// Create Texture and update it
 		D3D11_SUBRESOURCE_DATA subResource;
-		subResource.pSysMem = data;
+		//void* ddat = f16Data;
+		if (float16Array!=nullptr)
+			subResource.pSysMem = float16Array;
+		else
+			subResource.pSysMem = pData;
+		
 		subResource.SysMemPitch = textureDesc.Width * Utils::GetMemoryPitch(textureDesc.Format);
 		subResource.SysMemSlicePitch = 0;
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, &subResource, &pTexture);
-		//QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, m_width *sizeof(unsigned int), 0u);
-		
+
+
 		// Texture resource view
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
@@ -103,30 +141,13 @@ namespace QCat
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-
-		//Set SamplerState
-		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-		if (channels > 3)
-		{
-			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		}
-		else
-		{
-			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		}
-		samplerDesc.BorderColor[0] = 1.0f;
-		samplerDesc.BorderColor[1] = 0.0f;
-		samplerDesc.BorderColor[2] = 1.0f;
-		samplerDesc.BorderColor[3] = 1.0f;
-
 		// Generate Mip
 		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
 			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
-		stbi_image_free(data);
+		stbi_image_free(pData);
+		if (float16Array != nullptr)
+			delete[] float16Array;
 		sampler = DX11Sampler::Create(desc);
 	}
 	DX11Texture2D::DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples, void* pData)

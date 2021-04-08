@@ -7,17 +7,15 @@ namespace QCat
 	class Cube
 	{
 	public:
-		Cube(const glm::vec3& position,const Ref<Shader>& shader);
+		Cube(const glm::vec3& position);
 		~Cube() = default;
 	public:
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);
 		void SetTranslation(const glm::vec3& translation);
+		const glm::mat4 GetTransform();
 
-		void Draw(const Ref<Shader>& shader);
-
-		void SetMaterial(Material& mat) { material = mat; }
-
+		void Draw();
 		Ref<VertexArray>& GetVertexArray() { return m_VertexArray; }
 	public:
 		void ImguiRender(const char* name);
@@ -27,8 +25,5 @@ namespace QCat
 		glm::vec3 translation;
 		glm::vec3 rotation;
 		glm::vec3 scale;
-
-		Material material;
-
 	};
 }
