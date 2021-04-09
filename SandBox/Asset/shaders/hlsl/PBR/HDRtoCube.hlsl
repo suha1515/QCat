@@ -55,6 +55,7 @@ PS_OUT PSMain(PSIn input)
 	
 	float2 uv = SamplerSphericalMap(normalize(input.localPos));
 	float3 color = equirectangularMap.Sample(splr, uv).rgb;
+
 	output.color = float4(color, 1.0f);
 	//output.color = float4(1.0f,1.0f,1.0f,1.0f);
 	return output;

@@ -17,10 +17,11 @@ namespace QCat
 		m_Camera = m_ActiveScene->CreateEntity("Camera");
 
 		auto& tc = m_Camera.GetComponent<TransformComponent>();
-		tc.Translation = { 0.0f,0.0f,-5.0f };
+		tc.Translation = { 0.0f,0.0f,-2.0f };
+
 		auto& camera = m_Camera.AddComponent<CameraComponent>();
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
-		camera.Camera.SetPerspective(glm::radians(30.0f), 0.01f, 100.0f);
+		camera.Camera.SetPerspective(1, 0.01f, 100.0f);
 
 		//PBRshader = ShaderLibrary::Load("Blinn-Phong", "Asset/shaders/glsl/VertexShader/World_TexNormFragTbn_Out.glsl",
 		//	"Asset/shaders/glsl/PixelShader/Blinn-phong.glsl");
@@ -45,7 +46,8 @@ namespace QCat
 		HdrCubeMap->Bind();
 		HdrCubeMap->SetInt("environmentMap", 0, ShaderType::PS);
 	
-		HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_8k.jpg", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : false);
+		//HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_8k.jpg", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+		HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 		//pbrmat.SetTexture("Asset/textures/rusted_iron/albedo.png", desc, Material::TextureType::Diffuse);
 		//pbrmat.SetTexture("Asset/textures/rusted_iron/normal.png", desc, Material::TextureType::Normal);
 		//pbrmat.SetTexture("Asset/textures/rusted_iron/metallic.png", desc, Material::TextureType::Metallic);
@@ -79,6 +81,56 @@ namespace QCat
 		spec.Width = 512;
 		spec.Height = 512;
 		cubeMapPass = FrameBuffer::Create(spec);
+
+		// I still dont know opengl cubmap texturing principle ... WTF?
+		// when i try to render on cubemap's face and check that texture on renderdoc it is pretty good. there is no reversed image
+		// but when it comes to textureCube and is sampled by fragment shader it becomse weird.. FUKKKKK!!
+		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
+		glm::mat4 captureProjection;
+		glm::mat4 captureViews[6];
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			captureProjection = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.01f, 10.0f);
+			captureViews[0] = glm::lookAtRH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+			captureViews[1] = glm::lookAtRH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+			captureViews[2] = glm::lookAtRH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f * bias));
+			captureViews[3] = glm::lookAtRH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f * bias));
+			captureViews[4] = glm::lookAtRH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+			captureViews[5] = glm::lookAtRH(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+		}
+		else
+		{
+			captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 10.0f);
+			captureViews[0] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+			captureViews[1] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+			captureViews[2] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f * bias));
+			captureViews[3] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f * bias));
+			captureViews[4] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+			captureViews[5] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
+		}
+
+		// Hdr Cubemap pass
+		RenderCommand::SetCullMode(CullMode::None);
+		cubeMapPass->Bind();
+		cubeMapPass->Clear();
+		{
+			HdrToCube->Bind();
+			HdrToCube->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+			for (int i = 0; i < 6; ++i)
+			{
+				cubeMapPass->AttachColorBuffer(0, 0, i);
+				HdrToCube->SetMat4("u_View", captureViews[i], ShaderType::VS);
+				HDRImage->Bind(0);
+				HdrToCube->UpdateBuffer();
+				cube->Draw();
+			}
+			HdrToCube->UnBind();
+		}
+		cubeMapPass->UnBind();
+
+		RenderCommand::SetDefaultFrameBuffer();
+		RenderCommand::SetViewport(0, 0, width, height);
+		RenderCommand::SetCullMode(CullMode::Back);
 	}
 
 	void PbrTest::OnDetach()
@@ -89,119 +141,80 @@ namespace QCat
 	{
 		QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 		QCat::RenderCommand::Clear();
-		//RenderCommand::SetDepthTest(true);
+		RenderCommand::SetDepthTest(true);
 
 		CameraUpdate(ts);
 		const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
 		auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
 
-		// I still dont know opengl cubmap texturing principle ... WTF?
-		// when i try to render on cubemap's face and check that texture on renderdoc it is pretty good. there is no reversed image
-		// but when it comes to textureCube and is sampled by fragment shader it becomse weird.. FUKKKKK!!
-		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? 1.0f : -1.0f;
-
-		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 10.0f);
-		glm::mat4 captureViews[] =
+		PBRshader->Bind();
+		PBRshader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);
+		PBRshader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
+		for (int i = 0; i < 4; ++i)
 		{
-		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, 1.0f,  0.0f)),
-		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f),glm::vec3(0.0f, 1.0f,  0.0f)),
-		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f * -bias,  0.0f), glm::vec3(0.0f, 0.0f, -1.0f * -bias)),// y-Up
-		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f * -bias,  0.0f), glm::vec3(0.0f, 0.0f,  1.0f * -bias)),// y-Down
-		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, 1.0f,  0.0f)),
-		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, 1.0f,  0.0f))
-		};
-		// Hdr Cubemap pass
-		RenderCommand::SetCullMode(CullMode::None);
-		cubeMapPass->Bind();
-		cubeMapPass->Clear();
-		{
-			HdrToCube->Bind();
-			HdrToCube->SetMat4("u_Projection", captureProjection, ShaderType::VS);
-			for (int i = 0; i < 6; ++i)
-			{
-				cubeMapPass->AttachColorBuffer(0,0,i);
-				HdrToCube->SetMat4("u_View", captureViews[i], ShaderType::VS);
-				HDRImage->Bind(0);
-				HdrToCube->UpdateBuffer();
-				cube->Draw();
-			}
-			HdrToCube->UnBind();
+			std::string lightname = "pointLight[" + std::to_string(i) + "].";
+			PBRshader->SetFloat3(lightname +"position", light[i].info.lightPosition, ShaderType::PS);
+			PBRshader->SetFloat3(lightname +"diffuse", light[i].info.diffuse, ShaderType::PS);
 		}
-		cubeMapPass->UnBind();
-
-		//// Default renderFrameBuffer
-		RenderCommand::SetDefaultFrameBuffer();
-		RenderCommand::SetViewport(0,0,width, height);
-		RenderCommand::SetCullMode(CullMode::Back);
-		//PBRshader->Bind();
-		//PBRshader->SetMat4("u_ViewProjection", camProj * viewMatrix,ShaderType::VS);
-		//PBRshader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
-
-		//for (int i = 0; i < 4; ++i)
-		//{
-		//	std::string lightname = "pointLight[" + std::to_string(i) + "].";
-		//	PBRshader->SetFloat3(lightname +"position", light[i].info.lightPosition, ShaderType::PS);
-		//	PBRshader->SetFloat3(lightname +"diffuse", light[i].info.diffuse, ShaderType::PS);
-		//}
-		//
-		//sphere->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
-		//pbrmat.diffuse = { 0.5f,0.0f,0.0f };
-		//for (int i = 0; i < 7; ++i)
-		//{
-		//	pbrmat.metallic = (float)i / (float)7;
-		//	for (int j = 0; j < 7; ++j)
-		//	{
-		//		float roughness = glm::clamp((float)j / (float)7, 0.05f, 1.0f);
-		//		pbrmat.roughness = roughness;
-		//		sphere->SetTranslation(glm::vec3(-1.05f+j*0.3f, 1.05f-i*0.3f, 0.0f));
-		//		glm::mat4 transform = sphere->GetTransform();
-		//		PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
-		//		PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-		//		// material
-		//		if (pbrmat.IsThereTexture(Material::TextureType::Normal))
-		//			PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
-		//		else
-		//			PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
-		//		
-		//		if (pbrmat.IsThereTexture(Material::TextureType::Diffuse))
-		//			PBRshader->SetBool("material.IsAlbedoMap", true, ShaderType::PS);
-		//		else
-		//		{
-		//			PBRshader->SetBool("material.IsAlbedoMap", false, ShaderType::PS);
-		//			PBRshader->SetFloat3("material.albedo", pbrmat.diffuse, ShaderType::PS);
-		//		}
-		//		if (pbrmat.IsThereTexture(Material::TextureType::Metallic))
-		//			PBRshader->SetBool("material.IsMetallicMap", true, ShaderType::PS);
-		//		else
-		//		{
-		//			PBRshader->SetBool("material.IsMetallicMap", false, ShaderType::PS);
-		//			PBRshader->SetFloat("material.metallic", pbrmat.metallic, ShaderType::PS);
-		//		}
-		//		if (pbrmat.IsThereTexture(Material::TextureType::Roughness))
-		//			PBRshader->SetBool("material.IsRoughnessMap", true, ShaderType::PS);
-		//		else
-		//		{
-		//			PBRshader->SetBool("material.IsRoughnessMap", false, ShaderType::PS);
-		//			PBRshader->SetFloat("material.roughness", pbrmat.roughness, ShaderType::PS);
-		//		}
-		//		if (pbrmat.IsThereTexture(Material::TextureType::AmbientOcclusion))
-		//			PBRshader->SetBool("material.IsAoMap", true, ShaderType::PS);
-		//		else
-		//			PBRshader->SetBool("material.IsAoMap", false, ShaderType::PS);
-		//			PBRshader->SetFloat("material.ambientocclusion", pbrmat.ao, ShaderType::PS);
-		//	
-
-		//		PBRshader->UpdateBuffer();
-		//		pbrmat.Bind(0, Material::TextureType::Diffuse);
-		//		pbrmat.Bind(1, Material::TextureType::Normal);
-		//		pbrmat.Bind(2, Material::TextureType::Metallic);
-		//		pbrmat.Bind(3, Material::TextureType::Roughness);
-		//		pbrmat.Bind(4, Material::TextureType::AmbientOcclusion);
-		//		sphere->Draw(PBRshader);
-		//	}
-		//}
+		
+		sphere->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+		pbrmat.diffuse = { 0.5f,0.0f,0.0f };
+		for (int i = 0; i < 7; ++i)
 		{
-			/*cube->SetTranslation({ 0.0f,0.0f,-2.0f });
+			pbrmat.metallic = (float)i / (float)7;
+			for (int j = 0; j < 7; ++j)
+			{
+				float roughness = glm::clamp((float)j / (float)7, 0.05f, 1.0f);
+				pbrmat.roughness = roughness;
+				sphere->SetTranslation(glm::vec3(-1.05f+j*0.3f, 1.05f-i*0.3f, 0.0f));
+				glm::mat4 transform = sphere->GetTransform();
+				PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
+				PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
+				// material
+				if (pbrmat.IsThereTexture(Material::TextureType::Normal))
+					PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
+				else
+					PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
+				
+				if (pbrmat.IsThereTexture(Material::TextureType::Diffuse))
+					PBRshader->SetBool("material.IsAlbedoMap", true, ShaderType::PS);
+				else
+				{
+					PBRshader->SetBool("material.IsAlbedoMap", false, ShaderType::PS);
+					PBRshader->SetFloat3("material.albedo", pbrmat.diffuse, ShaderType::PS);
+				}
+				if (pbrmat.IsThereTexture(Material::TextureType::Metallic))
+					PBRshader->SetBool("material.IsMetallicMap", true, ShaderType::PS);
+				else
+				{
+					PBRshader->SetBool("material.IsMetallicMap", false, ShaderType::PS);
+					PBRshader->SetFloat("material.metallic", pbrmat.metallic, ShaderType::PS);
+				}
+				if (pbrmat.IsThereTexture(Material::TextureType::Roughness))
+					PBRshader->SetBool("material.IsRoughnessMap", true, ShaderType::PS);
+				else
+				{
+					PBRshader->SetBool("material.IsRoughnessMap", false, ShaderType::PS);
+					PBRshader->SetFloat("material.roughness", pbrmat.roughness, ShaderType::PS);
+				}
+				if (pbrmat.IsThereTexture(Material::TextureType::AmbientOcclusion))
+					PBRshader->SetBool("material.IsAoMap", true, ShaderType::PS);
+				else
+					PBRshader->SetBool("material.IsAoMap", false, ShaderType::PS);
+					PBRshader->SetFloat("material.ambientocclusion", pbrmat.ao, ShaderType::PS);
+			
+
+				PBRshader->UpdateBuffer();
+				pbrmat.Bind(0, Material::TextureType::Diffuse);
+				pbrmat.Bind(1, Material::TextureType::Normal);
+				pbrmat.Bind(2, Material::TextureType::Metallic);
+				pbrmat.Bind(3, Material::TextureType::Roughness);
+				pbrmat.Bind(4, Material::TextureType::AmbientOcclusion);
+				sphere->Draw(PBRshader);
+			}
+		}
+		{
+		/*	cube->SetTranslation({ 0.0f,0.0f,-2.0f });
 			cube->SetScale({ 0.5f,0.5f,0.5f });
 			glm::mat4 cubeTransform = cube->GetTransform();
 			pbrmat.metallic = 0.2f;
@@ -274,7 +287,7 @@ namespace QCat
 		//	helmetMat.Bind(4, Material::TextureType::AmbientOcclusion);
 		//	mesh.Draw();
 		//}
-		/*PBRshader->UnBind();
+		PBRshader->UnBind();
 
 		Flatcolor->Bind();
 		Flatcolor->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);
@@ -290,7 +303,7 @@ namespace QCat
 			sphere->Draw(Flatcolor);
 		}
 		
-		Flatcolor->UnBind();*/
+		Flatcolor->UnBind();
 	
 
 		//Draw HDR skyBox
@@ -361,8 +374,15 @@ namespace QCat
 				float dx = (float)delta->x;
 				float dy = (float)delta->y;
 
-				yaw -= dx * 0.04f;
+			
 				pitch -= dy * 0.04f;
+				glm::vec3 front;
+
+				{
+					front = { 0.0f,0.0f,1.0f };
+					yaw -= dx * 0.04f;
+				}
+
 				//QCAT_INFO("dx : {0} , dy{1}", dx, dy);
 
 				if (pitch > 89.0f)
@@ -370,7 +390,7 @@ namespace QCat
 				if (pitch < -89.0f)
 					pitch = -89.f;
 
-				glm::vec3 front = { 0.0f,0.0f,1.0f };
+				
 				front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 				front.y = sin(glm::radians(pitch));
 				front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -402,9 +422,9 @@ namespace QCat
 				fpsmode = true;
 		}
 
-		cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
-		cameraUp = glm::cross(cameraFront, cameraRight);
-		viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
+			cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
+			cameraUp = glm::cross(cameraFront, cameraRight);
+			viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
 	}
 }
 

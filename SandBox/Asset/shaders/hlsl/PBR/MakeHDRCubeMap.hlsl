@@ -19,9 +19,12 @@ VSOut VSMain(VSIn Input)
 	VSOut vso;
 
 	vso.localPos = Input.pos;
-	//matrix rotView = float4x4(float3x3(u_View));
-	vso.pos = mul(u_Projection, mul(u_View, float4(Input.pos, 1.0f)));
-	
+	float4x4 rotView = u_View;
+	rotView._14 = 0.0f;
+	rotView._24 = 0.0f;
+	rotView._34 = 0.0f;
+	vso.pos = mul(u_Projection, mul(rotView, float4(Input.pos, 1.0f)));
+	vso.pos.z = vso.pos.w;
 	return vso;
 }
 #type pixel
@@ -45,6 +48,8 @@ PS_OUT PSMain(PSIn input)
 	float3 dir = input.localPos;
 	float3 envColor = environmentMap.Sample(splr, dir).rgb;
 
+	envColor = envColor / (envColor + float3(1.0, 1.0, 1.0));
+	envColor = pow(envColor, 1.0 / 2.2);
 	output.color = float4(envColor, 1.0f);
 	//output.color = float4(1.0f,1.0f,1.0f,1.0f);
 	return output;

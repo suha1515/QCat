@@ -1,6 +1,6 @@
 #include "qcpch.h"
 #include "SceneCamera.h"
-
+#include "QCat/Renderer/RenderAPI.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace QCat
@@ -36,7 +36,7 @@ namespace QCat
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
 		{
-			m_Projection = glm::perspective(m_PerspectiveFov, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+				m_Projection = glm::perspective(m_PerspectiveFov, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 		}
 		else
 		{
