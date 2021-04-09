@@ -67,7 +67,7 @@ namespace QCat
 		unsigned int m_width, m_height;
 		unsigned int mipLevel;
 		unsigned int m_renderID;
-;		GLenum m_InternalFormat[6], m_Format[6];
-bool flip = false, gammaCorrection = false;
+		GLenum m_InternalFormat[6], m_Format[6];
+		bool flip = false, gammaCorrection = false;
 	};
 }

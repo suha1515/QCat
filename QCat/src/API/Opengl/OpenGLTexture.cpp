@@ -202,7 +202,8 @@ namespace QCat
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevels, void* pData)
 		:m_width(width),m_height(height), mipLevel(mipLevels)
 	{
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_renderID);
+		glGenTextures(1, &m_renderID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
 
 		GLenum internalFormat= Utils::GetTextureInternalFormat(format);
 		GLenum textureformat = Utils::GetTextureFormat(format);
@@ -211,8 +212,15 @@ namespace QCat
 		{
 			m_InternalFormat[i] = internalFormat;
 			m_Format[i] = textureformat;
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipLevel - 1, m_InternalFormat[i], m_width, m_height, 0, m_Format[i], dataFormat, pData);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipLevels - 1, m_InternalFormat[i], width, height, 0, m_Format[i], dataFormat, pData);
+
 		}
+		glGenerateTextureMipmap(m_renderID);
+		/*glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
 		sampler = OpenGLSampler::Create(desc);
 	}
 	OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
@@ -229,10 +237,9 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 		// 1st parameter is for slot
-		//glBindTextureUnit(slot, m_renderID);
-		glActiveTexture(GL_TEXTURE0+slot);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
-
+		glBindTextureUnit(slot, m_renderID);
+		//glActiveTexture(GL_TEXTURE0+slot);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
 		sampler->Bind(slot);
 	}
 	

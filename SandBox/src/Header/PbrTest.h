@@ -28,6 +28,9 @@ namespace QCat
 		void CameraUpdate(QCat::Timestep ts);
 
 	private:
+		uint32_t width;
+		uint32_t height;
+		int num = 0;
 		//Scene
 		Ref<Scene> m_ActiveScene;
 
@@ -40,11 +43,16 @@ namespace QCat
 		Ref<Shader> PBRshader;
 		Ref<Shader> Flatcolor;
 		Ref<Shader> HdrToCube;
+		Ref<Shader> HdrCubeMap;
 		Ref<Texture2D> HDRImage;
 		
 		Material pbrmat;
 
+		//FrameBuffer
+		std::shared_ptr<FrameBuffer> cubeMapPass;
 		//light
+		//Ref<Shader> HdrCubeMap2;
+
 		Light light[4];
 		glm::vec3 lightPosition;
 		

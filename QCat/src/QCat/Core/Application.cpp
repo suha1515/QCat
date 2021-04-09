@@ -45,7 +45,7 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		Renderer::Shutdown();
+		//Renderer::Shutdown();
 	}
 	void Application::Run()
 	{

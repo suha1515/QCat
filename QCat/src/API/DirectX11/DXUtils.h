@@ -42,6 +42,9 @@ namespace QCat
 			case TextureFormat::RGBA16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
 			case TextureFormat::RGBA32_Float:    return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
+			//24bit
+			case TextureFormat::RGB16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
 			}
 		}
 		static unsigned long long GetDataSize(TextureFormat format)
@@ -60,7 +63,10 @@ namespace QCat
 			case TextureFormat::DEPTH32:		 return sizeof(unsigned int);
 
 			case TextureFormat::RGBA16_Float:    return sizeof(float);
-			case TextureFormat::RGBA32_Float:    return sizeof(float);;
+			case TextureFormat::RGBA32_Float:    return sizeof(float);
+
+			//24bit
+			case TextureFormat::RGB16_Float:    return 8;
 
 			}
 		}

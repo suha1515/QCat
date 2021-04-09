@@ -7,7 +7,6 @@ layout(location = 0) in vec3 a_Position;
 
 uniform mat4 u_Projection;
 uniform mat4 u_View;
-uniform mat4 u_Transform;
 
 out vec3 localPos;
 
@@ -15,7 +14,7 @@ out vec3 localPos;
 void main()
 {
 	localPos = a_Position;
-	gl_Position = u_Projection * u_View *u_Transform* vec4(localPos , 1.0f);
+	gl_Position = u_Projection * u_View * vec4(localPos , 1.0f);
 }
 
 #type fragment

@@ -193,12 +193,6 @@ namespace QCat
 	void DX11FrameBuffer::Bind()
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
-		ID3D11RenderTargetView* nullRTV[8] = { nullptr };
-		gfx.GetContext()->OMSetRenderTargets(8, nullRTV, nullptr);
-
-		ID3D11ShaderResourceView* const pSRV[16] = { NULL };
-		gfx.GetContext()->PSSetShaderResources(0, 16, pSRV);
-
 		std::vector<ID3D11RenderTargetView*> m_RenderTargets;
 		for (auto& rendertarget : m_ColorAttachments)
 		{
@@ -262,6 +256,28 @@ namespace QCat
 
 		return pixelData;
 	}
+	void DX11FrameBuffer::AttachColorBuffer(uint32_t slot, uint32_t index, int faceindex)
+	{
+		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		ID3D11DepthStencilView* depthView = nullptr;
+		ID3D11RenderTargetView* rtv = nullptr;
+		if (m_DepthAttachment.depthStencil != nullptr)
+		{
+			depthView = m_DepthAttachment.depthStencil->GetDepthStencil();
+			m_DepthAttachment.depthStencil->Clear(gfx);
+		}
+		if (m_ColorAttachmentSpecifications[index].textureType == TextureType::TextureCube)
+		{
+			rtv = m_ColorAttachments[index].rendertargets[faceindex]->GetRenderTargetView();
+			gfx.GetContext()->OMSetRenderTargets(1, &rtv, depthView);
+		}
+		else
+		{
+			rtv = m_ColorAttachments[index].rendertargets[0]->GetRenderTargetView();
+			gfx.GetContext()->OMSetRenderTargets(1, &rtv, depthView);
+		}
+	}
 	void DX11FrameBuffer::AttachCubeMapByIndex(uint32_t faceindex)
 	{
 		for (int i = 0; i < m_ColorAttachmentSpecifications.size(); ++i)
@@ -283,6 +299,13 @@ namespace QCat
 		int mainindex = m_ColorAttachments[attachmentIndex].attachTarget;
 		m_ColorAttachments[attachmentIndex].rendertargets[mainindex]->Clear(gfx,color);
 
+	}
+	void DX11FrameBuffer::ClearDepthStencil()
+	{
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+
+		if (m_DepthAttachment.depthStencil)
+			m_DepthAttachment.depthStencil->Clear(gfx);
 	}
 	void DX11FrameBuffer::SaveColorBuffer(uint32_t index) const
 	{
@@ -319,9 +342,10 @@ namespace QCat
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 		for (auto& rendertarget : m_ColorAttachments)
 		{
-			for (int i = 0; i < rendertarget.rendertargets.size(); ++i)
+			auto& rtvArray = rendertarget.rendertargets;
+			for (auto& rtv : rtvArray)
 			{
-				rendertarget.rendertargets[rendertarget.attachTarget]->Clear(gfx, color);
+					rtv->Clear(gfx, color);
 			}
 		}
 		if(m_DepthAttachment.depthStencil)

@@ -33,6 +33,8 @@ namespace QCat
 
 	void Renderer::OnWindowResize(unsigned int width, unsigned int height)
 	{
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+			RenderCommand::ResizeDefaultFramebuffer(width, height);
 		RenderCommand::SetViewport(0, 0, width, height);
 	}
 

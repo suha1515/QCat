@@ -24,10 +24,14 @@ namespace QCat
 		static void AttachTexture(TextureType textureformat,uint32_t id,bool multisampled, GLenum attachmenIndex)
 		{
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmenIndex, GetTextureTarget(textureformat,multisampled), id, 0);
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer isnt Good");
 		}
-		static void AttachTextureCube(TextureType format, uint32_t id,GLenum attachmentType)
+		static void AttachTextureCube(TextureType format, uint32_t id,GLenum attachmentType,GLenum textarget)
 		{
-			glFramebufferTexture(GL_FRAMEBUFFER, attachmentType,id, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, textarget, id, 0);
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer isnt Good");
 		}
 		static bool IsDepthFormat(FramebufferUsage format)
 		{
@@ -104,10 +108,13 @@ namespace QCat
 				case TextureType::TextureCube:
 				{
 					Sampler_Desc desc;
+					desc.addressU = WrapingMode::CLAMP;
+					desc.addressV = WrapingMode::CLAMP;
+					desc.addressW = WrapingMode::CLAMP;
 					Ref<TextureCube> textureCube = TextureCube::Create(format.textureformat, desc, m_Specification.Width, m_Specification.Height);
 					GLint id = (GLint)textureCube->GetTexture();
 					Utils::BindTexture(format.textureType, multisample, id);
-					Utils::AttachTextureCube(format.textureType, id, GL_COLOR_ATTACHMENT0 + i);
+					Utils::AttachTextureCube(format.textureType, id, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X);
 					m_ColorAttachments.push_back(textureCube);
 				}
 					break;
@@ -119,7 +126,7 @@ namespace QCat
 		{
 			auto format = m_DepthAttacmentSpecifications;
 			
-			GLenum attachmentInfo;
+			GLenum attachmentInfo=0;
 			if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
 				attachmentInfo = GL_DEPTH_ATTACHMENT;
 			else if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
@@ -219,10 +226,40 @@ namespace QCat
 		if (error != GL_NO_ERROR)
 			QCAT_WARN("error code {1}", error);
 	}
-	void OpenGLFrameBuffer::AttachCubeMapByIndex(uint32_t faceindex)
+	void OpenGLFrameBuffer::ClearDepthStencil()
+	{
+		if (m_DepthAttachment)
+		{
+			if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth)
+				glClear(GL_DEPTH_BUFFER_BIT);
+			else if (m_DepthAttacmentSpecifications.usage == FramebufferUsage::Depth_Stencil)
+				glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
+	}
+	void OpenGLFrameBuffer::AttachColorBuffer(uint32_t slot, uint32_t index, int faceindex)
 	{
 		QCAT_CORE_ASSERT(faceindex < 6);
+		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
 
+		if (faceindex == -1)
+		{
+			uint32_t id = (GLint)m_ColorAttachments[index]->GetTexture();
+			TextureType type = m_ColorAttachmentSpecifications[index].textureType;
+			QCAT_CORE_ASSERT(type == TextureType::Texture2D,"Access Texture2D but Wrong Texture Type")
+			Utils::AttachTexture(type, id, m_Specification.Samples > 1, slot);
+		}
+		else
+		{
+			uint32_t id = (GLint)m_ColorAttachments[index]->GetTexture();
+			TextureType type = m_ColorAttachmentSpecifications[index].textureType;
+			QCAT_CORE_ASSERT(type == TextureType::TextureCube, "Access TextureCube but Wrong Texture Type")
+			Utils::AttachTextureCube(type, id, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_CUBE_MAP_POSITIVE_X+faceindex);
+		}
+		QCAT_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer isnt Good");
+		Clear();
+	}
+	void OpenGLFrameBuffer::AttachCubeMapByIndex(uint32_t faceindex)
+	{
 		for (int i = 0; i < m_ColorAttachmentSpecifications.size(); ++i)
 		{
 			if (m_ColorAttachmentSpecifications[i].textureType == TextureType::TextureCube)

@@ -123,6 +123,7 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
+		if(s_data.QuadVertexBufferBase!=nullptr)
 		delete[] s_data.QuadVertexBufferBase;
 	}
 	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
