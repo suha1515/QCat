@@ -197,6 +197,31 @@ namespace QCat
 			case TextureFormat::DEPTH24STENCIL8:return GL_UNSIGNED_INT_24_8;
 			}
 		}
+
+		static TextureFormat GetTextureFormatFromGL(GLenum internalformat)
+		{
+			switch (internalformat)
+			{
+				//32 bit
+			case GL_RGBA8:			 return 	TextureFormat::RGBA8;
+			case GL_SRGB8_ALPHA8:	 return 	TextureFormat::RGBA8_SRGB;
+			case GL_R32F:			 return 	TextureFormat::RED32_FLOAT;
+			case GL_R32I:			 return 	TextureFormat::RED32_INTEGER;
+			case GL_RG16F:			 return 	TextureFormat::RG16_Float;
+			case GL_RGBA16F:		 return 	TextureFormat::RGBA16_Float;
+			case GL_RGBA32F:		 return 	TextureFormat::RGBA32_Float;
+
+
+				//24 bit
+			case GL_RGB8:	 return TextureFormat::RGB8;
+			case GL_RGB16F:  return	TextureFormat::RGB16_Float;
+
+
+				//depth
+			case  GL_DEPTH_COMPONENT32:   return TextureFormat::DEPTH32;
+			case  GL_DEPTH24_STENCIL8:    return TextureFormat::DEPTH24STENCIL8;
+			}
+		}
 	}
 
 

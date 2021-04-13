@@ -29,6 +29,7 @@ namespace QCat
 		PBRshader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBR_PointLight.glsl");
 		HdrToCube = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/HDRtoCube.hlsl": "Asset/shaders/glsl/PBR/HDRtoCube.glsl");
 		HdrCubeMap = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/MakeHDRCubeMap.hlsl" : "Asset/shaders/glsl/PBR/MakeHDRCubeMap.glsl");
+		IrradianceMap= ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
 		//helmet = Model::Create("Asset/model/gun2/gun2.fbx");
 		//helmet->SetTranslation({ 0.0f,0.0f,-1.0f });
 		//helmet->SetScale({ 0.01f,0.01f,0.01f });
@@ -45,6 +46,9 @@ namespace QCat
 
 		HdrCubeMap->Bind();
 		HdrCubeMap->SetInt("environmentMap", 0, ShaderType::PS);
+
+		IrradianceMap->Bind();
+		IrradianceMap->SetInt("envMap", 0, ShaderType::PS);
 	
 		//HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_8k.jpg", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 		HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
@@ -82,12 +86,16 @@ namespace QCat
 		spec.Height = 512;
 		cubeMapPass = FrameBuffer::Create(spec);
 
+		spec.Width = 32;
+		spec.Height = 32;
+		cubeMapPass2 = FrameBuffer::Create(spec);
+
 		// I still dont know opengl cubmap texturing principle ... WTF?
 		// when i try to render on cubemap's face and check that texture on renderdoc it is pretty good. there is no reversed image
 		// but when it comes to textureCube and is sampled by fragment shader it becomse weird.. FUKKKKK!!
 		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
-		glm::mat4 captureProjection;
-		glm::mat4 captureViews[6];
+		captureProjection;
+		captureViews[6];
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
 			captureProjection = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.01f, 10.0f);
@@ -115,7 +123,7 @@ namespace QCat
 		cubeMapPass->Clear();
 		{
 			HdrToCube->Bind();
-			HdrToCube->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+			HdrToCube->SetMat4("u_Projection", captureProjection, ShaderType::VS);	
 			for (int i = 0; i < 6; ++i)
 			{
 				cubeMapPass->AttachColorBuffer(0, 0, i);
@@ -128,9 +136,25 @@ namespace QCat
 		}
 		cubeMapPass->UnBind();
 
-		RenderCommand::SetDefaultFrameBuffer();
-		RenderCommand::SetViewport(0, 0, width, height);
-		RenderCommand::SetCullMode(CullMode::Back);
+		HdrCubeMapTexture = cubeMapPass->GetColorTexture(0);
+		cubeMapPass->SetViewport(32, 32);
+
+		cubeMapPass->Bind();
+		cubeMapPass->Clear();
+		IrradianceMap->Bind();
+		IrradianceMap->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		for (int i = 0; i < 6; ++i)
+		{
+			cubeMapPass->AttachColorBuffer(0, 0, i);
+			IrradianceMap->SetMat4("u_View", captureViews[i], ShaderType::VS);
+			IrradianceMap->UpdateBuffer();
+			HdrCubeMapTexture->Bind(0);
+			cube->Draw();
+		}
+		IrradianceMap->UnBind();
+		cubeMapPass->UnBind();
+
+		
 	}
 
 	void PbrTest::OnDetach()
@@ -139,9 +163,12 @@ namespace QCat
 
 	void PbrTest::OnUpdate(Timestep ts)
 	{
+		
+		RenderCommand::SetDefaultFrameBuffer();
+		RenderCommand::SetViewport(0, 0, width, height);
+		RenderCommand::SetCullMode(CullMode::Back);
 		QCat::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 		QCat::RenderCommand::Clear();
-		RenderCommand::SetDepthTest(true);
 
 		CameraUpdate(ts);
 		const glm::mat4& camProj = m_Camera.GetComponent<CameraComponent>().Camera.GetProjection();
@@ -315,6 +342,7 @@ namespace QCat
 			HdrCubeMap->SetMat4("u_View", viewMatrix, ShaderType::VS);
 			HdrCubeMap->UpdateBuffer();
 			cubeMapPass->BindColorTexture(0, 0);
+			
 			cube->Draw();
 			HdrCubeMap->UnBind();
 		}

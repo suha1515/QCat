@@ -2,6 +2,7 @@
 #include "QCat/Core/QCatCore.h"
 #include "QCat/Renderer/SamplerState.h"
 #include "QCat/Renderer/enums.h"
+
 namespace QCat
 {
 	class Texture
@@ -18,6 +19,9 @@ namespace QCat
 		virtual void Bind(unsigned int slot =0) const = 0;
 
 		virtual bool operator==(const Texture& other) const = 0;
+
+		virtual TextureType GetTextureType() const = 0;
+		virtual TextureFormat GetTextureFormat() const = 0;
 		
 		//virtual Texture& operator=(const Texture& other) = 0;
 

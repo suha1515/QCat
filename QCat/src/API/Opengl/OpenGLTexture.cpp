@@ -45,6 +45,7 @@ namespace QCat
 				case 4:
 					Internalformat = gammaCorrection ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 					format = GL_RGBA;
+					
 					break;
 				case 3:
 					Internalformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
@@ -67,6 +68,8 @@ namespace QCat
 		}
 		m_InternalFormat = Internalformat;
 		m_Format = format;
+		m_textureType = TextureType::Texture2D;
+		m_textureFormat = Utils::GetTextureFormatFromGL(m_InternalFormat);
 		QCAT_CORE_ASSERT(Internalformat & format, "Format is not supported!");
 
 		// Texture Create
@@ -81,7 +84,7 @@ namespace QCat
 		// Upload Texture
 		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, dataFormat, pData);
 
-		if (mipLevel > 1)
+		if (mipLevel > 1 && desc.MIP != Filtering::NONE)
 			glGenerateTextureMipmap(m_renderID);
 		// free loaded image
 		stbi_image_free(pData);
@@ -92,6 +95,9 @@ namespace QCat
 		:m_width(width),m_height(height), mipLevel(mipLevel), samples(samples)
 	{
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
+
+		m_textureFormat = format;
+		m_textureType = TextureType::Texture2D;
 
 		m_InternalFormat = Utils::GetTextureInternalFormat(format);
 		m_Format = Utils::GetTextureFormat(format);
@@ -106,7 +112,7 @@ namespace QCat
 		if(pData!=nullptr)
 			glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, dataFormat,pData);
 
-		if(mipLevel>1)
+		if (mipLevel > 1 && desc.MIP != Filtering::NONE)
 			glGenerateTextureMipmap(m_renderID);
 
 		sampler = OpenGLSampler::Create(desc);
@@ -117,6 +123,8 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 		m_InternalFormat = GL_RGBA8, m_Format = GL_RGBA;
+		m_textureType = TextureType::Texture2D;
+		m_textureFormat = Utils::GetTextureFormatFromGL(m_InternalFormat);
 
 		// Texture Create
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
@@ -126,6 +134,9 @@ namespace QCat
 			glTextureStorage2DMultisample(m_renderID, samples, m_InternalFormat, m_width, m_height, true);
 		else
 			glTextureStorage2D(m_renderID, mipLevel, m_InternalFormat, m_width, m_height);
+
+		if (mipLevel > 1 && desc.MIP != Filtering::NONE)
+			glGenerateTextureMipmap(m_renderID);
 
 		sampler = OpenGLSampler::Create(desc);
 	}
@@ -147,7 +158,10 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
+
 		// 1st parameter is for slot
+		//glActiveTexture(GL_TEXTURE0 + slot);
+		//glBindTexture(GL_TEXTURE_2D, m_renderID);
 		glBindTextureUnit(slot, m_renderID);
 		sampler->Bind(slot);
 	}
@@ -186,6 +200,9 @@ namespace QCat
 					break;
 				}
 			}
+			m_textureType = TextureType::TextureCube;
+			m_textureFormat = Utils::GetTextureFormatFromGL(imageformat);
+
 			QCAT_CORE_ASSERT(data, "Failed to load Image!");
 			m_width = width;
 			m_height = height;
@@ -195,7 +212,8 @@ namespace QCat
 			stbi_image_free(data);
 		}
 
-		glGenerateTextureMipmap(m_renderID);
+		if (mipLevels > 1 && desc.MIP != Filtering::NONE)
+			glGenerateTextureMipmap(m_renderID);
 
 		sampler = OpenGLSampler::Create(desc);
 	}
@@ -204,6 +222,9 @@ namespace QCat
 	{
 		glGenTextures(1, &m_renderID);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
+
+		m_textureType = TextureType::TextureCube;
+		m_textureFormat = format;
 
 		GLenum internalFormat= Utils::GetTextureInternalFormat(format);
 		GLenum textureformat = Utils::GetTextureFormat(format);
@@ -215,7 +236,8 @@ namespace QCat
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipLevels - 1, m_InternalFormat[i], width, height, 0, m_Format[i], dataFormat, pData);
 
 		}
-		glGenerateTextureMipmap(m_renderID);
+		if(mipLevels>1 && desc.MIP != Filtering::NONE)
+		  glGenerateTextureMipmap(m_renderID);
 		/*glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);

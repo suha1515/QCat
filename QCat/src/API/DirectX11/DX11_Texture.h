@@ -22,6 +22,8 @@ namespace QCat
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+		virtual TextureType GetTextureType() const override { return m_textureType; }
+		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
 		virtual void SetData(void* data, unsigned int size) override;
 
@@ -42,6 +44,8 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
+		TextureType m_textureType;
+		TextureFormat m_textureFormat;
 	};
 	class DX11TextureCube : public TextureCube
 	{
@@ -55,6 +59,8 @@ namespace QCat
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+		virtual TextureType GetTextureType() const override { return m_textureType; }
+		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
 		virtual void SetData(void* pData, unsigned int size) override;
 		virtual void Bind(unsigned int slot = 0) const override;
@@ -73,6 +79,8 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
+		TextureType m_textureType;
+		TextureFormat m_textureFormat;
 
 	};
 }

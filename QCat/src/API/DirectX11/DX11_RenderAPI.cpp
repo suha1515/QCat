@@ -100,8 +100,8 @@ namespace QCat
 	{
 		unsigned int count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		DrawIndexed(count);
-		//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullSRV =  nullptr;
-		//pgfx->GetContext()->PSSetShaderResources(0u, 1u, nullSRV.GetAddressOf());
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullSRV =  nullptr;
+		pgfx->GetContext()->PSSetShaderResources(0u, 1u, nullSRV.GetAddressOf());
 	}
 	void DX11RenderAPI::SetDepthTest(bool enable)
 	{

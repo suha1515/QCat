@@ -53,6 +53,10 @@ namespace QCat
 		virtual Ref<Texture> GetColorTexture(uint32_t index = 0) const override;
 		virtual Ref<Texture> GetDepthTexture()const override;
 
+		virtual void SetColorTexture(uint32_t index, Ref<Texture> texture)  override {}
+		virtual void SetDepthTexture(Ref<Texture> texture, FramebufferUsage usage)  override {}
+		virtual void SetViewport(uint32_t width, uint32_t height) override;
+
 		virtual void CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit buffer, void* destBuffer) override;
 
 	private:

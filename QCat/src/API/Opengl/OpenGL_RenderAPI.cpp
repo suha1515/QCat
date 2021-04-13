@@ -112,7 +112,8 @@ namespace QCat
 	{
 		unsigned int count = indexCount ?  indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(Utils::DrawModetoGL(mode), count,GL_UNSIGNED_INT, nullptr);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		//glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTextureUnit(0, 0);
 	}
 	
 	void OpenGLRenderAPI::SetDepthTest(bool enable)

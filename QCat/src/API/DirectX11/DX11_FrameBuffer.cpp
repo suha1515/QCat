@@ -359,6 +359,12 @@ namespace QCat
 	{
 		return m_DepthAttachment.texture;
 	}
+	void DX11FrameBuffer::SetViewport(uint32_t width, uint32_t height)
+	{
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+		Invalidate();
+	}
 	void DX11FrameBuffer::CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit bufferbit, void* destBuffer)
 	{
 		D3D11_BOX box;

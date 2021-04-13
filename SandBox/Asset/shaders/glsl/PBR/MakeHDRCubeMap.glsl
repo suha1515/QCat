@@ -10,13 +10,13 @@ uniform mat4 u_View;
 
 out vec3 localPos;
 
-
 void main()
 {
 	localPos = a_Position;
 	mat4 rotView = mat4(mat3(u_View));//remove translation
 	vec4 clipPos = u_Projection * rotView * vec4(localPos , 1.0f);
 	gl_Position = clipPos.xyww;
+	//gl_Position = clipPos;
 }
 
 #type fragment

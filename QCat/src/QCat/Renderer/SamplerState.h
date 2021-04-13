@@ -20,7 +20,7 @@ namespace QCat
 
 		Filtering MIN = Filtering::LINEAR;
 		Filtering MAG = Filtering::LINEAR;
-		Filtering MIP = Filtering::LINEAR;
+		Filtering MIP = Filtering::NONE;
 		FilterMode mode = FilterMode::NONE;
 
 		WrapingMode addressU = WrapingMode::REPEAT;

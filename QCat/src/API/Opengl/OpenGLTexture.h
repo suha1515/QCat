@@ -15,6 +15,8 @@ namespace QCat
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override {return m_height;}
 		virtual void*       GetTexture() const override { return (void*)m_renderID; }
+		virtual TextureType GetTextureType() const override { return m_textureType; }
+		virtual TextureFormat GetTextureFormat() const override {return m_textureFormat;}
 
 		virtual void SetData(void* pData, unsigned int size) override;
 
@@ -39,6 +41,8 @@ namespace QCat
 		unsigned int mipLevel,samples;
 		bool flip=false, gammaCorrection = false;
 		GLenum m_InternalFormat, m_Format;
+		TextureType m_textureType;
+		TextureFormat m_textureFormat;
 	};
 
 	class OpenGLCubeMapTexture : public TextureCube
@@ -52,6 +56,8 @@ namespace QCat
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)m_renderID; }
+		virtual TextureType GetTextureType() const override { return m_textureType; }
+		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
 		virtual void SetData(void* pData, unsigned int size) override;
 
@@ -69,5 +75,7 @@ namespace QCat
 		unsigned int m_renderID;
 		GLenum m_InternalFormat[6], m_Format[6];
 		bool flip = false, gammaCorrection = false;
+		TextureType m_textureType;
+		TextureFormat m_textureFormat;
 	};
 }

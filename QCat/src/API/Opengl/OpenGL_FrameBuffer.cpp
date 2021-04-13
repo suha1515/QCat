@@ -316,6 +316,52 @@ namespace QCat
 	{
 		return m_DepthAttachment;
 	}
+	void OpenGLFrameBuffer::SetColorTexture(uint32_t index, Ref<Texture> texture) 
+	{
+		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
+
+		TextureFormat textureformat = texture->GetTextureFormat();
+		TextureType texturetype = texture->GetTextureType();
+		
+		if (textureformat == TextureFormat::DEPTH24STENCIL8 || textureformat == TextureFormat::DEPTH32)
+		{
+			std::runtime_error("color texture Can't be depth_stencil format");
+		}
+
+		m_ColorAttachmentSpecifications[index].textureformat = textureformat;
+		m_ColorAttachmentSpecifications[index].textureType = texturetype;
+
+		m_ColorAttachments[index] = texture;
+		
+	}
+	void OpenGLFrameBuffer::SetDepthTexture(Ref<Texture> texture, FramebufferUsage usage)
+	{
+
+		TextureFormat textureformat = texture->GetTextureFormat();
+		TextureType texturetype = texture->GetTextureType();
+
+		if (usage == FramebufferUsage::Color || usage == FramebufferUsage::None)
+		{
+			std::runtime_error("depth texture usage value is wrong!");
+
+		}
+		if (textureformat != TextureFormat::DEPTH24STENCIL8 || textureformat != TextureFormat::DEPTH32)
+		{
+			std::runtime_error("depth texture Can't be color format!");
+		}
+
+		m_DepthAttacmentSpecifications.textureformat = textureformat;
+		m_DepthAttacmentSpecifications.textureType = texturetype;
+		m_DepthAttacmentSpecifications.usage = usage;
+
+		m_DepthAttachment = texture;
+	}
+	void OpenGLFrameBuffer::SetViewport(uint32_t width, uint32_t height)
+	{
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+		Invalidate();
+	}
 	void OpenGLFrameBuffer::CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit bufferbit, void* destBuffer)
 	{
 		GLint Buffer=0;

@@ -12,6 +12,7 @@ namespace QCat
 		FramebufferSpecification(FramebufferUsage usage, TextureType textureType, TextureFormat dataFormat)
 			: usage(usage), textureType(textureType),textureformat(dataFormat){}
 
+	public:
 		FramebufferUsage usage = FramebufferUsage::None;
 		TextureType textureType = TextureType::None;
 		TextureFormat textureformat = TextureFormat::None;
@@ -64,6 +65,10 @@ namespace QCat
 
 		virtual Ref<Texture> GetColorTexture(uint32_t index = 0) const = 0;
 		virtual Ref<Texture> GetDepthTexture()const = 0;
+
+		virtual void SetColorTexture(uint32_t index,Ref<Texture> texture)  = 0;
+		virtual void SetDepthTexture(Ref<Texture> texture, FramebufferUsage usage)  = 0;
+		virtual void SetViewport(uint32_t width, uint32_t height) = 0;
 
 		virtual void CopyFrameBuffer(int srcx0, int srcy0, int srcx1, int srcy1, int dstx0, int dsty0, int dstx1, int dsty1, BufferBit buffer, void* destBuffer) =0;
 		//virtual FrameBufferSpecification& GetSpecification() = 0;

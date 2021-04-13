@@ -102,6 +102,9 @@ namespace QCat
 		m_width = width;
 		m_height = height;
 		
+		m_textureType = TextureType::Texture2D;
+		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
+
 		// Texture Description
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_width;
@@ -154,6 +157,9 @@ namespace QCat
 		:m_width(width),m_height(height)
 	{
 		m_dataFormat = Utils::GetDirectDataType(format);
+		m_textureType = TextureType::Texture2D;
+		m_textureFormat = format;
+
 
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_width;
@@ -211,6 +217,8 @@ namespace QCat
 		m_width = textureDesc.Width;
 		m_height = textureDesc.Height;
 		m_dataFormat = textureDesc.Format;
+		m_textureType = TextureType::Texture2D;
+		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
 		samples = textureDesc.SampleDesc.Count;
 		if (textureDesc.MipLevels > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
@@ -342,6 +350,8 @@ namespace QCat
 			m_width = width;
 			m_height = height;
 		}
+		m_textureType = TextureType::TextureCube;
+		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
 		// Texture Description
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_width;
@@ -396,7 +406,8 @@ namespace QCat
 		:m_width(width),m_height(height)
 	{
 		m_dataFormat = Utils::GetDirectDataType(format);
-
+		m_textureType = TextureType::TextureCube;
+		m_textureFormat = format;
 		// Texture Description
 		D3D11_TEXTURE2D_DESC textureDesc = {};
 		textureDesc.Width = m_width;
@@ -448,6 +459,9 @@ namespace QCat
 	DX11TextureCube::DX11TextureCube(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip, bool gammaCorrection)
 	{
 		m_dataFormat = textureDesc.Format;
+		m_textureType = TextureType::TextureCube;
+		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
+
 		m_width = textureDesc.Width;
 		m_height = textureDesc.Height;
 

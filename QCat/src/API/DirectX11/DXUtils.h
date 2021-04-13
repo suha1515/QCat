@@ -47,6 +47,23 @@ namespace QCat
 
 			}
 		}
+		static TextureFormat GetTextureFormatFromDX(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+				//32 bit
+			case DXGI_FORMAT_R8G8B8A8_UNORM:		  return TextureFormat::RGBA8;
+			case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:	  return TextureFormat::RGBA8_SRGB;
+			case DXGI_FORMAT_R32_SINT:				  return TextureFormat::RED32_INTEGER;
+			case DXGI_FORMAT_R32_FLOAT:				  return TextureFormat::RED32_FLOAT;
+				 
+			case DXGI_FORMAT_R24G8_TYPELESS:		  return TextureFormat::DEPTH24STENCIL8;
+			case DXGI_FORMAT_R32_TYPELESS:			  return TextureFormat::DEPTH32;
+				 
+			case DXGI_FORMAT_R16G16B16A16_FLOAT:	  return TextureFormat::RGBA16_Float;
+			case DXGI_FORMAT_R32G32B32A32_FLOAT:	  return TextureFormat::RGBA32_Float;
+			}
+		}
 		static unsigned long long GetDataSize(TextureFormat format)
 		{
 			switch (format)
