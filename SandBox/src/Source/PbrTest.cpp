@@ -39,6 +39,7 @@ namespace QCat
 		PBRshader->SetInt("material.metallicMap", 2, ShaderType::PS);
 		PBRshader->SetInt("material.roughnessMap", 3, ShaderType::PS);
 		PBRshader->SetInt("material.aoMap", 4, ShaderType::PS);
+		PBRshader->SetInt("irradianceMap", 5, ShaderType::PS);
 
 		Sampler_Desc desc;
 		HdrToCube->Bind();
@@ -191,6 +192,8 @@ namespace QCat
 			pbrmat.metallic = (float)i / (float)7;
 			for (int j = 0; j < 7; ++j)
 			{
+				//irradiance Map
+				cubeMapPass->BindColorTexture(5,0);
 				float roughness = glm::clamp((float)j / (float)7, 0.05f, 1.0f);
 				pbrmat.roughness = roughness;
 				sphere->SetTranslation(glm::vec3(-1.05f+j*0.3f, 1.05f-i*0.3f, 0.0f));
@@ -341,8 +344,7 @@ namespace QCat
 			HdrCubeMap->SetMat4("u_Projection", camProj, ShaderType::VS);
 			HdrCubeMap->SetMat4("u_View", viewMatrix, ShaderType::VS);
 			HdrCubeMap->UpdateBuffer();
-			cubeMapPass->BindColorTexture(0, 0);
-			
+			HdrCubeMapTexture->Bind(0);
 			cube->Draw();
 			HdrCubeMap->UnBind();
 		}

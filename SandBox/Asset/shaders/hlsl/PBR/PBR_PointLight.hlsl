@@ -83,6 +83,7 @@ Texture2D normalMap;
 Texture2D metallicMap;
 Texture2D roughnessMap;
 Texture2D aoMap;
+TextureCube irradianceMap;
 
 SamplerState splr : register(s0);
 struct PSIn
@@ -206,7 +207,13 @@ PS_OUT PSMain(PSIn input)
 		Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
-	float3 ambient = float3(0.03f, 0.03f, 0.03f) * albedo * ao;
+	float3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
+	float3 kD = 1.0f - kS;
+	kD *= 1.0f - metallic;
+	float3 irradiance = irradianceMap.Sample(splr, N).rgb;
+	float3 diffuse = irradiance * albedo;
+	float3 ambient = (kD * diffuse) * ao;
+
 	result = ambient + Lo;
 	//HDR tonemapping
 	result = result / (result + float3(1.0f, 1.0f, 1.0f));

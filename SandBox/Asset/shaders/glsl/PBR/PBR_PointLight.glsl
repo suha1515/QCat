@@ -72,6 +72,9 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in mat3 TBN;
 
+// IBL
+uniform samplerCube irradianceMap;
+
 uniform Material material;
 uniform PointLight pointLight[4];
 uniform vec3 u_viewPosition;
@@ -183,7 +186,13 @@ void main()
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
-	vec3 ambient = vec3(0.03) * albedo * ao;
+	// ambient light (use ibl for ambient)
+	vec3 kS = fresnelSchlick(max(dot(N,V),0.0),F0);
+	vec3 kD = 1.0 - kS;
+	kD      *=1.0 - metallic;
+	vec3 irradiance = texture(irradianceMap,N).rgb;
+	vec3 diffuse = irradiance * albedo;
+	vec3 ambient = (kD * diffuse) * ao;
 
 	result = ambient + Lo;
 
