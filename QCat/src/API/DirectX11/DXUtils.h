@@ -145,5 +145,6 @@ namespace QCat
 				return format;
 			}
 		}
+	
 	}
 }

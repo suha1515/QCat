@@ -25,7 +25,10 @@ namespace QCat
 		virtual TextureType GetTextureType() const override { return m_textureType; }
 		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
+		virtual void GenerateMipMap() override;
+
 		virtual void SetData(void* data, unsigned int size) override;
+		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
 		virtual void Bind(unsigned int slot = 0) const override;
 
@@ -37,6 +40,8 @@ namespace QCat
 		}
 
 		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
+
+		void Invalidate();
 	private:
 		int samples = 0;
 		std::string m_path;
@@ -46,6 +51,7 @@ namespace QCat
 		DXGI_FORMAT m_dataFormat;
 		TextureType m_textureType;
 		TextureFormat m_textureFormat;
+		D3D11_TEXTURE2D_DESC textureDesc;
 	};
 	class DX11TextureCube : public TextureCube
 	{
@@ -62,7 +68,11 @@ namespace QCat
 		virtual TextureType GetTextureType() const override { return m_textureType; }
 		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
+		virtual void GenerateMipMap() override;
+
 		virtual void SetData(void* pData, unsigned int size) override;
+		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
+
 		virtual void Bind(unsigned int slot = 0) const override;
 
 		virtual void ReadData(uint32_t face, uint32_t x, uint32_t y, const void* outdata) override;
@@ -73,6 +83,7 @@ namespace QCat
 		}
 
 		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
+		void Invalidate();
 	private:
 		int samples = 0;
 		unsigned int m_width, m_height;
@@ -81,6 +92,6 @@ namespace QCat
 		DXGI_FORMAT m_dataFormat;
 		TextureType m_textureType;
 		TextureFormat m_textureFormat;
-
+		D3D11_TEXTURE2D_DESC textureDesc;
 	};
 }

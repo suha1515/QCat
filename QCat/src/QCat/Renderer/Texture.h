@@ -5,6 +5,19 @@
 
 namespace QCat
 {
+	struct Texture_Desc
+	{
+		uint32_t Width;
+		uint32_t Height;
+		uint32_t Depth=0;
+		uint32_t MipLevels =0;
+		uint32_t ArraySize =1;
+		uint32_t SampleCount=1;
+		uint32_t SampleQuality=0;
+		TextureFormat Format;
+		TextureType Type;
+		TextureUsage usage;
+	};
 	class Texture
 	{
 	public:
@@ -13,8 +26,11 @@ namespace QCat
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 		virtual void*       GetTexture() const = 0;
+		virtual const Texture_Desc GetDesc() { return desc; };
+		virtual void GenerateMipMap()=0;
 
 		virtual void SetData(void* data, unsigned int size) = 0;
+		virtual void SetSize(uint32_t width, uint32_t height,uint32_t depth=0)=0;
 
 		virtual void Bind(unsigned int slot =0) const = 0;
 
@@ -26,6 +42,7 @@ namespace QCat
 		//virtual Texture& operator=(const Texture& other) = 0;
 
 		Ref<SamplerState> sampler;
+		Texture_Desc desc;
 	};
 
 	class Texture2D : public Texture

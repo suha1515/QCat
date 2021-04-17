@@ -39,6 +39,8 @@ namespace QCat
 		
 		Ref<Model> helmet;
 		Ref<Texture> HdrCubeMapTexture;
+		Ref<Texture> IrradianceCubeMapTexture;
+		Ref<Texture> PrefilterMap;
 		glm::vec3 rotation = { 0.0f,3.2f,0.0f };
 
 		Ref<Shader> PBRshader;
@@ -46,6 +48,7 @@ namespace QCat
 		Ref<Shader> HdrToCube;
 		Ref<Shader> HdrCubeMap;
 		Ref<Shader> IrradianceMap;
+		Ref<Shader> prefilter;
 		Ref<Texture2D> HDRImage;
 		
 		Material pbrmat;
@@ -53,7 +56,7 @@ namespace QCat
 		glm::mat4 captureProjection;
 		glm::mat4 captureViews[6];
 		//FrameBuffer
-		std::shared_ptr<FrameBuffer> cubeMapPass;
+		Ref<FrameBufferEx> cubeMapPass;
 		std::shared_ptr<FrameBuffer> cubeMapPass2;
 		//light
 		//Ref<Shader> HdrCubeMap2;

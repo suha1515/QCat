@@ -256,7 +256,7 @@ namespace QCat
 
 		return pixelData;
 	}
-	void DX11FrameBuffer::AttachColorBuffer(uint32_t slot, uint32_t index, int faceindex)
+	void DX11FrameBuffer::AttachColorBuffer(uint32_t slot, uint32_t index, int mipmap, int faceindex)
 	{
 		QCAT_CORE_ASSERT(index < m_ColorAttachments.size());
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();

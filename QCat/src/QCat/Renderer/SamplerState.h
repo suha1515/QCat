@@ -67,6 +67,7 @@ namespace QCat
 		void SetMaxLod(float maxLod);
 
 		static Ref<SamplerState> Create(Sampler_Desc desc);
+		const Sampler_Desc GetDesc() { return desc; }
 	protected:
 		Sampler_Desc desc;
 		bool IsChanged = false;

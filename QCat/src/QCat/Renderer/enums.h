@@ -32,12 +32,23 @@ namespace QCat
 	enum class FramebufferUsage
 	{
 		None = 0,
-		Color, Depth, Depth_Stencil
+		Color,Depth, Depth_Stencil
+	};
+	enum class AttachmentType
+	{
+		Color_0,Color_1,Color_2,Color_3,Color_4,
+		Depth,Stencil,Depth_Stencil
 	};
 	enum class TextureType
 	{
 		None = 0,
-		Texture2D, TextureArray, TextureCube
+		Texture2D, TextureArray, TextureCube,
+		TextureCube_PositiveX,
+		TextureCube_NegativeX,
+		TextureCube_PositiveY,
+		TextureCube_NegativeY,
+		TextureCube_PositiveZ,
+		TextureCube_NegativeZ
 	};
 	enum class TextureFormat
 	{
@@ -51,6 +62,46 @@ namespace QCat
 		DEPTH24STENCIL8,
 		DEPTH32,
 
+	};
+	enum class TextureUsage
+	{
+		Default = 0, Immutable, Dynamic, Staging
+	};
+	enum class BindFlag
+	{
+		VERTEX_BUFFER,
+		INDEX_BUFFER,
+		CONSTANT_BUFFER,
+		SHADER_RESOURCE,
+		STREAM_OUTPUT,
+		RENDER_TARGET,
+		DEPTH_STENCIL,
+		UNORDERED_ACCESS,
+		VIDEO_ENCODER
+	};
+	enum class AccessFlag
+	{
+		CPU_WRITE,CPU_READ
+	};
+	enum class Resource_Misc_Flag
+	{
+		MISC_GENERATE_MIPS,
+		MISC_SHARED,
+		MISC_TEXTURECUBE,
+		MISC_DRAWINDIRECT_ARGS,
+		MISC_BUFFER_ALLOW_RAW_VIEWS,
+		MISC_BUFFER_STRUCTURED,
+		MISC_RESOURCE_CLAMP,
+		MISC_SHARED_KEYEDMUTEX,
+		MISC_GDI_COMPATIBLE,
+		MISC_SHARED_NTHANDLE,
+		MISC_RESTRICTED_CONTENT,
+		MISC_RESTRICT_SHARED_RESOURCE,
+		MISC_RESTRICT_SHARED_RESOURCE_DRIVER,
+		MISC_GUARDED,
+		MISC_TILE_POOL,
+		MISC_TILED,
+		MISC_HW_PROTECTED
 	};
 
 }

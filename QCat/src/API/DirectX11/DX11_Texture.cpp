@@ -13,7 +13,7 @@ namespace QCat
 
 		m_dataFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		// Texture Description
-		D3D11_TEXTURE2D_DESC textureDesc = {};
+	    textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
 		textureDesc.MipLevels = mipLevel;
@@ -26,6 +26,14 @@ namespace QCat
 		textureDesc.CPUAccessFlags = 0;
 		if (mipLevel > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+		this->desc.ArraySize = textureDesc.ArraySize;
 
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
 
@@ -33,16 +41,14 @@ namespace QCat
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = mipLevel == 0 ? mipLevel :mipLevel - 1;
+		//srvDesc.Texture2D.MostDetailedMip = mipLevel == 0 ? mipLevel :mipLevel - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = -1;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-		// Generate Mip
-		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
-			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
 		sampler = DX11Sampler::Create(desc);
 	}
@@ -106,7 +112,7 @@ namespace QCat
 		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
 
 		// Texture Description
-		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
 		textureDesc.MipLevels = mipLevel;
@@ -119,6 +125,15 @@ namespace QCat
 		textureDesc.CPUAccessFlags = 0;
 		if(mipLevel > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Immutable;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+		this->desc.ArraySize = textureDesc.ArraySize;
 
 		// Create Texture and update it
 		D3D11_SUBRESOURCE_DATA subResource;
@@ -137,16 +152,14 @@ namespace QCat
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = mipLevel == 0 ? mipLevel : mipLevel - 1;
+		//srvDesc.Texture2D.MostDetailedMip = mipLevel == 0 ? mipLevel : mipLevel - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = -1;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-		// Generate Mip
-		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
-			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
 		stbi_image_free(pData);
 		if (float16Array != nullptr)
@@ -161,7 +174,7 @@ namespace QCat
 		m_textureFormat = format;
 
 
-		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
 		textureDesc.MipLevels = mipLevel;
@@ -180,6 +193,15 @@ namespace QCat
 		if (mipLevel > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+		this->desc.ArraySize = textureDesc.ArraySize;
+
 		D3D11_SUBRESOURCE_DATA data = {};
 		
 		if (pData != nullptr)
@@ -189,29 +211,30 @@ namespace QCat
 			data.SysMemPitch = m_width * Utils::GetMemoryPitch(textureDesc.Format) ;
 			data.SysMemSlicePitch = 0;
 			//QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, pData, m_width * 8, 0u);
-		}
-		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, &data, &pTexture);
+			QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, &data, &pTexture);
 
-	
-		
+		}
+		else
+			QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
+
+
 		// Texture resource view
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = Utils::MapUsageColored(format);
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = mipLevel == 0 ? mipLevel : mipLevel - 1;
+		//srvDesc.Texture2D.MostDetailedMip = mipLevel == 0 ? mipLevel : mipLevel - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+
 		srvDesc.Texture2D.MipLevels = -1;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-
-		// Generate Mip
-		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
-			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		sampler = DX11Sampler::Create(desc);
 	}
 	DX11Texture2D::DX11Texture2D(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip, bool gammaCorrection)
+		:textureDesc(textureDesc)
 	{
 
 		m_width = textureDesc.Width;
@@ -222,6 +245,14 @@ namespace QCat
 		samples = textureDesc.SampleDesc.Count;
 		if (textureDesc.MipLevels > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = textureDesc.MipLevels;
+		this->desc.ArraySize = textureDesc.ArraySize;
 
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, 0, &pTexture);
 		//QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, m_width *sizeof(unsigned int), 0u);
@@ -230,7 +261,8 @@ namespace QCat
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = Utils::MapTypeSRV(textureDesc.Format);
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		//srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = -1;
 		
 		// Create ShaderResouceView
@@ -259,6 +291,14 @@ namespace QCat
 	DX11Texture2D::~DX11Texture2D()
 	{
 	}
+	void DX11Texture2D::GenerateMipMap()
+	{
+		// Generate Mip
+		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
+			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
+		else
+			QCAT_CORE_ERROR("this texture can't generate mipmap");
+	}
 	void DX11Texture2D::SetData(void* data, unsigned int size)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -266,6 +306,15 @@ namespace QCat
 		//unsigned int bpc = m_dataFormat == DXGI_FORMAT_R8G8B8A8_UNORM ? 4 : 3;
 		//QCAT_CORE_ASSERT(size == m_width * m_height * bpc, "Data must be entire texture!");
 		QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, size, 0u);
+	}
+	void DX11Texture2D::SetSize(uint32_t width, uint32_t height, uint32_t depth)
+	{
+		m_width = width;
+		m_height = height;
+		this->desc.Width = width;
+		this->desc.Height = height;
+
+		Invalidate();
 	}
 	void DX11Texture2D::Bind(unsigned int slot) const
 	{
@@ -321,6 +370,48 @@ namespace QCat
 		}
 		gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
 	}
+	void DX11Texture2D::Invalidate()
+	{
+		if (pTexture)
+			pTexture.Reset();
+		if (pTextureView)
+			pTextureView.Reset();
+
+		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc.Width = this->desc.Width;
+		textureDesc.Height = this->desc.Height;
+		textureDesc.MipLevels = this->desc.MipLevels;
+		textureDesc.ArraySize = 1;
+		textureDesc.Format = m_dataFormat;
+		textureDesc.SampleDesc.Count = this->desc.SampleCount;
+		textureDesc.SampleDesc.Quality = this->desc.SampleQuality;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		if (m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS && m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS)
+			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		else
+			textureDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+
+		textureDesc.CPUAccessFlags = 0;
+		if (this->desc.MipLevels > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
+			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
+
+
+		// Texture resource view
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = Utils::MapTypeSRV(m_dataFormat);
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		//srvDesc.Texture2D.MostDetailedMip = this->desc.MipLevels == 0 ? this->desc.MipLevels : this->desc.MipLevels - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = -1;
+
+		// Create ShaderResouceView
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
+			pTexture.Get(), &srvDesc, &pTextureView
+		);
+	}
 	DX11TextureCube::DX11TextureCube(const std::vector<std::string>& imgPathes, Sampler_Desc desc, unsigned int mipLevel,bool flip, bool gammaCorrection)
 	{
 		QCAT_PROFILE_FUNCTION();
@@ -353,7 +444,7 @@ namespace QCat
 		m_textureType = TextureType::TextureCube;
 		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
 		// Texture Description
-		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
 		textureDesc.MipLevels = mipLevel;
@@ -367,7 +458,14 @@ namespace QCat
 		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE ;
 		if (mipLevel > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Immutable;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+		this->desc.ArraySize = textureDesc.ArraySize;
 		// Create Texture and update it
 		D3D11_SUBRESOURCE_DATA subResource[6];
 		for (int i = 0; i < 6; ++i)
@@ -382,18 +480,14 @@ namespace QCat
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-		srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		//srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = -1;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-
-		// Generate CubeMap mips
-		if (mipLevel > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
-			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
-
 		// free loaded image
 		for (int i = 0; i < 6; ++i)
 		{
@@ -409,7 +503,7 @@ namespace QCat
 		m_textureType = TextureType::TextureCube;
 		m_textureFormat = format;
 		// Texture Description
-		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc = {};
 		textureDesc.Width = m_width;
 		textureDesc.Height = m_height;
 		textureDesc.MipLevels = mipLevel;
@@ -423,6 +517,14 @@ namespace QCat
 		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 		if (mipLevel > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
 			textureDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+		this->desc.ArraySize = textureDesc.ArraySize;
 
 		// Create Texture and update it
 		if (pData != nullptr)
@@ -442,22 +544,20 @@ namespace QCat
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-		srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		//srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = -1;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-
-		// Generate CubeMap mips
-		if (mipLevel > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
-			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
-
 		sampler = DX11Sampler::Create(desc);
 	}
 	DX11TextureCube::DX11TextureCube(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip, bool gammaCorrection)
+		:textureDesc(textureDesc)
 	{
+		
 		m_dataFormat = textureDesc.Format;
 		m_textureType = TextureType::TextureCube;
 		m_textureFormat = Utils::GetTextureFormatFromDX(m_dataFormat);
@@ -465,27 +565,48 @@ namespace QCat
 		m_width = textureDesc.Width;
 		m_height = textureDesc.Height;
 
+		this->desc.Width = m_width;
+		this->desc.Height = m_height;
+		this->desc.Type = m_textureType;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = textureDesc.MipLevels;
+		this->desc.ArraySize = textureDesc.ArraySize;
+
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, 0, &pTexture);
 		// Texture resource view
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-		srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		//srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
 		srvDesc.Texture2D.MipLevels = -1;
 
 		// Create ShaderResouceView
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
-
-		// Generate Mip
-		if (textureDesc.MipLevels > 0)
-			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
-
 		sampler = DX11Sampler::Create(desc);
+	}
+	void DX11TextureCube::GenerateMipMap()
+	{
+		// Generate Mip
+		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
+			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
+		else
+			QCAT_CORE_ERROR("this texture can't generate mipmap");
 	}
 	void DX11TextureCube::SetData(void* pData, unsigned int size)
 	{
+	}
+	void DX11TextureCube::SetSize(uint32_t width, uint32_t height, uint32_t depth)
+	{
+		m_width = width;
+		m_height = height;
+		this->desc.Width = width;
+		this->desc.Height = height;
+		Invalidate();
 	}
 	void DX11TextureCube::Bind(unsigned int slot) const
 	{
@@ -542,5 +663,42 @@ namespace QCat
 			outdata = (msr.pData);
 		}
 		gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
+	}
+	void DX11TextureCube::Invalidate()
+	{
+		if(pTexture)
+			pTexture.Reset();
+		if (pTextureView)
+			pTextureView.Reset();
+
+		D3D11_TEXTURE2D_DESC textureDesc = {};
+		textureDesc.Width = this->desc.Width;
+		textureDesc.Height = this->desc.Height;
+		textureDesc.MipLevels = this->desc.MipLevels;
+		textureDesc.ArraySize = 6;
+		textureDesc.Format = m_dataFormat;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		textureDesc.CPUAccessFlags = 0;
+		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+		if (this->desc.MipLevels > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
+			textureDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
+
+		// Texture resource view
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = textureDesc.Format;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+		//srvDesc.Texture2D.MostDetailedMip = textureDesc.MipLevels == 0 ? textureDesc.MipLevels : textureDesc.MipLevels - 1;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = -1;
+
+		// Create ShaderResouceView
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
+			pTexture.Get(), &srvDesc, &pTextureView
+		);
 	}
 }

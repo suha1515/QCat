@@ -30,6 +30,7 @@ namespace QCat
 		HdrToCube = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/HDRtoCube.hlsl": "Asset/shaders/glsl/PBR/HDRtoCube.glsl");
 		HdrCubeMap = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/MakeHDRCubeMap.hlsl" : "Asset/shaders/glsl/PBR/MakeHDRCubeMap.glsl");
 		IrradianceMap= ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
+		prefilter = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/prefilter.hlsl" : "Asset/shaders/glsl/PBR/prefilter.glsl");
 		//helmet = Model::Create("Asset/model/gun2/gun2.fbx");
 		//helmet->SetTranslation({ 0.0f,0.0f,-1.0f });
 		//helmet->SetScale({ 0.01f,0.01f,0.01f });
@@ -50,6 +51,9 @@ namespace QCat
 
 		IrradianceMap->Bind();
 		IrradianceMap->SetInt("envMap", 0, ShaderType::PS);
+
+		prefilter->Bind();
+		prefilter->SetInt("environmentMap", 0, ShaderType::PS);
 	
 		//HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_8k.jpg", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 		HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
@@ -85,15 +89,11 @@ namespace QCat
 							 {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8} };
 		spec.Width = 512;
 		spec.Height = 512;
-		cubeMapPass = FrameBuffer::Create(spec);
+		//cubeMapPass = FrameBuffer::Create(spec);
+		AttachmentSpecification spec2 = { { FramebufferUsage::Color,TextureType::TextureCube,TextureFormat::RGB16_Float,"ColorBuffer1" },
+										  { FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer" } };
+		cubeMapPass = FrameBufferEx::Create(spec2);
 
-		spec.Width = 32;
-		spec.Height = 32;
-		cubeMapPass2 = FrameBuffer::Create(spec);
-
-		// I still dont know opengl cubmap texturing principle ... WTF?
-		// when i try to render on cubemap's face and check that texture on renderdoc it is pretty good. there is no reversed image
-		// but when it comes to textureCube and is sampled by fragment shader it becomse weird.. FUKKKKK!!
 		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
 		captureProjection;
 		captureViews[6];
@@ -119,42 +119,108 @@ namespace QCat
 		}
 
 		// Hdr Cubemap pass
-		RenderCommand::SetCullMode(CullMode::None);
+		Texture_Desc texDesc;
+		texDesc.Width = 512;
+		texDesc.Height = 512;
+		texDesc.MipLevels = 1;
+		texDesc.SampleCount = 1;
+		Sampler_Desc smpDesc;
+		smpDesc.addressU = WrapingMode::CLAMP;
+		smpDesc.addressV = WrapingMode::CLAMP;
+		smpDesc.MIN = Filtering::LINEAR;
+		smpDesc.MAG = Filtering::LINEAR;
+		smpDesc.MIP = Filtering::NONE;
+		
+
+		IrradianceCubeMapTexture = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 32, 32);
+		smpDesc.MIP = Filtering::LINEAR;
+		HdrCubeMapTexture = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 512, 512,8);
+		PrefilterMap = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 128, 128,5);
+		PrefilterMap->GenerateMipMap();
+		smpDesc.MIP = Filtering::NONE;
+		cubeMapPass->InitializeTexture("DepthBuffer", texDesc, smpDesc);
 		cubeMapPass->Bind();
-		cubeMapPass->Clear();
-		{
-			HdrToCube->Bind();
-			HdrToCube->SetMat4("u_Projection", captureProjection, ShaderType::VS);	
-			for (int i = 0; i < 6; ++i)
-			{
-				cubeMapPass->AttachColorBuffer(0, 0, i);
-				HdrToCube->SetMat4("u_View", captureViews[i], ShaderType::VS);
-				HDRImage->Bind(0);
-				HdrToCube->UpdateBuffer();
-				cube->Draw();
-			}
-			HdrToCube->UnBind();
-		}
+		cubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+		cubeMapPass->AttachTexture(HdrCubeMapTexture, AttachmentType::Color_0, TextureType::TextureCube_PositiveX, 0);
 		cubeMapPass->UnBind();
 
-		HdrCubeMapTexture = cubeMapPass->GetColorTexture(0);
-		cubeMapPass->SetViewport(32, 32);
+		RenderCommand::SetCullMode(CullMode::None);
 
 		cubeMapPass->Bind();
-		cubeMapPass->Clear();
+		RenderCommand::SetViewport(0, 0, 512, 512);
+		HdrToCube->Bind();
+		HdrToCube->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		for (int i = 0; i < 6; ++i)
+		{
+			int index = (int)TextureType::TextureCube_PositiveX + i;
+			cubeMapPass->AttachTexture(HdrCubeMapTexture, AttachmentType::Color_0,(TextureType)index, 0);
+			cubeMapPass->Clear();
+			HdrToCube->SetMat4("u_View", captureViews[i], ShaderType::VS);
+			HDRImage->Bind(0);
+			HdrToCube->UpdateBuffer();
+			cube->Draw();
+		}
+		HdrToCube->UnBind();
+		cubeMapPass->UnBind();
+
+		HdrCubeMapTexture->GenerateMipMap();
+
+		RenderCommand::SetCullMode(CullMode::None);
+		cubeMapPass->Bind();
+		RenderCommand::SetViewport(0, 0, 32, 32);
+		cubeMapPass->GetTexture("DepthBuffer")->SetSize(32, 32);
+		cubeMapPass->DetachTexture(AttachmentType::Color_0);
+		cubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+		cubeMapPass->AttachTexture(IrradianceCubeMapTexture, AttachmentType::Color_0, TextureType::TextureCube_PositiveX, 0);
+
 		IrradianceMap->Bind();
 		IrradianceMap->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		for (int i = 0; i < 6; ++i)
 		{
-			cubeMapPass->AttachColorBuffer(0, 0, i);
+			int index = (int)TextureType::TextureCube_PositiveX + i;
+			cubeMapPass->AttachTexture(IrradianceCubeMapTexture, AttachmentType::Color_0, (TextureType)index, 0);
+			cubeMapPass->Clear();
+
 			IrradianceMap->SetMat4("u_View", captureViews[i], ShaderType::VS);
 			IrradianceMap->UpdateBuffer();
 			HdrCubeMapTexture->Bind(0);
 			cube->Draw();
 		}
 		IrradianceMap->UnBind();
+
 		cubeMapPass->UnBind();
 
+		//PreFilterShader
+		cubeMapPass->Bind();
+
+		prefilter->Bind();
+		prefilter->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		unsigned int maxMipLevels = 5;
+		for (int mip = 0; mip < maxMipLevels; ++mip)
+		{
+			unsigned int mipWidth = 128 * std::pow(0.5, mip);
+			unsigned int mipHeight = 128 * std::pow(0.5, mip);
+
+			cubeMapPass->GetTexture("DepthBuffer")->SetSize(mipWidth, mipHeight);
+			cubeMapPass->DetachTexture(AttachmentType::Color_0);
+			cubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+			RenderCommand::SetViewport(0, 0, mipWidth, mipHeight);
+
+			float roughtness = (float)mip / (float)(maxMipLevels - 1);
+			prefilter->SetFloat("roughness", roughtness, ShaderType::PS);
+			for (int i = 0; i < 6; ++i)
+			{
+				HdrCubeMapTexture->Bind(0);
+				int index = (int)TextureType::TextureCube_PositiveX + i;
+				prefilter->SetMat4("u_View", captureViews[i], ShaderType::VS);
+				cubeMapPass->AttachTexture(PrefilterMap, AttachmentType::Color_0, (TextureType)index, mip);
+				cubeMapPass->Clear();
+				prefilter->UpdateBuffer();
+				cube->Draw();
+			}
+		}
+		prefilter->UnBind();
+		cubeMapPass->UnBind();
 		
 	}
 
@@ -164,7 +230,6 @@ namespace QCat
 
 	void PbrTest::OnUpdate(Timestep ts)
 	{
-		
 		RenderCommand::SetDefaultFrameBuffer();
 		RenderCommand::SetViewport(0, 0, width, height);
 		RenderCommand::SetCullMode(CullMode::Back);
@@ -193,7 +258,7 @@ namespace QCat
 			for (int j = 0; j < 7; ++j)
 			{
 				//irradiance Map
-				cubeMapPass->BindColorTexture(5,0);
+				IrradianceCubeMapTexture->Bind(5);
 				float roughness = glm::clamp((float)j / (float)7, 0.05f, 1.0f);
 				pbrmat.roughness = roughness;
 				sphere->SetTranslation(glm::vec3(-1.05f+j*0.3f, 1.05f-i*0.3f, 0.0f));
@@ -344,7 +409,11 @@ namespace QCat
 			HdrCubeMap->SetMat4("u_Projection", camProj, ShaderType::VS);
 			HdrCubeMap->SetMat4("u_View", viewMatrix, ShaderType::VS);
 			HdrCubeMap->UpdateBuffer();
-			HdrCubeMapTexture->Bind(0);
+			//HdrCubeMapTexture->Bind(0);
+			PrefilterMap->Bind(0);
+			//IrradianceCubeMapTexture->Bind(0);
+			//cubeMapPass->GetTexture("ColorBuffer1")->Bind(0);
+
 			cube->Draw();
 			HdrCubeMap->UnBind();
 		}

@@ -23,6 +23,8 @@ namespace QCat
 		void Clear(QGfxDeviceDX11& gfx);
 
 		ID3D11DepthStencilView* GetDepthStencil() const;
+
+		static Ref<DX11DepthStencil> Create(ID3D11Texture2D* pTexture, D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilDesc, Usage usage=Usage::Depth);
 	private:
 		uint32_t m_width;
 		uint32_t m_height;

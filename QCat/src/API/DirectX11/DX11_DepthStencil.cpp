@@ -39,10 +39,17 @@ namespace QCat
 	}
 	void DX11DepthStencil::Initialize(QGfxDeviceDX11& gfx, ID3D11Texture2D* pTexture)
 	{
+
 		if (pDepthStencilView)
 		{
 			pDepthStencilView.Reset();
 		}
+		D3D11_TEXTURE2D_DESC textureDesc;
+		// Create Texture
+		pTexture->GetDesc(&textureDesc);
+		m_width = textureDesc.Width;
+		m_height = textureDesc.Height;
+
 		gfx.GetDevice()->CreateDepthStencilView(pTexture, &depthStencilViewDesc, &pDepthStencilView);
 	}
 	void DX11DepthStencil::Bind(QGfxDeviceDX11& gfx) const
@@ -63,5 +70,10 @@ namespace QCat
 	ID3D11DepthStencilView* DX11DepthStencil::GetDepthStencil() const
 	{
 		return pDepthStencilView.Get();
+	}
+	Ref<DX11DepthStencil> DX11DepthStencil::Create(ID3D11Texture2D* pTexture, D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilDesc, Usage usage)
+	{
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		return CreateRef<DX11DepthStencil>(gfx,pTexture,depthStencilDesc,usage);
 	}
 }

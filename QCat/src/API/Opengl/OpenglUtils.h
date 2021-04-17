@@ -94,6 +94,18 @@ namespace QCat
 
 			glSamplerParameteri(id, address, wrapmode);
 		}
+		static void SetTextureFilter(GLenum target, GLenum filter, Filtering filtering, Filtering mipFiltering =  Filtering::NONE)
+		{
+			GLenum glfiltering;
+			glfiltering = GetFiltering(filtering, mipFiltering);
+			glTexParameteri(target, filter, glfiltering);
+		}
+		static void SetTextureWrapMethod(GLenum target, GLenum address, WrapingMode mode)
+		{
+			GLenum wrapmode = GetWrapMode(mode);
+			glTexParameteri(target, address, wrapmode);
+		}
+
 
 
 		//Texture

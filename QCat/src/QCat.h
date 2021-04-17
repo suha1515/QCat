@@ -37,6 +37,7 @@
 #include "QCat/Renderer/Shader.h"
 #include "QCat/Renderer/Texture.h"
 #include "QCat/Renderer/FrameBuffer.h"
+#include "QCat/Renderer/FrameBufferEx.h"
 #include "QCat/Renderer/VertexArray.h"
 #include "QCat/Renderer/OrthographicCamera.h"
 #include "QCat/Renderer/SamplerState.h"

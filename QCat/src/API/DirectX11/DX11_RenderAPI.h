@@ -59,7 +59,6 @@ namespace QCat
 		Ref<DepthStencil> m_DepthStencilState;
 		Ref<Blender> m_BlenderState;
 		Ref<Rasterizer> m_RasterizState;
-
 		Ref<FrameBuffer> m_FrameBuffer;
 	};
 }

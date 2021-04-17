@@ -47,7 +47,7 @@ namespace QCat
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y, int z = 0) = 0;
 		virtual void ReadPixel(uint32_t attachmentIndex, TextureFormat format,void* value, int x, int y, int z = 0) = 0;
 
-		virtual void AttachColorBuffer(uint32_t slot,uint32_t index, int faceindex=-1) = 0;
+		virtual void AttachColorBuffer(uint32_t slot,uint32_t index,int mipmap=0, int faceindex=-1) = 0;
 		virtual void AttachCubeMapByIndex(uint32_t faceindex) = 0;
 		virtual void ClearAttachment(uint32_t attachmentIndex, const void* value) = 0;
 		virtual void ClearDepthStencil() = 0;
