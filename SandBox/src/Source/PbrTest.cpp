@@ -31,16 +31,19 @@ namespace QCat
 		HdrCubeMap = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/MakeHDRCubeMap.hlsl" : "Asset/shaders/glsl/PBR/MakeHDRCubeMap.glsl");
 		IrradianceMap= ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
 		prefilter = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/prefilter.hlsl" : "Asset/shaders/glsl/PBR/prefilter.glsl");
+		BRDF2d = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/BRDF2D.hlsl" : "Asset/shaders/glsl/PBR/BRDF2D.glsl");
 		//helmet = Model::Create("Asset/model/gun2/gun2.fbx");
 		//helmet->SetTranslation({ 0.0f,0.0f,-1.0f });
 		//helmet->SetScale({ 0.01f,0.01f,0.01f });
 		PBRshader->Bind();
-		PBRshader->SetInt("material.albedoMap", 0, ShaderType::PS);
-		PBRshader->SetInt("material.normalMap", 1, ShaderType::PS);
-		PBRshader->SetInt("material.metallicMap", 2, ShaderType::PS);
-		PBRshader->SetInt("material.roughnessMap", 3, ShaderType::PS);
-		PBRshader->SetInt("material.aoMap", 4, ShaderType::PS);
-		PBRshader->SetInt("irradianceMap", 5, ShaderType::PS);
+		PBRshader->SetInt("material.albedoMap",0, ShaderType::PS);
+		PBRshader->SetInt("material.normalMap",1, ShaderType::PS);
+		PBRshader->SetInt("material.metallicMap",2, ShaderType::PS);
+		PBRshader->SetInt("material.roughnessMap",3, ShaderType::PS);
+		PBRshader->SetInt("material.aoMap",4, ShaderType::PS);
+		PBRshader->SetInt("irradianceMap",5, ShaderType::PS);
+		PBRshader->SetInt("prefilterMap",6, ShaderType::PS);
+		PBRshader->SetInt("brdfLUT",7, ShaderType::PS);
 
 		Sampler_Desc desc;
 		HdrToCube->Bind();
@@ -117,6 +120,38 @@ namespace QCat
 			captureViews[4] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
 			captureViews[5] = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f));
 		}
+		m_quad = VertexArray::Create();
+
+		bias = 0.0f;
+	/*	if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			bias = 1.0f;
+		}*/
+		float quadVertices[] =
+		{
+			-1.0f, 1.0f,  0.0f,0.0f + bias,//0
+			-1.0f,-1.0f,  0.0f,1.0f - bias,//1
+			 1.0f,-1.0f,  1.0f,1.0f - bias,//2
+			 1.0f, 1.0f,  1.0f,0.0f + bias // 3
+		};
+
+		Ref<VertexBuffer> quadBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
+
+		quadBuffer->SetLayout(BufferLayout::Create({
+			{ShaderDataType::Float2,"a_Position"},
+			{ShaderDataType::Float2,"a_TexCoords"} }, BRDF2d
+			));
+
+		unsigned int indices[] =
+		{
+			1,0,3,1,3,2
+		};
+		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, 6);
+
+		m_quad->AddVertexBuffer(quadBuffer);
+		m_quad->SetIndexBuffer(indexBuffer);
+		m_quad->UnBind();
+
 
 		// Hdr Cubemap pass
 		Texture_Desc texDesc;
@@ -138,6 +173,7 @@ namespace QCat
 		PrefilterMap = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 128, 128,5);
 		PrefilterMap->GenerateMipMap();
 		smpDesc.MIP = Filtering::NONE;
+		BRDFLutTexture = Texture2D::Create(TextureFormat::RG16_Float,smpDesc, 512, 512);
 		cubeMapPass->InitializeTexture("DepthBuffer", texDesc, smpDesc);
 		cubeMapPass->Bind();
 		cubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
@@ -222,6 +258,22 @@ namespace QCat
 		prefilter->UnBind();
 		cubeMapPass->UnBind();
 		
+		// Make BRDFLut tex Generate
+		cubeMapPass->Bind();
+		RenderCommand::SetViewport(0, 0, 512, 512);
+		cubeMapPass->GetTexture("DepthBuffer")->SetSize(512, 512);
+		cubeMapPass->DetachTexture(AttachmentType::Color_0);
+		cubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+		cubeMapPass->AttachTexture(BRDFLutTexture, AttachmentType::Color_0, TextureType::Texture2D, 0);
+		cubeMapPass->Clear();
+
+		BRDF2d->Bind();
+
+		m_quad->Bind();
+		RenderCommand::DrawIndexed(m_quad);
+		m_quad->UnBind();
+		BRDF2d->UnBind();
+		cubeMapPass->UnBind();
 	}
 
 	void PbrTest::OnDetach()
@@ -259,6 +311,8 @@ namespace QCat
 			{
 				//irradiance Map
 				IrradianceCubeMapTexture->Bind(5);
+				PrefilterMap->Bind(6);
+				BRDFLutTexture->Bind(7);
 				float roughness = glm::clamp((float)j / (float)7, 0.05f, 1.0f);
 				pbrmat.roughness = roughness;
 				sphere->SetTranslation(glm::vec3(-1.05f+j*0.3f, 1.05f-i*0.3f, 0.0f));
@@ -409,8 +463,8 @@ namespace QCat
 			HdrCubeMap->SetMat4("u_Projection", camProj, ShaderType::VS);
 			HdrCubeMap->SetMat4("u_View", viewMatrix, ShaderType::VS);
 			HdrCubeMap->UpdateBuffer();
-			//HdrCubeMapTexture->Bind(0);
-			PrefilterMap->Bind(0);
+			HdrCubeMapTexture->Bind(0);
+			//PrefilterMap->Bind(0);
 			//IrradianceCubeMapTexture->Bind(0);
 			//cubeMapPass->GetTexture("ColorBuffer1")->Bind(0);
 

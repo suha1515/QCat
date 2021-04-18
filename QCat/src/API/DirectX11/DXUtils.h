@@ -17,11 +17,9 @@ namespace QCat
 			case DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT:				 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS:			 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS:				 return 4;
-
+			case DXGI_FORMAT::DXGI_FORMAT_R16G16_FLOAT:				 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT:		 return 8;
-			case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:		 return 16;
-			
-				
+			case DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT:		 return 16;		
 
 			}
 		}
@@ -41,7 +39,7 @@ namespace QCat
 
 			case TextureFormat::RGBA16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
 			case TextureFormat::RGBA32_Float:    return DXGI_FORMAT_R32G32B32A32_FLOAT;
-
+			case TextureFormat::RG16_Float:		 return DXGI_FORMAT_R16G16_FLOAT;
 			//24bit
 			case TextureFormat::RGB16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
@@ -56,7 +54,7 @@ namespace QCat
 			case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:	  return TextureFormat::RGBA8_SRGB;
 			case DXGI_FORMAT_R32_SINT:				  return TextureFormat::RED32_INTEGER;
 			case DXGI_FORMAT_R32_FLOAT:				  return TextureFormat::RED32_FLOAT;
-				 
+			case DXGI_FORMAT_R16G16_FLOAT:			  return TextureFormat::RG16_Float;
 			case DXGI_FORMAT_R24G8_TYPELESS:		  return TextureFormat::DEPTH24STENCIL8;
 			case DXGI_FORMAT_R32_TYPELESS:			  return TextureFormat::DEPTH32;
 				 
@@ -74,11 +72,13 @@ namespace QCat
 
 			case TextureFormat::RED32_INTEGER:   return sizeof(int);
 			case TextureFormat::RED32_FLOAT:	 return sizeof(float);
+			case TextureFormat::RG16_Float:		 return sizeof(float);
+
 				//24 bit
 			case TextureFormat::RGB8:			 return sizeof(unsigned int);
 			case TextureFormat::DEPTH24STENCIL8: return sizeof(unsigned int);
 			case TextureFormat::DEPTH32:		 return sizeof(unsigned int);
-
+		
 			case TextureFormat::RGBA16_Float:    return sizeof(float);
 			case TextureFormat::RGBA32_Float:    return sizeof(float);
 

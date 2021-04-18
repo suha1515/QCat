@@ -79,13 +79,23 @@ cbuffer material : register(b1)
 	Material material;
 }
 Texture2D albedoMap;
+SamplerState  albedoMapSplr: register(s0);
 Texture2D normalMap;
+SamplerState  normalMapSplr: register(s1);
 Texture2D metallicMap;
+SamplerState  metallicMapSplr: register(s2);
 Texture2D roughnessMap;
+SamplerState  roughnessMapSplr: register(s3);
 Texture2D aoMap;
+SamplerState  aoMapSplr: register(s4);
+//IBL
 TextureCube irradianceMap;
+SamplerState  irradianceMapSplr : register(s5);
+TextureCube prefilterMap;
+SamplerState  prefilterMapSplr: register(s6);
+Texture2D brdfLUT;
+SamplerState  brdfLUTSplr: register(s7);
 
-SamplerState splr : register(s0);
 struct PSIn
 {
 	float2 tc			     : Texcoord;
@@ -142,22 +152,25 @@ float3 fresnelSchlick(float cosTheta, float3 F0)
 	return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 // ---
-
+float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+	return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
+}
 PS_OUT PSMain(PSIn input)
 {
 	PS_OUT output;
 
-	float3 albedo = material.IsAlbedoMap ? pow(albedoMap.Sample(splr, input.tc).rgb, 2.2f) : material.albedo;
-	float metallic = material.IsMetallicMap ? metallicMap.Sample(splr, input.tc).r : material.metallic;
-	float roughness = material.IsRoughnessMap ? roughnessMap.Sample(splr, input.tc).r : material.roughness;
-	float ao = material.IsAoMap ? aoMap.Sample(splr, input.tc).r : material.ambientocclusion;
+	float3 albedo = material.IsAlbedoMap ? pow(albedoMap.Sample(albedoMapSplr, input.tc).rgb, 2.2f) : material.albedo;
+	float metallic = material.IsMetallicMap ? metallicMap.Sample(metallicMapSplr, input.tc).r : material.metallic;
+	float roughness = material.IsRoughnessMap ? roughnessMap.Sample(roughnessMapSplr, input.tc).r : material.roughness;
+	float ao = material.IsAoMap ? aoMap.Sample(aoMapSplr, input.tc).r : material.ambientocclusion;
 
 	float4 color;
 	float3 N;
 	float3 V = normalize(input.viewPosition - input.fragPos);
 	if (material.IsNormalMap)
 	{
-		N = normalMap.Sample(splr, input.tc).rgb;
+		N = normalMap.Sample(normalMapSplr, input.tc).rgb;
 		N = N * 2.0f - 1.0f;
 		N = normalize(mul(input.TBN, N));
 	}
@@ -165,6 +178,8 @@ PS_OUT PSMain(PSIn input)
 	{
 		N = normalize(input.normal);
 	}
+
+	float3 R = reflect(-V, N);
 
 	float3 result = float3(0.0f, 0.0f, 0.0f);
 	float3 Lo = float3(0.0f, 0.0f, 0.0f);
@@ -206,13 +221,20 @@ PS_OUT PSMain(PSIn input)
 		// add to outgoing radiance Lo
 		Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
-
-	float3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
+	//ambient light
+	float3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+	float3 kS = F;
 	float3 kD = 1.0f - kS;
 	kD *= 1.0f - metallic;
-	float3 irradiance = irradianceMap.Sample(splr, N).rgb;
+	float3 irradiance = irradianceMap.Sample(irradianceMapSplr, N).rgb;
 	float3 diffuse = irradiance * albedo;
-	float3 ambient = (kD * diffuse) * ao;
+
+	const float MAX_REFLECTION_LOD = 4.0;
+	float3 prefilteredColor = prefilterMap.SampleLevel(prefilterMapSplr, R, roughness * MAX_REFLECTION_LOD).rgb;
+	float2 brdf = brdfLUT.Sample(brdfLUTSplr, float2(max(dot(N, V), 0.0), roughness)).rg;
+	float3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+	float3 ambient = (kD * diffuse + specular) * ao;
 
 	result = ambient + Lo;
 	//HDR tonemapping

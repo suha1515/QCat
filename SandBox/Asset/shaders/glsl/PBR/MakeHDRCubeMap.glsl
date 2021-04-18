@@ -33,8 +33,8 @@ void main()
 	vec3 dir = localPos;
 	
 	
-	//vec3 envColor = texture(environmentMap,dir).rgb;
-	vec3 envColor = textureLod(environmentMap, dir, 1.2).rgb; 
+	vec3 envColor = texture(environmentMap,dir).rgb;
+	//vec3 envColor = textureLod(environmentMap, dir, 1.2).rgb; 
 
 	envColor = envColor / (envColor + vec3(1.0));
 	envColor = pow(envColor,vec3(1.0/2.2));

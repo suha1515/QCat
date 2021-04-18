@@ -41,6 +41,7 @@ namespace QCat
 		Ref<Texture> HdrCubeMapTexture;
 		Ref<Texture> IrradianceCubeMapTexture;
 		Ref<Texture> PrefilterMap;
+		Ref<Texture> BRDFLutTexture;
 		glm::vec3 rotation = { 0.0f,3.2f,0.0f };
 
 		Ref<Shader> PBRshader;
@@ -49,8 +50,10 @@ namespace QCat
 		Ref<Shader> HdrCubeMap;
 		Ref<Shader> IrradianceMap;
 		Ref<Shader> prefilter;
+		Ref<Shader> BRDF2d;
 		Ref<Texture2D> HDRImage;
 		
+		Ref<VertexArray> m_quad;
 		Material pbrmat;
 
 		glm::mat4 captureProjection;
