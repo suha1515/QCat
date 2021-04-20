@@ -9,25 +9,25 @@ namespace QCat
 		case TextureType::None: QCAT_CORE_ASSERT(false);
 			break;
 		case TextureType::Diffuse:
-			m_DiffuseTexture = Texture2D::Create(texturepath, desc);
+			m_DiffuseTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		case TextureType::Specular:
-			m_SpecularTexture = Texture2D::Create(texturepath, desc);
+			m_SpecularTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		case TextureType::Normal:
-			m_NormalMapTexture = Texture2D::Create(texturepath, desc);
+			m_NormalMapTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		case TextureType::Metallic:
-			m_MetallicTexture = Texture2D::Create(texturepath, desc);
+			m_MetallicTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		case TextureType::Roughness:
-			m_RoughnessTexture = Texture2D::Create(texturepath, desc);
+			m_RoughnessTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		case TextureType::AmbientOcclusion:
-			m_AmbientOcclusionTexture = Texture2D::Create(texturepath, desc);
+			m_AmbientOcclusionTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		case TextureType::Emission:
-			m_EmissionTexture = Texture2D::Create(texturepath, desc);
+			m_EmissionTexture = TextureLibrary::Load(texturepath, desc);
 			break;
 		}
 	}

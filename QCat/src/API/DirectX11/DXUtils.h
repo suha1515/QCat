@@ -10,11 +10,15 @@ namespace QCat
 		{
 			switch (format)
 			{
+				//8bit
+			case DXGI_FORMAT::DXGI_FORMAT_R8_UNORM:					 return 1;
 				//32 bit
 			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM:			 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:		 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_SNORM:			 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R32_SINT:					 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT:				 return 4;
+			case DXGI_FORMAT::DXGI_FORMAT_R16_FLOAT:				 return 2;
 			case DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS:			 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS:				 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R16G16_FLOAT:				 return 4;

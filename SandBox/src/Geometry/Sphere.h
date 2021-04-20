@@ -13,7 +13,7 @@ namespace QCat
 		void SetRotation(const glm::vec3& rotation);
 		void SetTranslation(const glm::vec3 translation) { this->translation = translation; }
 		const glm::mat4& GetTransform();
-		void Draw(const Ref<Shader>& shader);
+		void Draw();
 
 		glm::vec3 GetTranslation() { return translation; }
 

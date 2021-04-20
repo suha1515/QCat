@@ -37,7 +37,7 @@ namespace QCat
 		Ref<Sphere> sphere;
 		Ref<Cube> cube;
 		
-		Ref<Model> helmet;
+		Ref<Model> gun;
 		Ref<Texture> HdrCubeMapTexture;
 		Ref<Texture> IrradianceCubeMapTexture;
 		Ref<Texture> PrefilterMap;
@@ -54,7 +54,14 @@ namespace QCat
 		Ref<Texture2D> HDRImage;
 		
 		Ref<VertexArray> m_quad;
+
+		Material RustedIron;
+		Material Gold;
+		Material grass;
+		Material plastic;
+		Material wall;
 		Material pbrmat;
+		Material materials[5];
 
 		glm::mat4 captureProjection;
 		glm::mat4 captureViews[6];

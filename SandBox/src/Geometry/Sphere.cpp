@@ -192,7 +192,7 @@ namespace QCat
 		return transform;
 	}
 
-	void Sphere::Draw(const Ref<Shader>& shader)
+	void Sphere::Draw()
 	{
 		m_VertexArray->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);

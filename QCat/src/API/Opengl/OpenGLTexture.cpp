@@ -3,7 +3,7 @@
 #include "stb_image.h"
 #include "API/Opengl/OpenglUtils.h"
 #include "API/Opengl/Opengl_Sampler.h"
-
+#include "QCat/Uitiliy/Float16.h"
 namespace QCat
 {
 	namespace Utils
@@ -64,7 +64,7 @@ namespace QCat
 		}
 		m_width = width;
 		m_height = height;
-
+		Float16* float16Array = nullptr;
 		GLenum Internalformat=0, format=0,dataFormat=0;
 		{
 			if (extension != "hdr")
@@ -74,24 +74,31 @@ namespace QCat
 				case 4:
 					Internalformat = gammaCorrection ? GL_SRGB8_ALPHA8 : GL_RGBA8;
 					format = GL_RGBA;
-					
+					dataFormat = GL_UNSIGNED_BYTE;
 					break;
 				case 3:
 					Internalformat = gammaCorrection ? GL_SRGB8 : GL_RGB8;
 					format = GL_RGB;
+					dataFormat = GL_UNSIGNED_BYTE;
 					break;
 				case 1:
-					Internalformat = GL_R32F;
+					Internalformat = GL_R8;
 					format = GL_RED;
+					dataFormat = GL_UNSIGNED_BYTE;
 					break;
-				}
-				dataFormat = GL_UNSIGNED_BYTE;
+				}		
 			}
 			else
 			{
+				float16Array = new Float16[width * height * 3];
+				for (unsigned int i = 0;i< width * height * 3; i++)
+				{
+					float16Array[i] = ((float*)pData)[i];
+				}
+
 				Internalformat = GL_RGB16F;
 				format = GL_RGB;
-				dataFormat = GL_FLOAT;
+				dataFormat = GL_HALF_FLOAT;
 			}
 			
 		}
@@ -123,13 +130,18 @@ namespace QCat
 			glTextureStorage2D(m_renderID, mipLevel, m_InternalFormat, m_width, m_height);
 		
 		// Upload Texture
-		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, m_DataFormat, pData);
-
+		if(float16Array == nullptr)
+			glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, m_DataFormat, pData);
+		else
+			glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, m_DataFormat, float16Array);
+		//glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, m_DataFormat, pData);
 		//if (mipLevel > 1 && desc.MIP != Filtering::NONE)
 		//	glGenerateTextureMipmap(m_renderID);
 		//if (mipLevel > 1 && desc.MIP != Filtering::NONE)
 			//glGenerateTextureMipmap(m_renderID);
 		// free loaded image
+		if (float16Array != nullptr)
+			delete[] float16Array;
 		stbi_image_free(pData);
 
 		//sampler = OpenGLSampler::Create(desc);

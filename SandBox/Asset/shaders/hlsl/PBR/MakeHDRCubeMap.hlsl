@@ -47,7 +47,7 @@ PS_OUT PSMain(PSIn input)
 	
 	float3 dir = input.localPos;
 	//float3 envColor = environmentMap.Sample(splr, dir).rgb;
-	float3 envColor = environmentMap.SampleLevel(splr, dir,1.2f).rgb;
+	float3 envColor = environmentMap.SampleLevel(splr, dir,0.0f).rgb;
 
 	envColor = envColor / (envColor + float3(1.0, 1.0, 1.0));
 	envColor = pow(envColor, 1.0 / 2.2);

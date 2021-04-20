@@ -67,22 +67,25 @@ namespace QCat
 		Float16* float16Array=nullptr;
 			if (extension != "hdr")
 			{
-				pData = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+				pData = stbi_load(path.c_str(), &width, &height, &channels, 0);
 				QCAT_CORE_ASSERT(pData, "Failed to load Image!");
 
 			}
 			else
 			{
-				pData  = stbi_loadf(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+				pData  = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
 				QCAT_CORE_ASSERT(pData, "Failed to load HDR image!");
 				
 				float16Array = new Float16[width * height * 4];
-				for (unsigned int i = 0; i < width*height*4; i++)
+				for (unsigned int i=0,j= 0; j< width*height*3; i+=4,j+=3)
 				{
-					float16Array[i] = ((float*)pData)[i];
+					float16Array[i] = ((float*)pData)[j];
+					float16Array[i+1] = ((float*)pData)[j+1];
+					float16Array[i+2] = ((float*)pData)[j+2];
+					float16Array[i + 3] = 1.0f;
 				}
 			}
-
+		unsigned char* UData=nullptr;
 		{
 			if (extension != "hdr")
 			{
@@ -90,17 +93,76 @@ namespace QCat
 				{
 				case 4:
 					m_dataFormat = gamacorrection ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+					UData = new unsigned char[width * height * 4];
+					for (int i=0;i < width * height*4; ++i )
+					{
+						UData[i] = ((unsigned char*)pData)[i];
+					}
 					break;
 				case 3:
 					m_dataFormat = gamacorrection ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM;
+					UData = new unsigned char[width * height * 4];
+					for (int i=0,j = 0; j < width * height * 3; i+=4,j+=3)
+					{
+						UData[i]   = ((unsigned char*)pData)[j];
+						UData[i+1] = ((unsigned char*)pData)[j+1];
+						UData[i+2] = ((unsigned char*)pData)[j+2];
+						UData[i + 3] = 1;
+					}
 					break;
 				case 1:
-					m_dataFormat = DXGI_FORMAT_R32_FLOAT;
+					UData = new unsigned char[width * height];
+					m_dataFormat = DXGI_FORMAT_R8_UNORM;
+					for (int i = 0; i < width * height; ++i)
+					{
+						UData[i] =   ((unsigned char*)pData)[i];
+					}
 					break;
 				}
 			}
 			else
 			{
+				switch (channels)
+				{
+				case 4: 
+					float16Array = new Float16[width * height * 4];
+					for (unsigned int i = 0;i < width * height * 4; i++)
+					{
+						float16Array[i] = ((float*)pData)[i];
+					}
+					break;
+				case 3:
+					float16Array = new Float16[width * height * 4];
+					for (unsigned int i = 0, j = 0; j < width * height * 3; i += 4, j += 3)
+					{
+						float16Array[i] = ((float*)pData)[j];
+						float16Array[i + 1] = ((float*)pData)[j + 1];
+						float16Array[i + 2] = ((float*)pData)[j + 2];
+						float16Array[i + 3] = 1.0f;
+					}
+					break;
+				case 2: 
+					float16Array = new Float16[width * height * 4];
+					for (unsigned int i = 0, j = 0; j < width * height * 2; i += 4, j += 2)
+					{
+						float16Array[i] = ((float*)pData)[j];
+						float16Array[i + 1] = ((float*)pData)[j + 1];
+						float16Array[i + 2] = 1.0f;
+						float16Array[i + 3] = 1.0f;
+					}
+					break;
+				case 1: 
+					float16Array = new Float16[width * height * 4];
+					for (unsigned int i = 0, j = 0; j < width * height; i += 4, j += 1)
+					{
+						float16Array[i] = ((float*)pData)[j];
+						float16Array[i + 1] = 1.0f;
+						float16Array[i + 2] = 1.0f;
+						float16Array[i + 3] = 1.0f;
+					}
+					break;
+					
+				}
 				m_dataFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
 				//m_dataFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 			}
@@ -123,7 +185,7 @@ namespace QCat
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 		textureDesc.CPUAccessFlags = 0;
-		if(mipLevel > 0 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
+		if(mipLevel > 0 )
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
 		this->desc.Width = m_width;
@@ -140,14 +202,16 @@ namespace QCat
 		//void* ddat = f16Data;
 		if (float16Array!=nullptr)
 			subResource.pSysMem = float16Array;
+		else if(UData !=nullptr)
+			subResource.pSysMem = UData;
 		else
 			subResource.pSysMem = pData;
-		
+
 		subResource.SysMemPitch = textureDesc.Width * Utils::GetMemoryPitch(textureDesc.Format);
+
 		subResource.SysMemSlicePitch = 0;
-		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, &subResource, &pTexture);
-
-
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
+		QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0, nullptr, subResource.pSysMem, subResource.SysMemPitch, subResource.SysMemSlicePitch);
 		// Texture resource view
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format = textureDesc.Format;
@@ -160,10 +224,15 @@ namespace QCat
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
+
+		if (textureDesc.MipLevels > 0)
+			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
 		// free loaded image
 		stbi_image_free(pData);
 		if (float16Array != nullptr)
 			delete[] float16Array;
+		if (UData != nullptr)
+			delete[] UData;
 		sampler = DX11Sampler::Create(desc);
 	}
 	DX11Texture2D::DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples, void* pData)

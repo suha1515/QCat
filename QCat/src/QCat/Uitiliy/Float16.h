@@ -11,6 +11,7 @@ namespace QCat
 
         Float16& operator=(Float16 v) { h = v.h; return *this; }
         Float16& operator=(float f) { setFloat(f); return *this; }
+        Float16& operator=(unsigned short s) { h = s; return *this; }
 
         operator float() const { return getFloat(); }
 

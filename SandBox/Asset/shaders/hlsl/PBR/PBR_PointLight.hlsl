@@ -43,7 +43,7 @@ VSOut VSMain(VSIn Input)
 	float3x3 mat = { T,B,N };
 	vso.TBN = mat;
 
-	//TBN = transpose(TBN);
+	vso.TBN = transpose(vso.TBN);
 
 	float3 FragPos = (float3)mul(u_Transform, float4(Input.pos, 1.0f));
 	vso.fragPos = FragPos;
@@ -78,15 +78,15 @@ cbuffer material : register(b1)
 {
 	Material material;
 }
-Texture2D albedoMap;
+Texture2D albedoMap : register(t0);
 SamplerState  albedoMapSplr: register(s0);
-Texture2D normalMap;
+Texture2D normalMap : register(t1);
 SamplerState  normalMapSplr: register(s1);
-Texture2D metallicMap;
+Texture2D metallicMap: register(t2);
 SamplerState  metallicMapSplr: register(s2);
-Texture2D roughnessMap;
+Texture2D roughnessMap: register(t3);
 SamplerState  roughnessMapSplr: register(s3);
-Texture2D aoMap;
+Texture2D aoMap: register(t4);
 SamplerState  aoMapSplr: register(s4);
 //IBL
 TextureCube irradianceMap;
@@ -172,6 +172,7 @@ PS_OUT PSMain(PSIn input)
 	{
 		N = normalMap.Sample(normalMapSplr, input.tc).rgb;
 		N = N * 2.0f - 1.0f;
+		//N = normalize(mul(input.TBN, N));
 		N = normalize(mul(input.TBN, N));
 	}
 	else
