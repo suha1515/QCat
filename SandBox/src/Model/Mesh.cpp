@@ -2,9 +2,8 @@
 
 namespace QCat
 {
-	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader, const Material& mat)
+	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader)
 	{
-		this->mat = mat;
 		this->transform = transform;
 		Initialize(shader, vertices,indices);
 	}

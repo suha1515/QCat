@@ -194,116 +194,114 @@ namespace QCat
 				{
 					success = true;
 				}*/
+			//aiString str;
+			//std::string texturePath;
+			//if (material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-			
-			aiString str;
-			std::string texturePath;
-			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> diffTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(diffTexture, Material::TextureType::Diffuse);
+			//}
+			//if (material->GetTexture(aiTextureType_SPECULAR, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> diffTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(diffTexture, Material::TextureType::Diffuse);
-			}
-			if (material->GetTexture(aiTextureType_SPECULAR, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> specularTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(specularTexture, Material::TextureType::Specular);
+			//}
+			//if (material->GetTexture(aiTextureType_HEIGHT, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> specularTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(specularTexture, Material::TextureType::Specular);
-			}
-			if (material->GetTexture(aiTextureType_HEIGHT, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(normalTexture, Material::TextureType::Normal);
+			//}
+			//if (material->GetTexture(aiTextureType_AMBIENT, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_BASE_COLOR, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_DISPLACEMENT, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_EMISSION_COLOR, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_EMISSIVE, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_LIGHTMAP, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_NORMALS, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(normalTexture, Material::TextureType::Normal);
-			}
-			if (material->GetTexture(aiTextureType_AMBIENT, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_BASE_COLOR, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_DISPLACEMENT, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_EMISSION_COLOR, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_EMISSIVE, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_LIGHTMAP, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_NORMALS, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(normalTexture, Material::TextureType::Normal);
+			//}
+			//if (material->GetTexture(aiTextureType_REFLECTION, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_OPACITY, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_SHININESS, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> normalTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(normalTexture, Material::TextureType::Normal);
-			}
-			if (material->GetTexture(aiTextureType_REFLECTION, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_OPACITY, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_SHININESS, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(roughnessTexture, Material::TextureType::Roughness);
+			//}
+			//if (material->GetTexture(aiTextureType_UNKNOWN, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	QCAT_CORE_ASSERT(false, "Find other imgageType");
+			//}
+			//if (material->GetTexture(aiTextureType_METALNESS, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(roughnessTexture, Material::TextureType::Roughness);
-			}
-			if (material->GetTexture(aiTextureType_UNKNOWN, 0, &str) == aiReturn_SUCCESS)
-			{
-				QCAT_CORE_ASSERT(false, "Find other imgageType");
-			}
-			if (material->GetTexture(aiTextureType_METALNESS, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> metallicTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(metallicTexture, Material::TextureType::Metallic);
+			//}
+			////roughness
+			//if (material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> metallicTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(metallicTexture, Material::TextureType::Metallic);
-			}
-			//roughness
-			if (material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
+			//	Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(roughnessTexture, Material::TextureType::Roughness);
+			//}
+			////ao
+			//if (material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str) == aiReturn_SUCCESS)
+			//{
+			//	texturePath = path + '/' + str.C_Str();
+			//	//texturePath = str.C_Str();
 
-				Ref<Texture2D> roughnessTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(roughnessTexture, Material::TextureType::Roughness);
-			}
-			//ao
-			if (material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str) == aiReturn_SUCCESS)
-			{
-				texturePath = path + '/' + str.C_Str();
-				//texturePath = str.C_Str();
-
-				Ref<Texture2D> ambientOcclusionTexture = TextureLibrary::Load(texturePath);
-				mat.SetTexture(ambientOcclusionTexture, Material::TextureType::AmbientOcclusion);
-			}
+			//	Ref<Texture2D> ambientOcclusionTexture = TextureLibrary::Load(texturePath);
+			//	mat.SetTexture(ambientOcclusionTexture, Material::TextureType::AmbientOcclusion);
+			//}
 		}
 		Ref<Shader> shader;
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
@@ -315,7 +313,7 @@ namespace QCat
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		// TODO: Shader split..?
-		return Mesh(transform,vertices, indices, shader,mat);
+		return Mesh(transform,vertices, indices, shader);
 	}
 	std::vector<Mesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
 	{

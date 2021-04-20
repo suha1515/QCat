@@ -155,6 +155,7 @@ float2 IntegrateBRDF(float NdotV, float roughness)
 PS_OUT PSMain(PSIn input)
 {
 	PS_OUT output;
+	input.texcoord.y = 1 - input.texcoord.y;
 	float2 integrateBRDF = IntegrateBRDF(input.texcoord.x, input.texcoord.y);
 	output.color = integrateBRDF;
 	return output;

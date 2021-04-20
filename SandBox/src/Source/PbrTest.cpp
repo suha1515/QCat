@@ -32,9 +32,9 @@ namespace QCat
 		IrradianceMap= ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
 		prefilter = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/prefilter.hlsl" : "Asset/shaders/glsl/PBR/prefilter.glsl");
 		BRDF2d = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/BRDF2D.hlsl" : "Asset/shaders/glsl/PBR/BRDF2D.glsl");
-		/*gun = Model::Create("Asset/model/gun2/gun2.fbx");
-		gun->SetTranslation({ 0.0f,0.0f,-1.0f });
-		gun->SetScale({ 0.01f,0.01f,0.01f });*/
+		gun = Model::Create("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX");
+		gun->SetTranslation({ -2.0f,-0.3f,-1.0f });
+		gun->SetScale({ 0.01f,0.01f,0.01f });
 		PBRshader->Bind();
 		PBRshader->SetInt("material.albedoMap",0, ShaderType::PS);
 		PBRshader->SetInt("material.normalMap",1, ShaderType::PS);
@@ -72,6 +72,10 @@ namespace QCat
 		imgSamp.MIN = Filtering::LINEAR;
 		imgSamp.MAG = Filtering::LINEAR;
 		imgSamp.MIP = Filtering::LINEAR;
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png",imgSamp, Material::TextureType::Diffuse);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", imgSamp, Material::TextureType::Metallic);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/normal.png", imgSamp, Material::TextureType::Normal);
@@ -104,7 +108,6 @@ namespace QCat
 
 		//Brick.m_DiffuseTexture = brick;
 		//Brick.m_NormalMapTexture = brick_normal;
-
 		lightPosition = glm::vec3(10.0f, 10.0f, -20.0f);
 		light[0].info.lightPosition = lightPosition;
 		light[1].info.lightPosition = { -10.0f,10.0f,-20.0f};
@@ -368,6 +371,31 @@ namespace QCat
 			sphere->Draw();
 
 		}
+		std::vector<Mesh>& meshes = gun->GetMeshes();
+
+		gun->SetRotation(rotation);
+		for (auto& mesh : meshes)
+		{
+			glm::mat4 transform = gun->GetTransform() * mesh.GetTransform();
+			PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
+			PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
+			PBRshader->SetBool("material.IsAlbedoMap", gunMat.IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
+			PBRshader->SetBool("material.IsNormalMap", gunMat.IsThereTexture(Material::TextureType::Normal), ShaderType::PS);
+			PBRshader->SetBool("material.IsMetallicMap", gunMat.IsThereTexture(Material::TextureType::Metallic), ShaderType::PS);
+			PBRshader->SetBool("material.IsRoughnessMap", gunMat.IsThereTexture(Material::TextureType::Roughness), ShaderType::PS);
+			PBRshader->SetBool("material.IsAoMap", gunMat.IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
+			PBRshader->UpdateBuffer();
+
+			gunMat.Bind(0, Material::TextureType::Diffuse);
+			gunMat.Bind(1, Material::TextureType::Normal);
+			gunMat.Bind(2, Material::TextureType::Metallic);
+			gunMat.Bind(3, Material::TextureType::Roughness);
+			gunMat.Bind(4, Material::TextureType::AmbientOcclusion);
+			IrradianceCubeMapTexture->Bind(5);
+			PrefilterMap->Bind(6);
+			BRDFLutTexture->Bind(7);
+			mesh.Draw();
+		}
 		PBRshader->UnBind();
 
 		//PBRshader->Bind();
@@ -443,57 +471,7 @@ namespace QCat
 		{
 			
 		}
-		//std::vector<Mesh>& meshes = helmet->GetMeshes();
 		
-		//helmet->SetRotation(rotation);
-		//for (auto& mesh : meshes)
-		//{
-		//	glm::mat4 transform = helmet->GetTransform() * mesh.GetTransform();
-		//	PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
-		//	PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-		//	Material& helmetMat = mesh.GetMaterial();
-		//	// material
-		//	if (helmetMat.IsThereTexture(Material::TextureType::Normal))
-		//		PBRshader->SetBool("material.IsNormalMap", true, ShaderType::PS);
-		//	else
-		//		PBRshader->SetBool("material.IsNormalMap", false, ShaderType::PS);
-		//	if (helmetMat.IsThereTexture(Material::TextureType::Diffuse))
-		//		PBRshader->SetBool("material.IsAlbedoMap", true, ShaderType::PS);
-		//	else
-		//	{
-		//		PBRshader->SetBool("material.IsAlbedoMap", false, ShaderType::PS);
-		//		PBRshader->SetFloat3("material.albedo", helmetMat.diffuse, ShaderType::PS);
-		//	}
-		//	if (helmetMat.IsThereTexture(Material::TextureType::Metallic))
-		//		PBRshader->SetBool("material.IsMetallicMap", true, ShaderType::PS);
-		//	else
-		//	{
-		//		PBRshader->SetBool("material.IsMetallicMap", false, ShaderType::PS);
-		//		PBRshader->SetFloat("material.metallic", helmetMat.metallic, ShaderType::PS);
-		//	}
-		//	if (helmetMat.IsThereTexture(Material::TextureType::Roughness))
-		//		PBRshader->SetBool("material.IsRoughnessMap", true, ShaderType::PS);
-		//	else
-		//	{
-		//		PBRshader->SetBool("material.IsRoughnessMap", false, ShaderType::PS);
-		//		PBRshader->SetFloat("material.roughness", helmetMat.roughness, ShaderType::PS);
-		//	}
-		//	if (helmetMat.IsThereTexture(Material::TextureType::AmbientOcclusion))
-		//		PBRshader->SetBool("material.IsAoMap", true, ShaderType::PS);
-		//	else
-		//		PBRshader->SetBool("material.IsAoMap", false, ShaderType::PS);
-		//	PBRshader->SetFloat("material.ambientocclusion", helmetMat.ao, ShaderType::PS);
-
-		//	PBRshader->UpdateBuffer();		
-		//	
-		//	helmetMat.Bind(0, Material::TextureType::Diffuse);
-		//	helmetMat.Bind(1, Material::TextureType::Normal);
-		//	helmetMat.Bind(2, Material::TextureType::Metallic);
-		//	helmetMat.Bind(3, Material::TextureType::Roughness);
-		//	helmetMat.Bind(4, Material::TextureType::AmbientOcclusion);
-		//	mesh.Draw();
-		//}
-		PBRshader->UnBind();
 
 		Flatcolor->Bind();
 		Flatcolor->SetMat4("u_ViewProjection", camProj * viewMatrix, ShaderType::VS);

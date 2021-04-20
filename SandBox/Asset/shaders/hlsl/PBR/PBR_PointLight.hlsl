@@ -89,11 +89,11 @@ SamplerState  roughnessMapSplr: register(s3);
 Texture2D aoMap: register(t4);
 SamplerState  aoMapSplr: register(s4);
 //IBL
-TextureCube irradianceMap;
+TextureCube irradianceMap: register(t5);;
 SamplerState  irradianceMapSplr : register(s5);
-TextureCube prefilterMap;
+TextureCube prefilterMap: register(t6);;
 SamplerState  prefilterMapSplr: register(s6);
-Texture2D brdfLUT;
+Texture2D brdfLUT: register(t7);
 SamplerState  brdfLUTSplr: register(s7);
 
 struct PSIn

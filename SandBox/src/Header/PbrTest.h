@@ -42,7 +42,7 @@ namespace QCat
 		Ref<Texture> IrradianceCubeMapTexture;
 		Ref<Texture> PrefilterMap;
 		Ref<Texture> BRDFLutTexture;
-		glm::vec3 rotation = { 0.0f,3.2f,0.0f };
+		glm::vec3 rotation = { 1.6,-1.6f,0.0f };
 
 		Ref<Shader> PBRshader;
 		Ref<Shader> Flatcolor;
@@ -55,13 +55,10 @@ namespace QCat
 		
 		Ref<VertexArray> m_quad;
 
-		Material RustedIron;
-		Material Gold;
-		Material grass;
-		Material plastic;
-		Material wall;
+
 		Material pbrmat;
 		Material materials[5];
+		Material gunMat;
 
 		glm::mat4 captureProjection;
 		glm::mat4 captureViews[6];
