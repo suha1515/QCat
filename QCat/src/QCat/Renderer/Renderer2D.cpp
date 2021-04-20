@@ -79,7 +79,7 @@ namespace QCat
 		s_data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[]quadIndices;
 		
-		s_data.whiteTexture = Texture2D::Create(desc,1, 1);
+		s_data.whiteTexture = Texture2D::Create(TextureFormat::RGBA8,desc,1, 1);
 		unsigned int whiteTextureData = 0xffffffff;
 		s_data.whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
 

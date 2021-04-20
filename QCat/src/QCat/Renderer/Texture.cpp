@@ -19,17 +19,6 @@ namespace  QCat
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
-	Ref<Texture2D> Texture2D::Create(Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples )
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
-		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLTexture2D>(desc, width, height, mipLevel, samples);
-		case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2D>(desc, width, height, mipLevel, samples);
-		}
-		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
-		return nullptr;
-	}
 	Ref<Texture2D> Texture2D::Create(const std::string& path, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples, bool flip,bool gamacorrection)
 	{
 		switch (Renderer::GetAPI())

@@ -36,8 +36,8 @@ namespace QCat
 
 		virtual bool operator==(const Texture& other) const = 0;
 
-		virtual TextureType GetTextureType() const = 0;
-		virtual TextureFormat GetTextureFormat() const = 0;
+		virtual TextureType GetTextureType() const { return desc.Type; } ;
+		virtual TextureFormat GetTextureFormat() const { return desc.Format; };
 		
 		//virtual Texture& operator=(const Texture& other) = 0;
 
@@ -51,7 +51,6 @@ namespace QCat
 		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) = 0;
 
 		static Ref<Texture2D> Create(TextureFormat format,Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1,void* pData = nullptr);
-		static Ref<Texture2D> Create(Sampler_Desc desc,unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1);
 		static Ref<Texture2D> Create(const std::string & path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1,bool flip =false,bool gamacorrection = false);
 	private:
 		std::string path;

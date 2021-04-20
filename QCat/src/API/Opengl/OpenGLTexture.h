@@ -8,16 +8,12 @@ namespace QCat
 	public:
 		OpenGLTexture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel=1,unsigned int samples=1, bool flip = false, bool gammaCorrection = false);
 		OpenGLTexture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
-		OpenGLTexture2D(Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1);
 
 		virtual ~OpenGLTexture2D();
 
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override {return m_height;}
 		virtual void*       GetTexture() const override { return (void*)m_renderID; }
-		virtual TextureType GetTextureType() const override { return m_textureType; }
-		virtual TextureFormat GetTextureFormat() const override {return m_textureFormat;}
-
 		virtual void GenerateMipMap() override;
 
 		virtual void SetData(void* pData, unsigned int size) override;
@@ -38,14 +34,13 @@ namespace QCat
 		//	m_InternalFormat = ((OpenGLTexture2D&)other).m_InternalFormat;
 		//	m_DataFormat = ((OpenGLTexture2D&)other).m_DataFormat;
 		//}
+		void Validate(GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData);
 	private:
 		unsigned int m_width,m_height;
 		unsigned int m_renderID;
-		unsigned int mipLevel,samples;
+		unsigned int m_mipLevel,m_samples;
 		bool flip=false, gammaCorrection = false;
 		GLenum m_InternalFormat, m_Format,m_DataFormat;
-		TextureType m_textureType;
-		TextureFormat m_textureFormat;
 		Sampler_Desc  smpdesc;
 	};
 
@@ -60,9 +55,6 @@ namespace QCat
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)m_renderID; }
-		virtual TextureType GetTextureType() const override { return m_textureType; }
-		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
-
 		virtual void GenerateMipMap() override;
 
 		virtual void SetData(void* pData, unsigned int size) override;
@@ -76,14 +68,13 @@ namespace QCat
 		{
 			return m_renderID == ((OpenGLCubeMapTexture&)other).m_renderID;
 		}
+		void Validate(GLenum target,GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData);
 	private:
 		unsigned int m_width, m_height;
-		unsigned int mipLevel;
 		unsigned int m_renderID;
-		GLenum m_InternalFormat, m_Format, m_DataFormat;
+		unsigned int m_mipLevel, m_samples;
 		bool flip = false, gammaCorrection = false;
-		TextureType m_textureType;
-		TextureFormat m_textureFormat;
+		GLenum m_InternalFormat, m_Format, m_DataFormat;
 		Sampler_Desc  smpdesc;
 	};
 }
