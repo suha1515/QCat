@@ -32,7 +32,9 @@ namespace QCat
 		IrradianceMap= ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
 		prefilter = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/prefilter.hlsl" : "Asset/shaders/glsl/PBR/prefilter.glsl");
 		BRDF2d = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/BRDF2D.hlsl" : "Asset/shaders/glsl/PBR/BRDF2D.glsl");
-		gun = Model::Create("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX");
+	//	gun = Model::Create("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX");
+		gun = Model::Create("Asset/model/simple-steel-helmet-game-model/source/helmet_mesh.fbx");
+
 		gun->SetTranslation({ -2.0f,-0.3f,-1.0f });
 		gun->SetScale({ 0.01f,0.01f,0.01f });
 		PBRshader->Bind();
@@ -60,22 +62,17 @@ namespace QCat
 	
 		desc.addressU = WrapingMode::CLAMP;
 		desc.addressV = WrapingMode::CLAMP;
-		//HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_8k.jpg", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 		HDRImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
-		/*pbrmat.SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", desc, Material::TextureType::Diffuse);
-		pbrmat.SetTexture("Asset/textures/PBR/rusted_iron/normal.png", desc, Material::TextureType::Normal);
-		pbrmat.SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", desc, Material::TextureType::Metallic);
-		pbrmat.SetTexture("Asset/textures/PBR/rusted_iron/roughness.png", desc, Material::TextureType::Roughness);*/
 		Sampler_Desc imgSamp;
 		imgSamp.addressU = WrapingMode::REPEAT;
 		imgSamp.addressV = WrapingMode::REPEAT;
 		imgSamp.MIN = Filtering::LINEAR;
 		imgSamp.MAG = Filtering::LINEAR;
 		imgSamp.MIP = Filtering::LINEAR;
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/Textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
+		gunMat.SetTexture("Asset/model/simple-steel-helmet-game-model/textures/DefaultMaterial_Base_Color.tga.png", imgSamp, Material::TextureType::Diffuse);
+		gunMat.SetTexture("Asset/model/simple-steel-helmet-game-model/textures/DefaultMaterial_Metallic.tga.png", imgSamp, Material::TextureType::Metallic);
+		gunMat.SetTexture("Asset/model/simple-steel-helmet-game-model/textures/DefaultMaterial_Normal_DirectX.tga.png", imgSamp, Material::TextureType::Normal);
+		gunMat.SetTexture("Asset/model/simple-steel-helmet-game-model/textures/DefaultMaterial_Roughness.tga.png", imgSamp, Material::TextureType::Roughness);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png",imgSamp, Material::TextureType::Diffuse);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", imgSamp, Material::TextureType::Metallic);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/normal.png", imgSamp, Material::TextureType::Normal);
