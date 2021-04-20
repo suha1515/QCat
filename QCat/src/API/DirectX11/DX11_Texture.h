@@ -14,16 +14,12 @@ namespace QCat
 	{
 	public:
 		DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
-		DX11Texture2D(Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1);
 		DX11Texture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip=false,bool gamacorrection = false);
-		DX11Texture2D(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip = false, bool gammaCorrection = false);
 		virtual ~DX11Texture2D();
 
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
-		virtual TextureType GetTextureType() const override { return m_textureType; }
-		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
 		virtual void GenerateMipMap() override;
 
@@ -41,7 +37,7 @@ namespace QCat
 
 		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
 
-		void Invalidate();
+		void Invalidate(void* pData);
 	private:
 		int samples = 0;
 		std::string m_path;
@@ -49,8 +45,6 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
-		TextureType m_textureType;
-		TextureFormat m_textureFormat;
 		D3D11_TEXTURE2D_DESC textureDesc;
 	};
 	class DX11TextureCube : public TextureCube
@@ -58,15 +52,12 @@ namespace QCat
 	public:
 		DX11TextureCube(const std::vector<std::string>& imgPathes, Sampler_Desc desc, unsigned int mipLevel = 1, bool flip = false, bool gammaCorrection = false);
 		DX11TextureCube(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, void* pData = nullptr);
-		DX11TextureCube(D3D11_TEXTURE2D_DESC textureDesc, Sampler_Desc desc, bool flip = false, bool gammaCorrection = false);
 
 		~DX11TextureCube() = default;
 
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
-		virtual TextureType GetTextureType() const override { return m_textureType; }
-		virtual TextureFormat GetTextureFormat() const override { return m_textureFormat; }
 
 		virtual void GenerateMipMap() override;
 
@@ -83,15 +74,13 @@ namespace QCat
 		}
 
 		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
-		void Invalidate();
+		void Invalidate(void* pData);
 	private:
 		int samples = 0;
 		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
-		TextureType m_textureType;
-		TextureFormat m_textureFormat;
 		D3D11_TEXTURE2D_DESC textureDesc;
 	};
 }

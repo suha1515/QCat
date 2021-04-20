@@ -1,0 +1,102 @@
+﻿'SandBox.exe'(Win32): 'C:\dev\QCat\bin\Debug-windows-\SandBox\SandBox.exe'을(를) 로드했습니다. 기호가 로드되었습니다.
+'SandBox.exe'(Win32): 'C:\Windows\System32\ntdll.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\kernel32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\KernelBase.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\imm32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\user32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\win32u.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\gdi32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\gdi32full.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\msvcp_win.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ucrtbase.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\dev\QCat\bin\Debug-windows-\SandBox\assimp-vc142-mtd.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\d3d11.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\msvcrt.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\opengl32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\advapi32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\sechost.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\rpcrt4.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\combase.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\D3DCompiler_47.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\XInput1_4.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\cfgmgr32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\msvcp140d.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\vcruntime140d.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\vcruntime140_1d.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ucrtbased.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\dxgi.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\glu32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\cryptsp.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\devobj.dll'을(를) 로드했습니다. 
+0xc54 스레드가 종료되었습니다(코드: 0 (0x0)).
+'SandBox.exe'(Win32): 'C:\Windows\System32\InputHost.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\SHCore.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\oleaut32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\CoreMessaging.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ws2_32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\WinTypes.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\propsys.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\CoreUIComponents.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\bcryptprimitives.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ntmarta.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\kernel.appcore.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\kernel.appcore.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\kernel.appcore.dll'을(를) 언로드했습니다.
+'SandBox.exe'(Win32): 'C:\Windows\System32\uxtheme.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\msctf.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\IMGSF50Filter_x64.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\shell32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ole32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\shlwapi.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\psapi.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9625_none_08e1c10da83fbc83\msvcp90.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9625_none_08e1c10da83fbc83\msvcr90.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9625_none_08e1c10da83fbc83\msvcr90.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9625_none_08e1c10da83fbc83\msvcr90.dll'을(를) 언로드했습니다.
+'SandBox.exe'(Win32): 'C:\Windows\System32\TextInputFramework.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\clbcatq.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\IME\IMEKR\imkrtip.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\IME\SHARED\IMETIP.DLL'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\oleacc.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\dui70.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\version.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\IME\IMEKR\imkrapi.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\policymanager.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\msvcp110_win.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\IME\SHARED\IMJKAPI.DLL'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\DXGIDebug.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ResourcePolicyClient.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\ResourcePolicyClient.dll'을(를) 언로드했습니다.
+'SandBox.exe'(Win32): 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_a51067c0ac557884\nvldumdx.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\msasn1.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\cryptnet.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\crypt32.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\cryptbase.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\wintrust.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\imagehlp.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\rsaenh.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\bcrypt.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_a51067c0ac557884\nvwgf2umx.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\winmm.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_a51067c0ac557884\NvCamera\NvCameraAllowlisting64.dll'을(를) 로드했습니다. 
+0x5768 스레드가 종료되었습니다(코드: 0 (0x0)).
+'SandBox.exe'(Win32): 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_a51067c0ac557884\NvCamera\NvCameraAllowlisting64.dll'을(를) 언로드했습니다.
+'SandBox.exe'(Win32): 'C:\Windows\System32\windows.storage.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\wldp.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\nvspcap64.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\profapi.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\d3d11_3SDKLayers.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\DXCore.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\dcomp.dll'을(를) 로드했습니다. 
+'SandBox.exe'(Win32): 'C:\Windows\System32\dwmapi.dll'을(를) 로드했습니다. 
+D3D11 ERROR: ID3D11Device::CreateTexture2D: pInitialData[0].pSysMem cannot be NULL. [ STATE_CREATION ERROR #100: CREATETEXTURE2D_INVALIDINITIALDATA]
+예외 발생(0x00007FF9601E4B59, SandBox.exe): Microsoft C++ 예외: _com_error, 메모리 위치 0x000000123B4FB090.
+D3D11 ERROR: ID3D11Device::CreateTexture2D: Returning E_INVALIDARG, meaning invalid parameters were passed. [ STATE_CREATION ERROR #104: CREATETEXTURE2D_INVALIDARG_RETURN]
+D3D11 ERROR: ID3D11Device::CreateShaderResourceView: A ShaderResourceView cannot be created from a NULL Resource. [ STATE_CREATION ERROR #129: CREATESHADERRESOURCEVIEW_INVALIDRESOURCE]
+예외 발생(0x00007FF9601E4B59, SandBox.exe): Microsoft C++ 예외: _com_error, 메모리 위치 0x000000123B4FB240.
+D3D11 ERROR: ID3D11Device::CreateShaderResourceView: Returning E_INVALIDARG, meaning invalid parameters were passed. [ STATE_CREATION ERROR #131: CREATESHADERRESOURCEVIEW_INVALIDARG_RETURN]
+D3D11 CORRUPTION: ID3D11DeviceContext::GenerateMips: First parameter is corrupt or NULL. [ MISCELLANEOUS CORRUPTION #13: CORRUPTED_PARAMETER1]
+예외 발생(0x00007FF9601E4B59(KernelBase.dll), SandBox.exe): 0x0000087D(매개 변수: 0x0000000000000000, 0x000000123B4F8EB0, 0x000000123B4F8ED0).
+0x00007FF9601E4B59(KernelBase.dll)에(SandBox.exe의) 처리되지 않은 예외가 있습니다. 0x0000087D(매개 변수: 0x0000000000000000, 0x000000123B4F8EB0, 0x000000123B4F8ED0).
+
+'[12864] SandBox.exe' 프로그램이 종료되었습니다(코드: 0 (0x0)).

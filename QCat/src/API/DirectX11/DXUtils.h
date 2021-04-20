@@ -61,7 +61,7 @@ namespace QCat
 			case DXGI_FORMAT_R16G16_FLOAT:			  return TextureFormat::RG16_Float;
 			case DXGI_FORMAT_R24G8_TYPELESS:		  return TextureFormat::DEPTH24STENCIL8;
 			case DXGI_FORMAT_R32_TYPELESS:			  return TextureFormat::DEPTH32;
-				 
+			
 			case DXGI_FORMAT_R16G16B16A16_FLOAT:	  return TextureFormat::RGBA16_Float;
 			case DXGI_FORMAT_R32G32B32A32_FLOAT:	  return TextureFormat::RGBA32_Float;
 			}
