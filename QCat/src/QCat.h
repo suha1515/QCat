@@ -41,6 +41,7 @@
 #include "QCat/Renderer/VertexArray.h"
 #include "QCat/Renderer/OrthographicCamera.h"
 #include "QCat/Renderer/SamplerState.h"
+#include "QCat/Renderer/Mesh.h"
 //--Renderer-----------------------------//
 //--API----------------------------------//
 #include "API/Opengl/OpenGLShader.h"

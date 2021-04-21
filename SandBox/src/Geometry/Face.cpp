@@ -127,6 +127,7 @@ namespace QCat
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		m_VertexArray->UnBind();
+		MeshLibrary::Set("Quad", m_VertexArray);
 	}
 
 	void Face::SetScale(const glm::vec3& scale)

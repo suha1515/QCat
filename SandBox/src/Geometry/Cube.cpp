@@ -180,6 +180,8 @@ namespace QCat
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		m_VertexArray->UnBind();
+
+		MeshLibrary::Set("Cube", m_VertexArray);
 	}
 	void Cube::SetScale(const glm::vec3& scale)
 	{

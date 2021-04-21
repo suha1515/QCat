@@ -1,19 +1,19 @@
-#include "Mesh.h"
+#include "ModelMesh.h"
 
 namespace QCat
 {
-	Mesh::Mesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader)
+	ModelMesh::ModelMesh(const glm::mat4& transform,std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, const Ref<Shader>& shader)
 	{
 		this->transform = transform;
 		Initialize(shader, vertices,indices);
 	}
 
-	void Mesh::Draw()
+	void ModelMesh::Draw()
 	{
 		m_VertexArray->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
-	void Mesh::Initialize(const Ref<Shader>& shader, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
+	void ModelMesh::Initialize(const Ref<Shader>& shader, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
 	{
 		// VertexArray Object Creation
 		m_VertexArray = VertexArray::Create();
@@ -42,7 +42,7 @@ namespace QCat
 		//unbind
 		m_VertexArray->UnBind();
 	}
-	const glm::mat4 Mesh::GetTransform()
+	const glm::mat4 ModelMesh::GetTransform()
 	{
 		return transform;
 	}

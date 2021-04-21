@@ -55,6 +55,10 @@ namespace QCat
 		
 		Ref<VertexArray> m_quad;
 
+		//MeshEntity
+		Entity helmet;
+		
+		Entity ball[5];
 
 		Material pbrmat;
 		Material materials[5];

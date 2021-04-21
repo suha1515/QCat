@@ -7,6 +7,7 @@
 
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
+#include "QCat/Renderer/Mesh.h"
 
 namespace QCat
 {
@@ -68,6 +69,23 @@ namespace QCat
 		{
 			InstantiateScript = []() {return  static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
+		}
+	};
+	struct MeshComponent
+	{
+		Ref<VertexArray> vertexArray = nullptr;
+
+		MeshComponent(const std::string& meshName)
+		{
+			vertexArray = MeshLibrary::Load(meshName);
+		}
+		void Bind()
+		{
+			vertexArray->Bind();
+		}
+		void UnBind()
+		{
+			vertexArray->UnBind();
 		}
 	};
 }

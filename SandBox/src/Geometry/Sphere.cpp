@@ -173,6 +173,8 @@ namespace QCat
 		m_VertexArray->SetIndexBuffer(indexBuffer);
 
 		m_VertexArray->UnBind();
+
+		MeshLibrary::Set("Sphere", m_VertexArray);
 	}
 
 	void Sphere::SetScale(const glm::vec3& scale)

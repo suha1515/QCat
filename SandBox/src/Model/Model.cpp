@@ -74,17 +74,17 @@ namespace QCat
 		}
 
 	}
-	Mesh Model::ProcessMesh(aiNode* node,aiMesh* mesh, const aiScene* scene)
+	ModelMesh Model::ProcessMesh(aiNode* node,aiMesh* mesh, const aiScene* scene)
 	{
 		glm::mat4 transform = Utils::ConvertToGlm(node->mTransformation);
 
-		std::vector<Mesh::Vertex> vertices;
+		std::vector<ModelMesh::Vertex> vertices;
 		std::vector<uint32_t> indices;
-		std::vector<Mesh::Texture> textures;
+		std::vector<ModelMesh::Texture> textures;
 		// Vertex information
 		for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
 		{
-			Mesh::Vertex vertex;
+			ModelMesh::Vertex vertex;
 			glm::vec3 vector;
 			// Position
 			vector.x = mesh->mVertices[i].x;
@@ -313,16 +313,16 @@ namespace QCat
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
 		// TODO: Shader split..?
-		return Mesh(transform,vertices, indices, shader);
+		return ModelMesh(transform,vertices, indices, shader);
 	}
-	std::vector<Mesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
+	std::vector<ModelMesh::Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeMame)
 	{
-		std::vector<Mesh::Texture> textures;
+		std::vector<ModelMesh::Texture> textures;
 		for (uint32_t i = 0; i < mat->GetTextureCount(type); ++i)
 		{
 			aiString str;
 			mat->GetTexture(type, i, &str);
-			Mesh::Texture texture;
+			ModelMesh::Texture texture;
 			std::string texturePath = path + '/' + str.C_Str();
 			texture.texture = TextureLibrary::Load(texturePath);
 			texture.type = typeMame;

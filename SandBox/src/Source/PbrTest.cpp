@@ -3,6 +3,7 @@
 #include <Imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
+
 namespace QCat
 {
 	PbrTest::PbrTest()
@@ -11,10 +12,34 @@ namespace QCat
 	}
 	void PbrTest::OnAttach()
 	{
+
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
+
 		width = 1600;
 		height = 900;
 		m_ActiveScene = CreateRef<Scene>();
 		m_Camera = m_ActiveScene->CreateEntity("Camera");
+		//helmet = m_ActiveScene->CreateEntity("helmet");
+		ball[0] = m_ActiveScene->CreateEntity("GoldenBall");
+		ball[0].GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
+		ball[0].AddComponent<MeshComponent>("Sphere");
+
+		ball[1] = m_ActiveScene->CreateEntity("rustyBall");
+		ball[1].GetComponent<TransformComponent>().Translation = { -0.7f,0.0f,0.0f };
+		ball[1].AddComponent<MeshComponent>("Sphere");
+
+		ball[2] = m_ActiveScene->CreateEntity("grassBall");
+		ball[2].GetComponent<TransformComponent>().Translation = { -0.4f,0.0f,0.0f };
+		ball[2].AddComponent<MeshComponent>("Sphere");
+
+		ball[3] = m_ActiveScene->CreateEntity("wallBall");
+		ball[3].GetComponent<TransformComponent>().Translation = { -0.1f,0.0f,0.0f };
+		ball[3].AddComponent<MeshComponent>("Sphere");
+
+		ball[4] = m_ActiveScene->CreateEntity("plasticBall");
+		ball[4].GetComponent<TransformComponent>().Translation = { 0.2f,0.0f,0.0f };
+		ball[4].AddComponent<MeshComponent>("Sphere");
 
 		auto& tc = m_Camera.GetComponent<TransformComponent>();
 		tc.Translation = { 0.0f,0.0f,-2.0f };
@@ -117,8 +142,6 @@ namespace QCat
 		light[3].info.diffuse = { 300.0f,300.0f,300.0f };
 
 
-		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
-		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 		//Framebuffer
 		FrameBufferSpecification spec;
@@ -345,8 +368,7 @@ namespace QCat
 
 		for (int i = 0; i < 5; ++i)
 		{
-			sphere->SetTranslation(glm::vec3(-1.0f+(i*0.2f), 0.0f, 0.0f));
-			glm::mat4 transform = sphere->GetTransform();
+			glm::mat4 transform = ball[i].GetComponent<TransformComponent>().GetTransform();
 			PBRshader->SetMat4("u_Transform", transform, ShaderType::VS);
 			PBRshader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 			PBRshader->SetBool("material.IsAlbedoMap", materials[i].IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
@@ -354,7 +376,8 @@ namespace QCat
 			PBRshader->SetBool("material.IsMetallicMap", materials[i].IsThereTexture(Material::TextureType::Metallic), ShaderType::PS);
 			PBRshader->SetBool("material.IsRoughnessMap", materials[i].IsThereTexture(Material::TextureType::Roughness), ShaderType::PS);
 			PBRshader->SetBool("material.IsAoMap", materials[i].IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
-			
+			PBRshader->UpdateBuffer();
+
 			materials[i].Bind(0, Material::TextureType::Diffuse);
 			materials[i].Bind(1, Material::TextureType::Normal);
 			materials[i].Bind(2, Material::TextureType::Metallic);
@@ -364,11 +387,10 @@ namespace QCat
 			PrefilterMap->Bind(6);
 			BRDFLutTexture->Bind(7);
 
-			PBRshader->UpdateBuffer();
-			sphere->Draw();
-
+			ball[i].GetComponent<MeshComponent>().Bind();
+			RenderCommand::DrawIndexed(ball[i].GetComponent<MeshComponent>().vertexArray);
 		}
-		std::vector<Mesh>& meshes = gun->GetMeshes();
+		std::vector<ModelMesh>& meshes = gun->GetMeshes();
 
 		gun->SetRotation(rotation);
 		for (auto& mesh : meshes)
