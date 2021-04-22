@@ -21,6 +21,7 @@
 #include <sstream>
 #include <ostream>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <wrl.h>

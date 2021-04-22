@@ -103,5 +103,8 @@ namespace QCat
 		MISC_TILED,
 		MISC_HW_PROTECTED
 	};
-
+	enum class ResourceType
+	{
+		Texture = 0
+	};
 }
