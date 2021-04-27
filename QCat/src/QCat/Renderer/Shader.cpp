@@ -7,7 +7,17 @@
 
 namespace QCat
 {
+	std::string GetShaderNameFromFile(const std::string& filePath)
+	{
+		std::string name;
+		auto lastSlash = filePath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = filePath.rfind('.');
 
+		auto count = lastDot == std::string::npos ? filePath.size() - lastSlash : lastDot - lastSlash;
+		name = filePath.substr(lastSlash, count);
+		return name;
+	}
 	Ref<Shader> Shader::Create(const std::string& filepath)
 	{
 
@@ -46,8 +56,8 @@ namespace QCat
 
 	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
 	{
-		QCAT_CORE_ASSERT(!Get().Exists(name), "Shader already exists!");
-		Get().m_Shaders[name] = shader;
+		QCAT_CORE_ASSERT(!Get_().Exists(name), "Shader already exists!");
+		Get_().m_Shaders[name] = shader;
 	}
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
@@ -60,15 +70,23 @@ namespace QCat
 	}
 	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 	{
-		auto shader = Shader::Create(filepath);
-		Add(shader);
-		return shader;
+		std::string name = GetShaderNameFromFile(filepath);
+		if (Get_().Exists(name))
+		{
+			return Get_().GetShader(name);
+		}
+		else
+		{
+			auto shader = Shader::Create(filepath);
+			Add(shader);
+			return shader;
+		}
 	}
 	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 	{
-		if (Get().Exists(name))
+		if (Get_().Exists(name))
 		{
-			return Get().GetShader(name);
+			return Get_().GetShader(name);
 		}
 		else
 		{
@@ -80,9 +98,9 @@ namespace QCat
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& vertexFile, const std::string& pixelFile, const std::string& gsFile)
 	{
-		if (Get().Exists(name))
+		if (Get_().Exists(name))
 		{
-			return Get().GetShader(name);
+			return Get_().GetShader(name);
 		}
 		else
 		{
@@ -90,6 +108,11 @@ namespace QCat
 			Add(name, shader);
 			return shader;
 		}
+	}
+
+	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	{
+		return Get_().GetShader(name);
 	}
 
 	Ref<Shader> ShaderLibrary::GetShader(const std::string& name)

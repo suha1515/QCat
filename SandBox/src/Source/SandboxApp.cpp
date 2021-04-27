@@ -15,6 +15,7 @@
 #include "../Header/ModelTestScene.h"
 #include "../Header/TestScene.h"
 #include "../Header/PbrTest.h"
+#include "../Header/RenderGraphTest.h"
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -55,13 +56,14 @@ class Sandbox : public QCat::Application
 {
 public:
 	Sandbox()
-		:Application("QCat App",QCat::RenderAPI::API::DirectX11)
+		:Application("QCat App",QCat::RenderAPI::API::OpenGL)
 	{
 		//PushLayer(new ExamLayer());
 		//PushLayer(new QCat::ModelTestScene());
 		//PushLayer(new QCat::Sandbox2D());
 		//PushLayer(new QCat::TestScene());
-		PushLayer(new QCat::PbrTest());
+		//PushLayer(new QCat::PbrTest());
+		PushLayer(new QCat::RenderGraphTest());
 	}
 	~Sandbox()
 	{

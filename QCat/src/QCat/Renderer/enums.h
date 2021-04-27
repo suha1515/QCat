@@ -105,6 +105,11 @@ namespace QCat
 	};
 	enum class ResourceType
 	{
-		Texture = 0
+		None=0,Texture,Data
+	};
+	enum class DataType
+	{
+		None, Float, Float2, Float3, Float4, Matrix,
+		Int, Int2, Int3, Int4
 	};
 }

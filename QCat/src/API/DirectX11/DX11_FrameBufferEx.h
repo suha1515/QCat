@@ -17,7 +17,7 @@ namespace QCat
 		virtual void AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel)override;
 		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)override;
 		virtual void DetachTexture(AttachmentType attachType) override;
-
+		virtual void DetachAll() override;
 		virtual Ref<Texture> GetTexture(const std::string& name) override;
 
 		virtual void Clear(const glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) override;

@@ -74,7 +74,7 @@ namespace QCat
 	struct MeshComponent
 	{
 		Ref<VertexArray> vertexArray = nullptr;
-
+		MeshComponent() = default;
 		MeshComponent(const std::string& meshName)
 		{
 			vertexArray = MeshLibrary::Load(meshName);

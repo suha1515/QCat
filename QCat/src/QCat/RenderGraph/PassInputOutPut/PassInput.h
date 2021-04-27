@@ -5,7 +5,6 @@
 #include "PassOutput.h"
 namespace QCat
 {
-
 	class PassInput
 	{
 	public:
@@ -24,7 +23,9 @@ namespace QCat
 		ResourceType GetType() { return type; }
 
 	protected:
-		PassInput(const std::string& name) {this->name = name;}
+		PassInput(const std::string& name, ResourceType type)
+			:name(name),type(type)
+		{}
 	private:
 		std::string name;
 		std::string passName;
@@ -40,11 +41,44 @@ namespace QCat
 			return CreateScope<TextureInput>(name, texture);
 		}
 		TextureInput(const std::string& name,Ref<Texture>& texture)
-			:PassInput(std::move(name)),m_texture(texture)
+			:PassInput(name,ResourceType::Texture),m_texture(texture)
 		{}
 		void Bind(PassOutput& output);
 	private:
-		Ref<Texture> m_texture;
+		Ref<Texture>& m_texture;
 	
+	};
+	template<typename T>
+	class DataInput : public PassInput
+	{
+	public:
+		static Scope<PassInput> Make(const std::string& name, Ref<T>& pdata,DataType type)
+		{
+			return CreateScope<DataInput>(name, pdata, type);
+		}
+		DataInput(const std::string& name, Ref<T>& pdata,DataType type)
+			:PassInput(name,ResourceType::Data),type(type),pData(pdata)
+		{}
+		void Bind(PassOutput& output)
+		{
+			auto type = output.GetType();
+			if (GetType() != type)
+			{
+				QCAT_CORE_ERROR("{0} Pass Error : Input and output type missmatch", GetPassName());
+			}
+			else
+			{
+				DataOutput<T>* dataoutput = dynamic_cast<DataOutput<T>*>(&output);
+
+				DataType type = dataoutput->GetDataType();
+				if (this->type != type)
+					QCAT_CORE_ERROR("{0} Pass Error : InputData Type and OutputData Type missmatch!", GetPassName());
+
+				pData = dataoutput->GetData();
+			}
+		}
+	private:
+		Ref<T>& pData;
+		DataType type;
 	};
 }

@@ -56,10 +56,10 @@ namespace QCat
 		static Ref<Shader> Load(const std::string& filepath); 
 		static Ref<Shader> Load(const std::string& name ,const std::string& filepath);
 		static Ref<Shader> Load(const std::string& name, const std::string& filepath, const std::string& filepath2,const std::string& gsFile="");
-
-		Ref<Shader> GetShader(const std::string& name);
+		static Ref<Shader> Get(const std::string& name);
 	private:
-		static ShaderLibrary& Get()
+		Ref<Shader> GetShader(const std::string& name);
+		static ShaderLibrary& Get_()
 		{
 			static ShaderLibrary lib;
 			return lib;

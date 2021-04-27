@@ -4,6 +4,12 @@
 
 namespace QCat
 {
+	Pass::Pass()
+	{
+	}
+	Pass::~Pass()
+	{
+	}
 	PassInput& Pass::GetInput(const std::string& name) const
 	{
 		for (auto& input : inputs)

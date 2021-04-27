@@ -7,7 +7,7 @@ namespace QCat
 		auto type = output.GetType();
 		if (GetType() != type)
 		{
-			QCAT_CORE_ERROR("{0} Pass Error : Input and output type missmatch");
+			QCAT_CORE_ERROR("{0} Pass Error : Input and output type missmatch",GetPassName());
 		}
 		else
 		{
@@ -15,4 +15,5 @@ namespace QCat
 		}
 
 	}
+
 }

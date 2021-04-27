@@ -7,12 +7,17 @@ namespace QCat
 	class RenderGraph
 	{
 	public:
-		RenderGraph();
-		virtual ~RenderGraph();
+		RenderGraph() = default;
+		virtual ~RenderGraph()=default;
 
-		void Execute();
-		void AppendPass(unsigned int level, Ref<Pass> pass);
+		virtual void Execute(Ref<Scene>& scene);
+		virtual void AppendPass( Ref<Pass>& pass);
+		void LinkInput(Ref<Pass>& pass);
+		void AddGlobalInput(Scope<PassInput> input);
+		void AddGlobalOutput(Scope<PassOutput> output);
 	private:
-		std::map<unsigned int, std::vector<Ref<Pass>>> passes;
+		std::vector<Ref<Pass>> passes;
+		std::vector<Scope<PassInput>> globalInputs;
+		std::vector<Scope<PassOutput>> globalOutputs;
 	};
 }

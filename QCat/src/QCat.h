@@ -42,7 +42,9 @@
 #include "QCat/Renderer/OrthographicCamera.h"
 #include "QCat/Renderer/SamplerState.h"
 #include "QCat/Renderer/Mesh.h"
-//--Renderer-----------------------------//
+//--RenderGraph & Pass-----------------------------//
+#include "QCat/RenderGraph/RenderGraph.h"
+#include "QCat/RenderGraph/Pass.h"
 //--API----------------------------------//
 #include "API/Opengl/OpenGLShader.h"
 #include "API/DirectX11/DX11_Shader.h"

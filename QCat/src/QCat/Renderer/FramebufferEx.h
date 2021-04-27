@@ -40,6 +40,7 @@ namespace QCat
 		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)=0;
 
 		virtual void DetachTexture(AttachmentType attachType)=0;
+		virtual void DetachAll()=0;
 
 		virtual Ref<Texture> GetTexture(const std::string& name) = 0;
 

@@ -372,6 +372,12 @@ namespace QCat
 		}
 		Bind();
 	}
+	void DirectXFrameBufferEx::DetachAll()
+	{
+		m_DepthAttachment = nullptr;
+		for (auto& attachment : m_ColorAttachments)
+			attachment = nullptr;
+	}
 	Ref<Texture> DirectXFrameBufferEx::GetTexture(const std::string& name)
 	{
 		auto find_iter = m_Textures.find(name);

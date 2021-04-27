@@ -179,6 +179,23 @@ namespace QCat
 		glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex,0,0);
 	}
 
+	void OpenGLFrameBufferEx::DetachAll()
+	{
+		unsigned int colorCount = 0;
+		for (auto& sepc : m_AttachmentSpecifications)
+		{
+			if (sepc.usage == FramebufferUsage::Depth_Stencil)
+				glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 0, 0);
+			else if (sepc.usage == FramebufferUsage::Depth)
+				glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, 0, 0);
+			else
+				colorCount++;
+		}
+
+		for(int i=0;i<colorCount;++i)
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, 0, 0);
+	}
+
 	Ref<Texture> OpenGLFrameBufferEx::GetTexture(const std::string& name)
 	{
 		auto find_iter = m_Textures.find(name);

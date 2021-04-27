@@ -155,8 +155,7 @@ namespace QCat
 		cubeMapPass = FrameBufferEx::Create(spec2);
 
 		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
-		captureProjection;
-		captureViews[6];
+
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
 			captureProjection = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.01f, 10.0f);
