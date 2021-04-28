@@ -88,4 +88,8 @@ namespace QCat
 			vertexArray->UnBind();
 		}
 	};
+	struct MaterialComponent
+	{
+
+	};
 }

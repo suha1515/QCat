@@ -140,6 +140,7 @@ namespace QCat
 		RenderCommand::SetCullMode(CullMode::None);
 		CubeMapPass->Bind();
 		CubeMapPass->DetachAll();
+		CubeMapPass->GetTexture("DepthBuffer")->SetSize(512, 512);
 		CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		RenderCommand::SetViewport(0, 0, 512, 512);
 		//HDR image to CubeMap

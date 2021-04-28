@@ -111,7 +111,7 @@ namespace QCat
 		m_PBRShader->SetFloat("material.roughness", 1.0f, ShaderType::PS);
 		m_PBRShader->SetFloat("material.ambientocclusion", 1.0f, ShaderType::PS);
 
-		/*entt::registry& registry = scene->GetRegistry();
+		entt::registry& registry = scene->GetRegistry();
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent>);
 		TransformComponent transformcomp[5];
 		MeshComponent meshcomp[5];
@@ -123,12 +123,13 @@ namespace QCat
 			transformcomp[index] = transform;
 			meshcomp[index] = mesh;
 			index++;
-		}*/
+		}
 		sphere->SetScale({ 1.0f, 1.0f, 1.0f });
 		for (int i= 0; i < 5; ++i)
 		{
-			sphere->SetTranslation({ -0.6f + (i * 0.2f),0.0f,0.0f });
-			glm::mat4 transform = sphere->GetTransform();
+			//sphere->SetTranslation({ -0.6f + (i * 0.2f),0.0f,0.0f });
+			//glm::mat4 transform = sphere->GetTransform();
+			glm::mat4 transform = transformcomp[i].GetTransform();
 			m_PBRShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			m_PBRShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 			m_PBRShader->SetBool("material.IsAlbedoMap", materials[i].IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
@@ -147,9 +148,9 @@ namespace QCat
 			m_PrefilterMap->Bind(6);
 			m_BRDFLutTextrue->Bind(7);
 
-			//meshcomp[i].Bind();
-			//RenderCommand::DrawIndexed(meshcomp[i].vertexArray);
-			sphere->Draw();
+			meshcomp[i].Bind();
+			RenderCommand::DrawIndexed(meshcomp[i].vertexArray);
+			//sphere->Draw();
 		}
 
 		m_FlatColorShader->Bind();

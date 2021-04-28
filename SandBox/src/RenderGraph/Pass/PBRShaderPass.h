@@ -1,7 +1,6 @@
 #pragma once
 #include "QCat.h"
 #include "../../Light/Light.h"
-#include "../../Material/Material.h"
 #include "../../Geometry/Sphere.h"
 #include "../../Geometry/Cube.h"
 namespace QCat
