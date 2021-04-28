@@ -16,13 +16,8 @@ namespace QCat
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 
 		
-		Sampler_Desc imgSamp;
-		imgSamp.addressU = WrapingMode::REPEAT;
-		imgSamp.addressV = WrapingMode::REPEAT;
-		imgSamp.MIN = Filtering::LINEAR;
-		imgSamp.MAG = Filtering::LINEAR;
-		imgSamp.MIP = Filtering::LINEAR;
-		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", imgSamp, Material::TextureType::Diffuse);
+	
+		/*materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", imgSamp, Material::TextureType::Metallic);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/normal.png", imgSamp, Material::TextureType::Normal);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/roughness.png", imgSamp, Material::TextureType::Roughness);
@@ -50,7 +45,7 @@ namespace QCat
 		materials[4].SetTexture("Asset/textures/PBR/wall/normal.png", imgSamp, Material::TextureType::Normal);
 		materials[4].SetTexture("Asset/textures/PBR/wall/metallic.png", imgSamp, Material::TextureType::Metallic);
 		materials[4].SetTexture("Asset/textures/PBR/wall/roughness.png", imgSamp, Material::TextureType::Roughness);
-		materials[4].SetTexture("Asset/textures/PBR/wall/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+		materials[4].SetTexture("Asset/textures/PBR/wall/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);*/
 
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -112,45 +107,34 @@ namespace QCat
 		m_PBRShader->SetFloat("material.ambientocclusion", 1.0f, ShaderType::PS);
 
 		entt::registry& registry = scene->GetRegistry();
-		auto group = registry.group<TransformComponent>(entt::get<MeshComponent>);
-		TransformComponent transformcomp[5];
-		MeshComponent meshcomp[5];
+		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
 		int index = 0;
 		for (auto entity : group)
 		{
-			
-			auto [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
-			transformcomp[index] = transform;
-			meshcomp[index] = mesh;
-			index++;
-		}
-		sphere->SetScale({ 1.0f, 1.0f, 1.0f });
-		for (int i= 0; i < 5; ++i)
-		{
-			//sphere->SetTranslation({ -0.6f + (i * 0.2f),0.0f,0.0f });
-			//glm::mat4 transform = sphere->GetTransform();
-			glm::mat4 transform = transformcomp[i].GetTransform();
+			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
+			Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
 			m_PBRShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			m_PBRShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-			m_PBRShader->SetBool("material.IsAlbedoMap", materials[i].IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
-			m_PBRShader->SetBool("material.IsNormalMap", materials[i].IsThereTexture(Material::TextureType::Normal), ShaderType::PS);
-			m_PBRShader->SetBool("material.IsMetallicMap", materials[i].IsThereTexture(Material::TextureType::Metallic), ShaderType::PS);
-			m_PBRShader->SetBool("material.IsRoughnessMap", materials[i].IsThereTexture(Material::TextureType::Roughness), ShaderType::PS);
-			m_PBRShader->SetBool("material.IsAoMap", materials[i].IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
+			m_PBRShader->SetBool("material.IsAlbedoMap", mat.IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
+			m_PBRShader->SetBool("material.IsNormalMap", mat.IsThereTexture(Material::TextureType::Normal), ShaderType::PS);
+			m_PBRShader->SetBool("material.IsMetallicMap", mat.IsThereTexture(Material::TextureType::Metallic), ShaderType::PS);
+			m_PBRShader->SetBool("material.IsRoughnessMap", mat.IsThereTexture(Material::TextureType::Roughness), ShaderType::PS);
+			m_PBRShader->SetBool("material.IsAoMap", mat.IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
 			m_PBRShader->UpdateBuffer();
 
-			materials[i].Bind(0, Material::TextureType::Diffuse);
-			materials[i].Bind(1, Material::TextureType::Normal);
-			materials[i].Bind(2, Material::TextureType::Metallic);
-			materials[i].Bind(3, Material::TextureType::Roughness);
-			materials[i].Bind(4, Material::TextureType::AmbientOcclusion);
+			mat.Bind(0, Material::TextureType::Diffuse);
+			mat.Bind(1, Material::TextureType::Normal);
+			mat.Bind(2, Material::TextureType::Metallic);
+			mat.Bind(3, Material::TextureType::Roughness);
+			mat.Bind(4, Material::TextureType::AmbientOcclusion);
+
 			m_IrradianceCubeMap->Bind(5);
 			m_PrefilterMap->Bind(6);
 			m_BRDFLutTextrue->Bind(7);
 
-			meshcomp[i].Bind();
-			RenderCommand::DrawIndexed(meshcomp[i].vertexArray);
-			//sphere->Draw();
+			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
+			meshComponent.Bind();
+			RenderCommand::DrawIndexed(meshComponent.vertexArray);
 		}
 
 		m_FlatColorShader->Bind();

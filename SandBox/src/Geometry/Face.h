@@ -1,7 +1,6 @@
 #pragma once
 
 #include "QCat.h"
-#include "../Material/Material.h"
 
 namespace QCat
 {

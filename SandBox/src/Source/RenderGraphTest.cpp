@@ -21,26 +21,67 @@ namespace QCat
 		auto& camera = m_Camera.AddComponent<CameraComponent>();
 		camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		camera.Camera.SetPerspective(1, 0.01f, 100.0f);
+		Sampler_Desc imgSamp;
+		imgSamp.addressU = WrapingMode::REPEAT;
+		imgSamp.addressV = WrapingMode::REPEAT;
+		imgSamp.MIN = Filtering::LINEAR;
+		imgSamp.MAG = Filtering::LINEAR;
+		imgSamp.MIP = Filtering::LINEAR;
+		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", imgSamp, Material::TextureType::Metallic);
+		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/normal.png", imgSamp, Material::TextureType::Normal);
+		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/roughness.png", imgSamp, Material::TextureType::Roughness);
+		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+
+		materials[1].SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		materials[1].SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
+		materials[1].SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
+		materials[1].SetTexture("Asset/textures/PBR/gold/roughness.png", imgSamp, Material::TextureType::Roughness);
+		materials[1].SetTexture("Asset/textures/PBR/gold/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+
+		materials[2].SetTexture("Asset/textures/PBR/grass/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		materials[2].SetTexture("Asset/textures/PBR/grass/normal.png", imgSamp, Material::TextureType::Normal);
+		materials[2].SetTexture("Asset/textures/PBR/grass/metallic.png", imgSamp, Material::TextureType::Metallic);
+		materials[2].SetTexture("Asset/textures/PBR/grass/roughness.png", imgSamp, Material::TextureType::Roughness);
+		materials[2].SetTexture("Asset/textures/PBR/grass/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+
+		materials[3].SetTexture("Asset/textures/PBR/plastic/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		materials[3].SetTexture("Asset/textures/PBR/plastic/normal.png", imgSamp, Material::TextureType::Normal);
+		materials[3].SetTexture("Asset/textures/PBR/plastic/metallic.png", imgSamp, Material::TextureType::Metallic);
+		materials[3].SetTexture("Asset/textures/PBR/plastic/roughness.png", imgSamp, Material::TextureType::Roughness);
+		materials[3].SetTexture("Asset/textures/PBR/plastic/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+
+		materials[4].SetTexture("Asset/textures/PBR/wall/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		materials[4].SetTexture("Asset/textures/PBR/wall/normal.png", imgSamp, Material::TextureType::Normal);
+		materials[4].SetTexture("Asset/textures/PBR/wall/metallic.png", imgSamp, Material::TextureType::Metallic);
+		materials[4].SetTexture("Asset/textures/PBR/wall/roughness.png", imgSamp, Material::TextureType::Roughness);
+		materials[4].SetTexture("Asset/textures/PBR/wall/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
 
 		ball[0] = m_ActiveScene->CreateEntity("GoldenBall");
 		ball[0].GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
 		ball[0].AddComponent<MeshComponent>("Sphere");
+		ball[0].AddComponent<MaterialComponent>(materials[0]);
 
 		ball[1] = m_ActiveScene->CreateEntity("rustyBall");
 		ball[1].GetComponent<TransformComponent>().Translation = { -0.7f,0.0f,0.0f };
 		ball[1].AddComponent<MeshComponent>("Sphere");
+		ball[1].AddComponent<MaterialComponent>(materials[1]);
 
 		ball[2] = m_ActiveScene->CreateEntity("grassBall");
 		ball[2].GetComponent<TransformComponent>().Translation = { -0.4f,0.0f,0.0f };
 		ball[2].AddComponent<MeshComponent>("Sphere");
+		ball[2].AddComponent<MaterialComponent>(materials[2]);
 
 		ball[3] = m_ActiveScene->CreateEntity("wallBall");
 		ball[3].GetComponent<TransformComponent>().Translation = { -0.1f,0.0f,0.0f };
 		ball[3].AddComponent<MeshComponent>("Sphere");
+		ball[3].AddComponent<MaterialComponent>(materials[3]);
 
 		ball[4] = m_ActiveScene->CreateEntity("plasticBall");
 		ball[4].GetComponent<TransformComponent>().Translation = { 0.2f,0.0f,0.0f };
 		ball[4].AddComponent<MeshComponent>("Sphere");
+		ball[4].AddComponent<MaterialComponent>(materials[4]);
+
 		Sampler_Desc desc;
 		desc.addressU = WrapingMode::CLAMP;
 		desc.addressV = WrapingMode::CLAMP;

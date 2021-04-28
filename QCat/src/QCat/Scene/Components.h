@@ -8,6 +8,7 @@
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
 #include "QCat/Renderer/Mesh.h"
+#include "QCat/Renderer/Material.h"
 
 namespace QCat
 {
@@ -90,6 +91,13 @@ namespace QCat
 	};
 	struct MaterialComponent
 	{
+		Material material;
+		MaterialComponent() = default;
+		MaterialComponent(Material& material)
+		{
+			this->material = material;
+		}
 
+		Material& GetMaterial() { return material; }
 	};
 }

@@ -39,6 +39,8 @@ namespace QCat
 		glm::vec3 cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
 		glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 
+
+		Material materials[5];
 		Ref<glm::mat4> viewMatrix;
 	};
 }

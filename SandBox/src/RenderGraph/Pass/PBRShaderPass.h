@@ -25,7 +25,7 @@ namespace QCat
 		Ref<Shader>  m_SkyBoxShader;
 		
 		Ref<glm::mat4> viewMatrix;
-		Material materials[5];
+		//Material materials[5];
 		Light light[4];
 
 		Ref<Cube> cube;

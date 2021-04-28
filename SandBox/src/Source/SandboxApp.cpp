@@ -56,7 +56,7 @@ class Sandbox : public QCat::Application
 {
 public:
 	Sandbox()
-		:Application("QCat App",QCat::RenderAPI::API::OpenGL)
+		:Application("QCat App",QCat::RenderAPI::API::DirectX11)
 	{
 		//PushLayer(new ExamLayer());
 		//PushLayer(new QCat::ModelTestScene());
