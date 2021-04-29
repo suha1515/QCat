@@ -83,6 +83,11 @@ namespace QCat
 					format = GL_RGB;
 					dataFormat = GL_UNSIGNED_BYTE;
 					break;
+				case 2:
+					Internalformat = GL_RG8;
+					format = GL_RG;
+					dataFormat = GL_UNSIGNED_BYTE;
+					break;
 				case 1:
 					Internalformat = GL_R8;
 					format = GL_RED;
@@ -110,11 +115,10 @@ namespace QCat
 		m_Format = format;
 		m_DataFormat = dataFormat;
 
-		this->desc.Format = Utils::GetTextureFormatFromGL(m_InternalFormat);;
+		this->desc.Format = Utils::GetTextureFormatFromGL(m_InternalFormat);
 		this->desc.Type = TextureType::Texture2D;
 		this->desc.Width = m_width;
 		this->desc.Height = m_height;
-		this->desc.Format = Utils::GetTextureFormatFromGL(m_InternalFormat);
 		this->desc.usage = TextureUsage::Immutable;
 		this->desc.SampleCount = samples;
 		this->desc.MipLevels = mipLevel;

@@ -43,10 +43,17 @@ namespace QCat
 		
 		bool operator==(const Entity& other) const { return m_EntityHandle == other.m_EntityHandle && m_pScene == other.m_pScene; }
 		bool operator!=(const Entity& other) const { return !(*this == other); }
-
+		bool operator == (const entt::entity& other) const { return m_EntityHandle == other; }
+		bool operator!=(const entt::entity& other) const { return !(m_EntityHandle == other); }
+		Entity& operator =(const entt::entity& other) { m_EntityHandle = other; return *this; }
+		entt::entity GetHandle() { return m_EntityHandle; }
+		
+	public:
+		static Entity emptyEntity;
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_pScene=nullptr;
+		std::vector<Entity> m_children;
 	};
 }
 

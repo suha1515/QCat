@@ -12,6 +12,7 @@ namespace QCat
 			{
 				//8bit
 			case DXGI_FORMAT::DXGI_FORMAT_R8_UNORM:					 return 1;
+			case DXGI_FORMAT::DXGI_FORMAT_R8G8_UNORM:				 return 2;
 				//32 bit
 			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM:			 return 4;
 			case DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:		 return 4;

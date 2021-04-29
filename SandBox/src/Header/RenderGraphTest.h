@@ -27,6 +27,7 @@ namespace QCat
 
 		Ref<Scene> m_ActiveScene;
 		Entity ball[5];
+		Entity model;
 		Ref<Sphere> sphere;
 		Ref<Cube> cube;
 		//Camera
@@ -41,6 +42,7 @@ namespace QCat
 
 
 		Material materials[5];
+		Material gunMat;
 		Ref<glm::mat4> viewMatrix;
 	};
 }

@@ -63,6 +63,17 @@ namespace QCat
 						UData[i + 3] = 1;
 					}
 					break;
+				case 2:
+					m_dataFormat = gamacorrection ? DXGI_FORMAT_R8G8_SNORM : DXGI_FORMAT_R8G8_UNORM;
+					UData = new unsigned char[width * height * 4];
+					for (int i = 0, j = 0; j < width * height * 2; i += 4, j += 2)
+					{
+						UData[i] = ((unsigned char*)stb_data)[j];
+						UData[i + 1] = ((unsigned char*)stb_data)[j + 1];
+						UData[i + 2] = 1;
+						UData[i + 3] = 1;
+					}
+					break;
 				case 1:
 					UData = new unsigned char[width * height];
 					m_dataFormat = DXGI_FORMAT_R8_UNORM;

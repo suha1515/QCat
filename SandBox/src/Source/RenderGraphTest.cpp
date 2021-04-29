@@ -1,8 +1,33 @@
 #include "../Header/RenderGraphTest.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "../Model/Model.h"
 
 namespace QCat
 {
+	void SetMaterial(Entity& entity,Material& mat)
+	{
+		entity.GetComponent<MaterialComponent>().material = mat;
+		auto child = entity.GetComponent<RelationShipComponent>().firstChild;
+
+		while(child != Entity::emptyEntity)
+		{
+			SetMaterial(child, mat);
+			child = child.GetComponent<RelationShipComponent>().nextSibling;
+		}
+	}
+	void UpdateTransform(Entity& entity,const glm::mat4 parentMatrix)
+	{
+		TransformComponent& transcomp = entity.GetComponent<TransformComponent>();
+		transcomp.parentMatrix = parentMatrix;
+		const glm::mat4 localMatrix = transcomp.GetTransform();
+		auto child = entity.GetComponent<RelationShipComponent>().firstChild;
+
+		while (child != Entity::emptyEntity)
+		{
+			UpdateTransform(child, localMatrix);
+			child = child.GetComponent<RelationShipComponent>().nextSibling;
+		}
+	}
 	RenderGraphTest::RenderGraphTest()
 	{
 
@@ -27,7 +52,7 @@ namespace QCat
 		imgSamp.MIN = Filtering::LINEAR;
 		imgSamp.MAG = Filtering::LINEAR;
 		imgSamp.MIP = Filtering::LINEAR;
-		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		/*materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", imgSamp, Material::TextureType::Metallic);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/normal.png", imgSamp, Material::TextureType::Normal);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/roughness.png", imgSamp, Material::TextureType::Roughness);
@@ -80,7 +105,25 @@ namespace QCat
 		ball[4] = m_ActiveScene->CreateEntity("plasticBall");
 		ball[4].GetComponent<TransformComponent>().Translation = { 0.2f,0.0f,0.0f };
 		ball[4].AddComponent<MeshComponent>("Sphere");
-		ball[4].AddComponent<MaterialComponent>(materials[4]);
+		ball[4].AddComponent<MaterialComponent>(materials[4]);*/
+
+		model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
+
+		imgSamp.addressU = WrapingMode::CLAMP;
+		imgSamp.addressV = WrapingMode::CLAMP;
+		imgSamp.MIN = Filtering::LINEAR;
+		imgSamp.MAG = Filtering::LINEAR;
+		imgSamp.MIP = Filtering::NONE;
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
+		//gunMat.SetTexture("Asset/model/Robot/textures/robot_steampunk_ao.tga.png", imgSamp, Material::TextureType::AmbientOcclusion);
+
+		SetMaterial(model, gunMat);
+		model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
+		UpdateTransform(model,glm::mat4(1.0f));
+		//SetScale(model,{0.01f,0.01f,0.01f});
 
 		Sampler_Desc desc;
 		desc.addressU = WrapingMode::CLAMP;

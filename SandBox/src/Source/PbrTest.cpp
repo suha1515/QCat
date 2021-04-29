@@ -386,8 +386,12 @@ namespace QCat
 			PrefilterMap->Bind(6);
 			BRDFLutTexture->Bind(7);
 
-			ball[i].GetComponent<MeshComponent>().Bind();
-			RenderCommand::DrawIndexed(ball[i].GetComponent<MeshComponent>().vertexArray);
+			MeshComponent& meshComponent = ball[i].GetComponent<MeshComponent>();
+			for (auto& mesh : meshComponent.GetMeshes())
+			{
+				mesh->Bind();
+				RenderCommand::DrawIndexed(mesh);
+			}
 		}
 		std::vector<ModelMesh>& meshes = gun->GetMeshes();
 

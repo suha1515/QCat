@@ -122,6 +122,8 @@ namespace QCat
 			case TextureFormat::RG16_Float:	    return GL_HALF_FLOAT;
 			case TextureFormat::RGBA32_Float:	return GL_FLOAT;
 			case TextureFormat::RGBA16_Float:	return GL_HALF_FLOAT;
+				//16bit
+			case TextureFormat::RG8:			return GL_UNSIGNED_BYTE;
 
 				//24 bit
 			case TextureFormat::RGB8:			return GL_UNSIGNED_BYTE;
@@ -153,6 +155,8 @@ namespace QCat
 			case TextureFormat::RGB8:			 return GL_RGB;
 			case TextureFormat::RG16_Float:	     return GL_RG;
 			case TextureFormat::RGB16_Float:	 return GL_RGB;
+				//16bit
+			case TextureFormat::RG8:			return GL_RG;
 
 				//depth
 			case TextureFormat::DEPTH32:		 return GL_DEPTH_COMPONENT;
@@ -179,6 +183,8 @@ namespace QCat
 			case TextureFormat::RGB8:			return GL_RGB8;
 			case TextureFormat::RGB16_Float:	return GL_RGB16F;
 
+				//16bit
+			case TextureFormat::RG8:			return GL_RG8;
 
 				//depth
 			case TextureFormat::DEPTH32:	     return GL_DEPTH_COMPONENT32;
@@ -204,6 +210,10 @@ namespace QCat
 			case TextureFormat::RGB8:			return GL_UNSIGNED_BYTE;
 			case TextureFormat::RGB16_Float:	return GL_HALF_FLOAT;
 
+				//16bit
+			case TextureFormat::RG8:			return GL_UNSIGNED_BYTE;
+
+
 				//depth
 			case TextureFormat::DEPTH32:		return GL_FLOAT;
 			case TextureFormat::DEPTH24STENCIL8:return GL_UNSIGNED_INT_24_8;
@@ -227,6 +237,9 @@ namespace QCat
 				//24 bit
 			case GL_RGB8:	 return TextureFormat::RGB8;
 			case GL_RGB16F:  return	TextureFormat::RGB16_Float;
+
+				//16bit
+			case GL_RG8:	return TextureFormat::RG8;
 
 
 				//depth

@@ -15,10 +15,31 @@ namespace QCat
 	Scene::~Scene()
 	{
 	}
-	Entity Scene::CreateEntity(const std::string& name)
+	Entity Scene::CreateEntity(const std::string& name, Entity* parentEntity)
 	{
 		Entity  entity = { m_Registry.create(), this };
 		entity.AddComponent<TransformComponent>();
+
+		//RelationShip Component (for hierarchy Structure)
+		RelationShipComponent& comp = entity.AddComponent<RelationShipComponent>();
+		if (parentEntity!=nullptr)
+		{
+			comp.parent = *parentEntity;
+			RelationShipComponent& parentcomp = comp.parent.GetComponent<RelationShipComponent>();
+			auto curr = parentcomp.firstChild;
+			while (curr.GetHandle() != entt::null)
+			{
+				curr = curr.GetComponent<RelationShipComponent>().nextSibling;
+			}
+			if (curr.GetHandle() == entt::null)
+				parentcomp.firstChild = entity;
+			else
+			{
+				curr.GetComponent<RelationShipComponent>().nextSibling = entity;
+				comp.prevSibling = curr;
+			}
+		}
+
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "empty" : name;
 	
@@ -152,6 +173,10 @@ namespace QCat
 	}
 	template<>
 	void Scene::OnComponentAdded<MaterialComponent>(Entity entity, MaterialComponent& component)
+	{
+	}
+	template<>
+	void Scene::OnComponentAdded<RelationShipComponent>(Entity entity, RelationShipComponent& component)
 	{
 	}
 }

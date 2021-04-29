@@ -15,3 +15,9 @@ bin-int/
 
 # imgui
 **.ini
+/SandBox/Asset/model/Robot/source/Robot.obj
+/SandBox/Asset/model/Robot/textures/robot_steampunk_rough.tga.png
+/SandBox/Asset/model/Robot/textures/robot_steampunk_nmap.tga.png
+/SandBox/Asset/model/Robot/textures/robot_steampunk_metalness.tga.png
+/SandBox/Asset/model/Robot/textures/robot_steampunk_color.tga.png
+/SandBox/Asset/model/Robot/textures/robot_steampunk_ao.tga.png

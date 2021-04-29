@@ -133,8 +133,12 @@ namespace QCat
 			m_BRDFLutTextrue->Bind(7);
 
 			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
-			meshComponent.Bind();
-			RenderCommand::DrawIndexed(meshComponent.vertexArray);
+			for (auto& mesh : meshComponent.GetMeshes())
+			{
+				mesh->Bind();
+				RenderCommand::DrawIndexed(mesh);
+			}
+			
 		}
 
 		m_FlatColorShader->Bind();
