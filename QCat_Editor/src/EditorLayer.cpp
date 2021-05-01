@@ -30,7 +30,8 @@ namespace QCat
 		AttachmentSpecification fbSpecEx= { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1"},
 							   {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER,"IndexBuffer"},
 							   {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer"} };
-
+		fbSpecEx.Width = 1280;
+		fbSpecEx.Height = 720;
 		m_FrameBufferEx = FrameBufferEx::Create(fbSpecEx);
 
 		Texture_Desc texDesc;
@@ -53,7 +54,7 @@ namespace QCat
 		m_ActiveScene = CreateRef<Scene>();
 		
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-
+		
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
@@ -71,15 +72,17 @@ namespace QCat
 		RenderCommand::Clear();
 
 		// Resize
-		//if (FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-		//	m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
-		//	(spec.Width != m_ViewPortSize.x || spec.Height != m_ViewPortSize.y))
-		//{
-		//	m_Framebuffer->Resize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-		//	m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
-		//	m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
-		//	m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-		//}
+		if (AttachmentSpecification spec = m_FrameBufferEx->GetSpecification();
+			m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
+			(spec.Width != m_ViewPortSize.x || spec.Height != m_ViewPortSize.y))
+		{
+			m_FrameBufferEx->GetTexture("ColorBuffer1")->SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_FrameBufferEx->GetTexture("DepthBuffer")->SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+				//Resize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
+			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		}
 
 		// Update
 		if (m_ViewportFocused)

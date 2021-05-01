@@ -4,7 +4,7 @@
 namespace QCat
 {
 	OpenGLFrameBufferEx::OpenGLFrameBufferEx(const AttachmentSpecification& attachments)
-		:m_AttachmentSpecifications(attachments.Attachments)
+		:m_AttachmentSpecifications(attachments.Attachments),m_spec(attachments)
 	{
 		glCreateFramebuffers(1, &m_RendererID);
 		uint32_t ColorBufferCount = 0;

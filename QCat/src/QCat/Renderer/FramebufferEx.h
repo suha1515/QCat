@@ -25,6 +25,8 @@ namespace QCat
 			:Attachments(attachments) {}
 
 		std::vector< AttachmentInfo> Attachments;
+		std::uint32_t Width=0;
+		std::uint32_t Height =0;
 	};
 	class FrameBufferEx
 	{
@@ -46,6 +48,7 @@ namespace QCat
 
 		virtual void Clear(const glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f })=0;
 
+		virtual const AttachmentSpecification& GetSpecification() const = 0;
 		static Ref<FrameBufferEx> Create(AttachmentSpecification attachments);
 	};
 }

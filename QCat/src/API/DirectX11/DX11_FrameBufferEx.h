@@ -19,13 +19,14 @@ namespace QCat
 		virtual void DetachTexture(AttachmentType attachType) override;
 		virtual void DetachAll() override;
 		virtual Ref<Texture> GetTexture(const std::string& name) override;
-
+		virtual const AttachmentSpecification& GetSpecification() const { return m_spec; }
 		virtual void Clear(const glm::vec4 color = { 0.1f,0.1f,0.1f,1.0f }) override;
 	private:
 		bool colorbit = false, depthbit = false, stencilbit = false;
 		std::vector<AttachmentInfo> m_AttachmentSpecifications;
 		std::unordered_map<std::string, Ref<Texture>> m_Textures;
-		
+		AttachmentSpecification m_spec;
+
 		std::vector<Ref<DX11RenderTarget>> m_ColorAttachments;
 		Ref<DX11DepthStencil> m_DepthAttachment;
 	};

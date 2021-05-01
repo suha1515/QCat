@@ -6,7 +6,7 @@
 namespace QCat
 {
 	DirectXFrameBufferEx::DirectXFrameBufferEx(const AttachmentSpecification& attachments)
-		:m_AttachmentSpecifications(attachments.Attachments)
+		:m_AttachmentSpecifications(attachments.Attachments),m_spec(attachments)
 	{
 		uint32_t ColorBufferCount = 0;
 		uint32_t DepthBufferCount = 0;
