@@ -29,7 +29,7 @@ namespace QCat
 	private:
 		//camera
 		OrthographicCameraController m_CameraController;
-		Ref<FrameBuffer> m_Framebuffer;
+		Ref<FrameBufferEx> m_FrameBufferEx;
 		Ref<Texture2D> m_Texture;
 
 		Ref<Scene> m_ActiveScene;

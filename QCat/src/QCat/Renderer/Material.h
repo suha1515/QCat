@@ -18,10 +18,10 @@ namespace QCat
 			:ambient(ambient), diffuse(diffuse), specular(specular), shininess(shininess)
 		{
 			Sampler_Desc desc;
-			byte r = 255;
-			byte g = 255;
-			byte b = 255;
-			byte a = 255;
+			unsigned char r = 255;
+			unsigned char g = 255;
+			unsigned char b = 255;
+			unsigned char a = 255;
 
 			//unsigned int whiteTextureData = 0xffffffff;
 			unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;

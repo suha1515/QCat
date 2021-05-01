@@ -42,6 +42,7 @@
 #include "QCat/Renderer/OrthographicCamera.h"
 #include "QCat/Renderer/SamplerState.h"
 #include "QCat/Renderer/Mesh.h"
+#include "QCat/Renderer/Material.h"
 //--RenderGraph & Pass-----------------------------//
 #include "QCat/RenderGraph/RenderGraph.h"
 #include "QCat/RenderGraph/Pass.h"

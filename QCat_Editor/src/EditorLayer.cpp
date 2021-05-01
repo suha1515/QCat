@@ -24,15 +24,31 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png");
+		Sampler_Desc desc;
+		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png",desc);
 
-		FrameBufferSpecification fbSpec;
-		fbSpec.Attachments = { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8},
-							   {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER},
-							   {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8} };
-		fbSpec.Width = 1280;
-		fbSpec.Height = 720;
-		m_Framebuffer = FrameBuffer::Create(fbSpec);
+		AttachmentSpecification fbSpecEx= { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1"},
+							   {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER,"IndexBuffer"},
+							   {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer"} };
+
+		m_FrameBufferEx = FrameBufferEx::Create(fbSpecEx);
+
+		Texture_Desc texDesc;
+		texDesc.Width = 1280;
+		texDesc.Height = 720;
+		texDesc.MipLevels = 1;
+		texDesc.SampleCount = 1;
+
+		desc.addressU = WrapingMode::CLAMP;
+		desc.addressV = WrapingMode::CLAMP;
+		desc.MIN = Filtering::LINEAR;
+		desc.MAG = Filtering::LINEAR;
+
+		m_FrameBufferEx->InitializeTexture("ColorBuffer1", texDesc, desc);
+		m_FrameBufferEx->InitializeTexture("IndexBuffer", texDesc, desc);
+		m_FrameBufferEx->InitializeTexture("DepthBuffer", texDesc, desc);
+
+		
 
 		m_ActiveScene = CreateRef<Scene>();
 		
@@ -55,15 +71,16 @@ namespace QCat
 		RenderCommand::Clear();
 
 		// Resize
-		if (FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-			m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
-			(spec.Width != m_ViewPortSize.x || spec.Height != m_ViewPortSize.y))
-		{
-			m_Framebuffer->Resize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-			m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
-			m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
-			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-		}
+		//if (FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
+		//	m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
+		//	(spec.Width != m_ViewPortSize.x || spec.Height != m_ViewPortSize.y))
+		//{
+		//	m_Framebuffer->Resize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		//	m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
+		//	m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
+		//	m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		//}
+
 		// Update
 		if (m_ViewportFocused)
 		{
@@ -73,16 +90,20 @@ namespace QCat
 		m_EditorCamera.OnUpdate(ts);
 		// Render
 		// Reset stats here
-		Renderer2D::ResetStats();
-		m_Framebuffer->Bind();
-		m_Framebuffer->Clear();
+		//m_Framebuffer->Bind();
+		//m_Framebuffer->Clear();
 		
+		m_FrameBufferEx->Bind();
+		m_FrameBufferEx->AttachTexture("ColorBuffer1", AttachmentType::Color_0, TextureType::Texture2D,0);
+		m_FrameBufferEx->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+		m_FrameBufferEx->Clear();
+
 		// clear out entity ID attacment to -1
-		int value = -1;
-		m_Framebuffer->ClearAttachment(1, &value);
+		//int value = -1;
+		//m_Framebuffer->ClearAttachment(1, &value);
 
 		// Update Scene
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
+		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
 		//m_ActiveScene->OnUpdateRuntime(ts);
 
 		auto [mx, my] = ImGui::GetMousePos();
@@ -97,16 +118,17 @@ namespace QCat
 		int mouseX = (int)mx;
 		int mouseY = (int)my;
 
-		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+		/*if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData;
 			pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
-		}
+		}*/
 		
 		
-		m_Framebuffer->UnBind();
-		RenderCommand::SetDefaultFrameBuffer();
+		//m_Framebuffer->UnBind();
+		m_FrameBufferEx->UnBind();
+		//RenderCommand::SetDefaultFrameBuffer();
 
 	}
 
@@ -114,6 +136,7 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
+		ImGui::ShowDemoWindow();
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -196,22 +219,6 @@ namespace QCat
 
 		m_SceneHierarchyPanel.OnImguiRender();
 
-		ImGui::Begin("Renderer2D Stats");
-
-		std::string name = "None";
-		if (m_HoveredEntity)
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
-		ImGui::Text("Hovered Entity: %s", name.c_str());
-		auto stats = Renderer2D::GetStats();
-		ImGui::Text("Renderer2D Stats:");
-		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-		ImGui::Text("Quads: %d", stats.QuadCount);
-		ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-		ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
-
-		
-		ImGui::End();
-
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("ViewPort");
 		//auto viewportOffset = ImGui::GetCursorPos(); // Includes tab bar
@@ -232,11 +239,11 @@ namespace QCat
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
-			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(0), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			ImGui::Image(m_FrameBufferEx->GetTexture("ColorBuffer1")->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			ImGui::Image(m_Framebuffer->GetColorAttachmentRendererID(0), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+			ImGui::Image(m_FrameBufferEx->GetTexture("ColorBuffer1")->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 		}
 
 		/*auto windowSize = ImGui::GetWindowSize();
@@ -376,7 +383,7 @@ namespace QCat
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 	{
-		if (e.GetMouseButton() == Mouse::ButtonLeft)
+		if (e.GetMouseButton() == Mouse::ButtonLeft || e.GetMouseButton() == Mouse::ButtonRight)
 		{
 			if(m_ViewportHovered&& !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
 				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
