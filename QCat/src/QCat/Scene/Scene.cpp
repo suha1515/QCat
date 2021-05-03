@@ -179,4 +179,8 @@ namespace QCat
 	void Scene::OnComponentAdded<RelationShipComponent>(Entity entity, RelationShipComponent& component)
 	{
 	}
+	template<>
+	void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component)
+	{
+	}
 }

@@ -127,4 +127,24 @@ namespace QCat
 		RelationShipComponent()=default;
 
 	};
+	struct LightComponent
+	{
+		enum class LightType
+		{
+			Directional = 0, Point, Spot
+		};
+		LightComponent() = default;
+		glm::vec3 diffuse = { 1.0f,1.0f,1.0f };
+		glm::vec3 ambient = { 0.2f,0.2f,0.2f };
+		glm::vec3 specular = { 1.0f,1.0f,1.0f };
+		glm::vec3 lightDirection;
+
+		float constant = 1.0f;
+		float linear = 0.09f;
+		float quadratic = 0.032f;
+		float cutoff = glm::cos(glm::radians(12.5f));
+		float outerCutOff = glm::cos(glm::radians(17.5f));
+		float radius = 0.0f;
+		LightType type = LightType::Directional;
+	};
 }

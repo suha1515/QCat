@@ -70,15 +70,6 @@ namespace QCat
 		m_PBRShader->SetInt("prefilterMap", 6, ShaderType::PS);
 		m_PBRShader->SetInt("brdfLUT", 7, ShaderType::PS);
 
-		light[0].info.lightPosition = glm::vec3(10.0f, 10.0f, -20.0f);
-		light[1].info.lightPosition = { -10.0f,10.0f,-20.0f };
-		light[2].info.lightPosition = { 10.0f,-10.0f,-20.0f };
-		light[3].info.lightPosition = { -10.0f,-10.0f,-20.0f };
-
-		light[0].info.diffuse = { 300.0f,300.0f,300.0f };
-		light[1].info.diffuse = { 300.0f,300.0f,300.0f };
-		light[2].info.diffuse = { 300.0f,300.0f,300.0f };
-		light[3].info.diffuse = { 300.0f,300.0f,300.0f };
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{
@@ -95,20 +86,26 @@ namespace QCat
 		m_PBRShader->Bind();
 		m_PBRShader->SetMat4("u_ViewProjection", proj *(*viewMatrix), ShaderType::VS);
 		m_PBRShader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
-		for (int i = 0; i < 4; ++i)
+		entt::registry& registry = scene->GetRegistry();
+
+		auto lightView = registry.view<TransformComponent, LightComponent>();
+		int index = 0;
+		for (auto entity : lightView)
 		{
-			std::string lightname = "pointLight[" + std::to_string(i) + "].";
-			m_PBRShader->SetFloat3(lightname + "position", light[i].info.lightPosition, ShaderType::PS);
-			m_PBRShader->SetFloat3(lightname + "diffuse", light[i].info.diffuse, ShaderType::PS);
+			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
+			LightComponent& comp = lightView.get<LightComponent>(entity);
+
+			std::string lightname = "pointLight[" + std::to_string(index) + "].";
+			m_PBRShader->SetFloat3(lightname + "position", lightPos, ShaderType::PS);
+			m_PBRShader->SetFloat3(lightname + "diffuse", comp.diffuse, ShaderType::PS);
+			index++;
 		}
 		m_PBRShader->SetFloat3("material.albedo", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
 		m_PBRShader->SetFloat("material.metallic", 1.0f, ShaderType::PS);
 		m_PBRShader->SetFloat("material.roughness", 1.0f, ShaderType::PS);
 		m_PBRShader->SetFloat("material.ambientocclusion", 1.0f, ShaderType::PS);
 
-		entt::registry& registry = scene->GetRegistry();
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
-		int index = 0;
 		for (auto entity : group)
 		{
 			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
@@ -144,9 +141,10 @@ namespace QCat
 		m_FlatColorShader->Bind();
 		m_FlatColorShader->SetMat4("u_ViewProjection", proj * (*viewMatrix), ShaderType::VS);
 		m_FlatColorShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
-		for (int i = 0; i < 4; ++i)
+		for (auto entity : lightView)
 		{
-			sphere->SetTranslation(light[i].info.lightPosition);
+			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
+			sphere->SetTranslation(lightPos);
 			sphere->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 			glm::mat4 transform = sphere->GetTransform();
 			m_FlatColorShader->SetMat4("u_Transform", transform, ShaderType::VS);
