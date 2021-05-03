@@ -15,7 +15,15 @@ namespace QCat
 
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 
-		
+		RegisterInput(TextureInput::Make("ColorBuffer", m_ColorBuffer));
+		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
+
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
+
+		AttachmentSpecification spec = { { FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1" },
+										 { FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer" } };
+		m_Framebuffer = FrameBufferEx::Create(spec);
 	
 		/*materials[0].SetTexture("Asset/textures/PBR/rusted_iron/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		materials[0].SetTexture("Asset/textures/PBR/rusted_iron/metallic.png", imgSamp, Material::TextureType::Metallic);
@@ -73,11 +81,10 @@ namespace QCat
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{
-		RenderCommand::SetDefaultFrameBuffer();
-		RenderCommand::SetViewport(0, 0, 1600, 900);
-		RenderCommand::SetCullMode(CullMode::Back);
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		RenderCommand::Clear();
+		RenderCommand::SetDefaultFrameBuffer();
+		RenderCommand::SetCullMode(CullMode::Back);
+		RenderCommand::SetViewport(0, 0, 1600, 900);
 
 		Entity mainCamera = scene->GetPrimaryCameraEntity();
 		glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;

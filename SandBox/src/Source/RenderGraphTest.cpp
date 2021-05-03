@@ -168,6 +168,13 @@ namespace QCat
 	}
 	void RenderGraphTest::OnEvent(Event& e)
 	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OnWindowResize));
+	}
+	bool RenderGraphTest::OnWindowResize(WindowResizeEvent& e)
+	{
+		renderGraph.SetSize(e.GetWidth(), e.GetHeight());
+		return false;
 	}
 	void RenderGraphTest::CameraUpdate(QCat::Timestep ts)
 	{

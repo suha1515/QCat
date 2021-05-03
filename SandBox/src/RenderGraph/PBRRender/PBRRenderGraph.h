@@ -12,8 +12,16 @@ namespace QCat
 		void Initialize();
 		void SetHdrImg(Ref<Texture>& texture) { hdrImage = texture; }
 		void SetView(Ref<glm::mat4>& viewMat) { viewMatrix = viewMat; }
+		void SetSize(uint32_t width, uint32_t height);
+
+		Ref<Texture>& GetColorBuffer() { return m_ColorBuffer; }
 	private:
 		Ref<Texture> hdrImage;
 		Ref<glm::mat4> viewMatrix;
+
+
+		Ref<Texture> m_ColorBuffer;
+		Ref<Texture> m_DepthBuffer;
+		uint32_t width, height;
 	};
 }

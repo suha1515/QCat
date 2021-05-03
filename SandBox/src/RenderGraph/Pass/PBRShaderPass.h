@@ -26,6 +26,11 @@ namespace QCat
 		
 		Ref<glm::mat4> viewMatrix;
 
+		Ref<FrameBufferEx> m_Framebuffer;
+
+		Ref<Texture> m_ColorBuffer;
+		Ref<Texture> m_DepthBuffer;
+
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
 	};
