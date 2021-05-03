@@ -3,6 +3,7 @@
 #include "QCat.h"
 #include "Pannels/SceneHierarchyPanel.h"
 #include <QCat/Renderer/EditorCamera.h>
+#include "RenderGraph/PBRRenderGraph.h"
 
 namespace QCat
 {
@@ -27,6 +28,12 @@ namespace QCat
 		void OpenScene();
 		void SaveSceneAs();
 	private:
+		//RenderGraph
+		PBRRenderGraph EditorPBRRenderGraph;
+		Ref<Texture> hdrImage;
+		Ref<glm::mat4> viewMatrix;
+		Ref<glm::mat4> projectionMatrix;
+		Entity m_Camera;
 		//camera
 		OrthographicCameraController m_CameraController;
 		Ref<FrameBufferEx> m_FrameBufferEx;

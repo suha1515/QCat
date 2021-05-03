@@ -11,7 +11,7 @@ namespace QCat
 		DX11RenderAPI();
 		~DX11RenderAPI();
 	public:
-		virtual void Init() override;
+		virtual void Init(uint32_t width, uint32_t height) override;
 		virtual void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) override;
 		virtual void ResizeFrameBuffer(unsigned int width, unsigned int height) override;
 		virtual void SetDefaultFrameBuffer() override;

@@ -36,7 +36,7 @@ namespace QCat
 		}
 		
 	}
-	void OpenGLRenderAPI::Init()
+	void OpenGLRenderAPI::Init(uint32_t width, uint32_t height)
 	{
 		QCAT_PROFILE_FUNCTION();
 
@@ -82,7 +82,6 @@ namespace QCat
 		SetCullMode(CullMode::Back);
 		SetFrontClockWise(false);
 
-		
 
 #ifdef QCAT_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);

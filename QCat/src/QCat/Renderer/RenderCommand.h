@@ -9,13 +9,13 @@ namespace QCat
 	class RenderCommand
 	{
 	public:
-		inline static void Init()
+		inline static void Init(uint32_t width, uint32_t height)
 		{
 			if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 				s_renderAPI = new DX11RenderAPI;
 			else if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 				s_renderAPI = new OpenGLRenderAPI;
-			s_renderAPI->Init();
+			s_renderAPI->Init(width, height);
 		}
 		inline static void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 		{
@@ -40,6 +40,7 @@ namespace QCat
 		}
 		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray,unsigned int count =0,RenderAPI::DrawMode mode = RenderAPI::DrawMode::TRIANGLES)
 		{
+			vertexArray->Bind();
 			s_renderAPI->DrawIndexed(vertexArray, count,mode);
 		}
 		// Depth Stencil State Function

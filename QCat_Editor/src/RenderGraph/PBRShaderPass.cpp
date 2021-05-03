@@ -13,18 +13,22 @@ namespace QCat
 		RegisterInput(TextureInput::Make("BRDFLutTexture", m_BRDFLutTextrue));
 		RegisterInput(TextureInput::Make("PrefilterMap", m_PrefilterMap));
 
-		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
-
 		RegisterInput(TextureInput::Make("ColorBuffer", m_ColorBuffer));
 		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
+
+
+		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
+		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 		AttachmentSpecification spec = { { FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1" },
 										 { FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer" } };
+		spec.Width = 1600;
+		spec.Height = 900;
 		m_Framebuffer = FrameBufferEx::Create(spec);
-
+	
 	}
 	void PBRShaderPass::Initialize()
 	{
@@ -49,28 +53,23 @@ namespace QCat
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{
-		/*m_Framebuffer->Bind();
+		m_Framebuffer->Bind();
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
 		RenderCommand::SetCullMode(CullMode::Back);
-		m_Framebuffer->AttachTexture(m_ColorBuffer, AttachmentType::Color_0, TextureType::Texture2D, 0);
-		m_Framebuffer->AttachTexture(m_DepthBuffer, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
-		m_Framebuffer->Clear();*/
-		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		RenderCommand::SetDefaultFrameBuffer();
-		RenderCommand::SetCullMode(CullMode::Back);
-		RenderCommand::SetViewport(0, 0, 1600,900);
+		m_Framebuffer->Clear();
 
-		Entity mainCamera = scene->GetPrimaryCameraEntity();
-		glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
-		const glm::mat4& proj = mainCamera.GetComponent<CameraComponent>().Camera.GetProjection();
+		//Entity mainCamera = scene->GetPrimaryCameraEntity();
+		//glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
+		//const glm::mat4& proj = mainCamera.GetComponent<CameraComponent>().Camera.GetProjection();
+		glm::vec3 tc = (*viewMatrix)[4];
+		const glm::mat4& proj = (*projectionMatrix);
+		entt::registry& registry = scene->GetRegistry();
 
 		m_PBRShader->Bind();
 		m_PBRShader->SetMat4("u_ViewProjection", proj *(*viewMatrix), ShaderType::VS);
 		m_PBRShader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
-		entt::registry& registry = scene->GetRegistry();
-
-		auto lightView = registry.view<TransformComponent,LightComponent>();
+		auto lightView = registry.view<TransformComponent, LightComponent>();
 		int index = 0;
 		for (auto entity : lightView)
 		{
@@ -89,6 +88,7 @@ namespace QCat
 
 		
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
+		int index = 0;
 		for (auto entity : group)
 		{
 			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
@@ -115,6 +115,7 @@ namespace QCat
 			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
 			for (auto& mesh : meshComponent.GetMeshes())
 			{
+				mesh->Bind();
 				RenderCommand::DrawIndexed(mesh);
 			}
 			
@@ -134,7 +135,6 @@ namespace QCat
 			m_FlatColorShader->UpdateBuffer();
 			sphere->Draw();
 		}
-
 		m_FlatColorShader->UnBind();
 
 		//Draw HDR skyBox
@@ -152,6 +152,6 @@ namespace QCat
 		}
 
 		m_PBRShader->UnBind();
-		//m_Framebuffer->UnBind();
+		m_Framebuffer->UnBind();
 	}
 }

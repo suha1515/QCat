@@ -1,6 +1,6 @@
 #include "PBRRenderGraph.h"
-#include "../Pass/PBRShaderPass.h"
-#include "../Pass/PBRPreComputePass.h"
+#include "PBRShaderPass.h"
+#include "PBRPreComputePass.h"
 #include "glm/gtc/type_ptr.hpp"
 namespace QCat
 {
@@ -11,17 +11,22 @@ namespace QCat
     }
     void PBRRenderGraph::Initialize()
     {
+        //Input
         AddGlobalInput(TextureInput::Make("hdrImage", hdrImage));
         AddGlobalInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix,DataType::Matrix));
+        AddGlobalInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
+
+        //Output
         AddGlobalOutput(TextureOutput::Make("hdrImage", hdrImage));
         AddGlobalOutput(DataOutput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
+        AddGlobalOutput(DataOutput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 
-        AddGlobalOutput(TextureOutput::Make("ColorBuffer", m_ColorBuffer));
+        AddGlobalOutput(TextureOutput::Make("ColorBuffer", m_Colorbuffer));
         AddGlobalOutput(TextureOutput::Make("DepthBuffer", m_DepthBuffer));
 
-
+        
         Sampler_Desc smpDesc;
-        m_ColorBuffer = Texture2D::Create(TextureFormat::RGB8, smpDesc, width, height);
+        m_Colorbuffer = Texture2D::Create(TextureFormat::RGB8, smpDesc, width, height);
         m_DepthBuffer = Texture2D::Create(TextureFormat::DEPTH24STENCIL8, smpDesc, width, height);
 
         Ref<Pass> preComputPass = CreateRef<PBRPreComputePass>(0, "precomputepass");
@@ -34,6 +39,7 @@ namespace QCat
         pbrShaderPass->SetInputLink("BRDFLutTexture", "precomputepass.BRDFLutTexture");
         pbrShaderPass->SetInputLink("PrefilterMap", "precomputepass.PrefilterMap");
         pbrShaderPass->SetInputLink("viewMatrix", "$.viewMatrix");
+        pbrShaderPass->SetInputLink("projectionMatrix", "$.projectionMatrix");
         pbrShaderPass->SetInputLink("ColorBuffer", "$.ColorBuffer");
         pbrShaderPass->SetInputLink("DepthBuffer", "$.DepthBuffer");
         AppendPass(pbrShaderPass);
@@ -44,7 +50,7 @@ namespace QCat
         {
             this->width = width;
             this->height = height;
-            m_ColorBuffer->SetSize(width, height);
+            m_Colorbuffer->SetSize(width, height);
             m_DepthBuffer->SetSize(width, height);
         }
     }

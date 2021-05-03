@@ -72,14 +72,14 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in mat3 TBN;
 
+uniform Material material;
+uniform PointLight pointLight[4];
+uniform vec3 u_viewPosition;
+
 // IBL
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
-
-uniform Material material;
-uniform PointLight pointLight[4];
-uniform vec3 u_viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------

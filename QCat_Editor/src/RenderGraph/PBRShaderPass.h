@@ -1,8 +1,7 @@
 #pragma once
 #include "QCat.h"
-#include "../../Light/Light.h"
-#include "../../Geometry/Sphere.h"
-#include "../../Geometry/Cube.h"
+#include "../Geometry/Sphere.h"
+#include "../Geometry/Cube.h"
 namespace QCat
 {
 	class PBRShaderPass : public Pass
@@ -25,12 +24,13 @@ namespace QCat
 		Ref<Shader>  m_SkyBoxShader;
 		
 		Ref<glm::mat4> viewMatrix;
-		//Material materials[5];
+		Ref<glm::mat4> projectionMatrix;
+
 		Ref<FrameBufferEx> m_Framebuffer;
 
 		Ref<Texture> m_ColorBuffer;
 		Ref<Texture> m_DepthBuffer;
-
+		//Material materials[5];
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
 	};

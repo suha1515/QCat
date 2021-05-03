@@ -8,7 +8,7 @@ namespace QCat
 	class Renderer
 	{
 	public:
-		static void Init();
+		static void Init(uint32_t width, uint32_t height);
 		static void Shutdown();
 
 		static void OnWindowResize(unsigned int width, unsigned int height);

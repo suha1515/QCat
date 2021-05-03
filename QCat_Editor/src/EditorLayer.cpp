@@ -58,6 +58,28 @@ namespace QCat
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
+
+		m_Camera = m_ActiveScene->CreateEntity("Camera");
+
+		auto& tc = m_Camera.GetComponent<TransformComponent>();
+		tc.Translation = { 0.0f,0.0f,-2.0f };
+
+		auto& camera = m_Camera.AddComponent<CameraComponent>();
+		camera.Camera.SetViewportSize(1600.0f, 900.0f);
+		camera.Camera.SetPerspective(1, 0.01f, 100.0f);
+
+		Entity light1 = m_ActiveScene->CreateEntity("PointLight");
+
+		light1.GetComponent<TransformComponent>().Translation = glm::vec3(10.0f, 10.0f, -20.0f);
+		auto& comp = light1.AddComponent<LightComponent>();
+		comp.diffuse = { 300.0f,300.0f,300.0f };
+
+		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+
+		EditorPBRRenderGraph.Initialize();
+		EditorPBRRenderGraph.SetHdrImg(hdrImage);
+		EditorPBRRenderGraph.SetView(viewMatrix);
+		EditorPBRRenderGraph.SetProj(projectionMatrix);
 	}
 
 	void EditorLayer::OnDetach()
@@ -91,6 +113,9 @@ namespace QCat
 		}
 
 		m_EditorCamera.OnUpdate(ts);
+		*viewMatrix = m_EditorCamera.GetViewMatrix();
+		*projectionMatrix = m_EditorCamera.GetProjection();
+
 		// Render
 		// Reset stats here
 		//m_Framebuffer->Bind();

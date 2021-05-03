@@ -2,6 +2,7 @@
 #include "VertexArray.h"
 #include "DepthStencil.h"
 #include "Rasterizer.h"
+#include "FramebufferEx.h"
 #include "Blend.h"
 #include "enums.h"
 
@@ -28,7 +29,7 @@ namespace QCat
 		virtual ~RenderAPI() = default;
 
 		//Defulat renderer
-		virtual void Init()=0;
+		virtual void Init(uint32_t width, uint32_t height)=0;
 		virtual void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) = 0;
 		virtual void ResizeFrameBuffer(unsigned int width, unsigned int height)=0;
 		virtual void SetDefaultFrameBuffer()=0;

@@ -18,11 +18,11 @@ namespace QCat
 
 	};
 
-	void Renderer::Init()
+	void Renderer::Init(uint32_t width, uint32_t height)
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		RenderCommand::Init();
+		RenderCommand::Init(width,height);
 		//Renderer2D::Init();
 	}
 

@@ -12,7 +12,7 @@ namespace QCat
 	DX11RenderAPI::~DX11RenderAPI()
 	{
 	}
-	void DX11RenderAPI::Init()
+	void DX11RenderAPI::Init(uint32_t width, uint32_t height)
 	{
 
 		QCAT_PROFILE_FUNCTION();

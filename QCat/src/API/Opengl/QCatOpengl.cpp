@@ -10,12 +10,12 @@ namespace QCat
 
 	typedef void* (APIENTRYP PFNWGLGETPROCADDRESSPROC_PRIVATE)(const char*);
 	static PFNWGLGETPROCADDRESSPROC_PRIVATE gladGetProcAddressPtr;
-	static HMODULE module;
+	static HMODULE smodule;
 	void Set_Proc()
 	{
-	    module = GetModuleHandle("opengl32.dll");
+		smodule = GetModuleHandle("opengl32.dll");
 		void (*tmp)(void);
-		tmp = (void(*)(void)) GetProcAddress(module, "wglGetProcAddress");
+		tmp = (void(*)(void)) GetProcAddress(smodule, "wglGetProcAddress");
 		gladGetProcAddressPtr = (PFNWGLGETPROCADDRESSPROC_PRIVATE)tmp;
 	}
 	void* Get_Proc(const char* name)
@@ -27,7 +27,7 @@ namespace QCat
 		if(gladGetProcAddressPtr!=nullptr)
 			result = gladGetProcAddressPtr(name);		
 		if (result == NULL)
-			result = (void*)GetProcAddress(module, name);
+			result = (void*)GetProcAddress(smodule, name);
 		return result;
 	}
 	QCatOpengl::~QCatOpengl()

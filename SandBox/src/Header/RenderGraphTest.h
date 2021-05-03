@@ -18,9 +18,13 @@ namespace QCat
 		void OnUpdate(Timestep ts) override;
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
-		void CameraUpdate(QCat::Timestep ts);
+		bool OnWindowResize(WindowResizeEvent& e);
 
+		void CameraUpdate(QCat::Timestep ts);
 	private:
+		// Screen Quad Shader
+		Ref<VertexArray> m_quad;
+		Ref<Shader> m_ScreenShader;
 		//RenderGraph
 		PBRRenderGraph renderGraph;
 		Ref<Texture>hdrImage;

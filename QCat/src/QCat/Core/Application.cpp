@@ -27,7 +27,7 @@ namespace QCat
 		m_window = std::unique_ptr<Window>(Window::Create(WindowProps(name)));
 		m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-		Renderer::Init();
+		Renderer::Init(m_window->GetWidth(),m_window->GetHeight());
 		//m_window2 = std::unique_ptr<Window>(Window::Create());
 		//m_window2->SetEventCallback(BIND_EVENT_FN(OnEvent));
 
