@@ -53,7 +53,6 @@ namespace QCat
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_pScene=nullptr;
-		std::vector<Entity> m_children;
 	};
 }
 

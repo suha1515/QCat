@@ -27,16 +27,23 @@ namespace QCat
 			comp.parent = *parentEntity;
 			RelationShipComponent& parentcomp = comp.parent.GetComponent<RelationShipComponent>();
 			auto curr = parentcomp.firstChild;
-			while (curr.GetHandle() != entt::null)
-			{
-				curr = curr.GetComponent<RelationShipComponent>().nextSibling;
-			}
 			if (curr.GetHandle() == entt::null)
+			{
 				parentcomp.firstChild = entity;
+			}
 			else
 			{
-				curr.GetComponent<RelationShipComponent>().nextSibling = entity;
-				comp.prevSibling = curr;
+				while (curr.GetHandle() != entt::null)
+				{
+					RelationShipComponent& comp = curr.GetComponent < RelationShipComponent>();
+					if (comp.nextSibling.GetHandle() == entt::null)
+					{
+						comp.nextSibling = entity;
+						entity.GetComponent<RelationShipComponent>().prevSibling = curr;
+						break;
+					}
+					curr = comp.nextSibling;
+				}
 			}
 		}
 
@@ -47,6 +54,37 @@ namespace QCat
 	}
 	void Scene::DestroyEntity(Entity entity)
 	{
+		RelationShipComponent& comp = entity.GetComponent<RelationShipComponent>();
+		comp.dead = true;
+		if (comp.parent != Entity::emptyEntity)
+		{
+			RelationShipComponent& parentcomp = comp.parent.GetComponent<RelationShipComponent>();
+			if (parentcomp.dead == false)
+			{
+				if (entity == parentcomp.firstChild)
+				{
+					if (comp.nextSibling != Entity::emptyEntity)
+						parentcomp.firstChild = comp.nextSibling;
+					else
+						parentcomp.firstChild = Entity::emptyEntity;
+				}
+				else
+				{
+					auto prevSibling = comp.prevSibling;
+					auto nextSibling = comp.nextSibling;
+
+					prevSibling.GetComponent<RelationShipComponent>().nextSibling = nextSibling;
+					nextSibling.GetComponent<RelationShipComponent>().prevSibling = prevSibling;
+				}
+			}
+		}
+		auto child = comp.firstChild;
+		while (child != Entity::emptyEntity)
+		{
+			auto nextSibling = child.GetComponent<RelationShipComponent>().nextSibling;
+			DestroyEntity(child);
+			child = nextSibling;
+		}
 		m_Registry.destroy(entity);
 	}
 	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)

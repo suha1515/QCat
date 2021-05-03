@@ -125,7 +125,7 @@ namespace QCat
 		Entity nextSibling;
 		Entity parent;
 		RelationShipComponent()=default;
-
+		bool dead = false;
 	};
 	struct LightComponent
 	{

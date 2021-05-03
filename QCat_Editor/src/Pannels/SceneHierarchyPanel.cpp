@@ -13,20 +13,25 @@ namespace QCat
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
 		m_Context = context;
-		m_SelectionContext = {};
+		m_SelectionContext = Entity();
 	}
 	void SceneHierarchyPanel::OnImguiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
 
-		m_Context->m_Registry.each([&](auto entityID)
-		{
-			Entity entity = { entityID,m_Context.get() }; 
-			DrawEntityNode(entity);	
-		});
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-			m_SelectionContext = {};
+		auto view = m_Context->m_Registry.view<RelationShipComponent>();
 
+		for (auto entity : view)
+		{
+			RelationShipComponent& comp = view.get<RelationShipComponent>(entity);
+			if (comp.parent == Entity::emptyEntity)
+			{
+				Entity ent = { entity,m_Context.get() };
+				DrawEntityNode(ent);
+			}
+		}
+		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+			m_SelectionContext = Entity();
 		// Right-Click on blank space
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
@@ -40,7 +45,7 @@ namespace QCat
 
 		ImGui::Begin("Properties");
 
-		if (m_SelectionContext)
+		if (m_SelectionContext != Entity::emptyEntity)
 		{
 			DrawComponents(m_SelectionContext);
 		}
@@ -67,6 +72,10 @@ namespace QCat
 		bool entityDeleted = false;
 		if (ImGui::BeginPopupContextItem())
 		{
+			if (ImGui::MenuItem("Create Empty Entity"))
+			{
+				m_Context->CreateEntity("Empty Entity", &entity);
+			}
 			if (ImGui::MenuItem("Delete Entity"))
 				entityDeleted = true;
 
@@ -75,17 +84,21 @@ namespace QCat
 
 		if (opened)
 		{
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)9817239, flags, tag.c_str());
-			if (opened)
-				ImGui::TreePop();
+			RelationShipComponent& comp = entity.GetComponent<RelationShipComponent>();
+			auto curr = comp.firstChild;
+			while (curr != Entity::emptyEntity)
+			{
+				auto nextSiling = curr.GetComponent<RelationShipComponent>().nextSibling;
+				DrawEntityNode(curr);
+				curr = nextSiling;
+			}
 			ImGui::TreePop();
 		}
 		if (entityDeleted)
 		{
-			m_Context->DestroyEntity(entity);
 			if (m_SelectionContext == entity)
-				m_SelectionContext = {};
+				m_SelectionContext = Entity();
+			m_Context->DestroyEntity(entity);
 		}
 	}
 	static void DrawVec3Control(const std::string& label,glm::vec3& values ,float resetValue = 0.0f,float columnwidth =100.0f)
