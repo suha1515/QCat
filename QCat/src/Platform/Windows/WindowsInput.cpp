@@ -13,7 +13,12 @@ namespace QCat
 		auto state = window->GetKeyState(keycode);
 		return state == QCAT_PRESS || state == QCAT_REPEAT;
 	}
-
+	bool Input::IsKeyReleased(const KeyCode keycode)
+	{
+		auto* window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());
+		auto state = window->GetKeyState(keycode);
+		return state == QCAT_RELEASE ;
+	}
 	bool Input::IsMouseButtonPressed(const MouseCode button)
 	{
 		auto* window = static_cast<WindowsWindow*>(Application::GetInstance().GetWindow()->GetNativeWindow());

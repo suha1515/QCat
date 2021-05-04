@@ -26,8 +26,7 @@ namespace QCat {
 	void EditorCamera::UpdateView()
 	{
 		// m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
-		m_Position = CalculatePosition();
-
+		//m_Position = CalculatePosition();
 		glm::quat orientation = GetOrientation();
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
@@ -55,25 +54,55 @@ namespace QCat {
 		distance = std::max(distance, 0.0f);
 		float speed = distance * distance;
 		speed = std::min(speed, 100.0f); // max speed = 100
+		speed = 1.5f;
 		return speed;
 	}
 
 	void EditorCamera::OnUpdate(Timestep ts)
 	{
+		const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
+		glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+		m_InitialMousePosition = mouse;
 		if (Input::IsKeyPressed(Key::LeftAlt))
 		{
-			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-			m_InitialMousePosition = mouse;
-
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+			/*else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
 				MouseRotate(delta);
 			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 				MouseZoom(delta.y);
+			focalMode = true;*/
 		}
-
+		else if (Input::IsKeyPressed(Key::LeftShift))
+		{
+			m_Pitch += delta.y * RotationSpeed();
+			m_Yaw+= delta.x * RotationSpeed();
+			// camera Move
+			if (Input::IsKeyPressed(Key::W))
+			{
+				m_Position += cameraSpeed * ts * GetForwardDirection();
+			}
+			if (Input::IsKeyPressed(Key::S))
+			{
+				m_Position -= cameraSpeed * ts * GetForwardDirection();
+			}
+			if (Input::IsKeyPressed(Key::A))
+			{
+				m_Position -= cameraSpeed * ts * GetRightDirection();
+			}
+			if (Input::IsKeyPressed(Key::D))
+			{
+				m_Position += cameraSpeed * ts * GetRightDirection();
+			}
+		}
+		else if (focalMode&& Input::IsKeyReleased(Key::LeftAlt))
+		{
+			/*m_FocalPoint = m_Position;
+			focalMode = false;
+			m_Distance = 1.0f;*/
+			
+		}
+		
 		UpdateView();
 	}
 
@@ -94,25 +123,28 @@ namespace QCat {
 	void EditorCamera::MousePan(const glm::vec2& delta)
 	{
 		auto [xSpeed, ySpeed] = PanSpeed();
-		m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
-		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+		//m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
+		//m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+		m_Position += -GetRightDirection() * delta.x * xSpeed * m_Distance;
+		m_Position += GetUpDirection() * delta.y * ySpeed * m_Distance;
 	}
 
 	void EditorCamera::MouseRotate(const glm::vec2& delta)
 	{
-		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+		float yawSign = GetUpDirection().y < 0 ? 1.0f : -1.0f;
 		m_Yaw += yawSign * delta.x * RotationSpeed();
 		m_Pitch += delta.y * RotationSpeed();
 	}
 
 	void EditorCamera::MouseZoom(float delta)
 	{
-		m_Distance -= delta * ZoomSpeed();
+		/*m_Distance -= delta * ZoomSpeed();
 		if (m_Distance < 1.0f)
 		{
-			m_FocalPoint += GetForwardDirection();
+			m_FocalPoint -= GetForwardDirection();
 			m_Distance = 1.0f;
-		}
+		}*/
+		m_Position += delta*GetForwardDirection() * ZoomSpeed();
 	}
 
 	glm::vec3 EditorCamera::GetUpDirection() const
@@ -127,17 +159,17 @@ namespace QCat {
 
 	glm::vec3 EditorCamera::GetForwardDirection() const
 	{
-		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
+		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 
 	glm::vec3 EditorCamera::CalculatePosition() const
 	{
-		return m_FocalPoint + GetForwardDirection() * m_Distance;
+		return m_FocalPoint - GetForwardDirection() * m_Distance;
 	}
 
 	glm::quat EditorCamera::GetOrientation() const
 	{
-		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
+		return glm::quat(glm::vec3(m_Pitch,m_Yaw, 0.0f));
 	}
 
 }

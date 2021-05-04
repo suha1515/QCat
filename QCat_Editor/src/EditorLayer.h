@@ -3,7 +3,9 @@
 #include "QCat.h"
 #include "Pannels/SceneHierarchyPanel.h"
 #include <QCat/Renderer/EditorCamera.h>
-#include "RenderGraph/PBRRenderGraph.h"
+#include "RenderGraph/PBRRenderGraph_Editor.h"
+#include "Geometry/Sphere.h"
+#include "Geometry/Cube.h"
 
 namespace QCat
 {
@@ -19,7 +21,7 @@ namespace QCat
 		void OnUpdate(QCat::Timestep ts) override;
 		virtual void OnImGuiRender() override;
 		void OnEvent(QCat::Event& e) override;
-
+		void CameraUpdate(QCat::Timestep ts);
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
@@ -28,6 +30,8 @@ namespace QCat
 		void OpenScene();
 		void SaveSceneAs();
 	private:
+		Ref<Sphere> sphere;
+		Ref<Cube> cube;
 		//RenderGraph
 		PBRRenderGraph EditorPBRRenderGraph;
 		Ref<Texture> hdrImage;
@@ -38,6 +42,13 @@ namespace QCat
 		OrthographicCameraController m_CameraController;
 		Ref<FrameBufferEx> m_FrameBufferEx;
 		Ref<Texture2D> m_Texture;
+		float cameraSpeed;
+		float lastX, lastY;
+		float yaw = 90.f, pitch = 0.0f;
+		glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
+		glm::vec3 cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
+		glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		Ref<Scene> m_ActiveScene;
 		Entity m_SquareEntity;

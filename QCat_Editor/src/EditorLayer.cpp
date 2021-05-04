@@ -18,11 +18,15 @@ namespace QCat
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
 	{
+
 	}
 
 	void EditorLayer::OnAttach()
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
+		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 		Sampler_Desc desc;
 		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png",desc);
@@ -30,8 +34,8 @@ namespace QCat
 		AttachmentSpecification fbSpecEx= { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1"},
 							   {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER,"IndexBuffer"},
 							   {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer"} };
-		fbSpecEx.Width = 1280;
-		fbSpecEx.Height = 720;
+		fbSpecEx.Width = 0;
+		fbSpecEx.Height = 0;
 		m_FrameBufferEx = FrameBufferEx::Create(fbSpecEx);
 
 		Texture_Desc texDesc;
@@ -49,12 +53,10 @@ namespace QCat
 		m_FrameBufferEx->InitializeTexture("IndexBuffer", texDesc, desc);
 		m_FrameBufferEx->InitializeTexture("DepthBuffer", texDesc, desc);
 
-		
-
 		m_ActiveScene = CreateRef<Scene>();
 		
-		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-		
+		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.1f, 1000.0f);
+		//m_EditorCamera.SetPosition({ 0.0f,0.0f,-2.0f });
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
@@ -76,10 +78,31 @@ namespace QCat
 
 		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 
-		EditorPBRRenderGraph.Initialize();
+		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
+		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
+
 		EditorPBRRenderGraph.SetHdrImg(hdrImage);
 		EditorPBRRenderGraph.SetView(viewMatrix);
 		EditorPBRRenderGraph.SetProj(projectionMatrix);
+		EditorPBRRenderGraph.Initialize();
+
+		Sampler_Desc imgSamp;
+		imgSamp.addressU = WrapingMode::REPEAT;
+		imgSamp.addressV = WrapingMode::REPEAT;
+		imgSamp.MIN = Filtering::LINEAR;
+		imgSamp.MAG = Filtering::LINEAR;
+		imgSamp.MIP = Filtering::LINEAR;
+		Material goldenBall;
+		goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
+		goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
+		goldenBall.SetTexture("Asset/textures/PBR/gold/roughness.png", imgSamp, Material::TextureType::Roughness);
+		goldenBall.SetTexture("Asset/textures/PBR/gold/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+
+		Entity ball = m_ActiveScene->CreateEntity("GoldenBall");
+		ball.GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
+		ball.AddComponent<MeshComponent>("Sphere");
+		ball.AddComponent<MaterialComponent>(goldenBall);
 	}
 
 	void EditorLayer::OnDetach()
@@ -92,15 +115,15 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		RenderCommand::Clear();
-
+		
 		// Resize
-		if (AttachmentSpecification spec = m_FrameBufferEx->GetSpecification();
-			m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
-			(spec.Width != m_ViewPortSize.x || spec.Height != m_ViewPortSize.y))
+		if (m_ViewPortSize.x > 0.0f && m_ViewPortSize.y > 0.0f && // zero sized framebuffer is invalid
+			(EditorPBRRenderGraph.width != m_ViewPortSize.x || EditorPBRRenderGraph.height != m_ViewPortSize.y))
 		{
-			m_FrameBufferEx->GetTexture("ColorBuffer1")->SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-			m_FrameBufferEx->GetTexture("DepthBuffer")->SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			//m_FrameBufferEx->GetTexture("ColorBuffer1")->SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			//m_FrameBufferEx->GetTexture("DepthBuffer")->SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 				//Resize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			EditorPBRRenderGraph.SetSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
 			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
@@ -121,11 +144,11 @@ namespace QCat
 		//m_Framebuffer->Bind();
 		//m_Framebuffer->Clear();
 		
-		m_FrameBufferEx->Bind();
+		/*m_FrameBufferEx->Bind();
 		m_FrameBufferEx->AttachTexture("ColorBuffer1", AttachmentType::Color_0, TextureType::Texture2D,0);
 		m_FrameBufferEx->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
-		m_FrameBufferEx->Clear();
-
+		m_FrameBufferEx->Clear();*/
+		EditorPBRRenderGraph.Execute(m_ActiveScene);
 		// clear out entity ID attacment to -1
 		//int value = -1;
 		//m_Framebuffer->ClearAttachment(1, &value);
@@ -155,7 +178,7 @@ namespace QCat
 		
 		
 		//m_Framebuffer->UnBind();
-		m_FrameBufferEx->UnBind();
+		//m_FrameBufferEx->UnBind();
 		//RenderCommand::SetDefaultFrameBuffer();
 
 	}
@@ -164,7 +187,6 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		ImGui::ShowDemoWindow();
 		// Note: Switch this to true to enable dockspace
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -265,13 +287,21 @@ namespace QCat
 
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
-		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+	/*	if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{
 			ImGui::Image(m_FrameBufferEx->GetTexture("ColorBuffer1")->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			ImGui::Image(m_FrameBufferEx->GetTexture("ColorBuffer1")->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+		}*/
+		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+		{
+			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
+		}
+		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 		}
 
 		/*auto windowSize = ImGui::GetWindowSize();
@@ -357,6 +387,71 @@ namespace QCat
 		{
 			QCAT_CORE_TRACE("key : {0}", e);
 		}*/
+	}
+	void EditorLayer::CameraUpdate(QCat::Timestep ts)
+	{
+		cameraSpeed = 2.5f * ts;
+		auto& tc = m_Camera.GetComponent<TransformComponent>().Translation;
+		// camera roration by mouse
+		static bool fpsmode = false;
+		if (fpsmode)
+		{
+			while (const auto delta = Input::GetDeltaData())
+			{
+				float dx = (float)delta->x;
+				float dy = (float)delta->y;
+
+
+				pitch -= dy * 0.04f;
+				glm::vec3 front;
+
+				{
+					front = { 0.0f,0.0f,1.0f };
+					yaw -= dx * 0.04f;
+				}
+
+				//QCAT_INFO("dx : {0} , dy{1}", dx, dy);
+
+				if (pitch > 89.0f)
+					pitch = 89.f;
+				if (pitch < -89.0f)
+					pitch = -89.f;
+
+
+				front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+				front.y = sin(glm::radians(pitch));
+				front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+				cameraFront = glm::normalize(front);
+			}
+			// camera Move
+			if (Input::IsKeyPressed(Key::W))
+			{
+				tc += cameraSpeed * cameraFront;
+			}
+			if (Input::IsKeyPressed(Key::S))
+			{
+				tc -= cameraSpeed * cameraFront;
+			}
+			if (Input::IsKeyPressed(Key::A))
+			{
+				tc -= cameraSpeed * cameraRight;
+			}
+			if (Input::IsKeyPressed(Key::D))
+			{
+				tc += cameraSpeed * cameraRight;
+			}
+			if (Input::IsKeyPressed(Key::Escape))
+				fpsmode = false;
+		}
+		else
+		{
+			if (Input::IsKeyPressed(Key::Escape))
+				fpsmode = true;
+		}
+
+		cameraRight = glm::normalize(glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), cameraFront));
+		cameraUp = glm::cross(cameraFront, cameraRight);
+		*viewMatrix = glm::lookAt(tc, tc + cameraFront, cameraUp);
 	}
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
 	{

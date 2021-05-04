@@ -14,6 +14,10 @@ namespace QCat
 		void SetView(Ref<glm::mat4>& viewMat) { viewMatrix = viewMat; }
 		void SetProj(Ref<glm::mat4>& projMat) { projectionMatrix = projMat; }
 		void SetSize(uint32_t width, uint32_t height);
+		Ref<Texture>& GetColorBuffer() { return m_Colorbuffer; }
+	public:
+		uint32_t width, height;
+	private:
 		Ref<Texture> hdrImage;
 		Ref<glm::mat4> viewMatrix;
 		Ref<glm::mat4> projectionMatrix;
@@ -21,6 +25,6 @@ namespace QCat
 		Ref<Texture> m_Colorbuffer;
 		Ref<Texture> m_DepthBuffer;
 
-		uint32_t width, height;
+		
 	};
 }

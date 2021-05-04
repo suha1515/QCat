@@ -49,17 +49,13 @@ namespace QCat
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{
-		/*m_Framebuffer->Bind();
+		m_Framebuffer->Bind();
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
 		RenderCommand::SetCullMode(CullMode::Back);
 		m_Framebuffer->AttachTexture(m_ColorBuffer, AttachmentType::Color_0, TextureType::Texture2D, 0);
 		m_Framebuffer->AttachTexture(m_DepthBuffer, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
-		m_Framebuffer->Clear();*/
-		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		RenderCommand::SetDefaultFrameBuffer();
-		RenderCommand::SetCullMode(CullMode::Back);
-		RenderCommand::SetViewport(0, 0, 1600,900);
+		m_Framebuffer->Clear();
 
 		Entity mainCamera = scene->GetPrimaryCameraEntity();
 		glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
@@ -152,6 +148,6 @@ namespace QCat
 		}
 
 		m_PBRShader->UnBind();
-		//m_Framebuffer->UnBind();
+		m_Framebuffer->UnBind();
 	}
 }

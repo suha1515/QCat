@@ -30,7 +30,7 @@ namespace QCat
 		glm::vec3 GetRightDirection() const;
 		glm::vec3 GetForwardDirection() const;
 		const glm::vec3& GetPosition() const { return m_Position; }
-		void SetPosition(glm::vec3& position) { m_Position = position; }
+		void SetPosition(const glm::vec3& position) { m_Position = position; }
 		glm::quat GetOrientation() const;
 
 		float GetPitch() const { return m_Pitch; }
@@ -63,5 +63,7 @@ namespace QCat
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
+		float cameraSpeed =2.5f;
+		bool focalMode = false;
 	};
 }

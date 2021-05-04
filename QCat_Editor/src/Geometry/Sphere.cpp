@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/ext/scalar_constants.hpp>
-#include "../Light/Light.h"
 namespace QCat
 {
 	struct Vertex

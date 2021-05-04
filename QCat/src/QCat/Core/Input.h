@@ -11,6 +11,7 @@ namespace QCat
 	{
 	public:
 		static bool IsKeyPressed(const KeyCode keycode);
+		static bool IsKeyReleased(const KeyCode keycode);
 		static bool IsMouseButtonPressed(const MouseCode button);
 		static glm::vec2 GetMousePos();
 		static float GetMouseX();

@@ -1,6 +1,6 @@
 #include "PBRRenderGraph_Editor.h"
 #include "PBRShaderPass_Editor.h"
-#include "PBRPreComputePass.h"
+#include "PBRPreComputePass_Editor.h"
 #include "glm/gtc/type_ptr.hpp"
 namespace QCat
 {

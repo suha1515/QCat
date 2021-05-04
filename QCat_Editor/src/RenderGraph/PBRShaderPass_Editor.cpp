@@ -57,12 +57,14 @@ namespace QCat
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
 		RenderCommand::SetCullMode(CullMode::Back);
+		m_Framebuffer->AttachTexture(m_ColorBuffer, AttachmentType::Color_0, TextureType::Texture2D, 0);
+		m_Framebuffer->AttachTexture(m_DepthBuffer, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		m_Framebuffer->Clear();
 
 		//Entity mainCamera = scene->GetPrimaryCameraEntity();
 		//glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
-		//const glm::mat4& proj = mainCamera.GetComponent<CameraComponent>().Camera.GetProjection();
-		glm::vec3 tc = (*viewMatrix)[4];
+		//\const glm::mat4& proj = mainCamera.GetComponent<CameraComponent>().Camera.GetProjection();
+		glm::vec3 tc = glm::inverse(*viewMatrix)[3];
 		const glm::mat4& proj = (*projectionMatrix);
 		entt::registry& registry = scene->GetRegistry();
 
@@ -88,7 +90,6 @@ namespace QCat
 
 		
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
-		int index = 0;
 		for (auto entity : group)
 		{
 			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
@@ -115,7 +116,6 @@ namespace QCat
 			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
 			for (auto& mesh : meshComponent.GetMeshes())
 			{
-				mesh->Bind();
 				RenderCommand::DrawIndexed(mesh);
 			}
 			

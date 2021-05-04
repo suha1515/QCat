@@ -36,13 +36,12 @@ namespace QCat
 		m_PrefilterShader->Bind();
 		m_PrefilterShader->SetInt("environmentMap", 0, ShaderType::PS);
 
-		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? 1.0f : 0.0f;
 		float quadVertices[] =
 		{
-			-1.0f, 1.0f,  0.0f,0.0f + bias,
-			-1.0f,-1.0f,  0.0f,1.0f - bias,
-			 1.0f,-1.0f,  1.0f,1.0f - bias,
-			 1.0f, 1.0f,  1.0f,0.0f + bias
+			-1.0f, 1.0f,  0.0f,0.0f ,
+			-1.0f,-1.0f,  0.0f,1.0f ,
+			 1.0f,-1.0f,  1.0f,1.0f ,
+			 1.0f, 1.0f,  1.0f,0.0f  
 		};
 
 		Ref<VertexBuffer> quadBuffer = VertexBuffer::Create(quadVertices, sizeof(quadVertices));
@@ -65,7 +64,7 @@ namespace QCat
 		AttachmentSpecification spec = { { FramebufferUsage::Color,TextureType::TextureCube,TextureFormat::RGB16_Float,"ColorBuffer1" },
 										  { FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer" } };
 		CubeMapPass = FrameBufferEx::Create(spec);
-		bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
+		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
 
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 		{

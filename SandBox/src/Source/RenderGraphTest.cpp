@@ -157,6 +157,7 @@ namespace QCat
 		renderGraph.Initialize();
 
 		m_ScreenShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/SingleQuad.hlsl" : "Asset/shaders/glsl/SingleQuad.glsl");
+		m_ScreenShader->Bind();
 		m_ScreenShader->SetInt("screenTexture", 0, ShaderType::PS);
 		
 		static float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? 1.0f : 0.0f;
@@ -193,12 +194,12 @@ namespace QCat
 		CameraUpdate(ts);
 		renderGraph.Execute(m_ActiveScene);
 
-		//RenderCommand::SetDefaultFrameBuffer();
-		//RenderCommand::Clear();
-		//m_ScreenShader->Bind();
-		//renderGraph.GetColorBuffer()->Bind(0);
-		//RenderCommand::DrawIndexed(m_quad);
-		//m_ScreenShader->UnBind();
+		RenderCommand::SetDefaultFrameBuffer();
+		RenderCommand::Clear();
+		m_ScreenShader->Bind();
+		renderGraph.GetColorBuffer()->Bind(0);
+		RenderCommand::DrawIndexed(m_quad);
+		m_ScreenShader->UnBind();
 	}
 	void RenderGraphTest::OnImGuiRender()
 	{

@@ -1,7 +1,7 @@
 #include "Cube.h"
 #include <Imgui/imgui.h>
 #include <glm/gtc/type_ptr.hpp>
-#include "../Light/Light.h"
+
 namespace QCat
 {
 	static float a = 1.0f;
