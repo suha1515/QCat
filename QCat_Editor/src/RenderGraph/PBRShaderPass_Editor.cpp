@@ -15,8 +15,6 @@ namespace QCat
 
 		RegisterInput(TextureInput::Make("ColorBuffer", m_ColorBuffer));
 		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
-
-
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 

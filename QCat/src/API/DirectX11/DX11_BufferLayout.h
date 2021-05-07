@@ -111,8 +111,7 @@ namespace QCat
 		struct ExtraDataBase
 		{
 			virtual ~ExtraDataBase() = default;
-		};
-		
+		};		
 		ElementLayout();
 		ElementLayout(ShaderDataType type, uint32_t offset = 0);
 
@@ -125,7 +124,6 @@ namespace QCat
 	public:
 		void Add(ShaderDataType addtype, std::string name, uint32_t offset=0,uint32_t size=0);
 		void Set(ShaderDataType addtype, uint32_t count);
-
 
 		std::pair<uint32_t, const ElementLayout*> CalculateIndexingOffset(size_t offset, size_t index) const;
 		size_t AdvanceIfCrossesBoundary(size_t offset, size_t size) noexcept;
@@ -171,7 +169,7 @@ namespace QCat
 		ElementRef operator[](const std::string& key)const;
 		ElementRef operator[](size_t index) const;
 
-		// 해당 SysType으로 읽기/쓰기를 위한 변환
+		// SysType Write/Read Conversion
 		template<typename T>
 		operator T& () const 
 		{
@@ -179,11 +177,11 @@ namespace QCat
 			size_t elementOffset = pLayout->Resolve<T>();
 			return *reinterpret_cast<T*>(pBytes + offset + elementOffset);
 		}
-		// 해당 SysType으로 쓰기를 위한 할당자
+		// insert data and check it is vaild operation
 		template<typename T>
 		T& operator=(const T& rhs) const
 		{
-			// remove_const<T> 는 T의 const성을 제거한 T 를 의미한다
+			// remove_const<T>  remove const of T
 			// remove_const_t 제거된 T를 접근하기위한 멤버이다. 
 			// 즉 ReverseMap<> 에는 const가 없어진 T가 들어가게된다.
 			// 지원하는 원소만 T에 들어와야하므로 ReverseMap에서 템플릿 특수화로 Systype과 같은 타입이아니면 valid가 False가 나오게된다
