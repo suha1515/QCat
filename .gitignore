@@ -21,3 +21,7 @@ bin-int/
 /SandBox/Asset/model/Robot/textures/robot_steampunk_metalness.tga.png
 /SandBox/Asset/model/Robot/textures/robot_steampunk_color.tga.png
 /SandBox/Asset/model/Robot/textures/robot_steampunk_ao.tga.png
+
+QCat/3rdLib/VulkanSDK
+QCat_Editor/Asset/cache
+scripts/__pycache__

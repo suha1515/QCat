@@ -1,5 +1,5 @@
 include "./3rdLib/premake/premake_customization/solution_items.lua"
-
+include "Dependencies.lua"
 workspace "QCat"
 	architecture "x64"
 	startproject "QCat_Editor"
@@ -19,18 +19,6 @@ workspace "QCat"
 		"MultiProcessorCompile"
 	}
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architexture}"
-
--- Include directories
-IncludeDir = {}
-IncludeDir["ImGui"] = "%{wks.location}/QCat/3rdLib/Imgui"
-IncludeDir["Glm"] = "%{wks.location}/QCat/3rdLib/glm"
-IncludeDir["Glad"] = "%{wks.location}/QCat/3rdLib/Glad/Include"
-IncludeDir["stb_image"] = "%{wks.location}/QCat/3rdLib/stb_image"
-IncludeDir["entt"] = "%{wks.location}/QCat/3rdLib/entt/Include"
-IncludeDir["yaml_cpp"] = "%{wks.location}/QCat/3rdLib/yaml-cpp/Include"
-IncludeDir["ImGuizmo"] = "%{wks.location}/QCat/3rdLib/ImGuizmo"
-IncludeDir["assimp"] = "%{wks.location}/QCat/3rdLib/assimp/include"
-
 
 group "Dependencies"
 	include "3rdLib/premake"

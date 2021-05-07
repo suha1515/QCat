@@ -42,7 +42,8 @@ project "QCat"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.assimp}"
+		"%{IncludeDir.assimp}",
+		"%{IncludeDir.VulkanSDK}"
 	}
 
 	links
@@ -63,12 +64,27 @@ project "QCat"
 	filter "configurations:Debug"
 		defines "QCAT_DEBUG"
 		symbols "on"
-
+		links
+		{
+			"%{Library.ShaderC_Debug}",
+			"%{Library.SPIRV_Cross_Debug}",
+			"%{Library.SPIRV_Cross_GLSL_Debug}"
+		}
 	filter "configurations:Release"
 		defines "QCAT_RELEASE"
 		optimize "on"
-
+		links
+		{
+			"%{Library.ShaderC_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}"
+		}
 	filter "configurations:Dist"
 		defines "QCAT_DIST"
 		optimize "on"
-
+		links
+		{
+			"%{Library.ShaderC_Release}",
+			"%{Library.SPIRV_Cross_Release}",
+			"%{Library.SPIRV_Cross_GLSL_Release}"
+		}
