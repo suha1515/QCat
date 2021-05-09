@@ -2,8 +2,10 @@
 #include"QCat.h"
 #include "../Geometry/Cube.h"
 
+
 namespace QCat
 {
+
 	class PBRPreComputePass :public Pass
 	{
 	public:
@@ -37,5 +39,12 @@ namespace QCat
 		Ref<FrameBufferEx> CubeMapPass;
 
 		Ref<Cube> cube;
+		struct CameraData
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+		};
+		CameraData CameraBuffer;
+		Ref<ConstantBuffer> cameraConstantBuffer;
 	};
 }

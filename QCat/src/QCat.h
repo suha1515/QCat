@@ -43,6 +43,8 @@
 #include "QCat/Renderer/SamplerState.h"
 #include "QCat/Renderer/Mesh.h"
 #include "QCat/Renderer/Material.h"
+
+#include "QCat/Renderer/ConstantBuffer.h"
 //--RenderGraph & Pass-----------------------------//
 #include "QCat/RenderGraph/RenderGraph.h"
 #include "QCat/RenderGraph/Pass.h"

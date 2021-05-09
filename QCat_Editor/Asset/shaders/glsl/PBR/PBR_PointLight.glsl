@@ -18,6 +18,7 @@ layout(std140,binding = 0) uniform Camera
 layout(std140,binding = 1) uniform Transform
 {
 	mat4 u_Transform;
+	mat4 u_InvTransform;
 };
 struct VertexOutput
 {
@@ -31,7 +32,7 @@ layout(location = 0 ) out VertexOutput Output;
 void main()
 {
 	Output.TexCoords = a_TexCoord;
-	mat3 normalMatrix = mat3(transpose(inverse(u_Transform)));
+	mat3 normalMatrix = mat3(transpose(u_InvTransform));
 	Output.v_Normal =normalMatrix * a_Normal;
 	gl_Position = u_Projection*u_View*u_Transform * vec4(a_Position, 1.0);
 	Output.FragPos = vec3(u_Transform * vec4(a_Position,1.0));
@@ -67,17 +68,19 @@ struct PointLight
 	vec3 position;
 	vec3 diffuse;
 };
-layout(std140,binding = 0) uniform Mat
+layout(std140,binding = 0) uniform Camera
+{
+	mat4 u_Projection;
+	mat4 u_View;
+	vec3 u_viewPosition;
+};
+layout(std140,binding = 2) uniform Mat
 {
 	Material material;
 };
-layout(std140,binding = 1) uniform Light
+layout(std140,binding = 3) uniform Light
 {
 	PointLight pointLight[4];
-};
-layout(std140,binding = 2) uniform View
-{
-	vec3 u_viewPosition;
 };
 layout(location = 0) out vec4 color;
 

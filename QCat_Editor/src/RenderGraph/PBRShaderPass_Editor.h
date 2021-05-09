@@ -33,5 +33,50 @@ namespace QCat
 		//Material materials[5];
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
+		struct CameraData
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+			glm::vec3 position;
+		};
+		struct Transform
+		{
+			glm::mat4 transform;
+			glm::mat4 invtrnasform;
+		};
+		struct Mat
+		{
+			glm::vec3 albedo;
+			float shininess;
+			float metallic;
+			float roughness;
+			float ambientocclusion;
+
+			int IsAlbedoMap;
+			int IsNormalMap;
+			int IsMetallicMap;
+			int IsRoughnessMap;
+			int IsAoMap;
+		};
+		struct light
+		{
+			glm::vec3 position;
+			glm::vec3 diffuse;
+		};
+		struct color
+		{
+			glm::vec4 color;
+		};
+		CameraData camData;
+		Transform transformData;
+		Mat		matData;
+		light litData;
+		color colData;
+		Ref<ConstantBuffer> cameraConstantBuffer;
+		Ref<ConstantBuffer> transformConstantBuffer;
+		Ref<ConstantBuffer> materialConstantBuffer;
+		Ref<ConstantBuffer> lightConstantBuffer;
+		Ref<ConstantBuffer> colorConstantBuffer;
+
 	};
 }

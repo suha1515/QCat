@@ -6,6 +6,7 @@ layout(std140,binding = 0) uniform Camera
 {
 	mat4 u_Projection;
 	mat4 u_View;
+	vec3 viewPosition;
 };
 
 layout(location = 0 ) out vec3 TexCoords;

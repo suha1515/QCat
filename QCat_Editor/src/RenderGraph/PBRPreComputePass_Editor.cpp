@@ -1,4 +1,5 @@
 #include "PBRPreComputePass_Editor.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace QCat
 {
@@ -12,6 +13,8 @@ namespace QCat
 		RegisterOutput(TextureOutput::Make("HdrCubeMap", m_HdrCubeMap));
 		RegisterOutput(TextureOutput::Make("BRDFLutTexture", m_BRDFLutTexture));
 		RegisterOutput(TextureOutput::Make("PrefilterMap", m_PrefilterMap));
+
+		cameraConstantBuffer = ConstantBuffer::Create(sizeof(CameraData), 0);
 	}
 
 	void PBRPreComputePass::Initialize()
@@ -24,17 +27,17 @@ namespace QCat
 		m_IrradianceMapShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
 		m_PrefilterShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/prefilter.hlsl" : "Asset/shaders/glsl/PBR/prefilter.glsl");
 		
-		m_HdrToCubeMapShader->Bind();
-		m_HdrToCubeMapShader->SetInt("equirectangularMap", 0, ShaderType::PS);
+		//m_HdrToCubeMapShader->Bind();
+		//m_HdrToCubeMapShader->SetInt("equirectangularMap", 0, ShaderType::PS);
 
-		m_HdrCubeMapShader->Bind();
-		m_HdrCubeMapShader->SetInt("environmentMap", 0, ShaderType::PS);
+		//m_HdrCubeMapShader->Bind();
+		//m_HdrCubeMapShader->SetInt("environmentMap", 0, ShaderType::PS);
 
-		m_IrradianceMapShader->Bind();
-		m_IrradianceMapShader->SetInt("envMap", 0, ShaderType::PS);
+		//m_IrradianceMapShader->Bind();
+		//m_IrradianceMapShader->SetInt("envMap", 0, ShaderType::PS);
 
-		m_PrefilterShader->Bind();
-		m_PrefilterShader->SetInt("environmentMap", 0, ShaderType::PS);
+		//m_PrefilterShader->Bind();
+		//m_PrefilterShader->SetInt("environmentMap", 0, ShaderType::PS);
 
 		float quadVertices[] =
 		{
@@ -145,13 +148,17 @@ namespace QCat
 		RenderCommand::SetViewport(0, 0, 512, 512);
 		//HDR image to CubeMap
 		m_HdrToCubeMapShader->Bind();
-		m_HdrToCubeMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		//m_HdrToCubeMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		cameraConstantBuffer->Bind(0);
+		CameraBuffer.projection = captureProjection;
 		for (int i = 0; i < 6; ++i)
 		{
 			int index = (int)TextureType::TextureCube_PositiveX + i;
 			CubeMapPass->AttachTexture(m_HdrCubeMap, AttachmentType::Color_0, (TextureType)index, 0);
 			CubeMapPass->Clear();
-			m_HdrToCubeMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
+			//m_HdrToCubeMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
+			CameraBuffer.view = captureViews[i];
+			cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
 			m_HdrImage->Bind(0);
 			m_HdrToCubeMapShader->UpdateBuffer();
 			cube->Draw();
@@ -166,14 +173,15 @@ namespace QCat
 		CubeMapPass->AttachTexture(m_IrradianceCubeMap, AttachmentType::Color_0, TextureType::TextureCube_PositiveX, 0);
 
 		m_IrradianceMapShader->Bind();
-		m_IrradianceMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		//m_IrradianceMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		for (int i = 0; i < 6; ++i)
 		{
 			int index = (int)TextureType::TextureCube_PositiveX + i;
 			CubeMapPass->AttachTexture(m_IrradianceCubeMap, AttachmentType::Color_0, (TextureType)index, 0);
 			CubeMapPass->Clear();
-
-			m_IrradianceMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
+			CameraBuffer.view = captureViews[i];
+			cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
+			//m_IrradianceMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
 			m_IrradianceMapShader->UpdateBuffer();
 			m_HdrCubeMap->Bind(0);
 			cube->Draw();
@@ -182,7 +190,7 @@ namespace QCat
 		m_IrradianceMapShader->UnBind();
 
 		m_PrefilterShader->Bind();
-		m_PrefilterShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
+		//m_PrefilterShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		unsigned int maxMipLevels = 5;
 		for (int mip = 0; mip < maxMipLevels; ++mip)
 		{
@@ -199,7 +207,9 @@ namespace QCat
 			for (int i = 0; i < 6; ++i)
 			{
 				int index = (int)TextureType::TextureCube_PositiveX + i;
-				m_PrefilterShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
+				//m_PrefilterShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
+				CameraBuffer.view = captureViews[i];
+				cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
 				CubeMapPass->AttachTexture(m_PrefilterMap, AttachmentType::Color_0, (TextureType)index, mip);
 				CubeMapPass->Clear();
 				m_HdrCubeMap->Bind(0);

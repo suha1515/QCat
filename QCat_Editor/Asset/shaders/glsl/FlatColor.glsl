@@ -9,11 +9,13 @@ layout(std140,binding = 0) uniform Camera
 {
 	mat4 u_Projection;
 	mat4 u_View;
+	vec3 viewPosition;
 };
 
 layout(std140,binding = 1) uniform Transform
 {
 	mat4 u_Transform;
+	mat4 u_InvTransform;
 };
 void main()
 {
@@ -24,7 +26,7 @@ void main()
 #version 450 core
 
 layout(location = 0) out vec4 color;
-layout(std140,binding = 1) uniform col
+layout(std140,binding = 2) uniform col
 {
 	vec4 u_color;
 };
