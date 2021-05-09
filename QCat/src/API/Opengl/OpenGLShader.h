@@ -53,10 +53,19 @@ namespace QCat
 		std::string ReadFile(const std::string& filepath);
 		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
 		void Compile(const std::unordered_map<GLenum, std::string>& shaderSrouces);
+
+		void CompileOpenGLBinary();
+		void CompileVulkanBinary(const std::unordered_map<GLenum, std::string>& shaderSources);
+		void CreateProgram();
+		void Relfect(GLenum stage, const std::vector<uint32_t>& shaderData);
 	private:
 		uint32_t m_renderID;
 		std::string m_name;
+		std::string m_FilePath;
 
+		std::unordered_map<GLenum, std::vector<uint32_t>>m_vulkanSPIRV;
+		std::unordered_map<GLenum, std::vector<uint32_t>>m_openglSPIRV;
+		std::unordered_map<GLenum, std::string> m_openGLSourceCode;
 	};
 
 	class OpenGLVertexShader

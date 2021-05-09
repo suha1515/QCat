@@ -1,36 +1,47 @@
 // Basic Texture Shader
 
 #type vertex
-#version 330 core
+#version 450 core
 
 layout(location = 0) in vec3 a_Position;
 
-uniform mat4 u_Projection;
-uniform mat4 u_View;
+layout(std140,binding = 0) uniform Camera
+{
+	mat4 u_Projection;
+	mat4 u_View;
+};
 
-out vec3 localPos;
 
+struct VertexOutput
+{
+   vec3 localPos;
+};
+layout(location = 0 ) out VertexOutput Output;
 void main()
 {
-	localPos = a_Position;
+	Output.localPos = a_Position;
 	mat4 rotView = mat4(mat3(u_View));//remove translation
-	vec4 clipPos = u_Projection * rotView * vec4(localPos , 1.0f);
+	vec4 clipPos = u_Projection * rotView * vec4(a_Position , 1.0f);
 	gl_Position = clipPos.xyww;
 	//gl_Position = clipPos;
 }
 
 #type fragment
-#version 330 core
+#version 450 core
 layout(location = 0) out vec4 color;
 
-in vec3 localPos;
+struct VertexOutput
+{
+   vec3 localPos;
+};
+layout(location = 0 ) in VertexOutput Input;
 
-uniform samplerCube environmentMap;
+layout (binding = 0) uniform samplerCube environmentMap;
 
 
 void main()
 {
-	vec3 dir = localPos;
+	vec3 dir = Input.localPos;
 	
 	
 	vec3 envColor = texture(environmentMap,dir).rgb;

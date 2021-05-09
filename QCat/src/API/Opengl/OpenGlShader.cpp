@@ -4,38 +4,116 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
+
+#include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
+
+#include "QCat/Uitiliy/Timer.h"
 namespace QCat
 {
-	static GLenum ShaderTypeFromString(const std::string& type)
+	namespace Utils
 	{
-		if (type == "vertex")
-			return GL_VERTEX_SHADER;
-		if (type == "fragment" || type == "pixel")
-			return GL_FRAGMENT_SHADER;
-		if (type == "geometry")
-			return GL_GEOMETRY_SHADER;
+		static GLenum ShaderTypeFromString(const std::string& type)
+		{
+			if (type == "vertex")
+				return GL_VERTEX_SHADER;
+			if (type == "fragment" || type == "pixel")
+				return GL_FRAGMENT_SHADER;
+			if (type == "geometry")
+				return GL_GEOMETRY_SHADER;
 
-		QCAT_CORE_ASSERT(false, "Unknown shader Type!");
-		return 0;
+			QCAT_CORE_ASSERT(false, "Unknown shader Type!");
+			return 0;
+		}
+		static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER: return shaderc_glsl_vertex_shader;
+			case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
+			case GL_GEOMETRY_SHADER: return shaderc_glsl_geometry_shader;
+			}
+			QCAT_CORE_ASSERT(false,"GL_TO_SHADERC Stage type error!");
+			return (shaderc_shader_kind)0;
+		}
+		static const char* GLShaderStageToString(GLenum stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER: return "GL_VERTEX_SHADER";
+			case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
+			case GL_GEOMETRY_SHADER: return "GL_GEOMETRY_SHADER";
+			}
+			QCAT_CORE_ASSERT(false, "GL_TO_SHADERC Stage type error!");
+			return nullptr;
+		}
+		static const char* GetCacheDirectory()
+		{
+			return "Asset/cache/shaders/opengl";
+		}
+		static void CreateCacheDirectory()
+		{
+			std::string cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}
+		static const char* GLShaderStatgeCachedOpenGLFileExtension(uint32_t stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER: return ".cached_opengl.vert";
+			case GL_FRAGMENT_SHADER: return ".cached_opengl.frag";
+			}
+			QCAT_CORE_ASSERT(false);
+			return "";
+		}
+		static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
+			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+			}
+			QCAT_CORE_ASSERT(false);
+			return "";
+		}
 	}
+	
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
+		:m_FilePath(filepath)
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		Utils::CreateCacheDirectory();
+
 		auto begin = filepath.find_last_of('.');
 		std::string extension = filepath.substr(begin + 1, filepath.length());
 		QCAT_CORE_ASSERT(extension == "glsl", "Wrong format for DXShader");
 
-		std::string source = ReadFile(filepath);
-		auto shaderSources = PreProcess(source);
-		Compile(shaderSources);
+		//Compile(shaderSources);
 		// assets/shaders/Texture.glsl
 		auto lastSlash = filepath.find_last_of("/\\");
 		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
 		auto lastDot = filepath.rfind('.');
 
-		auto count = lastDot == std::string::npos ?  filepath.size() - lastSlash : lastDot - lastSlash;
-		m_name= filepath.substr(lastSlash,count);
+		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+		m_name = filepath.substr(lastSlash, count);
+
+		std::string source = ReadFile(filepath);
+		auto shaderSources = PreProcess(source);
+
+		{
+			Timer timer;
+			CompileVulkanBinary(shaderSources);
+			CompileOpenGLBinary();
+			CreateProgram();
+			QCAT_CORE_WARN("{0} : Shader creation took {1}", m_name,timer.Peek());
+		}
+
+		
+	
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& geometrySrc, const std::string& pixelSrc)
 		:m_name(name)
@@ -60,7 +138,10 @@ namespace QCat
 			sources[GL_GEOMETRY_SHADER] = source;
 		}
 		
-		Compile(sources);
+		CompileVulkanBinary(sources);
+		CompileOpenGLBinary();
+		CreateProgram();
+		//Compile(sources);
 	}
 	OpenGLShader::~OpenGLShader()
 	{
@@ -112,14 +193,14 @@ namespace QCat
 			size_t begin = pos + typeTokenLength + 1;
 			// and using substr can get us name of type 
 			std::string type = source.substr(begin, eol - begin);
-			QCAT_CORE_ASSERT(ShaderTypeFromString(type), "Invalid shader type specified!");
+			QCAT_CORE_ASSERT(Utils::ShaderTypeFromString(type), "Invalid shader type specified!");
 
 			// find_first_not_of will find position without '\r\n' character so this will find first position of next line
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			// and find first position of typetoken(#type)
 			pos = source.find(typeToken, nextLinePos);
 			// and get string from nextLinePos as amount of pos - nextLinePos
-			shaderSources[ShaderTypeFromString(type)] =
+			shaderSources[Utils::ShaderTypeFromString(type)] =
 				source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
 
@@ -200,6 +281,155 @@ namespace QCat
 				glDetachShader(program, id);
 		}
 			
+	}
+
+	void OpenGLShader::CompileOpenGLBinary()
+	{
+		auto& shaderData = m_openglSPIRV;
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetTargetEnvironment(shaderc_target_env_opengl, shaderc_env_version_opengl_4_5);
+		const bool optimize = false;
+		if (optimize)
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+
+		shaderData.clear();
+		m_openGLSourceCode.clear();
+		for (auto&& [stage, spirv] : m_vulkanSPIRV)
+		{
+			std::filesystem::path shaderFilePath = m_FilePath;
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() 
+							+ Utils::GLShaderStatgeCachedOpenGLFileExtension(stage));
+
+			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+			if (in.is_open())
+			{
+				in.seekg(0, std::ios::end);
+				auto size = in.tellg();
+				in.seekg(0, std::ios::beg);
+
+				auto& data = shaderData[stage];
+				data.resize(size / sizeof(uint32_t));
+				in.read((char*)data.data(), size);
+			}
+			else
+			{
+				spirv_cross::CompilerGLSL glslCompilrer(spirv);
+				m_openGLSourceCode[stage] = glslCompilrer.compile();
+				auto& source = m_openGLSourceCode[stage];
+				shaderc::SpvCompilationResult Module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
+				if (Module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					QCAT_CORE_ERROR(Module.GetErrorMessage());
+					QCAT_CORE_ASSERT(false);
+				}
+				shaderData[stage] = std::vector<uint32_t>(Module.cbegin(), Module.cend());
+				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+				if (out.is_open())
+				{
+					auto& data = shaderData[stage];
+					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					out.flush();
+					out.close();
+				}
+			}
+		}
+	}
+
+	void OpenGLShader::CompileVulkanBinary(const std::unordered_map<GLenum, std::string>& shaderSources)
+	{
+		GLuint program = glCreateProgram();
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		const bool optimize = true;
+		if (optimize)
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+
+		auto& shaderData = m_vulkanSPIRV;
+		shaderData.clear();
+		for (auto&& [stage, source] : shaderSources)
+		{
+			std::filesystem::path shaderFilePath = m_FilePath;
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() 
+							 + Utils::GLShaderStageCachedVulkanFileExtension(stage));
+
+			std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+			if (in.is_open())
+			{
+				in.seekg(0, std::ios::end);
+				auto size = in.tellg();
+				in.seekg(0, std::ios::beg);
+
+				auto& data = shaderData[stage];
+				data.resize(size / sizeof(uint32_t));
+				in.read((char*)data.data(), size);
+			}
+			else
+			{
+				shaderc::SpvCompilationResult Module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+				if (Module.GetCompilationStatus() != shaderc_compilation_status_success)
+				{
+					QCAT_CORE_ERROR(Module.GetErrorMessage());
+					QCAT_CORE_ASSERT(false);
+				}
+				shaderData[stage] = std::vector<uint32_t>(Module.cbegin(), Module.cend());
+				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+				if (out.is_open())
+				{
+					auto& data = shaderData[stage];
+					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					out.flush();
+					out.close();
+				}
+			}
+		}
+	}
+
+	void OpenGLShader::CreateProgram()
+	{
+		GLuint program = glCreateProgram();
+		
+		std::vector<GLuint> shaderIDs;
+		for (auto&& [stage, spirv] : m_openglSPIRV)
+		{
+			GLuint shaderID = shaderIDs.emplace_back(glCreateShader(stage));
+			glShaderBinary(1, &shaderID, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv.data(), spirv.size() * sizeof(uint32_t));
+			glSpecializeShader(shaderID, "main", 0, nullptr, nullptr);
+			glAttachShader(program, shaderID);
+		}
+
+		glLinkProgram(program);
+		GLint isLinked;
+		glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+		if (isLinked == GL_FALSE)
+		{
+			GLint maxLength;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+			std::vector<GLchar> infoLog(maxLength);
+			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
+			QCAT_CORE_ERROR("Shader linking faild({0} : \n{1}", m_FilePath, infoLog.data());
+			glDeleteProgram(program);
+			for (auto id : shaderIDs)
+				glDeleteShader(id);
+		}
+
+		for (auto id : shaderIDs)
+		{
+			glDetachShader(program, id);
+			glDeleteShader(id);
+		}
+		m_renderID = program;
+	}
+
+	void OpenGLShader::Relfect(GLenum stage, const std::vector<uint32_t>& shaderData)
+	{
 	}
 
 	void OpenGLShader::Bind() const

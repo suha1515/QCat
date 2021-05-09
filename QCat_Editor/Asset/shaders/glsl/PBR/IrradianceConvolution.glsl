@@ -1,27 +1,39 @@
 #type vertex
-#version 330 core
+#version 450 core
 
 layout(location = 0) in vec3 a_Position;
 
-uniform mat4 u_Projection;
-uniform mat4 u_View;
+layout(std140,binding = 0) uniform Camera
+{
+	mat4 u_Projection;
+	mat4 u_View;
+};
 
-out vec3 localPos;
+struct VertexOutput
+{
+    vec3 localPos;
+};
+layout(location = 0 ) out VertexOutput Output;
 
 
 void main()
 {
-	localPos = a_Position;
-	gl_Position = u_Projection * u_View * vec4(localPos , 1.0f);
+	Output.localPos = a_Position;
+	gl_Position = u_Projection * u_View * vec4(a_Position , 1.0f);
 }
 
 #type fragment
-#version 330 core
+#version 450 core
 layout(location = 0) out vec4 color;
 
-in vec3 localPos;
+struct VertexOutput
+{
+    vec3 localPos;
+};
+layout(location = 0 ) in VertexOutput Input;
 
-uniform samplerCube envMap;
+
+layout (binding = 0) uniform samplerCube envMap;
 
 const float PI = 3.14159265359;
 
@@ -32,7 +44,7 @@ void main()
 	// incoming radiance of the evnrioenment . the result of this radiance
 	// is the radiance of light coming from - normal direction, which is what
 	// we use in the pbr shader to sample irradiance
-	vec3 N = normalize(localPos);
+	vec3 N = normalize(Input.localPos);
 	vec3 irradiance = vec3(0.0);
 
 	// tangent space calculation from orign point
