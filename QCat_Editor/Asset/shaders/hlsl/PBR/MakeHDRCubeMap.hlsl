@@ -3,6 +3,7 @@ cbuffer trnasform  : register(b0)
 {
 	matrix u_Projection;
 	matrix u_View;
+	float3 u_viewPosition;
 }
 struct VSOut
 {

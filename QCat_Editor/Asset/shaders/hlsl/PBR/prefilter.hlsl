@@ -3,7 +3,6 @@ cbuffer trnasform  : register(b0)
 {
 	matrix u_Projection;
 	matrix u_View;
-	matrix u_Transform;
 }
 struct VSOut
 {
@@ -35,7 +34,7 @@ struct PS_OUT
 {
 	float4 color :SV_TARGET0;
 };
-cbuffer value : register(b0)
+cbuffer value : register(b1)
 {
 	float roughness;
 }

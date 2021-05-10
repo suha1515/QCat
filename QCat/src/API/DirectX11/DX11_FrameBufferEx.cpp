@@ -37,6 +37,13 @@ namespace QCat
 	void DirectXFrameBufferEx::Bind()
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+
+		ID3D11RenderTargetView* nullRTV[8] = { nullptr };
+		gfx.GetContext()->OMSetRenderTargets(8, nullRTV, nullptr);
+
+		ID3D11ShaderResourceView* const pSRV[16] = { NULL };
+		gfx.GetContext()->PSSetShaderResources(0, 16, pSRV);
+
 		std::vector<ID3D11RenderTargetView*> renderTargets;
 		for (auto& renderTarget : m_ColorAttachments)
 		{

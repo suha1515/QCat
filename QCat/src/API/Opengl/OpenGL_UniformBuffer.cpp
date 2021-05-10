@@ -13,7 +13,7 @@ namespace QCat
 	{
 		glDeleteBuffers(1, &m_renderID);
 	}
-	void OpenGLUniformBuffer::Bind(uint32_t bindingpoint)
+	void OpenGLUniformBuffer::Bind(uint32_t bindingpoint, Type type )
 	{
 		glBindBufferBase(GL_UNIFORM_BUFFER, bindingpoint, m_renderID);
 	}

@@ -60,8 +60,10 @@ namespace QCat
 		};
 		struct light
 		{
-			glm::vec3 position;
-			glm::vec3 diffuse;
+			glm::vec3 position = { 0.0f,0.0f,0.0f };
+			float padding;
+			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
+			float padding2;
 		};
 		struct color
 		{
@@ -70,7 +72,7 @@ namespace QCat
 		CameraData camData;
 		Transform transformData;
 		Mat		matData;
-		light litData;
+		light litData[1];
 		color colData;
 		Ref<ConstantBuffer> cameraConstantBuffer;
 		Ref<ConstantBuffer> transformConstantBuffer;

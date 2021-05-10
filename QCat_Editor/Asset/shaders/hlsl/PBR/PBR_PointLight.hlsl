@@ -1,10 +1,14 @@
 #type vertex
-cbuffer trnasform  : register(b0)
+cbuffer Camera  : register(b0)
 {
-	matrix u_ViewProjection;
+	matrix u_Projection;
+	matrix u_View;
+	float3 u_viewPosition;
+}
+cbuffer Transform : register(b1)
+{
 	matrix u_Transform;
 	matrix u_invTransform;
-	float3 u_viewPosition;
 }
 struct VSOut
 {
@@ -28,7 +32,7 @@ VSOut VSMain(VSIn Input)
 {
 	VSOut vso;
 
-	matrix viewprojMat = mul(u_ViewProjection, u_Transform);
+	matrix viewprojMat = mul(u_Projection, mul(u_View,u_Transform));
 	float3x3 normalMat = (float3x3)transpose(u_invTransform);
 	vso.pos = mul(viewprojMat, float4(Input.pos, 1.0f));
 	vso.tc = Input.tc;
@@ -70,13 +74,13 @@ struct Material
 	bool IsRoughnessMap;
 	bool IsAoMap;
 };
-cbuffer light : register(b0)
-{
-	PointLight pointLight[4];
-}
-cbuffer material : register(b1)
+cbuffer material : register(b2)
 {
 	Material material;
+}
+cbuffer light : register(b3)
+{
+	PointLight pointLight[1];
 }
 Texture2D albedoMap : register(t0);
 SamplerState  albedoMapSplr: register(s0);
@@ -188,7 +192,7 @@ PS_OUT PSMain(PSIn input)
 	F0 = lerp(F0, albedo, metallic);
 
 	[unroll]
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		float3 L = normalize(pointLight[i].position - input.fragPos);
 		float3 H = normalize(V + L);

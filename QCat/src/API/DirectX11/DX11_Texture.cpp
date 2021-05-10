@@ -231,7 +231,8 @@ namespace QCat
 		textureDesc.Height = height;
 		this->desc.Width = width;
 		this->desc.Height = height;
-
+		m_width = width;
+		m_height = height;
 		Invalidate(nullptr);
 	}
 	void DX11Texture2D::Bind(unsigned int slot) const

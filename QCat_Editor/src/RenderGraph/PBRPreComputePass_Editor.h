@@ -44,7 +44,13 @@ namespace QCat
 			glm::mat4 projection;
 			glm::mat4 view;
 		};
+		struct Roughness
+		{
+			float roughtness;
+		};
 		CameraData CameraBuffer;
+		Roughness roughBuffer;
 		Ref<ConstantBuffer> cameraConstantBuffer;
+		Ref<ConstantBuffer> roughnessConstantBuffer;
 	};
 }

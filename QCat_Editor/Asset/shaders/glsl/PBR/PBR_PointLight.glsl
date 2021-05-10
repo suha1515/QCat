@@ -80,7 +80,7 @@ layout(std140,binding = 2) uniform Mat
 };
 layout(std140,binding = 3) uniform Light
 {
-	PointLight pointLight[4];
+	PointLight pointLight[1];
 };
 layout(location = 0) out vec4 color;
 
@@ -178,7 +178,7 @@ void main()
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0,albedo,metallic);
 	
-	for(int i=0;i<4;++i)
+	for(int i=0;i<1;++i)
 	{
 		// calculate per-light radiance
         vec3 L = normalize(pointLight[i].position - Input.FragPos);

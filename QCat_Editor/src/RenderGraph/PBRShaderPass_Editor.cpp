@@ -31,8 +31,8 @@ namespace QCat
 		cameraConstantBuffer = ConstantBuffer::Create(sizeof(CameraData), 0);
 		transformConstantBuffer = ConstantBuffer::Create(sizeof(Transform), 1);
 		materialConstantBuffer = ConstantBuffer::Create(sizeof(Mat), 2);
-		lightConstantBuffer = ConstantBuffer::Create(sizeof(light), 3);
-		colorConstantBuffer = ConstantBuffer::Create(sizeof(light), 2);
+		lightConstantBuffer = ConstantBuffer::Create(sizeof(light)*4, 3);
+		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
 	}
 	void PBRShaderPass::Initialize()
 	{
@@ -61,6 +61,7 @@ namespace QCat
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
 		RenderCommand::SetCullMode(CullMode::Back);
+		m_Framebuffer->DetachAll();
 		m_Framebuffer->AttachTexture(m_ColorBuffer, AttachmentType::Color_0, TextureType::Texture2D, 0);
 		m_Framebuffer->AttachTexture(m_DepthBuffer, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		m_Framebuffer->Clear();
@@ -68,8 +69,6 @@ namespace QCat
 		//Entity mainCamera = scene->GetPrimaryCameraEntity();
 		//glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
 		//\const glm::mat4& proj = mainCamera.GetComponent<CameraComponent>().Camera.GetProjection();
-
-		
 		
 		glm::vec3 tc = glm::inverse(*viewMatrix)[3];
 		const glm::mat4& proj = (*projectionMatrix);
@@ -80,14 +79,9 @@ namespace QCat
 		camData.view = *viewMatrix;
 
 		cameraConstantBuffer->SetData(&camData, sizeof(CameraData), 0);
-		cameraConstantBuffer->Bind(0);
-		transformConstantBuffer->Bind(1);
-		materialConstantBuffer->Bind(2);
-		lightConstantBuffer->Bind(3);
-
 		m_PBRShader->Bind();
-		m_PBRShader->SetMat4("u_ViewProjection", proj *(*viewMatrix), ShaderType::VS);
-		m_PBRShader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
+		//m_PBRShader->SetMat4("u_ViewProjection", proj *(*viewMatrix), ShaderType::VS);
+		//m_PBRShader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
 		auto lightView = registry.view<TransformComponent, LightComponent>();
 		int index = 0;
 		for (auto entity : lightView)
@@ -98,11 +92,11 @@ namespace QCat
 			std::string lightname = "pointLight[" + std::to_string(index) + "].";
 			//m_PBRShader->SetFloat3(lightname + "position", lightPos, ShaderType::PS);
 			//m_PBRShader->SetFloat3(lightname + "diffuse", comp.diffuse, ShaderType::PS);
+			litData[index].position = lightPos;
+			litData[index].diffuse = comp.diffuse;
 			index++;
-			litData.position = lightPos;
-			litData.diffuse = comp.diffuse;
-			lightConstantBuffer->SetData(&litData, sizeof(light), 0);
 		}
+		lightConstantBuffer->SetData(&litData, sizeof(light), 0);
 		matData.albedo = glm::vec3(1.0f, 1.0f, 1.0f);
 		matData.metallic = 1.0f;
 		matData.roughness = 1.0f;
@@ -114,7 +108,11 @@ namespace QCat
 		//m_PBRShader->SetFloat("material.roughness", 1.0f, ShaderType::PS);
 		//m_PBRShader->SetFloat("material.ambientocclusion", 1.0f, ShaderType::PS);
 
-		
+		cameraConstantBuffer->Bind(0, Type::Vetex);
+		transformConstantBuffer->Bind(1, Type::Vetex);
+		materialConstantBuffer->Bind(2, Type::Pixel);
+		lightConstantBuffer->Bind(3, Type::Pixel);
+
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
 		for (auto entity : group)
 		{
@@ -138,7 +136,7 @@ namespace QCat
 			//m_PBRShader->SetBool("material.IsMetallicMap", mat.IsThereTexture(Material::TextureType::Metallic), ShaderType::PS);
 			//m_PBRShader->SetBool("material.IsRoughnessMap", mat.IsThereTexture(Material::TextureType::Roughness), ShaderType::PS);
 			//m_PBRShader->SetBool("material.IsAoMap", mat.IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
-			m_PBRShader->UpdateBuffer();
+			//m_PBRShader->UpdateBuffer();
 
 			mat.Bind(0, Material::TextureType::Diffuse);
 			mat.Bind(1, Material::TextureType::Normal);
@@ -158,9 +156,10 @@ namespace QCat
 			
 		}
 
-		colorConstantBuffer->Bind(2);
+		colorConstantBuffer->Bind(2, Type::Pixel);
 		colData.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		colorConstantBuffer->SetData(&colData, sizeof(color), 0);
+
 		m_FlatColorShader->Bind();
 		//m_FlatColorShader->SetMat4("u_ViewProjection", proj * (*viewMatrix), ShaderType::VS);
 		//m_FlatColorShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
@@ -177,7 +176,7 @@ namespace QCat
 			transformData.invtrnasform = glm::inverse(transform);
 			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
 
-			m_FlatColorShader->UpdateBuffer();
+			//m_FlatColorShader->UpdateBuffer();
 			sphere->Draw();
 		}
 		m_FlatColorShader->UnBind();
@@ -189,7 +188,7 @@ namespace QCat
 			m_SkyBoxShader->Bind();
 			//m_SkyBoxShader->SetMat4("u_Projection", proj, ShaderType::VS);
 			//m_SkyBoxShader->SetMat4("u_View", *viewMatrix, ShaderType::VS);
-			m_SkyBoxShader->UpdateBuffer();
+			//m_SkyBoxShader->UpdateBuffer();
 			m_HdrCubeMap->Bind(0);
 
 			cube->Draw();

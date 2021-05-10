@@ -15,6 +15,7 @@ namespace QCat
 		RegisterOutput(TextureOutput::Make("PrefilterMap", m_PrefilterMap));
 
 		cameraConstantBuffer = ConstantBuffer::Create(sizeof(CameraData), 0);
+		roughnessConstantBuffer = ConstantBuffer::Create(sizeof(Roughness), 0);
 	}
 
 	void PBRPreComputePass::Initialize()
@@ -141,15 +142,16 @@ namespace QCat
 	void PBRPreComputePass::MakeTextureMap()
 	{
 		RenderCommand::SetCullMode(CullMode::None);
+		
 		CubeMapPass->Bind();
-		CubeMapPass->DetachAll();
-		CubeMapPass->GetTexture("DepthBuffer")->SetSize(512, 512);
-		CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		RenderCommand::SetViewport(0, 0, 512, 512);
+		CubeMapPass->GetTexture("DepthBuffer")->SetSize(512, 512);
+		CubeMapPass->DetachAll();
+		CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		//HDR image to CubeMap
 		m_HdrToCubeMapShader->Bind();
 		//m_HdrToCubeMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
-		cameraConstantBuffer->Bind(0);
+		cameraConstantBuffer->Bind(0,Type::Vetex);
 		CameraBuffer.projection = captureProjection;
 		for (int i = 0; i < 6; ++i)
 		{
@@ -160,7 +162,7 @@ namespace QCat
 			CameraBuffer.view = captureViews[i];
 			cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
 			m_HdrImage->Bind(0);
-			m_HdrToCubeMapShader->UpdateBuffer();
+			//m_HdrToCubeMapShader->UpdateBuffer();
 			cube->Draw();
 		}
 		m_HdrToCubeMapShader->UnBind();
@@ -182,14 +184,16 @@ namespace QCat
 			CameraBuffer.view = captureViews[i];
 			cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
 			//m_IrradianceMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
-			m_IrradianceMapShader->UpdateBuffer();
+			//m_IrradianceMapShader->UpdateBuffer();
 			m_HdrCubeMap->Bind(0);
 			cube->Draw();
 		}
 
 		m_IrradianceMapShader->UnBind();
 
+
 		m_PrefilterShader->Bind();
+		roughnessConstantBuffer->Bind(1, Type::Pixel);
 		//m_PrefilterShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		unsigned int maxMipLevels = 5;
 		for (int mip = 0; mip < maxMipLevels; ++mip)
@@ -203,7 +207,9 @@ namespace QCat
 			RenderCommand::SetViewport(0, 0, mipWidth, mipHeight);
 
 			float roughtness = (float)mip / (float)(maxMipLevels - 1);
-			m_PrefilterShader->SetFloat("roughness", roughtness, ShaderType::PS);
+			//m_PrefilterShader->SetFloat("roughness", roughtness, ShaderType::PS);
+			roughBuffer.roughtness = roughtness;
+			roughnessConstantBuffer->SetData(&roughBuffer,sizeof(roughBuffer),0);
 			for (int i = 0; i < 6; ++i)
 			{
 				int index = (int)TextureType::TextureCube_PositiveX + i;
@@ -213,7 +219,7 @@ namespace QCat
 				CubeMapPass->AttachTexture(m_PrefilterMap, AttachmentType::Color_0, (TextureType)index, mip);
 				CubeMapPass->Clear();
 				m_HdrCubeMap->Bind(0);
-				m_PrefilterShader->UpdateBuffer();
+				//m_PrefilterShader->UpdateBuffer();
 				cube->Draw();
 			}
 		}

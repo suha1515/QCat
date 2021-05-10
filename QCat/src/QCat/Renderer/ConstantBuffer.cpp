@@ -3,6 +3,7 @@
 
 #include "QCat/Renderer/Renderer.h"
 #include "API/Opengl/OpenGL_UniformBuffer.h"
+#include "API/DirectX11/DX11_ConstantBuffer.h"
 
 namespace QCat
 {
@@ -12,6 +13,7 @@ namespace QCat
 		{
 		case RenderAPI::API::None:    QCAT_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RenderAPI::API::OpenGL:  return CreateRef<OpenGLUniformBuffer>(size, binding);
+		case RenderAPI::API::DirectX11: return CreateRef<DXConstantBuffer>(size, binding);
 		}
 
 		QCAT_CORE_ASSERT(false, "Unknown RendererAPI!");

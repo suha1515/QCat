@@ -1,7 +1,9 @@
 #type vertex
-cbuffer u_ViewProjection : register(b0)
+cbuffer Camera : register(b0)
 {
-	matrix u_ViewProjection;
+	matrix u_Projection;
+	matrix u_View;
+	float3 u_viewPosition;
 }
 cbuffer u_Transform : register(b1)
 {
@@ -20,7 +22,7 @@ VSOut VSMain(float3 pos : a_Position, float3 normal : a_Normal, float2 tc : a_Te
 {
 	VSOut vso;
 
-	matrix mat = mul(u_ViewProjection, u_Transform);
+	matrix mat = mul(u_Projection, mul(u_View, u_Transform));
 	vso.pos = mul(mat, float4(pos, 1.0f));
 	vso.tc = tc;
 	vso.normal = mul((float3x3)transpose(u_invTransform), normal);
@@ -28,7 +30,7 @@ VSOut VSMain(float3 pos : a_Position, float3 normal : a_Normal, float2 tc : a_Te
 	return vso;
 }
 #type pixel
-cbuffer u_Color : register(b0)
+cbuffer u_Color : register(b2)
 {
 	float4 u_color;
 }

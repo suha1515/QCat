@@ -91,37 +91,33 @@ namespace QCat
 	void DX11IndexBuffer::UnBind() const
 	{
 	}
-	DX11ConstantBuffer::DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, const void* data, unsigned int size)
-		:slot(slot)
+	DX11ConstantBuffer::DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, const void* data, unsigned int size,bool dynamic)
+		:slot(slot), IsDynamic(dynamic)
 	{
 		QCAT_PROFILE_FUNCTION();
-
 		this->pgfx = &gfx;
 
 		D3D11_BUFFER_DESC bd;
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.CPUAccessFlags = 0u;
+		bd.Usage = IsDynamic ? D3D11_USAGE_DYNAMIC :D3D11_USAGE_DEFAULT;
+		bd.CPUAccessFlags = IsDynamic ? D3D11_CPU_ACCESS_WRITE : 0u;
 		bd.MiscFlags = 0u;
 		bd.ByteWidth = CalculateSize(size);
 		bd.StructureByteStride = 0u;
 
 		D3D11_SUBRESOURCE_DATA sd = {};
 		sd.pSysMem = data;
-		HRESULT result = gfx.GetDevice()->CreateBuffer(&bd, &sd, &pConstantBuffer);
-		int a = 0;
+		HRESULT result = gfx.GetDevice()->CreateBuffer(&bd, &sd, &pConstantBuffer);	
 	}
-	DX11ConstantBuffer::DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size)
-		:slot(slot)
+	DX11ConstantBuffer::DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size, bool dynamic)
+		:slot(slot), IsDynamic(dynamic)
 	{
 		QCAT_PROFILE_FUNCTION();
-
 		this->pgfx = &gfx;
-
 		D3D11_BUFFER_DESC bd;
 		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.CPUAccessFlags = 0u;
+		bd.Usage = IsDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
+		bd.CPUAccessFlags = IsDynamic ? D3D11_CPU_ACCESS_WRITE : 0u;
 		bd.MiscFlags = 0u;
 		bd.ByteWidth = CalculateSize(size);
 		bd.StructureByteStride = 0u;
@@ -129,29 +125,17 @@ namespace QCat
 		pgfx->GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
 	}
 	DX11ConstantBuffer::DX11ConstantBuffer(ElementLayout& layout, unsigned int slot, bool dynamic)
-		:slot(slot),bufferElements(layout), IsDynaimc(dynamic)
+		:slot(slot),bufferElements(layout), IsDynamic(dynamic)
 	{
 		QCAT_PROFILE_FUNCTION();
 		this->pgfx = QGfxDeviceDX11::GetInstance();
 		D3D11_BUFFER_DESC bd;
-		if (!IsDynaimc)
-		{
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.CPUAccessFlags = 0u;
-			bd.MiscFlags = 0u;
-			bd.ByteWidth = (UINT)bufferElements.GetSizeInBytes();
-			bd.StructureByteStride = 0u;
-		}
-		else
-		{
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.Usage = D3D11_USAGE_DYNAMIC;
-			bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-			bd.MiscFlags = 0u;
-			bd.ByteWidth = (UINT)bufferElements.GetSizeInBytes();
-			bd.StructureByteStride = 0u;
-		}
+		bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		bd.Usage = IsDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
+		bd.CPUAccessFlags = IsDynamic ? D3D11_CPU_ACCESS_WRITE : 0u;
+		bd.MiscFlags = 0u;
+		bd.ByteWidth = (UINT)bufferElements.GetSizeInBytes();
+		bd.StructureByteStride = 0u;
 		
 		pgfx->GetDevice()->CreateBuffer(&bd, nullptr, &pConstantBuffer);
 	}
@@ -159,7 +143,7 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		if (!IsDynaimc)
+		if (!IsDynamic)
 		{
 			pgfx->GetContext()->UpdateSubresource(pConstantBuffer.Get(), 0, 0, bufferElements.GetData(), 0u, 0u);
 		}

@@ -104,8 +104,8 @@ namespace QCat
 			}
 			return realSize;
 		}
-		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, const void* data, unsigned int size);
-		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size);
+		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, const void* data, unsigned int size, bool dynamic = false);
+		DX11ConstantBuffer(QGfxDeviceDX11& gfx, unsigned int slot, unsigned int size, bool dynamic = false);
 		DX11ConstantBuffer(ElementLayout& layout, unsigned int slot,bool dynamic=false);
 		
 		ElementRef FindVariable(const std::string& name)
@@ -156,7 +156,7 @@ namespace QCat
 		Buffer bufferElements;
 		unsigned int slot;
 		std::string name;
-		bool IsDynaimc = false;
+		bool IsDynamic = false;
 	};
 	class QCAT_API VertexConstantBuffer : public DX11ConstantBuffer
 	{
