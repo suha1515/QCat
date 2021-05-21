@@ -33,6 +33,9 @@ namespace QCat
 		//Material materials[5];
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
+
+		
+
 		struct CameraData
 		{
 			glm::mat4 projection;

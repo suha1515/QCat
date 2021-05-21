@@ -10,6 +10,22 @@ struct VertexOutput
 };
 layout(location = 0 ) out VertexOutput Output;
 
+struct test_struct
+{
+   vec3 a;
+   float b;
+};
+struct test_struct2
+{
+    vec3 a;
+    test_struct b;
+};
+layout(std140,binding =0) uniform Test
+{
+  float a[5][5];
+  test_struct b[2];
+};
+
 void main()
 {
     Output.TexCoords = aTexCoords;

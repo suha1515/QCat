@@ -1,5 +1,6 @@
 #include "PBRShaderPass_Editor.h"
 #include "glm/gtc/type_ptr.hpp"
+#include <API/Opengl/OpenGLBuffer.h>
 
 namespace QCat
 {
@@ -33,6 +34,89 @@ namespace QCat
 		materialConstantBuffer = ConstantBuffer::Create(sizeof(Mat), 2);
 		lightConstantBuffer = ConstantBuffer::Create(sizeof(light)*4, 3);
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
+
+		//struct test_struct
+		//{
+		//	float a;
+		//	float b;
+		//};
+		//struct test_struct2
+		//{
+		//	glm::vec3 a;
+		//	test_struct b;
+		//};
+		//Layout b({ 
+		//			{ShaderDataType::Float,"a"},
+		//			{
+		//			   {
+		//				   {ShaderDataType::Float,"a"},
+		//					{ShaderDataType::Float,"b"}
+		//			   },"b"
+		//			},
+		//		   {ShaderDataType::Float3,"c",2},
+		//			{
+		//			   {
+		//				   {ShaderDataType::Float,"a"},
+		//					{ShaderDataType::Float,"b"}
+		//			   },"d",2 
+		//		    },
+		//			{ShaderDataType::Float2,"e"},
+		//			{
+		//				{
+		//					{ShaderDataType::Float3,"a"},
+		//					{
+		//						{
+		//							{ShaderDataType::Float,"a"},
+		//							{ShaderDataType::Float,"b"}
+		//						},"b"
+		//					}
+		//				},"f"
+		//		   }
+		//		 }, "Struct");
+		LayoutElement c(ShaderDataType::Struct,"struct");
+		c.Add(ShaderDataType::Float, "a");
+		c.Add(ShaderDataType::Struct, "b");
+		c["b"].Add(ShaderDataType::Float, "a");
+		c["b"].Add(ShaderDataType::Float, "b");
+
+		c.Add(ShaderDataType::Array, "c");
+		c["c"].ArraySet(ShaderDataType::Float, 2);
+		c.Add(ShaderDataType::Array, "d");
+		c["d"].ArraySet(ShaderDataType::Struct, 2);
+		c["d"].GetArrayElement().Add(ShaderDataType::Float, "a");
+		c["d"].GetArrayElement().Add(ShaderDataType::Float, "b");
+
+		c.Add(ShaderDataType::Float2, "e");
+		c.Add(ShaderDataType::Struct, "f");
+		c["f"].Add(ShaderDataType::Float3, "a");
+		c["f"].Add(ShaderDataType::Struct, "b");
+		c["f"]["b"].Add(ShaderDataType::Float, "a");
+		c["f"]["b"].Add(ShaderDataType::Float, "b");
+		c.Add(ShaderDataType::Mat4, "g");
+		////b["material"].members
+
+		////b.Finalize();
+		c.Finalize();
+
+		ElementBuffer buffer(c);
+		buffer["a"s] = 1.0f;
+		buffer["c"s][0] = 2.0f;
+		buffer["b"s]["a"s] = 3.0f;
+		float b = buffer["a"s];
+		b = buffer["b"s]["a"s];
+		b = buffer["c"s][0];
+		buffer["f"s]["a"s] = glm::vec3(1.0f, 2.0f, 3.0f);
+		glm::vec3 bb = buffer["f"s]["a"s];
+		buffer["d"s][1]["a"s] = 4.0f;
+		b = buffer["d"s][1]["a"s];
+		buffer["f"s]["b"s]["b"s] = 5.0f;
+		b = buffer["f"s]["b"s]["b"s];
+
+		glm::mat4 mat = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 3.0f, 4.0f));
+		buffer["g"] = mat;
+		glm::mat4 mat2 = buffer["g"];
+
+		//Layout b("Struct");
 	}
 	void PBRShaderPass::Initialize()
 	{

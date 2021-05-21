@@ -22,7 +22,7 @@ namespace QCat
 		case ShaderDataType::Int2:     return 4 * 2;
 		case ShaderDataType::Int3:     return 4 * 3;
 		case ShaderDataType::Int4:     return 4 * 4;
-		case ShaderDataType::Bool:     return 1;
+		case ShaderDataType::Bool:     return 4;
 		}
 
 		QCAT_CORE_ASSERT(false, "Unknown ShaderDataType!");

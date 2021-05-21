@@ -36,7 +36,6 @@
 #include<glm/glm.hpp>
 
 
-
 #ifdef QCAT_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif

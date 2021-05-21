@@ -14,6 +14,25 @@ namespace QCat
 {
 	namespace Utils
 	{
+		static std::string SPirvBaseTypeToString(spirv_cross::SPIRType::BaseType type)
+		{
+			switch(type)
+			{
+			case spirv_cross::SPIRType::BaseType::Char:		return "Char"; break;
+			case spirv_cross::SPIRType::BaseType::Float:	return "Float"; break;
+			case spirv_cross::SPIRType::BaseType::Half:		return "Half-Float"; break;
+			case spirv_cross::SPIRType::BaseType::Int:		return "Int"; break;
+			case spirv_cross::SPIRType::BaseType::Int64:	return "Int64"; break;
+			case spirv_cross::SPIRType::BaseType::Short:	return "Short"; break;
+			case spirv_cross::SPIRType::BaseType::SByte:	return "Signed-Byte"; break;
+			case spirv_cross::SPIRType::BaseType::Struct:	return "Struct"; break;
+			case spirv_cross::SPIRType::BaseType::UByte:	return "Unsigned-Byte"; break;
+			case spirv_cross::SPIRType::BaseType::UInt:		return "Unsigned-Int"; break;
+			case spirv_cross::SPIRType::BaseType::UInt64:	return "Unsigned-Int64"; break;
+			case spirv_cross::SPIRType::BaseType::UShort:	return "Unsigned-Short"; break;
+
+			}
+		}
 		static GLenum ShaderTypeFromString(const std::string& type)
 		{
 			if (type == "vertex")
@@ -320,7 +339,7 @@ namespace QCat
 				spirv_cross::CompilerGLSL glslCompilrer(spirv);
 				m_openGLSourceCode[stage] = glslCompilrer.compile();
 				auto& source = m_openGLSourceCode[stage];
-				shaderc::SpvCompilationResult Module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str());
+				shaderc::SpvCompilationResult Module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 				if (Module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					QCAT_CORE_ERROR(Module.GetErrorMessage());
@@ -346,7 +365,7 @@ namespace QCat
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		const bool optimize = true;
+		const bool optimize = false;
 		if (optimize)
 			options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
@@ -390,6 +409,8 @@ namespace QCat
 				}
 			}
 		}
+		for (auto&& [stage, data] : shaderData)
+			Reflect(stage, data);
 	}
 
 	void OpenGLShader::CreateProgram()
@@ -427,9 +448,80 @@ namespace QCat
 		}
 		m_renderID = program;
 	}
-
-	void OpenGLShader::Relfect(GLenum stage, const std::vector<uint32_t>& shaderData)
+	void GetStructInformation(spirv_cross::Compiler& comp, const spirv_cross::Resource& resource)
 	{
+		const auto& bufferType = comp.get_type(resource.base_type_id);
+		int memberCount = bufferType.member_types.size();
+		for (int i = 0; i < memberCount; ++i)
+		{
+			auto& member_type = comp.get_type(bufferType.member_types[i]);
+
+			int memberCount2 = member_type.member_types.size();
+			int arraySize = member_type.array[0];
+			int arraySize2 = member_type.array[1];
+			int width = member_type.width;
+			int vecsize = member_type.vecsize;
+			int column = member_type.columns;
+			std::string type = Utils::SPirvBaseTypeToString(member_type.basetype);
+
+			// Get name within this struct
+			std::string name = comp.get_member_name(resource.base_type_id, i);
+			// Get size within this struct
+			size_t member_size = comp.get_declared_struct_member_size(bufferType, i);
+			// Get offset within this struct
+			size_t offset = comp.type_struct_member_offset(bufferType, i);
+
+
+
+			QCAT_CORE_TRACE("====Member{0}========================",i);
+			QCAT_CORE_TRACE("	^---Name  = {0}", name);
+			QCAT_CORE_TRACE("	^---Offset= {0}", offset);
+			QCAT_CORE_TRACE("	^---Size  = {0}", member_size);
+			QCAT_CORE_TRACE("	^---Type  = {0}",type);
+			// 배열크기
+			QCAT_CORE_TRACE("	^---arraySize  = {0}", arraySize);
+			QCAT_CORE_TRACE("	^---width  = {0}", width);
+			// 벡터일경우 벡터 크기
+			QCAT_CORE_TRACE("	^---vecsize  = {0}", vecsize);
+			// 행렬일경우 행을의미
+			QCAT_CORE_TRACE("	^---column  = {0}", column);
+			// 구조체일경우 멤버 사이즈를 의미.
+			QCAT_CORE_TRACE("	^---MemberSize={0}",memberCount2);
+			
+		}
+	}
+
+	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
+	{
+		spirv_cross::Compiler compiler(shaderData);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+		QCAT_CORE_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_FilePath);
+		QCAT_CORE_TRACE("		{0} uniform buffers", resources.uniform_buffers.size());
+		QCAT_CORE_TRACE("		{0} resources", resources.sampled_images.size());
+		QCAT_CORE_TRACE("-Texture Resources-");
+		for (const auto& texture : resources.sampled_images)
+		{
+			const auto& textureType = compiler.get_type(texture.base_type_id);
+			uint32_t binding = compiler.get_decoration(texture.id, spv::DecorationBinding);
+			std::string name = compiler.get_name(texture.id);
+			QCAT_CORE_TRACE("	Name    = {0}", name);
+			QCAT_CORE_TRACE("	Binding = {0}", binding);
+		}
+		QCAT_CORE_TRACE("-Uniform Buffers-");
+		for (const auto& resource : resources.uniform_buffers)
+		{
+			const auto& bufferType = compiler.get_type(resource.base_type_id);
+			uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			int memberCount = bufferType.member_types.size();
+
+			QCAT_CORE_TRACE("	Name     = {0}", resource.name);
+			QCAT_CORE_TRACE("	Size     = {0}", bufferSize);
+			QCAT_CORE_TRACE("	Binding  = {0}", binding);
+			QCAT_CORE_TRACE("	Memebers = {0}", memberCount);
+			GetStructInformation(compiler, resource);
+		}
 	}
 
 	void OpenGLShader::Bind() const

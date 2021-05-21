@@ -57,7 +57,7 @@ namespace QCat
 		void CompileOpenGLBinary();
 		void CompileVulkanBinary(const std::unordered_map<GLenum, std::string>& shaderSources);
 		void CreateProgram();
-		void Relfect(GLenum stage, const std::vector<uint32_t>& shaderData);
+		void Reflect(GLenum stage, const std::vector<uint32_t>& shaderData);
 	private:
 		uint32_t m_renderID;
 		std::string m_name;
