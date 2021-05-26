@@ -83,5 +83,7 @@ namespace QCat
 		Ref<ConstantBuffer> lightConstantBuffer;
 		Ref<ConstantBuffer> colorConstantBuffer;
 
+		Ref<ElementBuffer> transformBuffer;
+
 	};
 }

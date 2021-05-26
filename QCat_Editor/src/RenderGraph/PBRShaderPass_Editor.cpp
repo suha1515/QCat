@@ -35,44 +35,6 @@ namespace QCat
 		lightConstantBuffer = ConstantBuffer::Create(sizeof(light)*4, 3);
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
 
-		//struct test_struct
-		//{
-		//	float a;
-		//	float b;
-		//};
-		//struct test_struct2
-		//{
-		//	glm::vec3 a;
-		//	test_struct b;
-		//};
-		//Layout b({ 
-		//			{ShaderDataType::Float,"a"},
-		//			{
-		//			   {
-		//				   {ShaderDataType::Float,"a"},
-		//					{ShaderDataType::Float,"b"}
-		//			   },"b"
-		//			},
-		//		   {ShaderDataType::Float3,"c",2},
-		//			{
-		//			   {
-		//				   {ShaderDataType::Float,"a"},
-		//					{ShaderDataType::Float,"b"}
-		//			   },"d",2 
-		//		    },
-		//			{ShaderDataType::Float2,"e"},
-		//			{
-		//				{
-		//					{ShaderDataType::Float3,"a"},
-		//					{
-		//						{
-		//							{ShaderDataType::Float,"a"},
-		//							{ShaderDataType::Float,"b"}
-		//						},"b"
-		//					}
-		//				},"f"
-		//		   }
-		//		 }, "Struct");
 		LayoutElement c(ShaderDataType::Struct,"struct");
 		c.Add(ShaderDataType::Float, "a");
 		c.Add(ShaderDataType::Struct, "b");
@@ -93,6 +55,11 @@ namespace QCat
 		c["f"]["b"].Add(ShaderDataType::Float, "a");
 		c["f"]["b"].Add(ShaderDataType::Float, "b");
 		c.Add(ShaderDataType::Mat4, "g");
+		c.Add(ShaderDataType::Array, "h");
+		c["h"].ArraySet(ShaderDataType::Array, 5);
+		c["h"].GetArrayElement().ArraySet(ShaderDataType::Float, 5);
+		c.Add(ShaderDataType::Mat3, "i");
+
 		////b["material"].members
 
 		////b.Finalize();
@@ -112,11 +79,24 @@ namespace QCat
 		buffer["f"s]["b"s]["b"s] = 5.0f;
 		b = buffer["f"s]["b"s]["b"s];
 
+		buffer["h"][0][0] = 2.0f;
+		buffer["h"][3][2] = 3.0f;
+		b = buffer["h"][0][0];
+		b = buffer["h"][3][2];
+
 		glm::mat4 mat = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 3.0f, 4.0f));
 		buffer["g"] = mat;
-		glm::mat4 mat2 = buffer["g"];
+		glm::mat4 mat2 = buffer["g"] ;
+		buffer["i"] = glm::mat3(1.0f);
+		glm::mat3 mat3 = buffer["i"];
 
 		//Layout b("Struct");
+
+		LayoutElement lay(ShaderDataType::Struct,"Struct");
+		lay.Add(ShaderDataType::Mat4, "Transform");
+		lay.Add(ShaderDataType::Mat4, "InvTransform");
+		
+		transformBuffer = CreateRef<ElementBuffer>(lay);
 	}
 	void PBRShaderPass::Initialize()
 	{
@@ -202,10 +182,11 @@ namespace QCat
 		{
 			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
 			Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
-
-			transformData.transform = transform;
-			transformData.invtrnasform = glm::inverse(transform);
-			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
+			(*transformBuffer)["Transform"s] = transform;
+			(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
+			//transformData.transform = transform;
+			//transformData.invtrnasform = glm::inverse(transform);
+			transformConstantBuffer->SetData(transformBuffer->GetData(), transformBuffer->GetSize(), 0);
 
 			//m_PBRShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			//m_PBRShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);

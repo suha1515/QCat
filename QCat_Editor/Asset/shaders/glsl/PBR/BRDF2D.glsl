@@ -12,7 +12,7 @@ layout(location = 0 ) out VertexOutput Output;
 
 struct test_struct
 {
-   vec3 a;
+   float aaa;
    float b;
 };
 struct test_struct2
@@ -22,8 +22,14 @@ struct test_struct2
 };
 layout(std140,binding =0) uniform Test
 {
-  float a[5][5];
-  test_struct b[2];
+  float a;
+  test_struct b;
+  float c[2];
+  test_struct d[2];
+  vec2 e;
+  test_struct2 f;
+  mat4 g;
+  float h[5][5];
 };
 
 void main()

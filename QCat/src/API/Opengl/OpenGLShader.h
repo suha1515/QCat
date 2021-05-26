@@ -1,5 +1,7 @@
 #pragma once
 #include <QCat/Renderer/Shader.h>
+#include "OpenGLBuffer.h"
+#include "QCat/Renderer/ElementLayout.h"
 #include <string>
 
 typedef unsigned int GLenum;
@@ -66,6 +68,8 @@ namespace QCat
 		std::unordered_map<GLenum, std::vector<uint32_t>>m_vulkanSPIRV;
 		std::unordered_map<GLenum, std::vector<uint32_t>>m_openglSPIRV;
 		std::unordered_map<GLenum, std::string> m_openGLSourceCode;
+
+		std::map<std::string, ElementBuffer> m_constantBuffer;
 	};
 
 	class OpenGLVertexShader

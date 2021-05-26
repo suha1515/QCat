@@ -10,6 +10,8 @@
 #include <spirv_cross/spirv_glsl.hpp>
 
 #include "QCat/Uitiliy/Timer.h"
+
+
 namespace QCat
 {
 	namespace Utils
@@ -30,7 +32,69 @@ namespace QCat
 			case spirv_cross::SPIRType::BaseType::UInt:		return "Unsigned-Int"; break;
 			case spirv_cross::SPIRType::BaseType::UInt64:	return "Unsigned-Int64"; break;
 			case spirv_cross::SPIRType::BaseType::UShort:	return "Unsigned-Short"; break;
-
+			}
+		}
+		/*static ShaderDataType SPirvBaseTypeToString(spirv_cross::SPIRType::BaseType type)
+		{
+			
+		}*/
+		
+		ShaderDataType GetDataType(size_t vecSize, size_t column, spirv_cross::SPIRType::BaseType type)
+		{
+			switch (vecSize)
+			{
+			case 1: 
+				switch (type)
+				{
+				case spirv_cross::SPIRType::BaseType::Float:	return  ShaderDataType::Float; break;
+				case spirv_cross::SPIRType::BaseType::Int:		return  ShaderDataType::Int; break;
+				}
+				break;
+			case 2: 
+				switch (column)
+				{
+				case 1: 
+					switch (type)
+					{
+					case spirv_cross::SPIRType::BaseType::Float:	return  ShaderDataType::Float2; break;
+					case spirv_cross::SPIRType::BaseType::Int:		return  ShaderDataType::Int2; break;
+					}
+					break;
+				case 2: break;
+				case 3: break;
+				case 4: break;
+				}
+				break;
+			case 3: 
+				switch (column)
+				{
+				case 1:
+					switch (type)
+					{
+					case spirv_cross::SPIRType::BaseType::Float:	return  ShaderDataType::Float3; break;
+					case spirv_cross::SPIRType::BaseType::Int:		return  ShaderDataType::Int3; break;
+					}
+					break;
+				case 2: break;
+				case 3: return ShaderDataType::Mat3; break;
+				case 4: break;
+				}
+				break;
+			case 4: 
+				switch (column)
+				{
+				case 1:
+					switch (type)
+					{
+					case spirv_cross::SPIRType::BaseType::Float:	return  ShaderDataType::Float4; break;
+					case spirv_cross::SPIRType::BaseType::Int:		return  ShaderDataType::Int4; break;
+					}
+					break;
+				case 2: break;
+				case 3: break;
+				case 4: return ShaderDataType::Mat4; break;
+				}
+				break;
 			}
 		}
 		static GLenum ShaderTypeFromString(const std::string& type)
@@ -97,6 +161,7 @@ namespace QCat
 			QCAT_CORE_ASSERT(false);
 			return "";
 		}
+
 	}
 	
 
@@ -448,36 +513,36 @@ namespace QCat
 		}
 		m_renderID = program;
 	}
-	void GetStructInformation(spirv_cross::Compiler& comp, const spirv_cross::Resource& resource)
+	LayoutElement* SetArrayInfo(LayoutElement* playout, size_t arrayCount)
 	{
-		const auto& bufferType = comp.get_type(resource.base_type_id);
-		int memberCount = bufferType.member_types.size();
+		playout->ArraySet(ShaderDataType::Array, arrayCount);
+		return &playout->GetArrayElement();
+	}
+	void GetStructInformation(LayoutElement* playout,const spirv_cross::Resource& resource,spirv_cross::Compiler& comp, const spirv_cross::SPIRType memberType)
+	{
+		int memberCount = memberType.member_types.size();
 		for (int i = 0; i < memberCount; ++i)
 		{
-			auto& member_type = comp.get_type(bufferType.member_types[i]);
+			auto member_type = comp.get_type(memberType.member_types[i]);
 
-			int memberCount2 = member_type.member_types.size();
 			int arraySize = member_type.array[0];
-			int arraySize2 = member_type.array[1];
 			int width = member_type.width;
 			int vecsize = member_type.vecsize;
 			int column = member_type.columns;
 			std::string type = Utils::SPirvBaseTypeToString(member_type.basetype);
-
 			// Get name within this struct
-			std::string name = comp.get_member_name(resource.base_type_id, i);
+			//std::string name = comp.get_name(memberType.member_types[i]);
+			std::string name = comp.get_member_name(memberType.self, i);
 			// Get size within this struct
-			size_t member_size = comp.get_declared_struct_member_size(bufferType, i);
+			size_t member_size = comp.get_declared_struct_member_size(memberType, i);
 			// Get offset within this struct
-			size_t offset = comp.type_struct_member_offset(bufferType, i);
+			size_t offset = comp.type_struct_member_offset(memberType, i);
 
-
-
-			QCAT_CORE_TRACE("====Member{0}========================",i);
+			QCAT_CORE_TRACE("====Member{0}========================", i);
 			QCAT_CORE_TRACE("	^---Name  = {0}", name);
 			QCAT_CORE_TRACE("	^---Offset= {0}", offset);
 			QCAT_CORE_TRACE("	^---Size  = {0}", member_size);
-			QCAT_CORE_TRACE("	^---Type  = {0}",type);
+			QCAT_CORE_TRACE("	^---Type  = {0}", type);
 			// 배열크기
 			QCAT_CORE_TRACE("	^---arraySize  = {0}", arraySize);
 			QCAT_CORE_TRACE("	^---width  = {0}", width);
@@ -485,10 +550,55 @@ namespace QCat
 			QCAT_CORE_TRACE("	^---vecsize  = {0}", vecsize);
 			// 행렬일경우 행을의미
 			QCAT_CORE_TRACE("	^---column  = {0}", column);
+	
+			ShaderDataType dataType = Utils::GetDataType(vecsize, column, member_type.basetype);
+			if (type == "Struct")
+				dataType =  ShaderDataType::Struct;
+			// 배열의 경우.
+			if (member_type.array.size() > 0)
+			{
+				(*playout).Add(ShaderDataType::Array, name);
+				LayoutElement* layout = &(*playout)[name];
+				//LayoutElement* layout = &(*playout)[name].GetArrayElement();
+				for (int i = 0; i <member_type.array.size()-1; ++i)
+				{
+					layout = SetArrayInfo(layout, member_type.array[i]);
+				}
+				size_t index = member_type.array.size() - 1;
+				size_t count = member_type.array[index];
+				if (dataType == ShaderDataType::Struct)
+				{
+					if (member_type.member_types.size() > 0)
+					{
+						layout->ArraySet(dataType, count);
+						GetStructInformation(&(layout->GetArrayElement()), resource, comp, member_type);
+					}
+				}
+				else
+					layout->ArraySet(dataType, count);
+			}
+			else if (member_type.member_types.size() > 0)
+			{
 			// 구조체일경우 멤버 사이즈를 의미.
-			QCAT_CORE_TRACE("	^---MemberSize={0}",memberCount2);
-			
+				QCAT_CORE_TRACE("	^---MemberSize={0}", member_type.member_types.size());
+				playout->Add(dataType, name);
+				GetStructInformation(&(*playout)[name], resource, comp, member_type);
+			}			
+			// 구조체도 배열도 아닌경우
+			else
+			{
+				ShaderDataType dataType = Utils::GetDataType(vecsize, column, member_type.basetype);
+				(*playout).Add(dataType, name);
+			}
+				
 		}
+	}
+	LayoutElement GetConstantBufferLayout(spirv_cross::Compiler& comp, const spirv_cross::Resource& resource)
+	{
+		const auto& bufferType = comp.get_type(resource.base_type_id);
+		LayoutElement layout(ShaderDataType::Struct,resource.name);
+		GetStructInformation(&layout,resource, comp, bufferType);
+		return layout;
 	}
 
 	void OpenGLShader::Reflect(GLenum stage, const std::vector<uint32_t>& shaderData)
@@ -509,6 +619,7 @@ namespace QCat
 			QCAT_CORE_TRACE("	Binding = {0}", binding);
 		}
 		QCAT_CORE_TRACE("-Uniform Buffers-");
+		
 		for (const auto& resource : resources.uniform_buffers)
 		{
 			const auto& bufferType = compiler.get_type(resource.base_type_id);
@@ -520,7 +631,9 @@ namespace QCat
 			QCAT_CORE_TRACE("	Size     = {0}", bufferSize);
 			QCAT_CORE_TRACE("	Binding  = {0}", binding);
 			QCAT_CORE_TRACE("	Memebers = {0}", memberCount);
-			GetStructInformation(compiler, resource);
+			LayoutElement layout = GetConstantBufferLayout(compiler, resource);
+			//layout.Finalize();
+			m_constantBuffer.emplace(resource.name, ElementBuffer(layout));
 		}
 	}
 
