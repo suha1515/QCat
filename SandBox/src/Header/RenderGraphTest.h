@@ -48,5 +48,6 @@ namespace QCat
 		Material materials[5];
 		Material gunMat;
 		Ref<glm::mat4> viewMatrix;
+		Ref<glm::mat4> projectionMatrix;
 	};
 }

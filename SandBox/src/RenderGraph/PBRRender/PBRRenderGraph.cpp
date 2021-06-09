@@ -12,9 +12,13 @@ namespace QCat
     void PBRRenderGraph::Initialize()
     {
         AddGlobalInput(TextureInput::Make("hdrImage", hdrImage));
-        AddGlobalInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix,DataType::Matrix));
+        AddGlobalInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
+        AddGlobalInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
+
+
         AddGlobalOutput(TextureOutput::Make("hdrImage", hdrImage));
         AddGlobalOutput(DataOutput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
+        AddGlobalOutput(DataOutput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 
         AddGlobalOutput(TextureOutput::Make("ColorBuffer", m_ColorBuffer));
         AddGlobalOutput(TextureOutput::Make("DepthBuffer", m_DepthBuffer));
@@ -34,6 +38,7 @@ namespace QCat
         pbrShaderPass->SetInputLink("BRDFLutTexture", "precomputepass.BRDFLutTexture");
         pbrShaderPass->SetInputLink("PrefilterMap", "precomputepass.PrefilterMap");
         pbrShaderPass->SetInputLink("viewMatrix", "$.viewMatrix");
+        pbrShaderPass->SetInputLink("projectionMatrix", "$.projectionMatrix");
         pbrShaderPass->SetInputLink("ColorBuffer", "$.ColorBuffer");
         pbrShaderPass->SetInputLink("DepthBuffer", "$.DepthBuffer");
         AppendPass(pbrShaderPass);

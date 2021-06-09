@@ -37,5 +37,18 @@ namespace QCat
 		Ref<FrameBufferEx> CubeMapPass;
 
 		Ref<Cube> cube;
+		struct CameraData
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+		};
+		struct Roughness
+		{
+			float roughtness;
+		};
+		CameraData CameraBuffer;
+		Roughness roughBuffer;
+		Ref<ConstantBuffer> cameraConstantBuffer;
+		Ref<ConstantBuffer> roughnessConstantBuffer;
 	};
 }

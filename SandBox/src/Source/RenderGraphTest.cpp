@@ -129,24 +129,24 @@ namespace QCat
 		comp4.diffuse = { 300.0f,300.0f,300.0f };
 
 
-		model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
+		//model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
 
-		imgSamp.addressU = WrapingMode::CLAMP;
-		imgSamp.addressV = WrapingMode::CLAMP;
-		imgSamp.MIN = Filtering::LINEAR;
-		imgSamp.MAG = Filtering::LINEAR;
-		imgSamp.MIP = Filtering::NONE;
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
-		//gunMat.SetTexture("Asset/model/Robot/textures/robot_steampunk_ao.tga.png", imgSamp, Material::TextureType::AmbientOcclusion);
+		//imgSamp.addressU = WrapingMode::CLAMP;
+		//imgSamp.addressV = WrapingMode::CLAMP;
+		//imgSamp.MIN = Filtering::LINEAR;
+		//imgSamp.MAG = Filtering::LINEAR;
+		//imgSamp.MIP = Filtering::NONE;
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
+		////gunMat.SetTexture("Asset/model/Robot/textures/robot_steampunk_ao.tga.png", imgSamp, Material::TextureType::AmbientOcclusion);
 
-		SetMaterial(model, gunMat);
-		model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
-		model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
-		model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
-		UpdateTransform(model,glm::mat4(1.0f));
+		//SetMaterial(model, gunMat);
+		//model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
+		//model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
+		//model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
+		//UpdateTransform(model,glm::mat4(1.0f));
 
 		Sampler_Desc desc;
 		desc.addressU = WrapingMode::CLAMP;
@@ -154,7 +154,10 @@ namespace QCat
 		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 		renderGraph.SetHdrImg(hdrImage);
 		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
+		projectionMatrix = CreateRef<glm::mat4>(camera.Camera.GetProjection());
+		
 		renderGraph.SetView(viewMatrix);
+		renderGraph.SetProj(projectionMatrix);
 		renderGraph.Initialize();
 
 		m_ScreenShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/SingleQuad.hlsl" : "Asset/shaders/glsl/SingleQuad.glsl");

@@ -1,7 +1,7 @@
 // Basic Texture Shader
 
 #type vertex
-#version 330 core
+#version 450 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
@@ -9,23 +9,33 @@ layout(location = 2) in vec2 a_TexCoord;
 layout(location = 3) in vec3 a_Tangent;
 layout(location = 4) in vec3 a_BitTangent;
 
-
-uniform mat4 u_ViewProjection;
-uniform mat4 u_Transform;
-uniform vec3 viewPosition;
-
-out vec2 TexCoords;
-out vec3 v_Normal;
-out vec3 FragPos;
-out mat3 TBN;
+layout(std140,binding = 0) uniform Camera
+{
+	mat4 u_Projection;
+	mat4 u_View;
+	vec3 viewPosition;
+};
+layout(std140,binding = 1) uniform Transform
+{
+	mat4 u_Transform;
+	mat4 u_InvTransform;
+};
+struct VertexOutput
+{
+    vec2 TexCoords;
+	vec3 v_Normal;
+	vec3 FragPos;
+	mat3 TBN;
+};
+layout(location = 0 ) out VertexOutput Output;
 
 void main()
 {
-	TexCoords = a_TexCoord;
-	mat3 normalMatrix = mat3(transpose(inverse(u_Transform)));
-	v_Normal =normalMatrix * a_Normal;
-	gl_Position = u_ViewProjection *u_Transform * vec4(a_Position, 1.0);
-	FragPos = vec3(u_Transform * vec4(a_Position,1.0));
+	Output.TexCoords = a_TexCoord;
+	mat3 normalMatrix = mat3(transpose(u_InvTransform));
+	Output.v_Normal =normalMatrix * a_Normal;
+	gl_Position = u_Projection*u_View*u_Transform * vec4(a_Position, 1.0);
+	Output.FragPos = vec3(u_Transform * vec4(a_Position,1.0));
 
 	vec3 T = normalize(normalMatrix *a_Tangent);
 	vec3 B = normalize(normalMatrix *a_BitTangent);
@@ -33,20 +43,14 @@ void main()
 	// re-orthogonalize T With to N
 	//T = normalize(T - dot(T,N) * N);
 	//vec3 B = cross(N,T);
-	TBN = mat3(T,B,N);
+	Output.TBN = mat3(T,B,N);
 
 }
 
 #type fragment
-#version 330 core
+#version 450 core
 struct Material
 {
-	sampler2D albedoMap;
-	sampler2D normalMap;
-	sampler2D metallicMap;
-	sampler2D roughnessMap;
-	sampler2D aoMap;
-
 	vec3 albedo;
 	float shininess;
 	float metallic;
@@ -64,22 +68,40 @@ struct PointLight
 	vec3 position;
 	vec3 diffuse;
 };
-
+layout(std140,binding = 0) uniform Camera
+{
+	mat4 u_Projection;
+	mat4 u_View;
+	vec3 u_viewPosition;
+};
+layout(std140,binding = 2) uniform Mat
+{
+	Material material;
+};
+layout(std140,binding = 3) uniform Light
+{
+	PointLight pointLight[4];
+};
 layout(location = 0) out vec4 color;
 
-in vec3 v_Normal;
-in vec2 TexCoords;
-in vec3 FragPos;
-in mat3 TBN;
+struct VertexOutput
+{
+    vec2 TexCoords;
+	vec3 v_Normal;
+	vec3 FragPos;
+	mat3 TBN;
+};
+layout(location = 0 ) in VertexOutput Input;
 
-uniform Material material;
-uniform PointLight pointLight[4];
-uniform vec3 u_viewPosition;
-
+layout (binding = 0) uniform sampler2D albedoMap;
+layout (binding = 1) uniform sampler2D normalMap;
+layout (binding = 2) uniform sampler2D metallicMap;
+layout (binding = 3) uniform sampler2D roughnessMap;
+layout (binding = 4) uniform sampler2D aoMap;
 // IBL
-uniform samplerCube irradianceMap;
-uniform samplerCube prefilterMap;
-uniform sampler2D brdfLUT;
+layout (binding = 5) uniform samplerCube irradianceMap;
+layout (binding = 6) uniform samplerCube prefilterMap;
+layout (binding = 7) uniform sampler2D brdfLUT;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -129,25 +151,25 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 }   
 void main()
 {
-	vec3 albedo = material.IsAlbedoMap ? pow(texture(material.albedoMap, TexCoords).rgb,vec3(2.2)) : material.albedo;
-	float metallic = material.IsMetallicMap ? texture(material.metallicMap, TexCoords).r : material.metallic;
-	float roughness = material.IsRoughnessMap ? texture(material.roughnessMap, TexCoords).r : material.roughness;
-	float ao = material.IsAoMap ? texture(material.aoMap, TexCoords).r : material.ambientocclusion;
+	vec3 albedo = material.IsAlbedoMap ? pow(texture(albedoMap, Input.TexCoords).rgb,vec3(2.2)) : material.albedo;
+	float metallic = material.IsMetallicMap ? texture(metallicMap, Input.TexCoords).r : material.metallic;
+	float roughness = material.IsRoughnessMap ? texture(roughnessMap, Input.TexCoords).r : material.roughness;
+	float ao = material.IsAoMap ? texture(aoMap, Input.TexCoords).r : material.ambientocclusion;
 
 	vec3 N;
 	vec3 V;
-	V =  normalize(u_viewPosition - FragPos);
+	V =  normalize(u_viewPosition - Input.FragPos);
 	if(!material.IsNormalMap)
 	{
-	   N = normalize(v_Normal);
+	   N = normalize(Input.v_Normal);
 	}
 	else
 	{
-		N = texture(material.normalMap,TexCoords).rgb;
+		N = texture(normalMap,Input.TexCoords).rgb;
 		N.r = N.r *2.0 - 1.0;
 		N.g = N.g *2.0 - 1.0;
 		N.b = N.b *2.0 - 1.0;
-		N = normalize(TBN * N);
+		N = normalize(Input.TBN * N);
 	}	
 	vec3 R = reflect(-V, N); 
 
@@ -159,9 +181,9 @@ void main()
 	for(int i=0;i<4;++i)
 	{
 		// calculate per-light radiance
-        vec3 L = normalize(pointLight[i].position - FragPos);
+        vec3 L = normalize(pointLight[i].position - Input.FragPos);
         vec3 H = normalize(V + L);
-        float distance = length(pointLight[i].position - FragPos);
+        float distance = length(pointLight[i].position - Input.FragPos);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = pointLight[i].diffuse * attenuation;
 
