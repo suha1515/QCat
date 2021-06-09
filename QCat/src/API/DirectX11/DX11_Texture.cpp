@@ -9,7 +9,7 @@ namespace QCat
 	DX11Texture2D::DX11Texture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples, bool flip, bool gamacorrection )
 	{
 		QCAT_PROFILE_FUNCTION();
-
+		this->path = path;
 		int width, height, channels;
 		if(!flip)
 			stbi_set_flip_vertically_on_load(0);

@@ -10,6 +10,12 @@ project "QCat_Editor"
 	disablewarnings{"4819"}
 	characterset ("MBCS")
 
+	environmentVariables =
+	{
+		"PATH=%{wks.location}/QCat/3rdLib/assimp/Debug;%PATH%"
+	}
+	debugenvs(environmentVariables)
+	libdirs { "%{wks.location}/QCat/3rdLib/assimp/Debug" }
 	files
 	{
 		"src/**.h",
@@ -22,7 +28,8 @@ project "QCat_Editor"
 		"%{wks.location}/QCat/src",
 		"%{wks.location}/QCat/3rdLib",
 		"%{IncludeDir.Glm}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.assimp}"
 	}
 
 	links

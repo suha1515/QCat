@@ -39,6 +39,7 @@ namespace QCat
 	{
 		// Immutable
 		QCAT_PROFILE_FUNCTION();
+		this->path = path;
 		auto begin = path.find_last_of('.');
 		std::string extension = path.substr(begin + 1, path.length());
 		int width, height, channels;

@@ -32,7 +32,7 @@ namespace QCat
 		pgfx->BindSamplerState();
 
 		pgfx->GetContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		
 		DepthStencil::DepthStencilDesc DepthStencildesc;
 		{
 			DepthStencildesc.depthEnable = true;

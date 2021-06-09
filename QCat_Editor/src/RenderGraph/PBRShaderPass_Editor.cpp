@@ -35,63 +35,6 @@ namespace QCat
 		lightConstantBuffer = ConstantBuffer::Create(sizeof(light)*4, 3);
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
 
-		LayoutElement c(ShaderDataType::Struct,"struct");
-		c.Add(ShaderDataType::Float, "a");
-		c.Add(ShaderDataType::Struct, "b");
-		c["b"].Add(ShaderDataType::Float, "a");
-		c["b"].Add(ShaderDataType::Float, "b");
-
-		c.Add(ShaderDataType::Array, "c");
-		c["c"].ArraySet(ShaderDataType::Float, 2);
-		c.Add(ShaderDataType::Array, "d");
-		c["d"].ArraySet(ShaderDataType::Struct, 2);
-		c["d"].GetArrayElement().Add(ShaderDataType::Float, "a");
-		c["d"].GetArrayElement().Add(ShaderDataType::Float, "b");
-
-		c.Add(ShaderDataType::Float2, "e");
-		c.Add(ShaderDataType::Struct, "f");
-		c["f"].Add(ShaderDataType::Float3, "a");
-		c["f"].Add(ShaderDataType::Struct, "b");
-		c["f"]["b"].Add(ShaderDataType::Float, "a");
-		c["f"]["b"].Add(ShaderDataType::Float, "b");
-		c.Add(ShaderDataType::Mat4, "g");
-		c.Add(ShaderDataType::Array, "h");
-		c["h"].ArraySet(ShaderDataType::Array, 5);
-		c["h"].GetArrayElement().ArraySet(ShaderDataType::Float, 5);
-		c.Add(ShaderDataType::Mat3, "i");
-
-		////b["material"].members
-
-		////b.Finalize();
-		c.Finalize();
-
-		ElementBuffer buffer(c);
-		buffer["a"s] = 1.0f;
-		buffer["c"s][0] = 2.0f;
-		buffer["b"s]["a"s] = 3.0f;
-		float b = buffer["a"s];
-		b = buffer["b"s]["a"s];
-		b = buffer["c"s][0];
-		buffer["f"s]["a"s] = glm::vec3(1.0f, 2.0f, 3.0f);
-		glm::vec3 bb = buffer["f"s]["a"s];
-		buffer["d"s][1]["a"s] = 4.0f;
-		b = buffer["d"s][1]["a"s];
-		buffer["f"s]["b"s]["b"s] = 5.0f;
-		b = buffer["f"s]["b"s]["b"s];
-
-		buffer["h"][0][0] = 2.0f;
-		buffer["h"][3][2] = 3.0f;
-		b = buffer["h"][0][0];
-		b = buffer["h"][3][2];
-
-		glm::mat4 mat = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 3.0f, 4.0f));
-		buffer["g"] = mat;
-		glm::mat4 mat2 = buffer["g"] ;
-		buffer["i"] = glm::mat3(1.0f);
-		glm::mat3 mat3 = buffer["i"];
-
-		//Layout b("Struct");
-
 		LayoutElement lay(ShaderDataType::Struct,"Struct");
 		lay.Add(ShaderDataType::Mat4, "Transform");
 		lay.Add(ShaderDataType::Mat4, "InvTransform");

@@ -474,8 +474,8 @@ namespace QCat
 				}
 			}
 		}
-		for (auto&& [stage, data] : shaderData)
-			Reflect(stage, data);
+		//for (auto&& [stage, data] : shaderData)
+		//	Reflect(stage, data);
 	}
 
 	void OpenGLShader::CreateProgram()
@@ -631,9 +631,9 @@ namespace QCat
 			QCAT_CORE_TRACE("	Size     = {0}", bufferSize);
 			QCAT_CORE_TRACE("	Binding  = {0}", binding);
 			QCAT_CORE_TRACE("	Memebers = {0}", memberCount);
-			LayoutElement layout = GetConstantBufferLayout(compiler, resource);
+			//LayoutElement layout = GetConstantBufferLayout(compiler, resource);
 			//layout.Finalize();
-			m_constantBuffer.emplace(resource.name, ElementBuffer(layout));
+			//m_constantBuffer.emplace(resource.name, ElementBuffer(layout));
 		}
 	}
 

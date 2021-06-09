@@ -2,7 +2,7 @@
 #include <QCat/Scene/Scene.h>
 #include <QCat/Scene/Entity.h>
 #include <QCat/Core/QCatCore.h>
-
+#include <QCat/Renderer/RenderAPI.h>
 namespace QCat
 {
 	class SceneHierarchyPanel

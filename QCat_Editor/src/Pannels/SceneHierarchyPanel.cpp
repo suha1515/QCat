@@ -3,6 +3,7 @@
 #include "Imgui/imgui_internal.h"
 #include <glm/gtc/type_ptr.hpp>
 #include<QCat/Scene/Components.h>
+#include <QCat/Uitiliy/PlatformUtils.h>
 
 namespace QCat
 {
@@ -326,5 +327,121 @@ namespace QCat
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 			}
 		);
+
+		DrawComponent<MaterialComponent>("Material", entity,
+			[](auto& component)
+			{
+				Material& mat = component.GetMaterial();
+
+				ImGui::ColorEdit3("Ambient", glm::value_ptr(mat.ambient));
+				ImGui::ColorEdit3("Diffuse", glm::value_ptr(mat.diffuse));
+				ImGui::ColorEdit3("Specaulr", glm::value_ptr(mat.specular));
+
+				ImGui::DragFloat("Shininess",&mat.shininess);
+				ImGui::DragFloat("Metalic", &mat.metallic);
+				ImGui::DragFloat("Rougness",&mat.roughness);
+				ImGui::DragFloat("Ao", &mat.ao);
+
+				ImGui::Separator();
+				ImGui::Columns(2);
+				ImGui::SetColumnWidth(0, 100);
+				ImGui::SetColumnOffset(0, 21);
+				ImGui::Separator();
+				if (mat.m_DiffuseTexture)
+					ImGui::Image(mat.m_DiffuseTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+				ImGui::NextColumn();
+				ImGui::Text("Albedo Texture");
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set Texture##albedo"))
+				{
+					OpenTexture(mat.m_DiffuseTexture);
+				}
+				if (mat.m_DiffuseTexture)
+					ImGui::Text(mat.m_DiffuseTexture->path.c_str());
+				else
+					ImGui::Text("none");
+
+				ImGui::NextColumn();
+				ImGui::Separator();
+				if (mat.m_NormalMapTexture)
+					ImGui::Image(mat.m_NormalMapTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+				ImGui::NextColumn();
+				ImGui::Text("Normal Texture");
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set Texture##normal"))
+				{
+					 OpenTexture(mat.m_NormalMapTexture);
+				}
+				if (mat.m_NormalMapTexture)
+					ImGui::Text(mat.m_NormalMapTexture->path.c_str());
+				else
+					ImGui::Text("none");
+
+				ImGui::NextColumn();
+				ImGui::Separator();
+				if (mat.m_MetallicTexture)
+					ImGui::Image(mat.m_MetallicTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+				ImGui::NextColumn();
+				ImGui::Text("Metallic Texture");
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set Texture##metaillic"))
+				{
+					OpenTexture(mat.m_MetallicTexture);
+				}
+				if (mat.m_MetallicTexture)
+					ImGui::Text(mat.m_MetallicTexture->path.c_str());
+				else
+					ImGui::Text("none");
+
+				ImGui::NextColumn();
+				ImGui::Separator();
+				if (mat.m_RoughnessTexture)
+					ImGui::Image(mat.m_RoughnessTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+				ImGui::NextColumn();
+				ImGui::Text("Roughness Texture");
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set Texture##roughness"))
+				{
+					OpenTexture(mat.m_RoughnessTexture );
+				}
+				if (mat.m_RoughnessTexture)
+					ImGui::Text(mat.m_RoughnessTexture->path.c_str());
+				else
+					ImGui::Text("none");
+
+				ImGui::NextColumn();
+				ImGui::Separator();
+				if (mat.m_AmbientOcclusionTexture)
+					ImGui::Image(mat.m_AmbientOcclusionTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+				ImGui::NextColumn();
+				ImGui::Text("AmbientOcclusion Texture");
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set Texture##ambient"))
+				{
+					OpenTexture(mat.m_AmbientOcclusionTexture);
+				}
+				if (mat.m_AmbientOcclusionTexture)
+					ImGui::Text(mat.m_AmbientOcclusionTexture->path.c_str());
+				else
+					ImGui::Text("none");
+
+				ImGui::Columns(1);
+				ImGui::Separator();
+				
+			}
+			);
+	}
+	void OpenTexture(Ref<Texture>& texture)
+	{
+		Sampler_Desc desc;
+		desc.addressU = WrapingMode::CLAMP;
+		desc.addressV = WrapingMode::CLAMP;
+		desc.MIN = Filtering::LINEAR;
+		desc.MAG = Filtering::LINEAR;
+		std::optional<std::string> filepath = FileDialogs::OpenFile("Image File \0*.PNG;.JPEG\0");
+		if (filepath)
+		{
+			texture = TextureLibrary::Load(*filepath, desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+		}
 	}
 }

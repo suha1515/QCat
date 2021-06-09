@@ -695,7 +695,7 @@ namespace QCat
 		m_FlatShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
 		sphere->SetTranslation(LightPosition);
 		sphere->SetScale({ 1.0f,1.0f,1.0f });
-		sphere->Draw(m_FlatShader);
+		sphere->Draw();
 		m_FlatShader->UnBind();
 
 	}
@@ -749,7 +749,7 @@ namespace QCat
 
 		sphere->SetTranslation(LightPosition);
 		sphere->SetScale({ 1.0f,1.0f,1.0f });
-		sphere->Draw(shader);
+		sphere->Draw();
 		shader->UnBind();
 	}
 

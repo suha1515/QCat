@@ -6,15 +6,41 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <QCat/Scene/SceneSerializer.h>
-
 #include <QCat/Renderer/RenderAPI.h>
-
 #include <QCat/Uitiliy/PlatformUtils.h>
-
 #include <QCat/Math/Math.h>
+
+#include "Model/ModelLoader.h"
 
 namespace QCat
 {
+	void SetMaterial(Entity& entity, Material& mat)
+	{
+		if (entity.HasComponent<MaterialComponent>())
+		{
+			entity.GetComponent<MaterialComponent>().material = mat;
+		}
+		auto child = entity.GetComponent<RelationShipComponent>().firstChild;
+
+		while (child != Entity::emptyEntity)
+		{
+			SetMaterial(child, mat);
+			child = child.GetComponent<RelationShipComponent>().nextSibling;
+		}
+	}
+	void UpdateTransform(Entity& entity, const glm::mat4 parentMatrix)
+	{
+		TransformComponent& transcomp = entity.GetComponent<TransformComponent>();
+		transcomp.parentMatrix = parentMatrix;
+		const glm::mat4 localMatrix = transcomp.GetTransform();
+		auto child = entity.GetComponent<RelationShipComponent>().firstChild;
+
+		while (child != Entity::emptyEntity)
+		{
+			UpdateTransform(child, localMatrix);
+			child = child.GetComponent<RelationShipComponent>().nextSibling;
+		}
+	}
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
 	{
@@ -76,7 +102,7 @@ namespace QCat
 		auto& comp = light1.AddComponent<LightComponent>();
 		comp.diffuse = { 300.0f,300.0f,300.0f };
 
-		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc,1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 
 		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
 		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
@@ -103,6 +129,21 @@ namespace QCat
 		ball.GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
 		ball.AddComponent<MeshComponent>("Sphere");
 		ball.AddComponent<MaterialComponent>(goldenBall);
+
+		/*model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
+
+		Material gunMat;
+		imgSamp.MIP = Filtering::NONE;
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
+
+		SetMaterial(model, gunMat);
+		model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
+		model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
+		model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
+		UpdateTransform(model, glm::mat4(1.0f));*/
 	}
 
 	void EditorLayer::OnDetach()
@@ -138,7 +179,7 @@ namespace QCat
 		m_EditorCamera.OnUpdate(ts);
 		*viewMatrix = m_EditorCamera.GetViewMatrix();
 		*projectionMatrix = m_EditorCamera.GetProjection();
-
+		//UpdateTransform(model, glm::mat4(1.0f));
 		// Render
 		// Reset stats here
 		//m_Framebuffer->Bind();
@@ -342,6 +383,7 @@ namespace QCat
 			// Entity transform
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
+			glm::mat4 delttransform;
 
 			// Sanapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
@@ -354,7 +396,7 @@ namespace QCat
 
 			// use all data
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),nullptr,snap ? snapValues : nullptr);
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),glm::value_ptr(delttransform),nullptr,snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -365,6 +407,7 @@ namespace QCat
 				tc.Translation = translation;
 				tc.Rotation += deltaRotation;
 				tc.Scale = scale;
+				
 			}
 		}
 

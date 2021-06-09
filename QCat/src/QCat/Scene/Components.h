@@ -4,13 +4,14 @@
 
 #define GLM_ENABLE_EXPERIMENT
 #include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
+
 
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
 #include "QCat/Renderer/Mesh.h"
 #include "QCat/Renderer/Material.h"
 #include "Entity.h"
+#include "QCat/Math/Math.h"
 
 namespace QCat
 {
@@ -36,19 +37,22 @@ namespace QCat
 			:Translation(translation) {}
 		void SetTransform(const glm::mat4& transform)
 		{
-			glm::vec3 scale, translation, skew;
-			glm::quat rotation;
-			glm::vec4 perspective;
-			glm::decompose(transform, scale, rotation, translation, skew, perspective);
+			glm::vec3 translation, rotation, scale;
+			Math::DecomposeTransform(transform, translation, rotation, scale);
+
 			Translation = translation;
-			Rotation = glm::eulerAngles(rotation);
+			Rotation = rotation;
 			Scale = scale;
 		}
 		glm::mat4 GetTransform() const
 		{
+			return parentMatrix * GetLocalTransform();
+		}
+		glm::mat4 GetLocalTransform() const
+		{
 			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 			const glm::mat4 localmatrix = glm::translate(glm::mat4(1.0f), Translation) * rotation * glm::scale(glm::mat4(1.0f), Scale);
-			return parentMatrix * localmatrix;
+			return localmatrix;
 		}
 	};
 

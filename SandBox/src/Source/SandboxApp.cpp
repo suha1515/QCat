@@ -42,6 +42,8 @@ public:
 		//ImGui::Begin("Settings");
 		//ImGui::ColorEdit3("Square Color", glm::value_ptr(m_SquareColor));
 		//ImGui::End();
+		ImGui::ShowDemoWindow();
+
 	}
 	void OnEvent(QCat::Event& e) override
 	{
@@ -58,12 +60,12 @@ public:
 	Sandbox()
 		:Application("QCat App",QCat::RenderAPI::API::OpenGL)
 	{
-		//PushLayer(new ExamLayer());
+		PushLayer(new ExamLayer());
 		//PushLayer(new QCat::ModelTestScene());
 		//PushLayer(new QCat::Sandbox2D());
 		//PushLayer(new QCat::TestScene());
 		//PushLayer(new QCat::PbrTest());
-		PushLayer(new QCat::RenderGraphTest());
+		//PushLayer(new QCat::RenderGraphTest());
 	}
 	~Sandbox()
 	{

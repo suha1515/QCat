@@ -373,7 +373,7 @@ namespace QCat
 			{
 				FlatShader->SetFloat4("u_color", glm::vec4(light[i].info.diffuse, 1.0f), ShaderType::PS);
 				sphere->SetTranslation(light[i].info.lightPosition);
-				sphere->Draw(FlatShader);
+				sphere->Draw();
 			}
 			FlatShader->UnBind();
 

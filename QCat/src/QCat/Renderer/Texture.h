@@ -43,6 +43,7 @@ namespace QCat
 
 		Ref<SamplerState> sampler;
 		Texture_Desc desc;
+		std::string path = "none";
 	};
 
 	class Texture2D : public Texture
@@ -52,8 +53,7 @@ namespace QCat
 
 		static Ref<Texture2D> Create(TextureFormat format,Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1,void* pData = nullptr);
 		static Ref<Texture2D> Create(const std::string & path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1,bool flip =false,bool gamacorrection = false);
-	private:
-		std::string path;
+
 	};
 	class TextureCube  : public Texture
 	{
