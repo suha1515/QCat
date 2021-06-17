@@ -12,6 +12,7 @@
 #include "QCat/Renderer/Material.h"
 #include "Entity.h"
 #include "QCat/Math/Math.h"
+#include "QCat/Animation/Animator.h"
 
 namespace QCat
 {
@@ -97,8 +98,9 @@ namespace QCat
 		{
 			vertexArray.push_back(MeshLibrary::Load(meshName));
 		}
-		MeshComponent(Ref<VertexArray>& vertexarray)
+		MeshComponent(const std::string& meshName,Ref<VertexArray>& vertexarray)
 		{
+			MeshLibrary::Set(meshName, vertexarray);
 			vertexArray.push_back(std::move(vertexarray));
 		}
 		/*void Bind()
@@ -150,5 +152,14 @@ namespace QCat
 		float outerCutOff = glm::cos(glm::radians(17.5f));
 		float radius = 0.0f;
 		LightType type = LightType::Directional;
+	};
+	struct AnimatorComponent
+	{
+		Animator animator;
+		AnimatorComponent() = default;
+		AnimatorComponent(Animator& anim)
+		{
+			this->animator = anim;
+		}
 	};
 }

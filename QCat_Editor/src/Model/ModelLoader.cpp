@@ -12,6 +12,17 @@ namespace QCat
 		glm::vec3 tangent;
 		glm::vec3 bitangent;
 	};
+	struct AniamtedVertex
+	{
+		glm::vec3 position;
+		glm::vec3 normal;
+		glm::vec2 texcoords;
+		glm::vec3 tangent;
+		glm::vec3 bitangent;
+
+		int boneIDs[4];
+		float weights[4];
+	};
 	namespace Utils
 	{
 		glm::mat4 ConvertToGlm(aiMatrix4x4 mat)

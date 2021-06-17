@@ -6,6 +6,15 @@
 
 namespace QCat
 {
+	class Model
+	{
+
+	};
+	class AnimatedModel
+	{
+
+	};
+
 	class ModelLoader
 	{
 	public:

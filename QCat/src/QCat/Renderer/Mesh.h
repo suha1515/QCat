@@ -25,7 +25,7 @@ namespace QCat
 		{
 			return Get().Load_(meshName);
 		}
-		static bool Set(const std::string& meshName, Ref<VertexArray> vertexArray)
+		static bool Set(const std::string& meshName, Ref<VertexArray>& vertexArray)
 		{
 			return Get().Set_(meshName, vertexArray);
 		}
@@ -48,7 +48,7 @@ namespace QCat
 			else
 				return nullptr;
 		}
-		bool Set_(const std::string& meshName, Ref<VertexArray> vertexArray)
+		bool Set_(const std::string& meshName, Ref<VertexArray>& vertexArray)
 		{
 			if (IsExist(meshName))
 			{

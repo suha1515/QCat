@@ -221,4 +221,7 @@ namespace QCat
 	void Scene::OnComponentAdded<LightComponent>(Entity entity, LightComponent& component)
 	{
 	}
+	template<>
+	void Scene::OnComponentAdded<AnimatorComponent>(Entity entity,AnimatorComponent& component)
+	{}
 }

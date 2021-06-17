@@ -25,6 +25,7 @@
 #include "QCat/Scene/Components.h"
 //--Utility------------------------------//
 #include "QCat/Uitiliy/Math.h"
+#include "QCat/Uitiliy/Assimphelper.h"
 //---------------------------------------//
 
 //--Renderer-----------------------------//

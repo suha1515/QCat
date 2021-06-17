@@ -27,15 +27,76 @@ namespace QCat
 
 
 	private:
+		Ref<Scene> m_ActiveScene;
+
 		Ref<Shader> BlinnPhongShader;
-		Ref<Shader> visualizingNormalShader;
-		Ref<Model>  HumanModel;
+		Entity  HumanModel;
+
 
 		glm::vec3 camPos = { 0.0f,0.0f,-3.0f };
+		glm::vec3 lightPos = { 0.0f,0.0f,0.0f };
+		glm::vec3 modelPos = { 0.0f,0.0f,3.0f };
 		glm::vec3 modelRot = { 0.0f,0.0f,0.0f };
 
 		float value = 0.0f;
 		Material mat;
+
+		struct Camera
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+			glm::vec3 viewPos;
+		};
+		struct Transform
+		{
+			glm::mat4 transform;
+			glm::mat4 invTransform;
+			glm::mat4 boneMatrices[100];
+		};
+		struct Mat
+		{
+			glm::vec3 albedo;
+			float shininess;
+			float metallic;
+			float roughness;
+			float ambientocclusion;
+
+			int IsAlbedoMap;
+			int IsNormalMap;
+			int IsMetallicMap;
+			int IsRoughnessMap;
+			int IsAoMap;
+		};
+
+		struct light
+		{
+			glm::vec3 position = { 0.0f,0.0f,0.0f };
+			float padding;
+			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
+			float padding2;
+			glm::vec3 ambient;
+			float padding3;
+			glm::vec3 specular;
+			float constant;
+			float linear;
+			float quadratic;
+		};
+		struct Extra
+		{
+			int gamma;
+			int flip;
+		};
+		Camera camData;
+		Transform transformData;
+		Mat materialData;
+		light lightData[1];
+		Extra extraDta;
+
+		Ref<ConstantBuffer> cameraBuffer;
+		Ref<ConstantBuffer> transformBuffer;
+		Ref<ConstantBuffer> materialBuffer;
+		Ref<ConstantBuffer> lightBuffer;
+		Ref<ConstantBuffer> extraBuffer;
 	};
 
 }
