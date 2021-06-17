@@ -90,7 +90,7 @@ namespace QCat
 		Transform transformData;
 		Mat materialData;
 		light lightData[1];
-		Extra extraDta;
+		Extra extraData;
 
 		Ref<ConstantBuffer> cameraBuffer;
 		Ref<ConstantBuffer> transformBuffer;

@@ -79,7 +79,8 @@ namespace QCat
 		auto& comp = pointLight.AddComponent<LightComponent>();
 		comp.diffuse = { 1.0f,1.0f,1.0f };
 
-		BlinnPhongShader = ShaderLibrary::Load("Asset/shaders/glsl/Blinn-phong_Animation.glsl");
+		BlinnPhongShader =  ShaderLibrary::Load(RenderAPI::GetAPI() == 
+			RenderAPI::API::OpenGL ? "Asset/shaders/glsl/Blinn-phong_Animation.glsl": "Asset/shaders/hlsl/Blinn-phong_Animation.hlsl");
 
 		cameraBuffer = ConstantBuffer::Create(sizeof(Camera), 0);
 		transformBuffer = ConstantBuffer::Create(sizeof(Transform), 1);
@@ -87,7 +88,9 @@ namespace QCat
 		lightBuffer = ConstantBuffer::Create(sizeof(light), 3);
 		extraBuffer = ConstantBuffer::Create(sizeof(Extra), 4);
 
-
+		extraData.flip = false;
+		extraData.gamma = false;
+		extraBuffer->SetData(&extraData, sizeof(Extra), 0);
 		
 		RenderCommand::SetClearColor({ 0.1f,0.1f,0.1f,1.0f });
 	}
@@ -148,18 +151,20 @@ namespace QCat
 		{
 			transformData.boneMatrices[i] = transforms[i];
 		}
+
 		BlinnPhongShader->Bind();
 
 		cameraBuffer->Bind(0, Type::Vetex);
 		transformBuffer->Bind(1, Type::Vetex);
 		materialBuffer->Bind(2, Type::Pixel);
 		lightBuffer->Bind(3, Type::Pixel);
+		extraBuffer->Bind(4, Type::Pixel);
 
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
 		for (auto entity : group)
 		{
-			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
-			//glm::mat4 transform = glm::mat4(1.0f);
+			//glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f),glm::vec3(0.0f,0.0f,0.0f));
 
 			Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
 			transformData.transform = transform;

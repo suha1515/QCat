@@ -66,7 +66,7 @@ namespace QCat
             int index = m_OffsetMatMap[nodeName].id;
             glm::mat4 offset = m_OffsetMatMap[nodeName].offsetMatrix;
             m_Transforms[index] = globalTransformation * offset;
-          // m_Transforms[index] = offset;
+          //  m_Transforms[index] = offset;
 
         }
         for (int i = 0; i < node.children.size(); ++i)
