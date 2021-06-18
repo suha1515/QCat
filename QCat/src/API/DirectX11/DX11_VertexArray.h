@@ -7,7 +7,7 @@ namespace QCat
 	class DX11VertexArray : public VertexArray
 	{
 	public:
-		DX11VertexArray();
+		DX11VertexArray(const std::string& meshname = "");
 		~DX11VertexArray();
 
 		virtual void Bind() const override;

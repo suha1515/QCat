@@ -3,9 +3,10 @@
 
 namespace QCat
 {
-	DX11VertexArray::DX11VertexArray()
+	DX11VertexArray::DX11VertexArray(const std::string& meshname)
 	{
 		QCAT_PROFILE_FUNCTION();
+		this->meshname = meshname;
 
 	}
 	DX11VertexArray::~DX11VertexArray()

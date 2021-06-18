@@ -18,14 +18,8 @@ namespace QCat
 		:translation(position),rotation(glm::vec3(0.0f,0.0f,0.0f)),scale(glm::vec3(1.0f,1.0f,1.0f))
 	{
 
-		/*Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1);
-		unsigned int whiteTextureData = 0xffffffff;
-		whiteTexture->SetData(&whiteTextureData, sizeof(unsigned int));
-		material.SetTexture(whiteTexture, Material::TextureType::Specular);*/
-
-
 		// VertexArray
-		m_VertexArray = VertexArray::Create();
+		m_VertexArray = VertexArray::Create("Cube");
 
 		// VertexBuffer
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(36 * sizeof(Vertex));
@@ -86,18 +80,16 @@ namespace QCat
 		vertex[34] = { {-1.0f, -1.0f,  1.0f},{0.0f,-1.0f,0.0f},{0.0f,0.0f + bias} };
 		vertex[35] = { {-1.0f, -1.0f, -1.0f},{0.0f,-1.0f,0.0f},{1.0f,0.0f + bias} };
 		
-		for (int i = 0; i < 36; i += 6)
+		for (int i = 0; i < 36; i += 3)
 		{
 			// position
 			glm::vec3 pos1 = vertex[i].Position;
 			glm::vec3 pos2 = vertex[i + 1].Position;
 			glm::vec3 pos3 = vertex[i + 2].Position;
-			glm::vec3 pos4 = vertex[i + 4].Position;
 			// texture
 			glm::vec2 uv1 = vertex[i].TexCoord;
 			glm::vec2 uv2 = vertex[i + 1].TexCoord;
 			glm::vec2 uv3 = vertex[i + 2].TexCoord;
-			glm::vec2 uv4 = vertex[i + 4].TexCoord;
 
 			glm::vec3 edge1 = pos2 - pos1;
 			glm::vec3 edge2 = pos3 - pos1;
@@ -116,22 +108,6 @@ namespace QCat
 			bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
 			bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
 
-			//triangle 2
-			edge1 = pos3 - pos1;
-			edge2 = pos4 - pos1;
-			deltaUV1 = uv3 - uv1;
-			deltaUV2 = uv4 - uv1;
-
-			f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-			tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-			tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-			tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-
-
-			bitangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-			bitangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-			bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
 
 			vertex[i].Tangent = tangent1;
 			vertex[i].BiTangent = bitangent1;
@@ -141,15 +117,6 @@ namespace QCat
 
 			vertex[i + 2].Tangent = tangent1;
 			vertex[i + 2].BiTangent = bitangent1;
-
-			vertex[i + 3].Tangent = tangent2;
-			vertex[i + 3].BiTangent = bitangent2;
-
-			vertex[i + 4].Tangent = tangent2;
-			vertex[i + 4].BiTangent = bitangent2;
-
-			vertex[i + 5].Tangent = tangent2;
-			vertex[i + 5].BiTangent = bitangent2;
 		}
 
 		vertexBuffer->SetData(vertex, sizeof(vertex));
@@ -181,7 +148,7 @@ namespace QCat
 
 		m_VertexArray->UnBind();
 
-		MeshLibrary::Set("Cube", m_VertexArray);
+		MeshLibrary::Set(m_VertexArray->GetMeshName(), m_VertexArray);
 	}
 	void Cube::SetScale(const glm::vec3& scale)
 	{

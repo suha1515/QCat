@@ -17,6 +17,10 @@ namespace QCat
 		virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const = 0;
 		virtual const Ref<IndexBuffer>& GetIndexBuffer() const = 0;
 
-		static Ref<VertexArray> Create();
+		static Ref<VertexArray> Create(const std::string& name="");
+
+		const std::string GetMeshName() { return meshname; }
+	protected:
+		std::string meshname;
 	};
 }

@@ -29,6 +29,7 @@ namespace QCat
 		{
 			return Get().Set_(meshName, vertexArray);
 		}
+		static std::unordered_map<std::string, Ref<VertexArray>>& GetMeshes() { return Get().m_vertexArray; }
 	private:
 		static MeshLibrary& Get()
 		{
@@ -62,5 +63,6 @@ namespace QCat
 		}
 	private:
 		std::unordered_map<std::string, Ref<VertexArray>> m_vertexArray;
+		std::unordered_map<std::string, std::vector<Ref<VertexArray>>> m_vertexSet;
 	};
 }

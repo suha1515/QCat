@@ -6,7 +6,7 @@ namespace QCat
 	class OpenGLVertexArray : public VertexArray
 	{
 	public:
-		OpenGLVertexArray();
+		OpenGLVertexArray(const std::string& meshname="");
 		~OpenGLVertexArray();
 
 		virtual void Bind() const override;

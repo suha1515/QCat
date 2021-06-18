@@ -249,6 +249,22 @@ namespace QCat
 
 				ImGui::CloseCurrentPopup();
 			}
+			if (ImGui::MenuItem("MeshComponent"))
+			{
+				if (!m_SelectionContext.HasComponent<MeshComponent>())
+					m_SelectionContext.AddComponent<MeshComponent>();
+				else
+					QCAT_CORE_WARN("This Entity already has MeshComponent");
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("MaterialComponent"))
+			{
+				if (!m_SelectionContext.HasComponent<MaterialComponent>())
+					m_SelectionContext.AddComponent<MaterialComponent>();
+				else
+					QCAT_CORE_WARN("This Entity already has MaterialComponent");
+				ImGui::CloseCurrentPopup();
+			}
 			ImGui::EndPopup();
 		}
 
@@ -327,7 +343,65 @@ namespace QCat
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 			}
 		);
+		DrawComponent<MeshComponent>("Mesh", entity,
+			[](auto& component)
+			{
+				static ImGuiComboFlags flags = 0;
+				MeshComponent& mesh = component;
+				const auto& vertexArray = mesh.GetMeshes();
+				std::vector<std::string> meshNames;
+				for (const auto& mesh : MeshLibrary::GetMeshes())
+				{
+					meshNames.push_back(mesh.second->GetMeshName());
+				}
+				static int item_current_idx = 0;
+				std::string comboLabel = meshNames[item_current_idx];
+				if (ImGui::BeginCombo("SavedMeshList", comboLabel.c_str(), flags))
+				{
+					for (int i = 0; i < meshNames.size(); ++i)
+					{
+						const bool is_selected = (item_current_idx == i);
+						if (ImGui::Selectable(meshNames[i].c_str(), is_selected))
+							item_current_idx = i;
 
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Add"))
+				{
+					std::string currentSelectedMeshName = meshNames[item_current_idx];
+					auto iter = std::find_if(mesh.vertexArray.begin(), mesh.vertexArray.end(),
+						[&](const Ref<VertexArray>& mesh)
+						{
+							return mesh->GetMeshName() == currentSelectedMeshName;
+						});
+					if(iter == mesh.vertexArray.end())
+						mesh.vertexArray.push_back(MeshLibrary::Load(currentSelectedMeshName));
+					else
+					{
+
+					}
+				}
+				
+				ImGui::ListBoxHeader("MeshList");
+				static int mesh_current_idx = 0;
+				for (int i=0;i<vertexArray.size();++i)
+				{
+					const bool is_selected = (mesh_current_idx == i);
+					std::string meshName = vertexArray[i]->GetMeshName();
+					if (ImGui::Selectable(meshName.c_str(), is_selected))
+						mesh_current_idx = i;
+
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::ListBoxFooter();
+
+			}
+			);
 		DrawComponent<MaterialComponent>("Material", entity,
 			[](auto& component)
 			{
@@ -443,5 +517,16 @@ namespace QCat
 		{
 			texture = TextureLibrary::Load(*filepath, desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 		}
+	}
+	void ShowMeshList()
+	{
+		std::string chooseMesh = "None";
+		ImGui::Begin("MeshList");
+		auto& meshes = MeshLibrary::GetMeshes();
+		for (auto& mesh : meshes)
+		{
+			ImGui::Button(mesh.second->GetMeshName().c_str());
+		}
+		ImGui::End();
 	}
 }

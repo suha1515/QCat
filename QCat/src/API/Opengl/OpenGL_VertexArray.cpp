@@ -5,9 +5,10 @@
 
 namespace QCat
 {
-	OpenGLVertexArray::OpenGLVertexArray()
+	OpenGLVertexArray::OpenGLVertexArray(const std::string& meshname)
 	{
 		QCAT_PROFILE_FUNCTION();
+		this->meshname = meshname;
 
 		glCreateVertexArrays(1, &m_rendererID);
 	}

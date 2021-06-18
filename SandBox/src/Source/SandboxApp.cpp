@@ -60,8 +60,8 @@ public:
 	Sandbox()
 		:Application("QCat App",QCat::RenderAPI::API::DirectX11)
 	{
-		//PushLayer(new ExamLayer());
-		PushLayer(new QCat::ModelTestScene());
+		PushLayer(new ExamLayer());
+		//PushLayer(new QCat::ModelTestScene());
 		//PushLayer(new QCat::Sandbox2D());
 		//PushLayer(new QCat::TestScene());
 		//PushLayer(new QCat::PbrTest());

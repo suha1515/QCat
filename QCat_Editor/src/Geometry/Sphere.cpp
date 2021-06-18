@@ -25,7 +25,7 @@ namespace QCat
 		//shader->SetInt("material.diffuse", 0);
 		//shader->SetInt("material.specular", 1);
 		// VertexArray
-		m_VertexArray = VertexArray::Create();
+		m_VertexArray = VertexArray::Create("Sphere");
 
 		std::vector<Vertex> vertices;
 		float x, y, z, xy;
@@ -124,7 +124,6 @@ namespace QCat
 			glm::vec2 deltaUV2 = uv3 - uv1;
 
 			glm::vec3 tangent1, bitangent1;
-			glm::vec3 tangent2, bitangent2;
 
 			float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
 			//triangle 1
@@ -173,7 +172,7 @@ namespace QCat
 
 		m_VertexArray->UnBind();
 
-		MeshLibrary::Set("Sphere", m_VertexArray);
+		MeshLibrary::Set(m_VertexArray->GetMeshName(), m_VertexArray);
 	}
 
 	void Sphere::SetScale(const glm::vec3& scale)
