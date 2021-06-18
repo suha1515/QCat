@@ -309,6 +309,7 @@ namespace QCat
 		}
 
 		m_SceneHierarchyPanel.OnImguiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("ViewPort");
