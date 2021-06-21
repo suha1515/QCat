@@ -385,36 +385,22 @@ namespace QCat
 
 					}
 				}
-				
-				ImGui::ListBoxHeader("MeshList");
 				static int mesh_current_idx = 0;
-				/*int index = 0;
-				std::vector<Ref<VertexArray>>::iterator it;
-				for (auto iter = vertexArray.begin();iter<vertexArray.end();iter++)
+				if (ImGui::ListBoxHeader("MeshList", vertexArray.size()))
 				{
-					const bool is_selected = (mesh_current_idx == index);
-					std::string meshName = (*iter)->GetMeshName();
-					if (ImGui::Selectable(meshName.c_str(), is_selected))
-						mesh_current_idx = index;
-
-					if (is_selected)
+					for (int i = 0; i < vertexArray.size(); ++i)
 					{
-						ImGui::SetItemDefaultFocus();
-						it = iter;
-					}
-					index++;
-				}*/
-				for (int i = 0; i < vertexArray.size(); ++i)
-				{
-					const bool is_selected = (mesh_current_idx == i);
-					std::string meshName = vertexArray[i]->GetMeshName();
-					if (ImGui::Selectable(meshName.c_str(), is_selected))
-						mesh_current_idx = i;
+						const bool is_selected = (mesh_current_idx == i);
+						std::string meshName = vertexArray[i]->GetMeshName();
+						if (ImGui::Selectable(meshName.c_str(), is_selected))
+							mesh_current_idx = i;
 
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::ListBoxFooter();
 				}
-				ImGui::ListBoxFooter();
+				
 				if (vertexArray.size() > 0)
 				{
 					if (mesh_current_idx<vertexArray.size())
@@ -437,9 +423,9 @@ namespace QCat
 				ImGui::ColorEdit3("Specaulr", glm::value_ptr(mat.specular));
 
 				ImGui::DragFloat("Shininess",&mat.shininess);
-				ImGui::DragFloat("Metalic", &mat.metallic);
-				ImGui::DragFloat("Rougness",&mat.roughness);
-				ImGui::DragFloat("Ao", &mat.ao);
+				ImGui::DragFloat("Metalic", &mat.metallic, 0.1f);
+				ImGui::DragFloat("Rougness",&mat.roughness, 0.1f);
+				ImGui::DragFloat("Ao", &mat.ao, 0.1f);
 
 				ImGui::Separator();
 				ImGui::Columns(2);

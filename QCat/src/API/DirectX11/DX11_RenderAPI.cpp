@@ -27,7 +27,7 @@ namespace QCat
 		samplerDesc.BorderColor[2] = 1.0f;
 		samplerDesc.BorderColor[3] = 1.0f;
 
-		pgfx->BlendStateEnable(true);
+
 		pgfx->SetSamplerState(samplerDesc);
 		pgfx->BindSamplerState();
 

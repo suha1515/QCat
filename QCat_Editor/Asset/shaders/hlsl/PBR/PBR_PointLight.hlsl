@@ -68,11 +68,11 @@ struct Material
 	float roughness;
 	float ambientocclusion;
 
-	bool IsAlbedoMap;
-	bool IsNormalMap;
-	bool IsMetallicMap;
-	bool IsRoughnessMap;
-	bool IsAoMap;
+	int IsAlbedoMap;
+	int IsNormalMap;
+	int IsMetallicMap;
+	int IsRoughnessMap;
+	int IsAoMap;
 };
 cbuffer material : register(b2)
 {
@@ -164,25 +164,26 @@ PS_OUT PSMain(PSIn input)
 {
 	PS_OUT output;
 
-	float3 albedo = material.IsAlbedoMap ? pow(albedoMap.Sample(albedoMapSplr, input.tc).rgb, 2.2f) : material.albedo;
-	float metallic = material.IsMetallicMap ? metallicMap.Sample(metallicMapSplr, input.tc).r : material.metallic;
-	float roughness = material.IsRoughnessMap ? roughnessMap.Sample(roughnessMapSplr, input.tc).r : material.roughness;
-	float ao = material.IsAoMap ? aoMap.Sample(aoMapSplr, input.tc).r : material.ambientocclusion;
+	float3 albedo = material.albedo * (1 - material.IsAlbedoMap) + pow(albedoMap.Sample(albedoMapSplr, input.tc).rgb, 2.2f) * material.IsAlbedoMap;
+	float metallic = material.metallic * (1-material.IsMetallicMap) + metallicMap.Sample(metallicMapSplr, input.tc).r * material.IsMetallicMap;
+	float roughness = material.roughness * (1-material.IsRoughnessMap) + roughnessMap.Sample(roughnessMapSplr, input.tc).r * material.IsRoughnessMap;
+	float ao = material.ambientocclusion * (1 - material.IsAoMap) + aoMap.Sample(aoMapSplr, input.tc).r * material.IsAoMap;
+
+	//float3 albedo = material.IsAlbedoMap ? pow(albedoMap.Sample(albedoMapSplr, input.tc).rgb, 2.2f) : material.albedo;
+	//float metallic = material.IsMetallicMap ? metallicMap.Sample(metallicMapSplr, input.tc).r : material.metallic;
+	//float roughness = material.IsRoughnessMap ? roughnessMap.Sample(roughnessMapSplr, input.tc).r : material.roughness;
+	//float ao = material.IsAoMap ? aoMap.Sample(aoMapSplr, input.tc).r : material.ambientocclusion;
 
 	float4 color;
 	float3 N;
 	float3 V = normalize(input.viewPosition - input.fragPos);
-	if (material.IsNormalMap)
-	{
-		N = normalMap.Sample(normalMapSplr, input.tc).rgb;
-		N = N * 2.0f - 1.0f;
-		//N = normalize(mul(input.TBN, N));
-		N = normalize(mul(input.TBN, N));
-	}
-	else
-	{
-		N = normalize(input.normal);
-	}
+
+	float3 normal = normalize(input.normal);
+	float3 mapNormal = normalMap.Sample(normalMapSplr, input.tc).rgb;
+	mapNormal = mapNormal * 2.0f - 1.0f;
+	mapNormal = normalize(mul(input.TBN, mapNormal));
+
+	N = normal * (1 - material.IsNormalMap) + mapNormal * material.IsNormalMap;
 
 	float3 R = reflect(-V, N);
 

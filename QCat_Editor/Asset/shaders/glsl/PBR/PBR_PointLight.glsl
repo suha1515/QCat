@@ -57,11 +57,11 @@ struct Material
 	float roughness;
 	float ambientocclusion;
 
-	bool IsAlbedoMap;
-	bool IsNormalMap;
-	bool IsMetallicMap;
-	bool IsRoughnessMap;
-	bool IsAoMap;
+	int IsAlbedoMap;
+	int IsNormalMap;
+	int IsMetallicMap;
+	int IsRoughnessMap;
+	int IsAoMap;
 };
 struct PointLight
 {
@@ -151,26 +151,28 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 }   
 void main()
 {
-	vec3 albedo = material.IsAlbedoMap ? pow(texture(albedoMap, Input.TexCoords).rgb,vec3(2.2)) : material.albedo;
-	float metallic = material.IsMetallicMap ? texture(metallicMap, Input.TexCoords).r : material.metallic;
-	float roughness = material.IsRoughnessMap ? texture(roughnessMap, Input.TexCoords).r : material.roughness;
-	float ao = material.IsAoMap ? texture(aoMap, Input.TexCoords).r : material.ambientocclusion;
+	vec3 albedo = material.albedo * (1.0- material.IsAlbedoMap) + pow(texture(albedoMap, Input.TexCoords).rgb,vec3(2.2)) * material.IsAlbedoMap;
+	//vec3 albedo = material.IsAlbedoMap ? pow(texture(albedoMap, Input.TexCoords).rgb,vec3(2.2)) : material.albedo;
+	float metallic = material.metallic * (1.0-material.IsMetallicMap) +  texture(metallicMap, Input.TexCoords).r *material.IsMetallicMap;
+	float roughness =  material.roughness * (1.0-material.IsRoughnessMap) +  texture(roughnessMap, Input.TexCoords).r * material.IsRoughnessMap;
+	float ao = material.ambientocclusion *(1.0-material.IsAoMap)  +  texture(aoMap, Input.TexCoords).r *material.IsAoMap;
+
+	//float metallic = material.IsMetallicMap ? texture(metallicMap, Input.TexCoords).r : material.metallic;
+	//float roughness = material.IsRoughnessMap ? texture(roughnessMap, Input.TexCoords).r : material.roughness;
+	//float ao = material.IsAoMap ? texture(aoMap, Input.TexCoords).r : material.ambientocclusion;
 
 	vec3 N;
 	vec3 V;
+	vec3 normal = normalize(Input.v_Normal);
+	vec3 mapNormal = texture(normalMap,Input.TexCoords).rgb;
+	mapNormal.r = mapNormal.r *2.0 - 1.0;
+	mapNormal.g = mapNormal.g *2.0 - 1.0;
+	mapNormal.b = mapNormal.b *2.0 - 1.0;
+	mapNormal = normalize(Input.TBN * mapNormal);
+
 	V =  normalize(u_viewPosition - Input.FragPos);
-	if(!material.IsNormalMap)
-	{
-	   N = normalize(Input.v_Normal);
-	}
-	else
-	{
-		N = texture(normalMap,Input.TexCoords).rgb;
-		N.r = N.r *2.0 - 1.0;
-		N.g = N.g *2.0 - 1.0;
-		N.b = N.b *2.0 - 1.0;
-		N = normalize(Input.TBN * N);
-	}	
+
+	N = normal * (1.0f - material.IsNormalMap) + mapNormal * material.IsNormalMap;
 	vec3 R = reflect(-V, N); 
 
 	vec3 result = vec3(0.0f);

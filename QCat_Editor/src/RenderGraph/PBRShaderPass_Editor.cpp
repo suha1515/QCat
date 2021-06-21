@@ -133,11 +133,17 @@ namespace QCat
 
 			//m_PBRShader->SetMat4("u_Transform", transform, ShaderType::VS);
 			//m_PBRShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
-			matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse);
-			matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal);
-			matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic);
-			matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness);
-			matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion);
+			matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
+			matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
+			matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
+			matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness) ? 1.0 : 0.0;
+			matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion) ? 1.0 : 0.0;
+
+			matData.albedo = mat.diffuse;
+			matData.metallic = mat.metallic;
+			matData.roughness = mat.roughness;
+			matData.ambientocclusion = mat.ao;
+
 			materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
 			//m_PBRShader->SetBool("material.IsAlbedoMap", mat.IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
 			//m_PBRShader->SetBool("material.IsNormalMap", mat.IsThereTexture(Material::TextureType::Normal), ShaderType::PS);

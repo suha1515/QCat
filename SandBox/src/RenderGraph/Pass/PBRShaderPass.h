@@ -55,11 +55,11 @@ namespace QCat
 			float roughness;
 			float ambientocclusion;
 
-			int IsAlbedoMap;
-			int IsNormalMap;
-			int IsMetallicMap;
-			int IsRoughnessMap;
-			int IsAoMap;
+			float IsAlbedoMap;
+			float IsNormalMap;
+			float IsMetallicMap;
+			float IsRoughnessMap;
+			float IsAoMap;
 		};
 		struct light
 		{
