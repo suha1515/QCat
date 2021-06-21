@@ -348,7 +348,7 @@ namespace QCat
 			{
 				static ImGuiComboFlags flags = 0;
 				MeshComponent& mesh = component;
-				const auto& vertexArray = mesh.GetMeshes();
+				auto& vertexArray = mesh.GetMeshes();
 				std::vector<std::string> meshNames;
 				for (const auto& mesh : MeshLibrary::GetMeshes())
 				{
@@ -388,7 +388,23 @@ namespace QCat
 				
 				ImGui::ListBoxHeader("MeshList");
 				static int mesh_current_idx = 0;
-				for (int i=0;i<vertexArray.size();++i)
+				/*int index = 0;
+				std::vector<Ref<VertexArray>>::iterator it;
+				for (auto iter = vertexArray.begin();iter<vertexArray.end();iter++)
+				{
+					const bool is_selected = (mesh_current_idx == index);
+					std::string meshName = (*iter)->GetMeshName();
+					if (ImGui::Selectable(meshName.c_str(), is_selected))
+						mesh_current_idx = index;
+
+					if (is_selected)
+					{
+						ImGui::SetItemDefaultFocus();
+						it = iter;
+					}
+					index++;
+				}*/
+				for (int i = 0; i < vertexArray.size(); ++i)
 				{
 					const bool is_selected = (mesh_current_idx == i);
 					std::string meshName = vertexArray[i]->GetMeshName();
@@ -399,7 +415,16 @@ namespace QCat
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::ListBoxFooter();
-
+				if (vertexArray.size() > 0)
+				{
+					if (mesh_current_idx<vertexArray.size())
+					{
+						if (ImGui::Button("Remove"))
+						{
+							vertexArray.erase(vertexArray.begin() + mesh_current_idx);
+						}
+					}
+				}
 			}
 			);
 		DrawComponent<MaterialComponent>("Material", entity,

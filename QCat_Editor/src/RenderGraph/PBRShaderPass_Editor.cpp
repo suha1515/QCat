@@ -146,19 +146,18 @@ namespace QCat
 			//m_PBRShader->SetBool("material.IsAoMap", mat.IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
 			//m_PBRShader->UpdateBuffer();
 
-			mat.Bind(0, Material::TextureType::Diffuse);
-			mat.Bind(1, Material::TextureType::Normal);
-			mat.Bind(2, Material::TextureType::Metallic);
-			mat.Bind(3, Material::TextureType::Roughness);
-			mat.Bind(4, Material::TextureType::AmbientOcclusion);
-
-			m_IrradianceCubeMap->Bind(5);
-			m_PrefilterMap->Bind(6);
-			m_BRDFLutTextrue->Bind(7);
-
 			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
 			for (auto& mesh : meshComponent.GetMeshes())
 			{
+				mat.Bind(0, Material::TextureType::Diffuse);
+				mat.Bind(1, Material::TextureType::Normal);
+				mat.Bind(2, Material::TextureType::Metallic);
+				mat.Bind(3, Material::TextureType::Roughness);
+				mat.Bind(4, Material::TextureType::AmbientOcclusion);
+
+				m_IrradianceCubeMap->Bind(5);
+				m_PrefilterMap->Bind(6);
+				m_BRDFLutTextrue->Bind(7);
 				RenderCommand::DrawIndexed(mesh);
 			}
 			

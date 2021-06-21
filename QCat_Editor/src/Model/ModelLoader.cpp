@@ -148,7 +148,14 @@ namespace QCat
 			for (uint32_t j = 0; j < face.mNumIndices; ++j)
 				indices.emplace_back(face.mIndices[j]);
 		}
-		Ref<VertexArray> vertarray = VertexArray::Create();
+		std::string meshName = mesh->mName.C_Str();
+		if (meshName == "")
+		{
+			meshName = node->mName.C_Str();
+			meshName += "_Mesh";
+		}
+			
+		Ref<VertexArray> vertarray = VertexArray::Create(meshName);
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
 
 		vertexBuffer->SetData(vertices.data(), sizeof(Vertex) * vertices.size());
