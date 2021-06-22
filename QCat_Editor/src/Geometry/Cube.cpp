@@ -26,7 +26,7 @@ namespace QCat
 		Vertex vertex[36];
 		// backward
 		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? 1.0f : 0.0f;
-
+		bias = 0.0f;
 		vertex[0] = { { -1.0f, -1.0f, -1.0f},{0.0f,0.0f,-1.0f},{0.0f,1.0 - bias} };
 		vertex[1] = { {  1.0f,  1.0f, -1.0f},{0.0f,0.0f,-1.0f},{1.0f,0.0 + bias} };
 		vertex[2] = { {  1.0f, -1.0f, -1.0f},{0.0f,0.0f,-1.0f},{1.0f,1.0 - bias} };

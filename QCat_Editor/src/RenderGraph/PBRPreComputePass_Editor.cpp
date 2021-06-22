@@ -28,18 +28,6 @@ namespace QCat
 		m_IrradianceMapShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/IrradianceConvolution.hlsl" : "Asset/shaders/glsl/PBR/IrradianceConvolution.glsl");
 		m_PrefilterShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/prefilter.hlsl" : "Asset/shaders/glsl/PBR/prefilter.glsl");
 		
-		//m_HdrToCubeMapShader->Bind();
-		//m_HdrToCubeMapShader->SetInt("equirectangularMap", 0, ShaderType::PS);
-
-		//m_HdrCubeMapShader->Bind();
-		//m_HdrCubeMapShader->SetInt("environmentMap", 0, ShaderType::PS);
-
-		//m_IrradianceMapShader->Bind();
-		//m_IrradianceMapShader->SetInt("envMap", 0, ShaderType::PS);
-
-		//m_PrefilterShader->Bind();
-		//m_PrefilterShader->SetInt("environmentMap", 0, ShaderType::PS);
-
 		float quadVertices[] =
 		{
 			-1.0f, 1.0f,  0.0f,0.0f,

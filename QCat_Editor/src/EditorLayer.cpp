@@ -102,7 +102,7 @@ namespace QCat
 		auto& comp = light1.AddComponent<LightComponent>();
 		comp.diffuse = { 300.0f,300.0f,300.0f };
 
-		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc,1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc,1, 1);
 
 		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
 		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));

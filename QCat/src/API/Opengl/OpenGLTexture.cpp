@@ -44,9 +44,9 @@ namespace QCat
 		std::string extension = path.substr(begin + 1, path.length());
 		int width, height, channels;
 		if(!flip)
-			stbi_set_flip_vertically_on_load(0);
-		else
 			stbi_set_flip_vertically_on_load(1);
+		else
+			stbi_set_flip_vertically_on_load(0);
 		void* stb_data = nullptr;
 		void *pData=nullptr;
 		//stbi_uc* data = nullptr;
