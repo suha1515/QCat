@@ -60,6 +60,8 @@ namespace QCat
 		RGB8,RGB16_Float,
 		// 16bit
 		RG8,
+		// 8bit
+		R8,
 		// DepthStencil
 		DEPTH24STENCIL8,
 		DEPTH32,

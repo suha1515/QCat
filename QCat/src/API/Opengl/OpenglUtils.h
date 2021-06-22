@@ -240,7 +240,8 @@ namespace QCat
 
 				//16bit
 			case GL_RG8:	return TextureFormat::RG8;
-
+				//8bit
+			case GL_R8:		return TextureFormat::R8;
 
 				//depth
 			case  GL_DEPTH_COMPONENT32:   return TextureFormat::DEPTH32;

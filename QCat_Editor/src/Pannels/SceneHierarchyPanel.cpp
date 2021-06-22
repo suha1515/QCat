@@ -523,7 +523,7 @@ namespace QCat
 		desc.addressV = WrapingMode::CLAMP;
 		desc.MIN = Filtering::LINEAR;
 		desc.MAG = Filtering::LINEAR;
-		std::optional<std::string> filepath = FileDialogs::OpenFile("Image File \0*.PNG;.JPEG\0");
+		std::optional<std::string> filepath = FileDialogs::OpenFile("Image File \0*.PNG;*.JPEG;*.JPG;\0");
 		if (filepath)
 		{
 			texture = TextureLibrary::Load(*filepath, desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);

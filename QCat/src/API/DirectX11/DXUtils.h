@@ -65,6 +65,9 @@ namespace QCat
 			
 			case DXGI_FORMAT_R16G16B16A16_FLOAT:	  return TextureFormat::RGBA16_Float;
 			case DXGI_FORMAT_R32G32B32A32_FLOAT:	  return TextureFormat::RGBA32_Float;
+
+			//8bit
+			case DXGI_FORMAT_R8_UNORM:				  return TextureFormat::R8;
 			}
 		}
 		static unsigned long long GetDataSize(TextureFormat format)

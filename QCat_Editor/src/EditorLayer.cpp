@@ -117,7 +117,7 @@ namespace QCat
 		imgSamp.addressV = WrapingMode::REPEAT;
 		imgSamp.MIN = Filtering::LINEAR;
 		imgSamp.MAG = Filtering::LINEAR;
-		imgSamp.MIP = Filtering::LINEAR;
+		imgSamp.MIP = Filtering::NONE;
 		Material goldenBall;
 		goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);

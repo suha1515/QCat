@@ -203,6 +203,12 @@ namespace QCat
 	{
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
 		glBindTexture(GL_TEXTURE_2D, m_renderID);
+		Utils::SetTextureParameter(GL_TEXTURE_2D, smpdesc);
+		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		if (this->desc.usage == TextureUsage::Immutable)
 		{
 			if (samples>1)
@@ -220,7 +226,7 @@ namespace QCat
 			}
 			glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_width, m_height, 0, m_Format, m_DataFormat, pData);
 		}
-		Utils::SetTextureParameter(GL_TEXTURE_2D, smpdesc);
+	
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
 		:flip(flip),gammaCorrection(gammaCorrection), smpdesc(desc)
