@@ -143,7 +143,7 @@ namespace QCat
 		glm::vec3 diffuse = { 1.0f,1.0f,1.0f };
 		glm::vec3 ambient = { 0.2f,0.2f,0.2f };
 		glm::vec3 specular = { 1.0f,1.0f,1.0f };
-		glm::vec3 lightDirection;
+		glm::vec3 lightDirection = { 0.0f,0.0f,0.0f };
 
 		float constant = 1.0f;
 		float linear = 0.09f;

@@ -130,20 +130,20 @@ namespace QCat
 		ball.AddComponent<MeshComponent>("Cube");
 		ball.AddComponent<MaterialComponent>(goldenBall);
 
-		//model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
+		model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
 
-		//Material gunMat;
-		//imgSamp.MIP = Filtering::NONE;
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
+		Material gunMat;
+		imgSamp.MIP = Filtering::NONE;
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
+		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
 
-		//SetMaterial(model, gunMat);
-		//model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
-		//model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
-		//model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
-		//UpdateTransform(model, glm::mat4(1.0f));
+		SetMaterial(model, gunMat);
+		model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
+		model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
+		model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
+		UpdateTransform(model, glm::mat4(1.0f));
 	}
 
 	void EditorLayer::OnDetach()

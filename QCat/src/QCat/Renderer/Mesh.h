@@ -4,20 +4,19 @@
 
 namespace QCat
 {
-	/*class Mesh
+	class ModelLibrary
 	{
 	public:
-		Mesh(std::string meshName,Ref<VertexArray> vertexArray);
-		Mesh(std::string meshName = "");
-		virtual ~Mesh() = default;
-
-
-		void Bind();
-		void UnBind();
-;	private:
-		Ref<VertexArray> m_vertexArray;
-	};*/
-
+		static std::vector<std::string>& GetModelList() { return Get().modelPath; };
+	private:
+		static ModelLibrary& Get()
+		{
+			static ModelLibrary lib;
+			return lib;
+		}
+	private:
+		std::vector<std::string> modelPath;
+	};
 	class MeshLibrary
 	{
 	public:

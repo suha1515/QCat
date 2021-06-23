@@ -37,6 +37,7 @@ namespace QCat
 	}
 	Entity ModelLoader::LoadModel(const char* path, const Ref<Scene>& pScene)
 	{
+		ModelLibrary::GetModelList().push_back(path);
 		return LoadModelEntity(path, pScene);
 	}
 	Entity ModelLoader::LoadModelEntity(const std::string& path, const Ref<Scene>& pScene)

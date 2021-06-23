@@ -35,8 +35,6 @@ namespace QCat
 		glm::vec3 translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 scale = { 1.0f,1.0f,1.0f };
-
-
 	};
 
 	class ModelLoader
@@ -53,4 +51,5 @@ namespace QCat
 		static Entity ProcessAnimatedNodeEntity(aiNode* node, const aiScene* scene, const Ref<Scene>& pScene, Entity* parentEntity);
 		static Ref<VertexArray> ProcessAnimatedMeshEntity(aiNode* node, aiMesh* mesh, const aiScene* scene,Animator& animator);
 	};
+	
 }

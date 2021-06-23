@@ -86,7 +86,8 @@ namespace QCat
 	{
 		// after begin map key and value write
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << "1233457567"; // TODO: Entity ID goes in here
+		out << YAML::Key << "Entity" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(entity.GetHandle()); // TODO: Entity ID goes in here
+		
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -149,11 +150,109 @@ namespace QCat
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
 
+		if (entity.HasComponent<MeshComponent>())
+		{
+			out << YAML::Key << "MeshComponent";
+			out << YAML::BeginMap; // MeshComponent;
+
+			auto& meshComponent = entity.GetComponent<MeshComponent>();
+			out << YAML::Key << "Meshname" << YAML::Value << YAML::BeginSeq;
+
+			for (auto& mesh : meshComponent.GetMeshes())
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Meshname" << YAML::Value << mesh->GetMeshName();
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<MaterialComponent>())
+		{
+			auto& materialComponent = entity.GetComponent<MaterialComponent>();
+			auto& material = materialComponent.material;
+			out << YAML::Key << "MaterialComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Albedo" << YAML::Value << material.diffuse;
+			out << YAML::Key << "Specular" << YAML::Value << material.specular;
+			out << YAML::Key << "Ambient" << YAML::Value << material.ambient;
+			out << YAML::Key << "Shininess" << YAML::Value << material.shininess;
+			out << YAML::Key << "Metallic" << YAML::Value << material.metallic;
+			out << YAML::Key << "Roughness" << YAML::Value << material.roughness;
+			out << YAML::Key << "AmbientOcclusion" << YAML::Value << material.ao;
+
+			out << YAML::Key << "AlbedoTexture" << YAML::Value << (material.m_DiffuseTexture != nullptr ? material.m_DiffuseTexture->GetTexturePath() : "none");
+			out << YAML::Key << "NormalTexture" << YAML::Value << (material.m_NormalMapTexture != nullptr ? material.m_NormalMapTexture->GetTexturePath() : "none");
+			out << YAML::Key << "SpecularTexture" << YAML::Value << (material.m_SpecularTexture != nullptr ? material.m_NormalMapTexture->GetTexturePath() : "none");
+			out << YAML::Key << "MetallicTexture" << YAML::Value << (material.m_MetallicTexture != nullptr ? material.m_MetallicTexture->GetTexturePath() : "none");
+			out << YAML::Key << "RoughnessTexture" << YAML::Value << (material.m_RoughnessTexture != nullptr ? material.m_RoughnessTexture->GetTexturePath() : "none");
+			out << YAML::Key << "AmbientOcclusionTexture" << YAML::Value << (material.m_AmbientOcclusionTexture != nullptr ? material.m_AmbientOcclusionTexture->GetTexturePath() : "none");
+
+			out << YAML::EndMap;
+
+		}
+
+		if (entity.HasComponent<RelationShipComponent>())
+		{
+			auto& relationshipComp = entity.GetComponent<RelationShipComponent>();
+			out << YAML::Key << "RelationShipComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Parent" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.parent.GetHandle());
+			out << YAML::Key << "PrevSibling" << YAML::Value  <<static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.prevSibling.GetHandle());
+			out << YAML::Key << "NextSibling" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.nextSibling.GetHandle());
+			out << YAML::Key << "FirstChild" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.firstChild.GetHandle());
+			out << YAML::EndMap;
+		}
+
+		if (entity.HasComponent<LightComponent>())
+		{
+			auto& lightComponent = entity.GetComponent<LightComponent>();
+			out << YAML::Key << "LightComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "LightColor";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Diffuse" << YAML::Value << lightComponent.diffuse;
+			out << YAML::Key << "Ambient" << YAML::Value << lightComponent.ambient;
+			out << YAML::Key << "Specular" << YAML::Value << lightComponent.specular;
+			out << YAML::EndMap;
+			out << YAML::Key << "Directional Light";
+			out << YAML::BeginMap;
+			out << YAML::Key << "LightDirection" << YAML::Value << lightComponent.lightDirection;
+			out << YAML::EndMap;
+			out << YAML::Key << "Point Light";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Constant" << YAML::Value << lightComponent.constant;
+			out << YAML::Key << "Quadratic" << YAML::Value << lightComponent.quadratic;
+			out << YAML::Key << "Linear" << YAML::Value << lightComponent.linear;
+			out << YAML::Key << "Radius" << YAML::Value << lightComponent.radius;
+			out << YAML::EndMap;
+			out << YAML::Key << "Spot Light";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Cutoff" << YAML::Value << lightComponent.cutoff;
+			out << YAML::Key << "OuterCutoff" << YAML::Value << lightComponent.outerCutOff;
+			out << YAML::EndMap;
+			out << YAML::Key << "Type" << YAML::Value << static_cast<int>(lightComponent.type);
+			out << YAML::EndMap;
+		}
+
 		out << YAML::EndMap; // Entity
 	}
 	void SceneSerializer::Serialize(const std::string& filepath)
 	{
 		YAML::Emitter out;
+		
+		//Model List
+		out << YAML::BeginMap;
+		out << YAML::Key << "ModelPath" << YAML::Value << YAML::BeginSeq;
+		for (auto& path : ModelLibrary::GetModelList())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Path" << YAML::Value << path;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
 		// begin Map
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled"; // Key and Value

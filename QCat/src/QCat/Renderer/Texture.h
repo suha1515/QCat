@@ -38,6 +38,8 @@ namespace QCat
 
 		virtual TextureType GetTextureType() const { return desc.Type; } ;
 		virtual TextureFormat GetTextureFormat() const { return desc.Format; };
+
+		std::string GetTexturePath() { return path; }
 		
 		//virtual Texture& operator=(const Texture& other) = 0;
 
