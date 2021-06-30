@@ -68,7 +68,9 @@ namespace QCat
 		// if node has meshes, Node has a meshIndex and Scene has a real mesh so
 		// if node want to acess its own meshes , pass the nodes meshIndex to scene->mMeshes
 		std::string nodeName = node->mName.C_Str();
-		Entity entity = pScene->CreateEntity(nodeName, parentEntity);
+		Entity entity = pScene->CreateEntity(nodeName);
+		entity.SetParent(parentEntity);
+
 		glm::mat4 transform = Utils::ConvertToGlm(node->mTransformation);
 		glm::vec3 scale, translation, skew;
 		glm::quat rotation;

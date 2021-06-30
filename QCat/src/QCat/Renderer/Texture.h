@@ -17,6 +17,7 @@ namespace QCat
 		TextureFormat Format;
 		TextureType Type;
 		TextureUsage usage;
+		bool gammaCorrection;
 	};
 	class Texture
 	{
@@ -40,7 +41,7 @@ namespace QCat
 		virtual TextureFormat GetTextureFormat() const { return desc.Format; };
 
 		std::string GetTexturePath() { return path; }
-		
+		std::string GetSamplerSignature() { return sampler->GetSignature(); }
 		//virtual Texture& operator=(const Texture& other) = 0;
 
 		Ref<SamplerState> sampler;
@@ -71,13 +72,17 @@ namespace QCat
 	class TextureLibrary
 	{
 	public:
-		static Ref<Texture2D> Load(const std::string& path, Sampler_Desc desc = {}, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
+		static Ref<Texture2D>& Load(const std::string& path, Sampler_Desc desc = {}, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
 		{
 			return Get().Load_(path, desc,mipLevel,samples,flip,gamaCorrection);
 		}
-		static Ref<Texture2D> Load(const std::string& name, TextureFormat format, unsigned int width, unsigned int height,void* pData, Sampler_Desc desc = {},unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
+		static Ref<Texture2D>& Load(const std::string& name, TextureFormat format, unsigned int width, unsigned int height,void* pData, Sampler_Desc desc = {},unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
 		{
 			return Get().Load_(name, format,width,height,pData,desc, mipLevel, samples, flip);
+		}
+		static std::vector<std::string>& GetTexturePathList()
+		{
+			return Get().texturepathlist;
 		}
 	private:
 		static TextureLibrary& Get()
@@ -89,7 +94,7 @@ namespace QCat
 		{
 			return m_Textures.find(path) != m_Textures.end();
 		}
-		Ref<Texture2D> Load_(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip=false,  bool gamaCorrection = false)
+		Ref<Texture2D>& Load_(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip=false,  bool gamaCorrection = false)
 		{
 			if (Exists(path))
 			{
@@ -97,12 +102,13 @@ namespace QCat
 			}
 			else
 			{
+				texturepathlist.push_back(path);
 				Ref<Texture2D> texture = Texture2D::Create(path, desc,mipLevel,samples,flip, gamaCorrection);
 				m_Textures[path] = texture;
-				return texture;
+				return m_Textures[path];
 			}
 		}
-		Ref<Texture2D> Load_(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc,unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
+		Ref<Texture2D>& Load_(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc,unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
 		{
 			if (Exists(name))
 			{
@@ -112,11 +118,12 @@ namespace QCat
 			{
 				Ref<Texture2D> texture = Texture2D::Create(format,desc,width,height, mipLevel, samples,pData);
 				m_Textures[name] = texture;
-				return texture;
+				return m_Textures[name];
 			}
 		}
 	private:
 		std::unordered_map<std::string, Ref<Texture2D>> m_Textures;
+		std::vector <std::string> texturepathlist;
 	};
 
 

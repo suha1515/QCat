@@ -25,7 +25,7 @@ namespace QCat
 		for (auto entity : view)
 		{
 			RelationShipComponent& comp = view.get<RelationShipComponent>(entity);
-			if (comp.parent == Entity::emptyEntity)
+			if (m_Context->GetEntityById(comp.parent) == Entity::emptyEntity)
 			{
 				Entity ent = { entity,m_Context.get() };
 				DrawEntityNode(ent);
@@ -82,7 +82,8 @@ namespace QCat
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				m_Context->CreateEntity("Empty Entity", &entity);
+				auto entity = m_Context->CreateEntity("Empty Entity");
+				entity.SetParent(&entity);
 			}
 			if (ImGui::MenuItem("Delete Entity"))
 				entityDeleted = true;
@@ -92,12 +93,13 @@ namespace QCat
 		if (opened)
 		{
 			RelationShipComponent& comp = entity.GetComponent<RelationShipComponent>();
-			auto curr = comp.firstChild;
-			while (curr != Entity::emptyEntity)
+			auto currid = comp.firstChild;
+			auto currentity = m_Context->GetEntityById(currid);
+			while (currentity != Entity::emptyEntity)
 			{
-				auto nextSiling = curr.GetComponent<RelationShipComponent>().nextSibling;
-				DrawEntityNode(curr);
-				curr = nextSiling;
+				auto nextSibling = currentity.GetComponent<RelationShipComponent>().nextSibling;
+				DrawEntityNode(currentity);
+				currentity = m_Context->GetEntityById(nextSibling);
 			}
 			ImGui::TreePop();
 		}
@@ -272,11 +274,20 @@ namespace QCat
 
 		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 			{
+				glm::vec3 exTranslation = component.Translation;
+				glm::vec3 exRotation = component.Rotation;
+				glm::vec3 exScale = component.Scale;
+
 				DrawVec3Control("Translation", component.Translation);
 				glm::vec3 rotation = glm::degrees(component.Rotation);
 				DrawVec3Control("Rotation", rotation);
 				component.Rotation = glm::radians(rotation);
 				DrawVec3Control("Scale", component.Scale, 1.0f);
+
+				if (exTranslation != component.Translation || exRotation != component.Rotation || exScale != component.Scale)
+				{
+					component.changed = true;
+				}
 			}
 		);
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)

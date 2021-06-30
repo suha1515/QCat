@@ -31,11 +31,37 @@ namespace QCat
 		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
+		bool changed = false;
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::vec3& translation)
 			:Translation(translation) {}
+
+		void SetTranslation(const glm::vec3& translation)
+		{
+			if (Translation != translation)
+			{
+				Translation = translation;
+				changed = true;
+			}	
+		}
+		void SetRotation(const glm::vec3& rotation)
+		{
+			if (Rotation != rotation)
+			{
+				Rotation = rotation;
+				changed = true;
+			}
+		}
+		void SetScale(const glm::vec3& scale)
+		{
+			if (Scale != scale)
+			{
+				Scale = scale;
+				changed = true;
+			}
+		}
 		void SetTransform(const glm::mat4& transform)
 		{
 			glm::vec3 translation, rotation, scale;
@@ -44,6 +70,7 @@ namespace QCat
 			Translation = translation;
 			Rotation = rotation;
 			Scale = scale;
+			changed = true;
 		}
 		glm::mat4 GetTransform() const
 		{
@@ -111,6 +138,18 @@ namespace QCat
 		{
 			vertexArray->UnBind();
 		}*/
+		void AddMesh(const std::string& meshName)
+		{
+			auto mesh = MeshLibrary::Load(meshName);
+			if (mesh != nullptr)
+				vertexArray.push_back(mesh);
+			else
+				QCAT_CORE_ERROR("There is no mesh name '{1}'", meshName);
+		}
+		void AddMesh(Ref<VertexArray>& vertexarray)
+		{
+			vertexArray.push_back(vertexarray);
+		}
 		std::vector<Ref<VertexArray>>& GetMeshes() { return vertexArray; }
 	};
 	struct MaterialComponent
@@ -126,10 +165,10 @@ namespace QCat
 	};
 	struct RelationShipComponent
 	{
-		Entity firstChild;
-		Entity prevSibling;
-		Entity nextSibling;
-		Entity parent;
+		uint32_t firstChild= 0xFFFFFFFF;
+		uint32_t prevSibling= 0xFFFFFFFF;
+		uint32_t nextSibling= 0xFFFFFFFF;
+		uint32_t parent = 0xFFFFFFFF;
 		RelationShipComponent()=default;
 		bool dead = false;
 	};

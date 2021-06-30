@@ -39,6 +39,8 @@ namespace QCat
 	class SamplerState
 	{
 	public:
+		static Sampler_Desc MakeSamplerDesc(const std::string& signature);
+	public:
 		SamplerState() = default;
 		SamplerState(Sampler_Desc desc):desc(desc)
 		{}
@@ -66,6 +68,7 @@ namespace QCat
 		void SetMinLod(float minLod);
 		void SetMaxLod(float maxLod);
 
+		std::string GetSignature();
 		static Ref<SamplerState> Create(Sampler_Desc desc);
 		const Sampler_Desc GetDesc() { return desc; }
 	protected:

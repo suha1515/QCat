@@ -150,6 +150,7 @@ namespace QCat
 
 		Validate(m_Format, m_InternalFormat, m_DataFormat, m_width, m_height, m_mipLevel, m_samples, pData);
 
+
 	}
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
@@ -226,7 +227,7 @@ namespace QCat
 			}
 			glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_width, m_height, 0, m_Format, m_DataFormat, pData);
 		}
-	
+		sampler = OpenGLSampler::Create(smpdesc);
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
 		:flip(flip),gammaCorrection(gammaCorrection), smpdesc(desc)

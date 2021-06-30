@@ -14,31 +14,32 @@
 
 namespace QCat
 {
-	void SetMaterial(Entity& entity, Material& mat)
+	void SetMaterial(Entity& entity, Material& mat,Scene* activeScene)
 	{
 		if (entity.HasComponent<MaterialComponent>())
 		{
 			entity.GetComponent<MaterialComponent>().material = mat;
 		}
-		auto child = entity.GetComponent<RelationShipComponent>().firstChild;
-
-		while (child != Entity::emptyEntity)
+		auto childid = entity.GetComponent<RelationShipComponent>().firstChild;
+		auto childentity = activeScene->GetEntityById(childid);
+		while (childentity != Entity::emptyEntity)
 		{
-			SetMaterial(child, mat);
-			child = child.GetComponent<RelationShipComponent>().nextSibling;
+			SetMaterial(childentity, mat,activeScene);
+			childentity = activeScene->GetEntityById(childentity.GetComponent<RelationShipComponent>().nextSibling);
 		}
 	}
-	void UpdateTransform(Entity& entity, const glm::mat4 parentMatrix)
+	void UpdateTransform(Entity& entity, const glm::mat4 parentMatrix, Scene* activeScene)
 	{
 		TransformComponent& transcomp = entity.GetComponent<TransformComponent>();
 		transcomp.parentMatrix = parentMatrix;
 		const glm::mat4 localMatrix = transcomp.GetTransform();
-		auto child = entity.GetComponent<RelationShipComponent>().firstChild;
+		auto childid = entity.GetComponent<RelationShipComponent>().firstChild;
+		auto childentity = activeScene->GetEntityById(childid);
 
-		while (child != Entity::emptyEntity)
+		while (childentity != Entity::emptyEntity)
 		{
-			UpdateTransform(child, localMatrix);
-			child = child.GetComponent<RelationShipComponent>().nextSibling;
+			UpdateTransform(childentity, localMatrix,activeScene);
+			childentity = activeScene->GetEntityById(childentity.GetComponent<RelationShipComponent>().nextSibling);
 		}
 	}
 	EditorLayer::EditorLayer()
@@ -86,6 +87,15 @@ namespace QCat
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
+		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc,1, 1);
+
+		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
+		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
+
+		EditorPBRRenderGraph.SetHdrImg(hdrImage);
+		EditorPBRRenderGraph.SetView(viewMatrix);
+		EditorPBRRenderGraph.SetProj(projectionMatrix);
+		EditorPBRRenderGraph.Initialize();
 
 		m_Camera = m_ActiveScene->CreateEntity("Camera");
 
@@ -102,23 +112,13 @@ namespace QCat
 		auto& comp = light1.AddComponent<LightComponent>();
 		comp.diffuse = { 300.0f,300.0f,300.0f };
 
-		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc,1, 1);
-
-		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
-		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
-
-		EditorPBRRenderGraph.SetHdrImg(hdrImage);
-		EditorPBRRenderGraph.SetView(viewMatrix);
-		EditorPBRRenderGraph.SetProj(projectionMatrix);
-		EditorPBRRenderGraph.Initialize();
-
 		Sampler_Desc imgSamp;
 		imgSamp.addressU = WrapingMode::REPEAT;
 		imgSamp.addressV = WrapingMode::REPEAT;
 		imgSamp.MIN = Filtering::LINEAR;
 		imgSamp.MAG = Filtering::LINEAR;
 		imgSamp.MIP = Filtering::NONE;
-		Material goldenBall;
+		/*Material goldenBall;
 		goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
 		goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
@@ -128,7 +128,7 @@ namespace QCat
 		Entity ball = m_ActiveScene->CreateEntity("GoldenBall");
 		ball.GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
 		ball.AddComponent<MeshComponent>("Cube");
-		ball.AddComponent<MaterialComponent>(goldenBall);
+		ball.AddComponent<MaterialComponent>(goldenBall);*/
 
 		model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
 
@@ -139,11 +139,11 @@ namespace QCat
 		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
 		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
 
-		SetMaterial(model, gunMat);
+		SetMaterial(model, gunMat,m_ActiveScene.get());
 		model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
 		model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
 		model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
-		UpdateTransform(model, glm::mat4(1.0f));
+		UpdateTransform(model, glm::mat4(1.0f), m_ActiveScene.get());
 	}
 
 	void EditorLayer::OnDetach()
@@ -196,7 +196,7 @@ namespace QCat
 
 		// Update Scene
 		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
-		//m_ActiveScene->OnUpdateRuntime(ts);
+		m_ActiveScene->OnUpdateRuntime(ts);
 
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
@@ -221,7 +221,7 @@ namespace QCat
 		//m_Framebuffer->UnBind();
 		//m_FrameBufferEx->UnBind();
 		//RenderCommand::SetDefaultFrameBuffer();
-
+	
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -402,13 +402,28 @@ namespace QCat
 			if (ImGuizmo::IsUsing())
 			{
 				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform,translation, rotation, scale);
+				glm::mat4 localTransform = glm::inverse(tc.parentMatrix) * transform ;
+				Math::DecomposeTransform(localTransform,translation, rotation, scale);
 
 				glm::vec3 deltaRotation = rotation -  tc.Rotation;
-				tc.Translation = translation;
-				tc.Rotation += deltaRotation;
-				tc.Scale = scale;
-				
+				//tc.SetTranslation(translation);
+				//tc.SetRotation(tc.Rotation + deltaRotation);
+				//tc.SetScale(scale);
+				if (tc.Translation != translation)
+				{
+					tc.Translation = translation;
+					tc.changed = true;
+				}
+				if (tc.Rotation != tc.Rotation + deltaRotation)
+				{
+					tc.Rotation += deltaRotation;
+					tc.changed = true;
+				}
+				if (tc.Scale != scale)
+				{
+					tc.Scale = scale;
+					tc.changed = true;
+				}
 			}
 		}
 

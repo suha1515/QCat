@@ -46,21 +46,6 @@ namespace QCat
 		m_PBRShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBR_PointLight.glsl");
 		m_FlatColorShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/FlatColor.hlsl" : "Asset/shaders/glsl/FlatColor.glsl");
 		m_SkyBoxShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/MakeHDRCubeMap.hlsl" : "Asset/shaders/glsl/PBR/MakeHDRCubeMap.glsl");
-
-
-	/*	m_SkyBoxShader->Bind();
-		m_SkyBoxShader->SetInt("environmentMap", 0, ShaderType::PS);
-
-		m_PBRShader->Bind();
-		m_PBRShader->SetInt("material.albedoMap", 0, ShaderType::PS);
-		m_PBRShader->SetInt("material.normalMap", 1, ShaderType::PS);
-		m_PBRShader->SetInt("material.metallicMap", 2, ShaderType::PS);
-		m_PBRShader->SetInt("material.roughnessMap", 3, ShaderType::PS);
-		m_PBRShader->SetInt("material.aoMap", 4, ShaderType::PS);
-		m_PBRShader->SetInt("irradianceMap", 5, ShaderType::PS);
-		m_PBRShader->SetInt("prefilterMap", 6, ShaderType::PS);
-		m_PBRShader->SetInt("brdfLUT", 7, ShaderType::PS);*/
-
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{

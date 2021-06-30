@@ -15,90 +15,100 @@ namespace QCat
 	Scene::~Scene()
 	{
 	}
-	Entity Scene::CreateEntity(const std::string& name, Entity* parentEntity)
+	Entity Scene::CreateEntity(const std::string& name , uint32_t id)
 	{
-		Entity  entity = { m_Registry.create(), this };
+		m_Registry.create();
+		Entity  entity = { m_Registry.create(), this};
 		entity.AddComponent<TransformComponent>();
-
-		//RelationShip Component (for hierarchy Structure)
 		RelationShipComponent& comp = entity.AddComponent<RelationShipComponent>();
-		if (parentEntity!=nullptr)
-		{
-			comp.parent = *parentEntity;
-			RelationShipComponent& parentcomp = comp.parent.GetComponent<RelationShipComponent>();
-			auto curr = parentcomp.firstChild;
-			if (curr.GetHandle() == entt::null)
-			{
-				parentcomp.firstChild = entity;
-			}
-			else
-			{
-				while (curr.GetHandle() != entt::null)
-				{
-					RelationShipComponent& comp = curr.GetComponent < RelationShipComponent>();
-					if (comp.nextSibling.GetHandle() == entt::null)
-					{
-						comp.nextSibling = entity;
-						entity.GetComponent<RelationShipComponent>().prevSibling = curr;
-						break;
-					}
-					curr = comp.nextSibling;
-				}
-			}
-		}
-
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "empty" : name;
-	
+
+		if (id != 0)
+		{
+			entity.SetUID(id);
+			if (m_entityMap.find(id) == m_entityMap.end())
+				m_entityMap.insert({ id, entity });
+			else
+				QCAT_CORE_ASSERT(false, "CreateEntityError : Entity UID isnt unisque!");
+		}
+		else
+		{
+			entity.SetUID(static_cast<std::underlying_type_t< entt::entity>>(entity.GetHandle()));
+			if (m_entityMap.find(entity.GetUID()) == m_entityMap.end())
+				m_entityMap.insert({ entity.GetUID(), entity });
+			else
+				QCAT_CORE_ASSERT(false, "CreateEntityError : Entity UID isnt unisque!");
+		}
 		return  entity;
 	}
 	void Scene::DestroyEntity(Entity entity)
 	{
 		RelationShipComponent& comp = entity.GetComponent<RelationShipComponent>();
 		comp.dead = true;
-		if (comp.parent != Entity::emptyEntity)
+		auto parent = m_entityMap.find(comp.parent);
+		if (parent != m_entityMap.end())
 		{
-			RelationShipComponent &parentcomp = comp.parent.GetComponent<RelationShipComponent>();
+			RelationShipComponent &parentcomp = parent->second.GetComponent<RelationShipComponent>();
 			if (parentcomp.dead == false)
 			{
-				if (entity == parentcomp.firstChild)
+				if (entity.GetUID() == parentcomp.firstChild)
 				{
-					if (comp.nextSibling != Entity::emptyEntity)
+					auto nexSibling = m_entityMap.find(comp.nextSibling);
+					if (nexSibling != m_entityMap.end())
 						parentcomp.firstChild = comp.nextSibling;
 					else
-						parentcomp.firstChild = Entity::emptyEntity;
+						parentcomp.firstChild = 0xFFFFFFFF;
 				}
 				else
-				{
-					auto prevSibling = comp.prevSibling;
-					auto nextSibling = comp.nextSibling;
-
-					prevSibling.GetComponent<RelationShipComponent>().nextSibling = nextSibling;
-					nextSibling.GetComponent<RelationShipComponent>().prevSibling = prevSibling;
+				{	
+					auto prevSibling = m_entityMap.find(comp.prevSibling);
+					auto nextSibling = m_entityMap.find(comp.nextSibling);
+					if (nextSibling != m_entityMap.end())
+					{
+						prevSibling->second.GetComponent<RelationShipComponent>().nextSibling = nextSibling->first;
+						nextSibling->second.GetComponent<RelationShipComponent>().prevSibling = prevSibling->first;
+					}
+					else
+						prevSibling->second.GetComponent<RelationShipComponent>().nextSibling = 0xFFFFFFFF;
+					
 				}
 			}
 		}		
-		auto child = comp.firstChild;
-		while (child != Entity::emptyEntity)
+		auto child = m_entityMap.find(comp.firstChild);
+		while (child != m_entityMap.end())
 		{
-			auto nextSibling = child.GetComponent<RelationShipComponent>().nextSibling;
-			DestroyEntity(child);
-			child = nextSibling;
+			auto nextSibling = child->second.GetComponent<RelationShipComponent>().nextSibling;
+			DestroyEntity(child->second);
+			child = m_entityMap.find(nextSibling);
 		}
+		auto iter = m_entityMap.find(entity.GetUID());
+		if(iter!=m_entityMap.end())
+			m_entityMap.erase(iter);
 		m_Registry.destroy(entity);
+
 	}
 	void Scene::OnUpdateEditor(Timestep ts, EditorCamera& camera)
 	{
-		Renderer2D::BeginScene(camera);
-
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-
-		for (auto entity : group)
-		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		}
-		Renderer2D::EndScene();
+		
+	}
+	void Scene::UpdateRecursively(Entity& entity,const glm::mat4& parentMatrix)
+	{	
+			auto& rc = entity.GetComponent<RelationShipComponent>();
+			auto childid = rc.firstChild;
+			while (childid != 0xFFFFFFFF)
+			{
+				auto& childEntity = m_entityMap[childid];
+				auto& ctc = childEntity.GetComponent<TransformComponent>();
+				auto& crc = childEntity.GetComponent<RelationShipComponent>();
+				ctc.parentMatrix = parentMatrix;
+				ctc.changed = false;
+				if (crc.firstChild != 0xFFFFFFFF)
+				{
+					UpdateRecursively(childEntity,ctc.GetTransform());
+				}
+				childid = crc.nextSibling;
+			}
 	}
 	void Scene::OnUpdateRuntime(Timestep ts)
 	{
@@ -117,8 +127,17 @@ namespace QCat
 				}
 			);
 		}
-
-		// Render 2D sprites
+		// Update Entity
+		for (auto& entity : m_entityMap)
+		{
+			auto& tc = entity.second.GetComponent<TransformComponent>();
+			if (tc.changed)
+			{
+				UpdateRecursively(entity.second,tc.GetTransform());
+				tc.changed = false;
+			}
+		}
+		// Render
 		Camera* maincamera = nullptr;
 		glm::mat4 cameraTransform ;
 		{
@@ -136,17 +155,6 @@ namespace QCat
 		}
 		if (maincamera)
 		{
-			Renderer2D::BeginScene(*maincamera, cameraTransform);
-
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-
-			for (auto entity : group)
-			{
-				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-				Renderer2D::DrawQuad(transform.GetTransform(), sprite.Color);
-
-			}
-			Renderer2D::EndScene();
 		}
 	}
 	void Scene::OnViewportReSize(uint32_t width, uint32_t height)
@@ -177,7 +185,19 @@ namespace QCat
 		return {};
 	}
 
-	
+	Entity Scene::GetEntityById(uint32_t id)
+	{
+		auto iter = m_entityMap.find(id);
+		if (iter != m_entityMap.end())
+			return iter->second;
+		else
+			return Entity::emptyEntity;
+	}
+
+	void Scene::UpdateEntity()
+	{
+
+	}
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{

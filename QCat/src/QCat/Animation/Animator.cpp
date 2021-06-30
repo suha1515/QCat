@@ -9,12 +9,13 @@ namespace QCat
         data.entity = node;
         data.nodeName = node.GetComponent<TagComponent>().Tag;
         auto child = node.GetComponent<RelationShipComponent>().firstChild;
-
-        while (child != Entity::emptyEntity)
+        Scene* currentScene = node.GetScene();
+        Entity entity;
+        while ((entity = currentScene->GetEntityById(child)) !=Entity::emptyEntity)
         {
             NodeData node;
-            ReadHierarchy(child, node);
-            child = child.GetComponent<RelationShipComponent>().nextSibling;
+            ReadHierarchy(entity, node);
+            child = entity.GetComponent<RelationShipComponent>().nextSibling;
             data.children.push_back(node);
         }
     }
@@ -41,9 +42,11 @@ namespace QCat
             m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->GetDuration());
             auto& entity = m_RootNode.entity;
             glm::mat4 parentMat = glm::mat4(1.0f);
-            auto& parent = entity.GetComponent<RelationShipComponent>().parent;
-            if (parent != Entity::emptyEntity)
-                parentMat = parent.GetComponent<TransformComponent>().GetTransform();
+            auto parent = entity.GetComponent<RelationShipComponent>().parent;
+            Scene* currentScene = entity.GetScene();
+            Entity temp = currentScene->GetEntityById(parent);
+            if (temp  !=Entity::emptyEntity)
+                parentMat = temp.GetComponent<TransformComponent>().GetTransform();
             CalculateBoneTransform(m_RootNode, parentMat);
         }
     }

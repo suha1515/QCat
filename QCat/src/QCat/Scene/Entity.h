@@ -9,8 +9,12 @@ namespace QCat
 	{
 	public:
 		Entity() = default;
-		Entity(entt::entity handle,Scene* pscene);
+		Entity(entt::entity handle, Scene* pscene);
 		Entity(const Entity& other) = default;
+
+		uint32_t GetUID() { return m_uid; }
+		void SetUID(uint32_t uid) { m_uid = uid; }
+		void SetParent(Entity* parent);
 
 		template<typename T,typename... Args>
 		T& AddComponent(Args&&... args)
@@ -47,13 +51,13 @@ namespace QCat
 		bool operator!=(const entt::entity& other) const { return !(m_EntityHandle == other); }
 		Entity& operator =(const entt::entity& other) { m_EntityHandle = other; return *this; }
 		entt::entity GetHandle() { return m_EntityHandle; }
-		
+		Scene* GetScene() { return m_pScene; };
 	public:
 		static Entity emptyEntity;
 	private:
 		entt::entity m_EntityHandle{ entt::null };
-		Scene* m_pScene=nullptr;
-		
+		Scene* m_pScene=nullptr;	
+		uint32_t m_uid;
 	};
 }
 

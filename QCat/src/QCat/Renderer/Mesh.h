@@ -7,6 +7,10 @@ namespace QCat
 	class ModelLibrary
 	{
 	public:
+		static void LoadModel(const std::string& modelPath)
+		{
+			Get().Load_(modelPath);
+		}
 		static std::vector<std::string>& GetModelList() { return Get().modelPath; };
 	private:
 		static ModelLibrary& Get()
@@ -14,6 +18,7 @@ namespace QCat
 			static ModelLibrary lib;
 			return lib;
 		}
+		void Load_(const std::string& modelPath);
 	private:
 		std::vector<std::string> modelPath;
 	};

@@ -86,9 +86,8 @@ namespace QCat
 	{
 		// after begin map key and value write
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(entity.GetHandle()); // TODO: Entity ID goes in here
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetUID(); // TODO: Entity ID goes in here
 		
-
 		if (entity.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent";
@@ -99,7 +98,17 @@ namespace QCat
 			out << YAML::Key << "Tag" << YAML::Value << tag;
 			out << YAML::EndMap; //Tag Component
 		}
-
+		if (entity.HasComponent<RelationShipComponent>())
+		{
+			auto& relationshipComp = entity.GetComponent<RelationShipComponent>();
+			out << YAML::Key << "RelationShipComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Parent" << YAML::Value << relationshipComp.parent;
+			out << YAML::Key << "PrevSibling" << YAML::Value << relationshipComp.prevSibling;
+			out << YAML::Key << "NextSibling" << YAML::Value << relationshipComp.nextSibling;
+			out << YAML::Key << "FirstChild" << YAML::Value << relationshipComp.firstChild;
+			out << YAML::EndMap;
+		}
 		if (entity.HasComponent<TransformComponent>())
 		{
 			out << YAML::Key << "TransformComponent";
@@ -152,12 +161,8 @@ namespace QCat
 
 		if (entity.HasComponent<MeshComponent>())
 		{
-			out << YAML::Key << "MeshComponent";
-			out << YAML::BeginMap; // MeshComponent;
-
+			out << YAML::Key << "MeshComponent" << YAML::Value << YAML::BeginSeq;
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			out << YAML::Key << "Meshname" << YAML::Value << YAML::BeginSeq;
-
 			for (auto& mesh : meshComponent.GetMeshes())
 			{
 				out << YAML::BeginMap;
@@ -165,7 +170,6 @@ namespace QCat
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
-			out << YAML::EndMap;
 		}
 
 		if (entity.HasComponent<MaterialComponent>())
@@ -183,28 +187,26 @@ namespace QCat
 			out << YAML::Key << "AmbientOcclusion" << YAML::Value << material.ao;
 
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << (material.m_DiffuseTexture != nullptr ? material.m_DiffuseTexture->GetTexturePath() : "none");
+			out << YAML::Key << "AlbedoTextureSampler" << (material.m_DiffuseTexture != nullptr ? material.m_DiffuseTexture->GetSamplerSignature() : "none");
+
 			out << YAML::Key << "NormalTexture" << YAML::Value << (material.m_NormalMapTexture != nullptr ? material.m_NormalMapTexture->GetTexturePath() : "none");
+			out << YAML::Key << "NormalTextureSampler" << (material.m_NormalMapTexture != nullptr ? material.m_NormalMapTexture->GetSamplerSignature() : "none");
+
 			out << YAML::Key << "SpecularTexture" << YAML::Value << (material.m_SpecularTexture != nullptr ? material.m_NormalMapTexture->GetTexturePath() : "none");
+			out << YAML::Key << "SpecularTextureSampler" << (material.m_SpecularTexture != nullptr ? material.m_SpecularTexture->GetSamplerSignature() : "none");
+
 			out << YAML::Key << "MetallicTexture" << YAML::Value << (material.m_MetallicTexture != nullptr ? material.m_MetallicTexture->GetTexturePath() : "none");
+			out << YAML::Key << "MetallicTextureSampler" << (material.m_MetallicTexture != nullptr ? material.m_MetallicTexture->GetSamplerSignature() : "none");
+
 			out << YAML::Key << "RoughnessTexture" << YAML::Value << (material.m_RoughnessTexture != nullptr ? material.m_RoughnessTexture->GetTexturePath() : "none");
+			out << YAML::Key << "RoughnessTextureSampler" << (material.m_RoughnessTexture != nullptr ? material.m_RoughnessTexture->GetSamplerSignature() : "none");
+
 			out << YAML::Key << "AmbientOcclusionTexture" << YAML::Value << (material.m_AmbientOcclusionTexture != nullptr ? material.m_AmbientOcclusionTexture->GetTexturePath() : "none");
+			out << YAML::Key << "AmbientOcclusionTextureSampler" << (material.m_AmbientOcclusionTexture != nullptr ? material.m_AmbientOcclusionTexture->GetSamplerSignature() : "none");
 
 			out << YAML::EndMap;
 
 		}
-
-		if (entity.HasComponent<RelationShipComponent>())
-		{
-			auto& relationshipComp = entity.GetComponent<RelationShipComponent>();
-			out << YAML::Key << "RelationShipComponent";
-			out << YAML::BeginMap;
-			out << YAML::Key << "Parent" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.parent.GetHandle());
-			out << YAML::Key << "PrevSibling" << YAML::Value  <<static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.prevSibling.GetHandle());
-			out << YAML::Key << "NextSibling" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.nextSibling.GetHandle());
-			out << YAML::Key << "FirstChild" << YAML::Value << static_cast<std::underlying_type_t<entt::entity>>(relationshipComp.firstChild.GetHandle());
-			out << YAML::EndMap;
-		}
-
 		if (entity.HasComponent<LightComponent>())
 		{
 			auto& lightComponent = entity.GetComponent<LightComponent>();
@@ -242,8 +244,10 @@ namespace QCat
 	{
 		YAML::Emitter out;
 		
-		//Model List
+		// begin Map
 		out << YAML::BeginMap;
+		out << YAML::Key << "Scene" << YAML::Value << "Untitled"; // Key and Value
+		//Model List
 		out << YAML::Key << "ModelPath" << YAML::Value << YAML::BeginSeq;
 		for (auto& path : ModelLibrary::GetModelList())
 		{
@@ -252,21 +256,30 @@ namespace QCat
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
-		out << YAML::EndMap;
-		// begin Map
-		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << YAML::Value << "Untitled"; // Key and Value
+		//Texture Info
+		out << YAML::Key << "TexturePath" << YAML::Value << YAML::BeginSeq;
+		for (auto& path : TextureLibrary::GetTexturePathList())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Path" << YAML::Value << path;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq; // Sequence is kind of array
 		// after BeginSeq loop for every entity
-		m_Scene->m_Registry.each([&](auto entityID)
-			{
-				Entity entity = { entityID,m_Scene.get() };
-				if (!entity)
-					return;
-				// if entity is validate, serialize it
-				SerializeEntity(out, entity);
-			}
-		);
+		//m_Scene->m_Registry.each([&](auto entityID)
+		//	{
+		//		Entity entity = { entityID,m_Scene.get() };
+		//		if (!entity)
+		//			return;
+		//		// if entity is validate, serialize it
+		//		SerializeEntity(out, entity);
+		//	}
+		//);
+		for (const auto& iter : m_Scene->m_entityMap)
+		{
+			SerializeEntity(out,iter.second);
+		}
 		// End Sequence
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -283,15 +296,36 @@ namespace QCat
 	bool SceneSerializer::DeSerialize(const std::string& filepath)
 	{
 		YAML::Node data = YAML::LoadFile(filepath);
-
 		// Find Data Scene (Node data)
 		if (!data["Scene"])
 			return false;
-
 		// Data as string
 		std::string sceneName = data["Scene"].as<std::string>();
 		QCAT_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
+		// Model Load
+		auto modelpath = data["ModelPath"];
+		if (modelpath)
+		{
+			for (auto list : modelpath)
+			{
+				std::string path = list["Path"].as<std::string>();
+				ModelLibrary::LoadModel(path);
+			}
+		}
+
+		// Texture Load
+		/*auto texturepath = data["TexturePath"];
+		if (texturepath)
+		{
+			for (auto list : texturepath)
+			{
+				std::string path = list["Path"].as<std::string>();
+				Sampler_Desc samp;
+				TextureLibrary::Load(path, samp);
+			}
+		}*/
+	
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -306,8 +340,17 @@ namespace QCat
 
 				QCAT_CORE_TRACE("Deserialized entity with ID = {0}, name ={1}", uuid, name);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(name); // TODO : make function that take uuid
+				Entity deserializedEntity = m_Scene->CreateEntity(name,uuid); // TODO : make function that take uuid
 
+				auto rccomp = entity["RelationShipComponent"];
+				if (rccomp)
+				{
+					auto& rc = deserializedEntity.GetComponent<RelationShipComponent>();
+					rc.parent = rccomp["Parent"].as<uint32_t>();
+					rc.prevSibling = rccomp["PrevSibling"].as<uint32_t>();
+					rc.nextSibling = rccomp["NextSibling"].as<uint32_t>();
+					rc.firstChild = rccomp["FirstChild"].as<uint32_t>();
+				}
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
 				{
@@ -318,7 +361,125 @@ namespace QCat
 					tc.Scale       = transformComponent["Scale"].as<glm::vec3>();
 				}
 
-				auto cameraComponent = entity["CameraComponent"];
+				auto meshComponent = entity["MeshComponent"];
+				if (meshComponent)
+				{
+					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
+					for (auto meshName : meshComponent)
+					{
+						std::string name = meshName["Meshname"].as<std::string>();
+						mc.AddMesh(name);
+					}
+				}
+
+				auto materialComponent = entity["MaterialComponent"];
+				if (materialComponent)
+				{
+					auto& cc = deserializedEntity.AddComponent<MaterialComponent>();
+
+					glm::vec3 value;
+					cc.material.diffuse = materialComponent["Albedo"].as<glm::vec3>();
+					cc.material.specular = materialComponent["Specular"].as<glm::vec3>();
+					cc.material.ambient = materialComponent["Ambient"].as<glm::vec3>();
+
+					cc.material.shininess = materialComponent["Shininess"].as<float>();
+					cc.material.metallic = materialComponent["Metallic"].as<float>();
+					cc.material.roughness = materialComponent["Roughness"].as<float>();
+					cc.material.ao = materialComponent["AmbientOcclusion"].as<float>();
+
+					std::string texturepath;
+					std::string samplerSignature;
+					texturepath = materialComponent["AlbedoTexture"].as<std::string>();
+					samplerSignature = materialComponent["AlbedoTextureSampler"].as<std::string>();
+
+					if (texturepath != "none")
+					{
+						Sampler_Desc desc = SamplerState::MakeSamplerDesc(samplerSignature);
+						cc.material.SetTexture(texturepath,desc, Material::TextureType::Diffuse);
+					}
+					 
+					texturepath = materialComponent["NormalTexture"].as<std::string>();
+					samplerSignature = materialComponent["NormalTextureSampler"].as<std::string>();
+
+					if (texturepath != "none")
+					{
+						Sampler_Desc desc = SamplerState::MakeSamplerDesc(samplerSignature);
+						cc.material.SetTexture(texturepath, desc, Material::TextureType::Normal);
+					}
+
+					texturepath = materialComponent["SpecularTexture"].as<std::string>();
+					samplerSignature = materialComponent["SpecularTextureSampler"].as<std::string>();
+
+					if (texturepath != "none")
+					{
+						Sampler_Desc desc = SamplerState::MakeSamplerDesc(samplerSignature);
+						cc.material.SetTexture(texturepath, desc, Material::TextureType::Specular);
+					}
+
+					texturepath = materialComponent["MetallicTexture"].as<std::string>();
+					samplerSignature = materialComponent["MetallicTextureSampler"].as<std::string>();
+
+					if (texturepath != "none")
+					{
+						Sampler_Desc desc = SamplerState::MakeSamplerDesc(samplerSignature);
+						cc.material.SetTexture(texturepath, desc, Material::TextureType::Metallic);
+					}
+
+					texturepath = materialComponent["RoughnessTexture"].as<std::string>();
+					samplerSignature = materialComponent["RoughnessTextureSampler"].as<std::string>();
+
+					if (texturepath != "none")
+					{
+						Sampler_Desc desc = SamplerState::MakeSamplerDesc(samplerSignature);
+						cc.material.SetTexture(texturepath, desc, Material::TextureType::Roughness);
+					}
+
+					texturepath = materialComponent["AmbientOcclusionTexture"].as<std::string>();
+					samplerSignature = materialComponent["AmbientOcclusionTextureSampler"].as<std::string>();
+
+					if (texturepath != "none")
+					{
+						Sampler_Desc desc = SamplerState::MakeSamplerDesc(samplerSignature);
+						cc.material.SetTexture(texturepath, desc, Material::TextureType::AmbientOcclusion);
+					}
+				}
+				auto lightcomp = entity["LightComponent"];
+				if (lightcomp)
+				{
+					auto& lc = deserializedEntity.AddComponent<LightComponent>();
+					auto value = lightcomp["LightColor"];
+					lc.diffuse = value["Diffuse"].as<glm::vec3>();
+					lc.ambient = value["Ambient"].as<glm::vec3>();
+					lc.specular = value["Specular"].as<glm::vec3>();
+
+					value = lightcomp["Directional Light"];
+					lc.lightDirection = value["LightDirection"].as<glm::vec3>();
+					value = lightcomp["Point Light"];
+					lc.constant = value["Constant"].as<float>();
+					lc.quadratic = value["Quadratic"].as<float>();
+					lc.linear = value["Linear"].as<float>();
+					lc.radius = value["Radius"].as<float>();
+					value = lightcomp["Spot Light"];
+					lc.cutoff = value["Cutoff"].as<float>();
+					lc.outerCutOff = value["OuterCutoff"].as<float>();
+
+					switch (lightcomp["Type"].as<uint32_t>())
+					{
+					case 0:
+						lc.type = LightComponent::LightType::Directional;
+						break;
+					case 1:
+						lc.type = LightComponent::LightType::Point;
+						break;
+					case 2:
+						lc.type = LightComponent::LightType::Spot;
+						break;
+					default:
+						break;
+					}	
+				}
+
+;				auto cameraComponent = entity["CameraComponent"];
 				if (cameraComponent)
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
@@ -344,6 +505,8 @@ namespace QCat
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 				}
+
+				
 			}
 		}
 
