@@ -359,6 +359,7 @@ namespace QCat
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
 					tc.Rotation    = transformComponent["Rotation"].as<glm::vec3>();
 					tc.Scale       = transformComponent["Scale"].as<glm::vec3>();
+					tc.changed = true;
 				}
 
 				auto meshComponent = entity["MeshComponent"];
