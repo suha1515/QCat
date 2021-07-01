@@ -84,11 +84,8 @@ namespace QCat
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
 		Ref<Shader> shader;
-		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-		{
-			shader = ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
-		}
-		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
 		}
@@ -124,16 +121,26 @@ namespace QCat
 	}
 	void ModelLibrary::Load_(const std::string& modelPath)
 	{
-		Assimp::Importer importer;
-
-		const aiScene* scene = importer.ReadFile(modelPath,
-			aiProcess_Triangulate |
+		for (auto& list : this->modelPath)
+		{
+			if (modelPath == list)
+				return;
+		}
+		this->modelPath.push_back(modelPath);
+		unsigned int flag;
+		flag = aiProcess_Triangulate |
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_CalcTangentSpace |
 			aiProcess_GenNormals |
 			aiProcess_MakeLeftHanded |
-			aiProcess_FlipUVs |
-			aiProcess_FlipWindingOrder);
+			aiProcess_FlipWindingOrder;
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+			flag |= aiProcess_FlipUVs;
+
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFile(modelPath,flag);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -142,23 +149,4 @@ namespace QCat
 		}
 		ProcessNode(scene->mRootNode, scene);
 	}
-
-	
-	/*Mesh::Mesh(std::string meshName, Ref<VertexArray> vertexArray)
-	{
-		MeshLibrary::Set(meshName, vertexArray);
-		m_vertexArray = vertexArray;
-	}
-	Mesh::Mesh(std::string meshName)
-	{
-		m_vertexArray = MeshLibrary::Load(meshName);
-	}
-	void Mesh::Bind()
-	{
-		m_vertexArray->Bind();
-	}
-	void Mesh::UnBind()
-	{
-		m_vertexArray->UnBind();
-	}*/
 }

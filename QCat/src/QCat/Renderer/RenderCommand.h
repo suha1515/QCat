@@ -42,6 +42,7 @@ namespace QCat
 		{
 			vertexArray->Bind();
 			s_renderAPI->DrawIndexed(vertexArray, count,mode);
+			vertexArray->UnBind();
 		}
 		// Depth Stencil State Function
 		inline static void SetDepthTest(bool enable)

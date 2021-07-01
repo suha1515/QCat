@@ -32,7 +32,7 @@ namespace QCat
 		cameraConstantBuffer = ConstantBuffer::Create(sizeof(CameraData), 0);
 		transformConstantBuffer = ConstantBuffer::Create(sizeof(Transform), 1);
 		materialConstantBuffer = ConstantBuffer::Create(sizeof(Mat), 2);
-		lightConstantBuffer = ConstantBuffer::Create(sizeof(light)*4, 3);
+		lightConstantBuffer = ConstantBuffer::Create(sizeof(light), 3);
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
 
 		LayoutElement lay(ShaderDataType::Struct,"Struct");
@@ -76,29 +76,40 @@ namespace QCat
 		//m_PBRShader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
 		auto lightView = registry.view<TransformComponent, LightComponent>();
 		int index = 0;
+		if (lightView.size() == 0)
+		{
+			for (int i = 0; i < 1; ++i)
+			{
+				glm::vec3 pos = { 0.0f,0.0f,0.0f };
+				glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
+				litData.emplace_back(pos, diffuse);
+			}
+		}
 		for (auto entity : lightView)
 		{
-			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
-			LightComponent& comp = lightView.get<LightComponent>(entity);
+			if (index < 1)
+			{
+				glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
+				LightComponent& comp = lightView.get<LightComponent>(entity);
 
-			std::string lightname = "pointLight[" + std::to_string(index) + "].";
-			//m_PBRShader->SetFloat3(lightname + "position", lightPos, ShaderType::PS);
-			//m_PBRShader->SetFloat3(lightname + "diffuse", comp.diffuse, ShaderType::PS);
-			litData[index].position = lightPos;
-			litData[index].diffuse = comp.diffuse;
-			index++;
+				std::string lightname = "pointLight[" + std::to_string(index) + "].";
+				//m_PBRShader->SetFloat3(lightname + "position", lightPos, ShaderType::PS);
+				//m_PBRShader->SetFloat3(lightname + "diffuse", comp.diffuse, ShaderType::PS);
+				light light;
+				light.position = lightPos;
+				light.diffuse = comp.diffuse;
+
+				litData.emplace_back(lightPos, comp.diffuse);
+				index++;
+			}
 		}
-		lightConstantBuffer->SetData(&litData, sizeof(light), 0);
+		lightConstantBuffer->SetData(litData.data(), sizeof(light) * litData.size(), 0);
+		litData.clear();
+
 		matData.albedo = glm::vec3(1.0f, 1.0f, 1.0f);
 		matData.metallic = 1.0f;
 		matData.roughness = 1.0f;
 		matData.ambientocclusion = 1.0f;
-
-
-		//m_PBRShader->SetFloat3("material.albedo", glm::vec3(1.0f, 1.0f, 1.0f), ShaderType::PS);
-		//m_PBRShader->SetFloat("material.metallic", 1.0f, ShaderType::PS);
-		//m_PBRShader->SetFloat("material.roughness", 1.0f, ShaderType::PS);
-		//m_PBRShader->SetFloat("material.ambientocclusion", 1.0f, ShaderType::PS);
 
 		cameraConstantBuffer->Bind(0, Type::Vetex);
 		transformConstantBuffer->Bind(1, Type::Vetex);
@@ -153,6 +164,7 @@ namespace QCat
 			}
 			
 		}
+		m_PBRShader->UnBind();
 
 		colorConstantBuffer->Bind(2, Type::Pixel);
 		colData.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -192,8 +204,6 @@ namespace QCat
 			cube->Draw();
 			m_SkyBoxShader->UnBind();
 		}
-
-		m_PBRShader->UnBind();
 		m_Framebuffer->UnBind();
 	}
 }

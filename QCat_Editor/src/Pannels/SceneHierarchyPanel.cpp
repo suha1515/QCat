@@ -83,7 +83,8 @@ namespace QCat
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
 				auto entity = m_Context->CreateEntity("Empty Entity");
-				entity.SetParent(&entity);
+				if(m_SelectionContext!= Entity())
+					entity.SetParent(&m_SelectionContext);
 			}
 			if (ImGui::MenuItem("Delete Entity"))
 				entityDeleted = true;
@@ -267,6 +268,14 @@ namespace QCat
 					QCAT_CORE_WARN("This Entity already has MaterialComponent");
 				ImGui::CloseCurrentPopup();
 			}
+			if (ImGui::MenuItem("LightComponent"))
+			{
+				if (!m_SelectionContext.HasComponent<LightComponent>())
+					m_SelectionContext.AddComponent<LightComponent>();
+				else
+					QCAT_WARN("This Entity already has MaterialComponent");
+				ImGui::CloseCurrentPopup();
+			}
 			ImGui::EndPopup();
 		}
 
@@ -395,6 +404,10 @@ namespace QCat
 					{
 
 					}
+				}
+				if(ImGui::Button("Load"))
+				{
+					OpenModel();
 				}
 				static int mesh_current_idx = 0;
 				if (ImGui::ListBoxHeader("MeshList", vertexArray.size()))
@@ -526,6 +539,38 @@ namespace QCat
 				
 			}
 			);
+			DrawComponent<LightComponent>("Light", entity,
+				[](auto& component)
+				{
+					static const char* lighttype[] = { "Directional","Point","Spot" };
+					static int selectedItem = 0;
+					if (ImGui::Combo("LightType", &selectedItem, lighttype, IM_ARRAYSIZE(lighttype)))
+					{
+						LightComponent::LightType type = LightComponent::LightType(selectedItem);
+						if (type != component.type)
+							component.type = type;
+					}
+					ImGui::DragFloat3("Albedo", glm::value_ptr(component.diffuse));
+					ImGui::DragFloat3("Ambient", glm::value_ptr(component.ambient));
+					ImGui::DragFloat3("Specular", glm::value_ptr(component.specular));
+
+					DrawVec3Control("LightDirection", component.lightDirection);
+					ImGui::DragFloat("Constant", &component.constant, 0.1f);
+					ImGui::DragFloat("Linear", &component.linear, 0.1f);
+					ImGui::DragFloat("Quadratic", &component.quadratic, 0.1f);
+					ImGui::DragFloat("CutOff", &component.cutoff, 0.1f);
+					ImGui::DragFloat("OuterCutOff", &component.outerCutOff, 0.1f);
+					ImGui::DragFloat("Radius", &component.radius, 0.1f);
+				}
+			);
+	}
+	void OpenModel()
+	{
+		std::optional<std::string> filepath = FileDialogs::OpenFile("Model File \0*.FBX;*.DAE;*.OBJ;\0");
+		if (filepath)
+		{
+			ModelLibrary::LoadModel(*filepath);
+		}
 	}
 	void OpenTexture(Ref<Texture>& texture)
 	{

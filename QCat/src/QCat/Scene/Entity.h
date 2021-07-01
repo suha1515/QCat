@@ -12,8 +12,7 @@ namespace QCat
 		Entity(entt::entity handle, Scene* pscene);
 		Entity(const Entity& other) = default;
 
-		uint32_t GetUID() { return m_uid; }
-		void SetUID(uint32_t uid) { m_uid = uid; }
+		uint32_t GetUID();
 		void SetParent(Entity* parent);
 
 		template<typename T,typename... Args>
@@ -57,7 +56,6 @@ namespace QCat
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_pScene=nullptr;	
-		uint32_t m_uid;
 	};
 }
 

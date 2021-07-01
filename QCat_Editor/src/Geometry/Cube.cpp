@@ -168,7 +168,6 @@ namespace QCat
 	}
 	void Cube::Draw()
 	{
-		m_VertexArray->Bind();
 		RenderCommand::DrawIndexed(m_VertexArray);
 	}
 	void Cube::ImguiRender(const char* name)

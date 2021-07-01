@@ -44,16 +44,18 @@ namespace QCat
 	{
 		Assimp::Importer importer;
 
-		//if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-		//	flag |= aiProcess_FlipUVs;
-		const aiScene* scene = importer.ReadFile(path,
-			aiProcess_Triangulate |
+		unsigned int flag;
+		flag = aiProcess_Triangulate |
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_CalcTangentSpace |
 			aiProcess_GenNormals |
 			aiProcess_MakeLeftHanded |
-			aiProcess_FlipUVs |
-			aiProcess_FlipWindingOrder);
+			aiProcess_FlipWindingOrder;
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+			flag |= aiProcess_FlipUVs;
+		const aiScene* scene = importer.ReadFile(path,
+			flag);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -190,6 +192,7 @@ namespace QCat
 
 		//unbind
 		vertarray->UnBind();
+		MeshLibrary::Set(meshName, vertarray);
 		return vertarray;
 	}
 }

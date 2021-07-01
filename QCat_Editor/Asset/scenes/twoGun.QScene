@@ -1,79 +1,63 @@
 Scene: Untitled
 ModelPath:
-  []
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
 TexturePath:
   - Path: Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr
-  - Path: Asset/textures/PBR/gold/albedo.png
-  - Path: Asset/textures/PBR/gold/normal.png
-  - Path: Asset/textures/PBR/gold/metallic.png
-  - Path: Asset/textures/PBR/gold/roughness.png
-  - Path: Asset/textures/PBR/gold/ao.png
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga
 Entities:
   - Entity: 1
     TagComponent:
-      Tag: Camera
+      Tag: RootNode
     RelationShipComponent:
       Parent: 4294967295
       PrevSibling: 4294967295
       NextSibling: 4294967295
-      FirstChild: 4294967295
+      FirstChild: 3
     TransformComponent:
-      Translation: [0, 0, -2]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 0
-        PerspectiveFov: 1
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 100
-        OrthographicSize: 10
-        OrthographicNear: 0
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
+      Translation: [0, -0.400000006, -1]
+      Rotation: [3.20000005, 1.60000002, 0]
+      Scale: [0.00999999978, 0.00999999978, 0.00999999978]
   - Entity: 3
     TagComponent:
-      Tag: PointLight
+      Tag: Cerberus00_Fixed_$AssimpFbx$_PreRotation
     RelationShipComponent:
-      Parent: 4294967295
+      Parent: 1
       PrevSibling: 4294967295
       NextSibling: 4294967295
-      FirstChild: 4294967295
+      FirstChild: 5
     TransformComponent:
-      Translation: [10, 10, -20]
-      Rotation: [0, 0, 0]
+      Translation: [0, 0, -0]
+      Rotation: [-1.57079637, 0, 0]
       Scale: [1, 1, 1]
-    LightComponent:
-      LightColor:
-        Diffuse: [300, 300, 300]
-        Ambient: [0.200000003, 0.200000003, 0.200000003]
-        Specular: [1, 1, 1]
-      Directional Light:
-        LightDirection: [0, 0, 0]
-      Point Light:
-        Constant: 1
-        Quadratic: 0.0320000015
-        Linear: 0.0900000036
-        Radius: 0
-      Spot Light:
-        Cutoff: 0.976296008
-        OuterCutoff: 0.953716934
-      Type: 0
   - Entity: 5
     TagComponent:
-      Tag: GoldenBall
+      Tag: Cerberus00_Fixed_$AssimpFbx$_GeometricTranslation
     RelationShipComponent:
-      Parent: 4294967295
+      Parent: 3
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 7
+    TransformComponent:
+      Translation: [2.25598455e-06, 93.7201614, -4.09663835e-06]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 7
+    TagComponent:
+      Tag: Cerberus00_Fixed
+    RelationShipComponent:
+      Parent: 5
       PrevSibling: 4294967295
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [1.88994396, -0.0221616849, 2.36077094]
-      Rotation: [0, 0, 0]
+      Translation: [0, 0, -0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
-      - Meshname: Cube
+      - Meshname: Cerberus00_Fixed
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]
@@ -82,39 +66,39 @@ Entities:
       Metallic: 1
       Roughness: 1
       AmbientOcclusion: 1
-      AlbedoTexture: Asset/textures/PBR/gold/albedo.png
+      AlbedoTexture: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga
       AlbedoTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-      NormalTexture: Asset/textures/PBR/gold/normal.png
+      NormalTexture: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga
       NormalTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
       SpecularTexture: none
       SpecularTextureSampler: none
-      MetallicTexture: Asset/textures/PBR/gold/metallic.png
+      MetallicTexture: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga
       MetallicTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-      RoughnessTexture: Asset/textures/PBR/gold/roughness.png
+      RoughnessTexture: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga
       RoughnessTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-      AmbientOcclusionTexture: Asset/textures/PBR/gold/ao.png
-      AmbientOcclusionTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-  - Entity: 7
+      AmbientOcclusionTexture: none
+      AmbientOcclusionTextureSampler: none
+  - Entity: 9
     TagComponent:
-      Tag: Ball
+      Tag: Gun2
     RelationShipComponent:
       Parent: 4294967295
       PrevSibling: 4294967295
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [4.64356947, 0, 1.9135735]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [0, 0, 0]
+      Rotation: [-7.38374729e-05, 1.47701895, -1.59151435]
+      Scale: [0.00999998581, 0.00999998674, 0.00999997742]
     MeshComponent:
-      - Meshname: Sphere
+      - Meshname: Cerberus00_Fixed
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]
       Ambient: [0.200000003, 0.200000003, 0.200000003]
       Shininess: 32
       Metallic: 1
-      Roughness: 0.200000003
+      Roughness: 1
       AmbientOcclusion: 1
       AlbedoTexture: none
       AlbedoTextureSampler: none
@@ -128,3 +112,31 @@ Entities:
       RoughnessTextureSampler: none
       AmbientOcclusionTexture: none
       AmbientOcclusionTextureSampler: none
+  - Entity: 13
+    TagComponent:
+      Tag: Empty Entity
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [0.391408205, -0.2730636, -1.44157147]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      LightColor:
+        Diffuse: [1, 1, 1]
+        Ambient: [0.200000003, 0.200000003, 0.200000003]
+        Specular: [1, 1, 1]
+      Directional Light:
+        LightDirection: [0, 0, 0]
+      Point Light:
+        Constant: 1
+        Quadratic: 0.0320000015
+        Linear: 0.0900000036
+        Radius: 0
+      Spot Light:
+        Cutoff: 0.976296008
+        OuterCutoff: 0.953716934
+      Type: 1

@@ -43,8 +43,6 @@ namespace QCat
 		Entity m_Camera;
 		//camera
 		OrthographicCameraController m_CameraController;
-		Ref<FrameBufferEx> m_FrameBufferEx;
-		Ref<Texture2D> m_Texture;
 		float cameraSpeed;
 		float lastX, lastY;
 		float yaw = 90.f, pitch = 0.0f;

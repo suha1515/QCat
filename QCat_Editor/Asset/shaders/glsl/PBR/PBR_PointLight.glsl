@@ -80,7 +80,7 @@ layout(std140,binding = 2) uniform Mat
 };
 layout(std140,binding = 3) uniform Light
 {
-	PointLight pointLight[1];
+	PointLight pointLight[4];
 };
 layout(location = 0) out vec4 color;
 

@@ -1,13 +1,17 @@
 Scene: Untitled
 ModelPath:
-  []
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX
 TexturePath:
   - Path: Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr
-  - Path: Asset/textures/PBR/gold/albedo.png
-  - Path: Asset/textures/PBR/gold/normal.png
-  - Path: Asset/textures/PBR/gold/metallic.png
-  - Path: Asset/textures/PBR/gold/roughness.png
-  - Path: Asset/textures/PBR/gold/ao.png
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga
+  - Path: Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga
+  - Path: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\albedo.png
+  - Path: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\ao.png
+  - Path: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\normal.png
+  - Path: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\metallic.png
+  - Path: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\roughness.png
 Entities:
   - Entity: 1
     TagComponent:
@@ -60,16 +64,16 @@ Entities:
         Cutoff: 0.976296008
         OuterCutoff: 0.953716934
       Type: 0
-  - Entity: 5
+  - Entity: 1048583
     TagComponent:
-      Tag: GoldenBall
+      Tag: GodenBox
     RelationShipComponent:
       Parent: 4294967295
       PrevSibling: 4294967295
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [1.88994396, -0.0221616849, 2.36077094]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
@@ -82,19 +86,19 @@ Entities:
       Metallic: 1
       Roughness: 1
       AmbientOcclusion: 1
-      AlbedoTexture: Asset/textures/PBR/gold/albedo.png
-      AlbedoTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-      NormalTexture: Asset/textures/PBR/gold/normal.png
-      NormalTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      AlbedoTexture: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\albedo.png
+      AlbedoTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_CLAMP_V_CLAMP_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      NormalTexture: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\normal.png
+      NormalTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_CLAMP_V_CLAMP_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
       SpecularTexture: none
       SpecularTextureSampler: none
-      MetallicTexture: Asset/textures/PBR/gold/metallic.png
-      MetallicTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-      RoughnessTexture: Asset/textures/PBR/gold/roughness.png
-      RoughnessTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-      AmbientOcclusionTexture: Asset/textures/PBR/gold/ao.png
-      AmbientOcclusionTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
-  - Entity: 7
+      MetallicTexture: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\metallic.png
+      MetallicTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_CLAMP_V_CLAMP_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      RoughnessTexture: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\roughness.png
+      RoughnessTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_CLAMP_V_CLAMP_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      AmbientOcclusionTexture: C:\dev\QCat\QCat_Editor\Asset\textures\PBR\gold\ao.png
+      AmbientOcclusionTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_CLAMP_V_CLAMP_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+  - Entity: 1048587
     TagComponent:
       Tag: Ball
     RelationShipComponent:
@@ -103,7 +107,7 @@ Entities:
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [4.64356947, 0, 1.9135735]
+      Translation: [3.41096973, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:

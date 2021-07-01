@@ -19,6 +19,7 @@ namespace QCat
 	{
 		m_Registry.create();
 		Entity  entity = { m_Registry.create(), this};
+		auto& uidcomp = entity.AddComponent<GuidComponent>();
 		entity.AddComponent<TransformComponent>();
 		RelationShipComponent& comp = entity.AddComponent<RelationShipComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
@@ -26,7 +27,7 @@ namespace QCat
 
 		if (id != 0)
 		{
-			entity.SetUID(id);
+			uidcomp.uid = id;
 			if (m_entityMap.find(id) == m_entityMap.end())
 				m_entityMap.insert({ id, entity });
 			else
@@ -34,7 +35,7 @@ namespace QCat
 		}
 		else
 		{
-			entity.SetUID(static_cast<std::underlying_type_t< entt::entity>>(entity.GetHandle()));
+			uidcomp.uid  = static_cast<std::underlying_type_t< entt::entity>>(entity.GetHandle());
 			if (m_entityMap.find(entity.GetUID()) == m_entityMap.end())
 				m_entityMap.insert({ entity.GetUID(), entity });
 			else
@@ -205,6 +206,10 @@ namespace QCat
 
 	}
 	template<>
+	void Scene::OnComponentAdded<GuidComponent>(Entity entity, GuidComponent& component)
+	{
+	}
+	template<>
 	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
 	{
 	}
@@ -244,4 +249,5 @@ namespace QCat
 	template<>
 	void Scene::OnComponentAdded<AnimatorComponent>(Entity entity,AnimatorComponent& component)
 	{}
+	
 }

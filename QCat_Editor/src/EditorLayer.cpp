@@ -51,19 +51,10 @@ namespace QCat
 	void EditorLayer::OnAttach()
 	{
 		QCAT_PROFILE_FUNCTION();
-
-		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f));
+		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 1.f);
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 		Sampler_Desc desc;
-		m_Texture = Texture2D::Create("Asset/textures/Checkerboard.png",desc);
-
-		AttachmentSpecification fbSpecEx= { {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1"},
-										    {FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER,"IndexBuffer"},
-										    {FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer"} };
-		fbSpecEx.Width = 0;
-		fbSpecEx.Height = 0;
-		m_FrameBufferEx = FrameBufferEx::Create(fbSpecEx);
 
 		Texture_Desc texDesc;
 		texDesc.Width = 1280;
@@ -76,12 +67,9 @@ namespace QCat
 		desc.MIN = Filtering::LINEAR;
 		desc.MAG = Filtering::LINEAR;
 
-		m_FrameBufferEx->InitializeTexture("ColorBuffer1", texDesc, desc);
-		m_FrameBufferEx->InitializeTexture("IndexBuffer", texDesc, desc);
-		m_FrameBufferEx->InitializeTexture("DepthBuffer", texDesc, desc);
-
 		m_ActiveScene = CreateRef<Scene>();
-		
+		ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
+
 		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.1f, 1000.0f);
 		//m_EditorCamera.SetPosition({ 0.0f,0.0f,-2.0f });
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -97,7 +85,14 @@ namespace QCat
 		EditorPBRRenderGraph.SetProj(projectionMatrix);
 		EditorPBRRenderGraph.Initialize();
 
-		m_Camera = m_ActiveScene->CreateEntity("Camera");
+		Sampler_Desc imgSamp;
+		imgSamp.addressU = WrapingMode::REPEAT;
+		imgSamp.addressV = WrapingMode::REPEAT;
+		imgSamp.MIN = Filtering::LINEAR;
+		imgSamp.MAG = Filtering::LINEAR;
+		imgSamp.MIP = Filtering::NONE;
+
+		/*m_Camera = m_ActiveScene->CreateEntity("Camera");
 
 		auto& tc = m_Camera.GetComponent<TransformComponent>();
 		tc.Translation = { 0.0f,0.0f,-2.0f };
@@ -112,13 +107,8 @@ namespace QCat
 		auto& comp = light1.AddComponent<LightComponent>();
 		comp.diffuse = { 300.0f,300.0f,300.0f };
 
-		Sampler_Desc imgSamp;
-		imgSamp.addressU = WrapingMode::REPEAT;
-		imgSamp.addressV = WrapingMode::REPEAT;
-		imgSamp.MIN = Filtering::LINEAR;
-		imgSamp.MAG = Filtering::LINEAR;
-		imgSamp.MIP = Filtering::NONE;
-		/*Material goldenBall;
+		
+		Material goldenBall;
 		goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
 		goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
@@ -130,20 +120,20 @@ namespace QCat
 		ball.AddComponent<MeshComponent>("Cube");
 		ball.AddComponent<MaterialComponent>(goldenBall);*/
 
-		model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
+		//model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
 
-		Material gunMat;
-		imgSamp.MIP = Filtering::NONE;
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
-		gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
+		//Material gunMat;
+		//imgSamp.MIP = Filtering::NONE;
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
+		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
 
-		SetMaterial(model, gunMat,m_ActiveScene.get());
-		model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
-		model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
-		model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
-		UpdateTransform(model, glm::mat4(1.0f), m_ActiveScene.get());
+		//SetMaterial(model, gunMat,m_ActiveScene.get());
+		//model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
+		//model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
+		//model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
+		//UpdateTransform(model, glm::mat4(1.0f), m_ActiveScene.get());
 	}
 
 	void EditorLayer::OnDetach()
@@ -592,6 +582,7 @@ namespace QCat
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.DeSerialize(*filepath);
 		}
+		
 	}
 
 	void EditorLayer::SaveSceneAs()

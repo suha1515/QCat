@@ -25,6 +25,11 @@ namespace QCat
 		TagComponent(const std::string & tag)
 			:Tag(tag) {}
 	};
+	struct GuidComponent
+	{
+		uint32_t uid;
+		GuidComponent() = default;
+	};
 	struct TransformComponent
 	{
 		glm::mat4 parentMatrix = glm::mat4(1.0f);
