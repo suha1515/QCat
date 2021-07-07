@@ -548,11 +548,30 @@ namespace QCat
 					{
 						LightComponent::LightType type = LightComponent::LightType(selectedItem);
 						if (type != component.type)
+						{
 							component.type = type;
+							component.Validate();
+						}
+							
 					}
 					ImGui::DragFloat3("Albedo", glm::value_ptr(component.diffuse));
 					ImGui::DragFloat3("Ambient", glm::value_ptr(component.ambient));
 					ImGui::DragFloat3("Specular", glm::value_ptr(component.specular));
+					static bool shadowmap = false;
+					ImGui::Checkbox("See ShadowMap", &shadowmap);
+					if (shadowmap)
+					{
+						ImGui::Image(component.debugMap->GetTexture(), ImVec2(128, 128), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+						if (component.type == LightComponent::LightType::Point)
+						{
+							static int selectIndex = 0;
+							static const char* index[] = { "X","-X","Y","-Y","Z","-Z" };
+							if (ImGui::Combo("TextureIndex", &selectIndex, index, IM_ARRAYSIZE(index)))
+							{
+								component.textureindex = selectIndex;
+							}
+						}
+					}
 
 					DrawVec3Control("LightDirection", component.lightDirection);
 					ImGui::DragFloat("Constant", &component.constant, 0.1f);
@@ -561,6 +580,7 @@ namespace QCat
 					ImGui::DragFloat("CutOff", &component.cutoff, 0.1f);
 					ImGui::DragFloat("OuterCutOff", &component.outerCutOff, 0.1f);
 					ImGui::DragFloat("Radius", &component.radius, 0.1f);
+					
 				}
 			);
 	}

@@ -138,6 +138,37 @@ namespace QCat
 			case TextureType::Texture2D:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 			case TextureType::TextureArray:       return GL_TEXTURE_2D_ARRAY;
 			case TextureType::TextureCube:		  return GL_TEXTURE_CUBE_MAP;
+			case TextureType::TextureCube_PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+			case TextureType::TextureCube_NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+			case TextureType::TextureCube_PositiveY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+			case TextureType::TextureCube_NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+			case TextureType::TextureCube_PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+			case TextureType::TextureCube_NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+
+
+			}
+		}
+		static unsigned int GetTextureComponentCount(TextureFormat format)
+		{
+			switch (format)
+			{
+				//32 bit
+			case TextureFormat::RGBA8:			 return 4;
+			case TextureFormat::RGBA8_SRGB:		 return 4;
+			case TextureFormat::RED32_FLOAT:	 return 1;
+			case TextureFormat::RED32_INTEGER:   return 1;
+			case TextureFormat::RGBA32_Float:	 return 4;
+			case TextureFormat::RGBA16_Float:    return 4;
+				//24 bit
+			case TextureFormat::RGB8:			 return 3;
+			case TextureFormat::RG16_Float:	     return 2;
+			case TextureFormat::RGB16_Float:	 return 3;
+				//16bit
+			case TextureFormat::RG8:			 return 2;
+
+				//depth
+			case TextureFormat::DEPTH32:		 return 1;
+			case TextureFormat::DEPTH24STENCIL8: return 1;
 			}
 		}
 		static GLenum GetTextureFormat(TextureFormat format)
@@ -246,6 +277,17 @@ namespace QCat
 				//depth
 			case  GL_DEPTH_COMPONENT32:   return TextureFormat::DEPTH32;
 			case  GL_DEPTH24_STENCIL8:    return TextureFormat::DEPTH24STENCIL8;
+			}
+		}
+
+		static GLenum GetAttachmentTypeForCopy(TextureFormat foramat,uint32_t index=0)
+		{
+			switch (foramat)
+			{
+			case TextureFormat::DEPTH32: return GL_DEPTH_ATTACHMENT;
+			case TextureFormat::DEPTH24STENCIL8: return GL_DEPTH_STENCIL_ATTACHMENT;
+			default:
+				return GL_COLOR_ATTACHMENT0 + index;
 			}
 		}
 	}

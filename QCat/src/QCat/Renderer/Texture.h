@@ -19,6 +19,15 @@ namespace QCat
 		TextureUsage usage;
 		bool gammaCorrection;
 	};
+	struct QCAT_BOX
+	{
+		uint32_t xoffset = 0;
+		uint32_t yoffset = 0;
+		uint32_t x = 0, y = 0;
+		uint32_t width = 0;
+		uint32_t height = 0;
+	};
+	
 	class Texture
 	{
 	public:
@@ -30,7 +39,8 @@ namespace QCat
 		virtual const Texture_Desc GetDesc() { return desc; };
 		virtual void GenerateMipMap()=0;
 
-		virtual void SetData(void* data, unsigned int size) = 0;
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) = 0;
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex=0) = 0;
 		virtual void SetSize(uint32_t width, uint32_t height,uint32_t depth=0)=0;
 
 		virtual void Bind(unsigned int slot =0) const = 0;
@@ -125,6 +135,26 @@ namespace QCat
 		std::unordered_map<std::string, Ref<Texture2D>> m_Textures;
 		std::vector <std::string> texturepathlist;
 	};
+	class TextureUtility
+	{
+	public:
+		TextureUtility() = default;
+		virtual ~TextureUtility() = default;
 
+		static void CopyTexture2D(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion)
+		{
+			Get_()->CopyTexture2D_(srcTex, dstTex, mipLevel, boxregion);
+		}
+		static void CopyCubeMapFace2D(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevel, QCAT_BOX boxregion)
+		{
+			Get_()->CopyCubemapFace2D_(srcCubeMap, dstTex, index, mipLevel, boxregion);
+		}
+	protected:
+		virtual void CopyTexture2D_(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion) = 0;
+		virtual void CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevel, QCAT_BOX boxregion) = 0;
+	private:
+		static Ref<TextureUtility> Get_();
+
+	};
 
 }

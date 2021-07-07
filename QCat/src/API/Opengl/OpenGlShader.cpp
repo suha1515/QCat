@@ -147,6 +147,7 @@ namespace QCat
 			{
 			case GL_VERTEX_SHADER: return ".cached_opengl.vert";
 			case GL_FRAGMENT_SHADER: return ".cached_opengl.frag";
+			case GL_GEOMETRY_SHADER: return ".cached_opengl.geom";
 			}
 			QCAT_CORE_ASSERT(false);
 			return "";
@@ -157,6 +158,7 @@ namespace QCat
 			{
 			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
 			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+			case GL_GEOMETRY_SHADER: return ".cached_vulkan.geom";
 			}
 			QCAT_CORE_ASSERT(false);
 			return "";

@@ -217,7 +217,7 @@ namespace QCat
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap");
 	}
-	void DX11Texture2D::SetData(void* data, unsigned int size)
+	void DX11Texture2D::SetData(void* data, unsigned int size, uint32_t textureindex )
 	{
 		QCAT_PROFILE_FUNCTION();
 
@@ -447,7 +447,7 @@ namespace QCat
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap");
 	}
-	void DX11TextureCube::SetData(void* pData, unsigned int size)
+	void DX11TextureCube::SetData(void* data, unsigned int size, uint32_t textureindex)
 	{
 	}
 	void DX11TextureCube::SetSize(uint32_t width, uint32_t height, uint32_t depth)

@@ -23,7 +23,8 @@ namespace QCat
 
 		virtual void GenerateMipMap() override;
 
-		virtual void SetData(void* data, unsigned int size) override;
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) {};
 		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
 		virtual void Bind(unsigned int slot = 0) const override;
@@ -61,7 +62,8 @@ namespace QCat
 
 		virtual void GenerateMipMap() override;
 
-		virtual void SetData(void* pData, unsigned int size) override;
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) {};
 		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
 		virtual void Bind(unsigned int slot = 0) const override;
@@ -82,5 +84,19 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
 		D3D11_TEXTURE2D_DESC textureDesc;
+	};
+
+	class DX11TextureUtility : public TextureUtility
+	{
+	public:
+		DX11TextureUtility()=default;
+		virtual ~DX11TextureUtility() = default;
+
+		virtual void CopyTexture2D_(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion) override
+		{};
+		virtual void CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevl, QCAT_BOX boxregion) override
+		{};
+	private:
+
 	};
 }

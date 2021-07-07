@@ -18,12 +18,12 @@ Entities:
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [0.921212316, 0.294186652, -2.64657593]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [1.01999998, -0.569468617, -2.77424264]
+      Rotation: [0.0314083248, 0, 0]
+      Scale: [0.999999881, 0.999984503, 0.999984503]
     LightComponent:
       LightColor:
-        Diffuse: [1, 1, 1]
+        Diffuse: [7, 1, 1]
         Ambient: [0.200000003, 0.200000003, 0.200000003]
         Specular: [1, 1, 1]
       Directional Light:
@@ -36,7 +36,7 @@ Entities:
       Spot Light:
         Cutoff: 0.976296008
         OuterCutoff: 0.953716934
-      Type: 1
+      Type: 0
   - Entity: 3
     TagComponent:
       Tag: Box
@@ -46,9 +46,9 @@ Entities:
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [-0.0688986778, 0, 0]
+      Translation: [-0.0688986778, -0.360378891, -0.497965455]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.590000033, 0.590000033, 0.590000033]
     MeshComponent:
       - Meshname: Cube
     MaterialComponent:
@@ -80,9 +80,9 @@ Entities:
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [2.33593988, 0, 0.0526099205]
+      Translation: [2.33593988, -0.563442707, -0.74594599]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.600000024, 0.600000024, 0.600000024]
     MeshComponent:
       - Meshname: Sphere
     MaterialComponent:
@@ -114,11 +114,45 @@ Entities:
       NextSibling: 4294967295
       FirstChild: 4294967295
     TransformComponent:
-      Translation: [2.15466881, 0.370026737, -2.07349706]
-      Rotation: [2.03637099, 1.44011664, 0.420042008]
-      Scale: [0.0100000184, 0.0100000584, 0.0100000352]
+      Translation: [3.22701001, -0.700684607, -2.00219846]
+      Rotation: [1.63012326, 0.163184777, -0.0324576683]
+      Scale: [0.0100000454, 0.0100000743, 0.0100000156]
     MeshComponent:
       - Meshname: Cerberus00_Fixed
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 1
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: none
+      AlbedoTextureSampler: none
+      NormalTexture: none
+      NormalTextureSampler: none
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: none
+      MetallicTextureSampler: none
+      RoughnessTexture: none
+      RoughnessTextureSampler: none
+      AmbientOcclusionTexture: none
+      AmbientOcclusionTextureSampler: none
+  - Entity: 9
+    TagComponent:
+      Tag: Floor
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [1.39292014, -1.15688455, -2.04745173]
+      Rotation: [0, 0, 0]
+      Scale: [4.0906949, 0.0348667018, 2.68426323]
+    MeshComponent:
+      - Meshname: Cube
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]

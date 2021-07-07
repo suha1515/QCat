@@ -196,9 +196,6 @@ namespace QCat
 		RenderCommand::SetDepthFunc(COMPARISON_FUNC::LESS_EQUAL);
 		{
 			m_SkyBoxShader->Bind();
-			//m_SkyBoxShader->SetMat4("u_Projection", proj, ShaderType::VS);
-			//m_SkyBoxShader->SetMat4("u_View", *viewMatrix, ShaderType::VS);
-			//m_SkyBoxShader->UpdateBuffer();
 			m_HdrCubeMap->Bind(0);
 
 			cube->Draw();

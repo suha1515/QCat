@@ -183,11 +183,58 @@ namespace QCat
 		{
 			Directional=0,Point,Spot
 		};
-		LightComponent() = default;
+		LightComponent()
+		{
+			m_shadowMapWidth = 1024;
+			m_shadowMapHeight = 1024;
+			Validate();
+		};
+		void Validate()
+		{
+			Sampler_Desc desc;
+			switch (type)
+			{
+			case LightType::Directional:
+			case LightType::Spot:
+				if (debugMap != nullptr)
+					debugMap.reset();
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, m_shadowMapWidth, m_shadowMapHeight);
+				desc.MIN = Filtering::LINEAR;
+				desc.MAG = Filtering::LINEAR;
+				desc.MIP = Filtering::NONE;
+				desc.addressU = WrapingMode::CLAMP;
+				desc.addressV = WrapingMode::CLAMP;
+				desc.addressW = WrapingMode::CLAMP;
+				desc.mode = FilterMode::COMPARISON;
+				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+				if (shadowMap != nullptr)
+					shadowMap.reset();
+				shadowMap = Texture2D::Create(TextureFormat::DEPTH32, desc, m_shadowMapWidth, m_shadowMapHeight);
+				break;
+			case LightType::Point:
+				if (debugMap != nullptr)
+					debugMap.reset();
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, m_shadowMapWidth, m_shadowMapHeight);
+				desc.MIN = Filtering::LINEAR;
+				desc.MAG = Filtering::LINEAR;
+				desc.MIP = Filtering::NONE;
+				desc.addressU = WrapingMode::CLAMP;
+				desc.addressV = WrapingMode::CLAMP;
+				desc.addressW = WrapingMode::CLAMP;
+				desc.mode = FilterMode::COMPARISON;
+				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+				if (shadowMap != nullptr)
+					shadowMap.reset();
+				shadowMap = TextureCube::Create(TextureFormat::DEPTH32, desc, m_shadowMapWidth, m_shadowMapHeight);
+				break;
+			default:
+				break;
+			}
+		}
 		glm::vec3 diffuse = { 1.0f,1.0f,1.0f };
 		glm::vec3 ambient = { 0.2f,0.2f,0.2f };
 		glm::vec3 specular = { 1.0f,1.0f,1.0f };
-		glm::vec3 lightDirection = { 0.0f,0.0f,0.0f };
+		glm::vec3 lightDirection = { 0.0f,0.0f,1.0f };
 
 		float constant = 1.0f;
 		float linear = 0.09f;
@@ -195,7 +242,13 @@ namespace QCat
 		float cutoff = glm::cos(glm::radians(12.5f));
 		float outerCutOff = glm::cos(glm::radians(17.5f));
 		float radius = 0.0f;
+
+		uint32_t m_shadowMapWidth,m_shadowMapHeight;
 		LightType type = LightType::Directional;
+
+		Ref<Texture> shadowMap;
+		Ref<Texture> debugMap;
+		int textureindex = 0;
 	};
 	struct AnimatorComponent
 	{

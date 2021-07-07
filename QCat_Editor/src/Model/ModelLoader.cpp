@@ -175,7 +175,7 @@ namespace QCat
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
-			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/BlinnAndPhong_VS.hlsl", "Asset/shaders/hlsl/BlinnAndPhong_PS.hlsl");
+			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/Blinn-Phong.hlsl");
 		}
 		// InputLayout
 		vertexBuffer->SetLayout(BufferLayout::Create(

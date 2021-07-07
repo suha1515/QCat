@@ -165,13 +165,17 @@ namespace QCat
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap!");
 	}
-	void OpenGLTexture2D::SetData(void* pData, unsigned int size)
+	void OpenGLTexture2D::SetData(void* data, unsigned int size, uint32_t textureindex)
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		unsigned int bpc = m_Format == GL_RGBA ? 4 : 3;
+		unsigned int bpc = Utils::GetTextureComponentCount(desc.Format);
 		QCAT_CORE_ASSERT(size == m_width * m_height * bpc,"Data must be entire texture!");
-		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, GL_UNSIGNED_BYTE, pData);
+		glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, Utils::GetTextureDataFormat(desc.Format), data);
+	}
+	void OpenGLTexture2D::GetData(void* data, uint32_t mipLevel, uint32_t textureindex )
+	{
+		glGetTexImage(Utils::GetTextureTarget(desc.Type,desc.SampleCount>1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFormat(desc.Format), data);
 	}
 	void OpenGLTexture2D::SetSize(uint32_t width, uint32_t height, uint32_t depth)
 	{
@@ -198,7 +202,6 @@ namespace QCat
 		//glActiveTexture(GL_TEXTURE0 + slot);
 		//glBindTexture(GL_TEXTURE_2D, m_renderID);
 		glBindTextureUnit(slot, m_renderID);
-		//sampler->Bind(slot);
 	}
 	void OpenGLTexture2D::Validate(GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData)
 	{
@@ -227,7 +230,7 @@ namespace QCat
 			}
 			glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_width, m_height, 0, m_Format, m_DataFormat, pData);
 		}
-		sampler = OpenGLSampler::Create(smpdesc);
+		//sampler = OpenGLSampler::Create(smpdesc);
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
 		:flip(flip),gammaCorrection(gammaCorrection), smpdesc(desc)
@@ -325,8 +328,35 @@ namespace QCat
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap!");
 	}
-	void OpenGLCubeMapTexture::SetData(void* pData, unsigned int size)
+	void OpenGLCubeMapTexture::SetData(void* data, unsigned int size, uint32_t textureindex )
 	{
+		QCAT_PROFILE_FUNCTION();
+
+		if (textureindex > 3)
+		{
+			TextureType tempType = static_cast<TextureType>(textureindex);
+			if (tempType == TextureType::TextureCube)
+				tempType = TextureType::TextureCube_PositiveX;
+
+			unsigned int bpc = Utils::GetTextureComponentCount(desc.Format);
+			QCAT_CORE_ASSERT(size == desc.Width * desc.Height * bpc, "Data must be entire texture!");
+			glTexImage2D(Utils::GetTextureTarget(tempType,false), 0, m_InternalFormat, desc.Width, desc.Height, 0, m_Format, m_DataFormat, data);
+		}
+		else
+			QCAT_CORE_ERROR("Texture SetData Error : CubeMapTexture Index Wrong!");
+
+	}
+	void OpenGLCubeMapTexture::GetData(void* data, uint32_t mipLevel, uint32_t textureindex )
+	{
+		if (textureindex > 3)
+		{
+			TextureType tempType = static_cast<TextureType>(textureindex);
+			if (tempType == TextureType::TextureCube)
+				tempType = TextureType::TextureCube_PositiveX;
+			glGetTexImage(Utils::GetTextureTarget(tempType, desc.SampleCount > 1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFormat(desc.Format), data);
+		}
+		else
+			QCAT_CORE_ERROR("Texture GetData Error : CubeMapTexture Index Wrong!");
 	}
 	void OpenGLCubeMapTexture::SetSize(uint32_t width, uint32_t height, uint32_t depth)
 	{
@@ -361,4 +391,69 @@ namespace QCat
 		glTexImage2D(target, 0, m_InternalFormat, m_width, m_height, 0, m_Format, m_DataFormat, pData);
 	}
 	
+	//Texture Utility
+	OpenGLTextureUtility::OpenGLTextureUtility()
+	{
+		glCreateFramebuffers(1, &m_RendererID);
+	}
+
+	OpenGLTextureUtility::~OpenGLTextureUtility()
+	{
+		glDeleteFramebuffers(1, &m_RendererID);
+	}
+
+	void OpenGLTextureUtility::CopyTexture2D_(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion)
+	{
+		if (srcTex->GetTextureType() == TextureType::Texture2D && dstTex->GetTextureType() == TextureType::Texture2D)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+			glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, (GLuint)srcTex->GetTexture(), mipLevel);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glCopyTextureSubImage2D((GLuint)dstTex->GetTexture(), mipLevel, boxregion.xoffset, boxregion.yoffset, boxregion.x, boxregion.y, boxregion.width, boxregion.height);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		else
+		{
+			QCAT_CORE_ERROR("CopyTexture2D Error : TextureType is wrong !");
+		}
+	}
+
+	void OpenGLTextureUtility::CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevel, QCAT_BOX boxregion)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+		TextureType type = TextureType(index);
+		GLenum cubeFace;
+		switch (type)
+		{
+		case TextureType::TextureCube_PositiveX:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;	break;
+		case TextureType::TextureCube_NegativeX:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;	break;
+		case TextureType::TextureCube_PositiveY:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;	break;
+		case TextureType::TextureCube_NegativeY:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;	break;
+		case TextureType::TextureCube_PositiveZ:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;	break;
+		case TextureType::TextureCube_NegativeZ:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;	break;
+		default:
+			cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+			QCAT_CORE_ERROR("CopyCubemapFace2D Error : Wrong CubeMapIndex!");
+		}
+		GLenum AttachmentType1 = Utils::GetAttachmentTypeForCopy(srcCubeMap->GetTextureFormat());
+		GLenum AttachmentType2 = Utils::GetAttachmentTypeForCopy(dstTex->GetTextureFormat());
+		if (srcCubeMap->GetTextureType() == TextureType::TextureCube && dstTex->GetTextureType() == TextureType::Texture2D)
+		{
+			
+			if (AttachmentType1 == AttachmentType2)
+			{
+				glFramebufferTexture2D(GL_READ_FRAMEBUFFER, AttachmentType1, cubeFace, (GLuint)srcCubeMap->GetTexture(), mipLevel);
+				GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+				QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");
+				glCopyTextureSubImage2D((GLuint)dstTex->GetTexture(), mipLevel, boxregion.xoffset, boxregion.yoffset, boxregion.x, boxregion.y, boxregion.width, boxregion.height);
+			}
+			else
+				QCAT_CORE_ERROR("CopyCubemapFace2D Error : Both AttachmentTypes are diffrent!");
+		}
+		else
+			QCAT_CORE_ERROR("CopyCubemapFace2D Error : TextureType is wrong !");
+
+		glFramebufferTexture(GL_FRAMEBUFFER, AttachmentType1, 0, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 }

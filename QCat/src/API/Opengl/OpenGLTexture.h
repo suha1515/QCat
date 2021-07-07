@@ -16,7 +16,8 @@ namespace QCat
 		virtual void*       GetTexture() const override { return (void*)m_renderID; }
 		virtual void GenerateMipMap() override;
 
-		virtual void SetData(void* pData, unsigned int size) override;
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) override;
 		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
 		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) {};
@@ -57,7 +58,8 @@ namespace QCat
 		virtual void* GetTexture() const override { return (void*)m_renderID; }
 		virtual void GenerateMipMap() override;
 
-		virtual void SetData(void* pData, unsigned int size) override;
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) override;
 		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
 		virtual void ReadData(uint32_t face, uint32_t x, uint32_t y, const void* outdata) {};
@@ -76,5 +78,20 @@ namespace QCat
 		bool flip = false, gammaCorrection = false;
 		GLenum m_InternalFormat, m_Format, m_DataFormat;
 		Sampler_Desc  smpdesc;
+	};
+
+	class OpenGLTextureUtility : public TextureUtility
+	{
+	public:
+		OpenGLTextureUtility();
+		virtual ~OpenGLTextureUtility();
+
+		virtual void CopyTexture2D_(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion) override;
+		virtual void CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevl, QCAT_BOX boxregion)override;
+
+
+	private:
+		uint32_t m_RendererID;
+
 	};
 }

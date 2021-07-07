@@ -1,6 +1,7 @@
 #include "PBRRenderGraph_Editor.h"
 #include "PBRShaderPass_Editor.h"
 #include "PBRPreComputePass_Editor.h"
+#include "ShadowMappingPass.h"
 #include "glm/gtc/type_ptr.hpp"
 namespace QCat
 {
@@ -43,6 +44,10 @@ namespace QCat
         pbrShaderPass->SetInputLink("ColorBuffer", "$.ColorBuffer");
         pbrShaderPass->SetInputLink("DepthBuffer", "$.DepthBuffer");
         AppendPass(pbrShaderPass);
+
+        //Shadow Pass
+        Ref<Pass> ShadowPass = CreateRef<ShadowMappingPass>(0, "shadowmappingpass");
+       AppendPass(ShadowPass);
     }
     void PBRRenderGraph::SetSize(uint32_t width, uint32_t height)
     {

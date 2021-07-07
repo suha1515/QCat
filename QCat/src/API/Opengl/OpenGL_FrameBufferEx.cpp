@@ -163,7 +163,10 @@ namespace QCat
 			bool multisampled = texture->GetDesc().SampleCount > 1;
 			GLenum attachmentIndex = Utils::GetAttachmentType(attachType);
 			GLint texId = (GLint)texture->GetTexture();
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, Utils::GetTexTarget(type, multisampled), texId, mipLevel);
+			if (type == TextureType::TextureCube)
+				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, texId, mipLevel);
+			else
+				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, Utils::GetTexTarget(type, multisampled), texId, mipLevel);
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");
 		}

@@ -68,7 +68,8 @@ namespace QCat
 		desc.MAG = Filtering::LINEAR;
 
 		m_ActiveScene = CreateRef<Scene>();
-		ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
+		
+		//ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
 
 		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.1f, 1000.0f);
 		//m_EditorCamera.SetPosition({ 0.0f,0.0f,-2.0f });
@@ -92,33 +93,34 @@ namespace QCat
 		imgSamp.MAG = Filtering::LINEAR;
 		imgSamp.MIP = Filtering::NONE;
 
-		/*m_Camera = m_ActiveScene->CreateEntity("Camera");
+		//m_Camera = m_ActiveScene->CreateEntity("Camera");
 
-		auto& tc = m_Camera.GetComponent<TransformComponent>();
-		tc.Translation = { 0.0f,0.0f,-2.0f };
+		//auto& tc = m_Camera.GetComponent<TransformComponent>();
+		//tc.Translation = { 0.0f,0.0f,-2.0f };
 
-		auto& camera = m_Camera.AddComponent<CameraComponent>();
-		camera.Camera.SetViewportSize(1600.0f, 900.0f);
-		camera.Camera.SetPerspective(1, 0.01f, 100.0f);
+		//auto& camera = m_Camera.AddComponent<CameraComponent>();
+		//camera.Camera.SetViewportSize(1600.0f, 900.0f);
+		//camera.Camera.SetPerspective(1, 0.01f, 100.0f);
 
-		Entity light1 = m_ActiveScene->CreateEntity("PointLight");
+		//Entity light1 = m_ActiveScene->CreateEntity("PointLight");
 
-		light1.GetComponent<TransformComponent>().Translation = glm::vec3(10.0f, 10.0f, -20.0f);
-		auto& comp = light1.AddComponent<LightComponent>();
-		comp.diffuse = { 300.0f,300.0f,300.0f };
+		//light1.GetComponent<TransformComponent>().Translation = glm::vec3(0,0,-2.0f);
+		//auto& comp = light1.AddComponent<LightComponent>();
+		////comp.type = LightComponent::LightType::Point;
+		//comp.diffuse = { 1.0f,1.0f,1.0f };
 
-		
-		Material goldenBall;
-		goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
-		goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
-		goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
-		goldenBall.SetTexture("Asset/textures/PBR/gold/roughness.png", imgSamp, Material::TextureType::Roughness);
-		goldenBall.SetTexture("Asset/textures/PBR/gold/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
+		//
+		//Material goldenBall;
+		//goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
+		//goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
+		//goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
+		//goldenBall.SetTexture("Asset/textures/PBR/gold/roughness.png", imgSamp, Material::TextureType::Roughness);
+		//goldenBall.SetTexture("Asset/textures/PBR/gold/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
 
-		Entity ball = m_ActiveScene->CreateEntity("GoldenBall");
-		ball.GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
-		ball.AddComponent<MeshComponent>("Cube");
-		ball.AddComponent<MaterialComponent>(goldenBall);*/
+		//Entity ball = m_ActiveScene->CreateEntity("GoldenBall");
+		//ball.GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
+		//ball.AddComponent<MeshComponent>("Cube");
+		//ball.AddComponent<MaterialComponent>(goldenBall);
 
 		//model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
 

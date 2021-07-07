@@ -55,4 +55,21 @@ namespace  QCat
 		return nullptr;
 	}
 
+	Ref<TextureUtility> TextureUtility::Get_()
+	{
+		static Ref<TextureUtility> util;
+		if (util == nullptr)
+		{
+			switch (Renderer::GetAPI())
+			{
+			case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); break;
+			case RenderAPI::API::OpenGL:		util = CreateRef<OpenGLTextureUtility>(); break;
+			case RenderAPI::API::DirectX11:		util = CreateRef<DX11TextureUtility>(); break;
+			default:
+				QCAT_CORE_ASSERT(false, "Unknown RenderAPI!"); break;
+			}		
+		}
+		return util;
+	}
+
 }
