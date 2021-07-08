@@ -38,7 +38,7 @@ namespace QCat
 		void Validate(GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData);
 	private:
 		unsigned int m_width,m_height;
-		unsigned int m_renderID;
+		unsigned int m_renderID=0;
 		unsigned int m_mipLevel,m_samples;
 		bool flip=false, gammaCorrection = false;
 		GLenum m_InternalFormat, m_Format,m_DataFormat;
@@ -52,6 +52,8 @@ namespace QCat
 		OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevels = 1, void* pData = nullptr);
 
 		virtual ~OpenGLCubeMapTexture();
+
+		void Validate(GLenum target, GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples);
 
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
@@ -70,7 +72,6 @@ namespace QCat
 		{
 			return m_renderID == ((OpenGLCubeMapTexture&)other).m_renderID;
 		}
-		void Validate(GLenum target,GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData);
 	private:
 		unsigned int m_width, m_height;
 		unsigned int m_renderID;

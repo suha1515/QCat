@@ -49,8 +49,6 @@ namespace QCat
 			stbi_set_flip_vertically_on_load(0);
 		void* stb_data = nullptr;
 		void *pData=nullptr;
-		//stbi_uc* data = nullptr;
-		//float* fdata = nullptr;
 		{
 			QCAT_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
 			if (extension != "hdr")
@@ -184,16 +182,18 @@ namespace QCat
 		desc.Height = height;
 		m_width = width;
 		m_height = height;
-		unsigned int temp_Width = m_width;
+		/*unsigned int temp_Width = m_width;
 		unsigned int temp_Height = m_height;
 		for (int i = 0; i < m_mipLevel; ++i)
 		{
-			glTexImage2D(GL_TEXTURE_2D, i, m_InternalFormat, temp_Width, temp_Height, 0, m_Format, m_DataFormat, nullptr);
+			glTexImage2D(GL_TEXTURE_2D, i, m_InternalFormat, temp_Width, temp_Height,0 , m_Format, m_DataFormat, nullptr);
 			if (temp_Width == 1 || temp_Height == 1 || m_mipLevel == 1)
 				break;
 			temp_Width = std::max<unsigned int>(1, (temp_Width / 2));
 			temp_Height = std::max<unsigned int>(1, (temp_Height / 2));
-		}
+		}*/
+
+		Validate(m_Format, m_InternalFormat, m_DataFormat, m_width, m_height, desc.MipLevels, desc.SampleCount, nullptr);
 	}
 	void OpenGLTexture2D::Bind(unsigned int slot) const
 	{
@@ -205,31 +205,21 @@ namespace QCat
 	}
 	void OpenGLTexture2D::Validate(GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData)
 	{
+		if (m_renderID > 0)
+		{
+			glDeleteTextures(1, &m_renderID);
+		}
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
 		glBindTexture(GL_TEXTURE_2D, m_renderID);
 		Utils::SetTextureParameter(GL_TEXTURE_2D, smpdesc);
-		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		if (this->desc.usage == TextureUsage::Immutable)
-		{
-			if (samples>1)
-				glTextureStorage2DMultisample(m_renderID, samples, m_InternalFormat, m_width, m_height, true);
-			else
-				glTextureStorage2D(m_renderID, m_mipLevel, m_InternalFormat, m_width, m_height);
-			if (pData != nullptr)
-				glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, dataFormat, pData);
-		}
+
+		if (samples > 1)
+			glTextureStorage2DMultisample(m_renderID, samples, m_InternalFormat, m_width, m_height, true);
 		else
-		{
-			if (samples > 1)
-			{
-				glTexImage2DMultisample(GL_TEXTURE_2D, samples, m_InternalFormat, m_width, m_height, true);
-			}
-			glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_width, m_height, 0, m_Format, m_DataFormat, pData);
-		}
+			glTextureStorage2D(m_renderID, m_mipLevel, m_InternalFormat, m_width, m_height);
+		if (pData != nullptr)
+			glTextureSubImage2D(m_renderID, 0, 0, 0, m_width, m_height, m_Format, dataFormat, pData);
 		//sampler = OpenGLSampler::Create(smpdesc);
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
@@ -237,17 +227,15 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		uint32_t textureID;
-		glGenTextures(1, &m_renderID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
-		Utils::SetTextureParameter(GL_TEXTURE_CUBE_MAP, desc);
-
 		if (!flip)
 			stbi_set_flip_vertically_on_load(0);
 		else
 			stbi_set_flip_vertically_on_load(1);
 		int width, height, channels;
 		
+		Validate(GL_TEXTURE_CUBE_MAP, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat);
+		Utils::SetTextureParameter(GL_TEXTURE_CUBE_MAP, desc);
+
 		for (uint32_t i = 0; i < imgPathes.size(); ++i)
 		{
 			stbi_uc* data = nullptr;
@@ -280,7 +268,7 @@ namespace QCat
 			this->desc.usage = TextureUsage::Immutable;
 			this->desc.MipLevels = m_mipLevel;
 
-			Validate(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat, data);
+			SetData(data, width * height * channels, (uint32_t)TextureType::TextureCube_PositiveX + i);
 			stbi_image_free(data);
 		}
 
@@ -288,10 +276,6 @@ namespace QCat
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevels, void* pData)
 		:m_width(width),m_height(height), m_mipLevel(mipLevels), smpdesc(desc)
 	{
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_renderID);;
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
-		Utils::SetTextureParameter(GL_TEXTURE_CUBE_MAP, desc);
-
 		GLenum internalFormat= Utils::GetTextureInternalFormat(format);
 		GLenum textureformat = Utils::GetTextureFormat(format);
 		GLenum dataFormat = Utils::GetTextureDataFormat(format);
@@ -306,20 +290,35 @@ namespace QCat
 		this->desc.Format = Utils::GetTextureFormatFromGL(m_InternalFormat);
 		this->desc.usage = TextureUsage::Default;
 		this->desc.MipLevels = m_mipLevel;
-
+		this->desc.SampleCount = 0;
 		unsigned int temp_Width = m_width;
 		unsigned int temp_Height = m_height;
 
-		for (int i = 0; i < 6; ++i)
-		{
-			Validate(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat, pData);
-		}
+		Validate(GL_TEXTURE_CUBE_MAP, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat);
+		Utils::SetTextureParameter(GL_TEXTURE_CUBE_MAP, desc);
+		//for (int i = 0; i < 6; ++i)
+		//{
+		//	Validate(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat, pData);
+		//}
 	}
 	OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
 	{
 		QCAT_PROFILE_FUNCTION();
 
 		glDeleteTextures(1, &m_renderID);
+	}
+	void OpenGLCubeMapTexture::Validate(GLenum target, GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples)
+	{
+		if (m_renderID > 0)
+		{
+			glDeleteTextures(1, &m_renderID);
+		}
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_renderID);;
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
+		if (desc.SampleCount > 1)
+			glTexStorage2DMultisample(target, samples, m_InternalFormat, m_width, m_height, true);
+		else
+			glTexStorage2D(target, m_mipLevel, m_InternalFormat, m_width, m_height);
 	}
 	void OpenGLCubeMapTexture::GenerateMipMap()
 	{
@@ -340,7 +339,8 @@ namespace QCat
 
 			unsigned int bpc = Utils::GetTextureComponentCount(desc.Format);
 			QCAT_CORE_ASSERT(size == desc.Width * desc.Height * bpc, "Data must be entire texture!");
-			glTexImage2D(Utils::GetTextureTarget(tempType,false), 0, m_InternalFormat, desc.Width, desc.Height, 0, m_Format, m_DataFormat, data);
+
+			glTexSubImage2D(Utils::GetTextureTarget(tempType, false), 0, 0, 0, desc.Width, desc.Height, m_Format, m_DataFormat, data);
 		}
 		else
 			QCAT_CORE_ERROR("Texture SetData Error : CubeMapTexture Index Wrong!");
@@ -371,7 +371,7 @@ namespace QCat
 		{
 			for (int j = 0; j < m_mipLevel; ++j)
 			{
-				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, j, m_InternalFormat, temp_Width, temp_Height, 0, m_Format, m_DataFormat, nullptr);
+				glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, j, m_InternalFormat, temp_Width, temp_Height, 0, m_Format, m_DataFormat, nullptr);
 				if (temp_Width == 1 || temp_Height == 1 || m_mipLevel == 1)
 					break;
 				temp_Width = std::max<unsigned int>(1, (temp_Width / 2));
@@ -381,14 +381,10 @@ namespace QCat
 	}
 	void OpenGLCubeMapTexture::Bind(unsigned int slot) const
 	{
+		
 		QCAT_PROFILE_FUNCTION();
 		// 1st parameter is for slot
 		glBindTextureUnit(slot, m_renderID);
-	}
-
-	void OpenGLCubeMapTexture::Validate(GLenum target, GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData)
-	{
-		glTexImage2D(target, 0, m_InternalFormat, m_width, m_height, 0, m_Format, m_DataFormat, pData);
 	}
 	
 	//Texture Utility

@@ -75,8 +75,6 @@ namespace QCat
 
 		static Ref<TextureCube> Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel=1, bool flip=false,bool gammacorrection = false);
 		static Ref<TextureCube> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, void* pData = nullptr);
-
-
 	};
 
 	class TextureLibrary
@@ -138,7 +136,10 @@ namespace QCat
 	class TextureView
 	{
 	public:
+		TextureView() = default;
+		virtual ~TextureView() = default;
 	private:
+
 	};
 	class TextureUtility
 	{
