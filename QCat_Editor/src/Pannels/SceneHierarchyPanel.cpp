@@ -214,6 +214,14 @@ namespace QCat
 	}
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
+		ImVec2 uv1 = ImVec2(0.0f, 1.0f);
+		ImVec2 uv2 = ImVec2(1.0f, 0.0f);
+
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		{
+			uv1 = ImVec2(0.0f, 0.0f);
+			uv2 = ImVec2(1.0f, 1.0f);
+		}
 		if (entity.HasComponent<TagComponent>())
 		{
 			auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -281,7 +289,7 @@ namespace QCat
 
 		ImGui::PopItemWidth();
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+		DrawComponent<TransformComponent>("Transform", entity, [&](auto& component)
 			{
 				glm::vec3 exTranslation = component.Translation;
 				glm::vec3 exRotation = component.Rotation;
@@ -299,7 +307,7 @@ namespace QCat
 				}
 			}
 		);
-		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
+		DrawComponent<CameraComponent>("Camera", entity, [&](auto& component)
 			{
 				auto& camera = component.Camera;
 
@@ -358,13 +366,13 @@ namespace QCat
 		);
 
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, 
-			[](auto& component)
+			[&](auto& component)
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 			}
 		);
 		DrawComponent<MeshComponent>("Mesh", entity,
-			[](auto& component)
+			[&](auto& component)
 			{
 				static ImGuiComboFlags flags = 0;
 				MeshComponent& mesh = component;
@@ -438,7 +446,7 @@ namespace QCat
 			}
 			);
 		DrawComponent<MaterialComponent>("Material", entity,
-			[](auto& component)
+			[&](auto& component)
 			{
 				Material& mat = component.GetMaterial();
 
@@ -457,7 +465,7 @@ namespace QCat
 				ImGui::SetColumnOffset(0, 21);
 				ImGui::Separator();
 				if (mat.m_DiffuseTexture)
-					ImGui::Image(mat.m_DiffuseTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+					ImGui::Image(mat.m_DiffuseTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Albedo Texture");
 				ImGui::SameLine();
@@ -473,7 +481,7 @@ namespace QCat
 				ImGui::NextColumn();
 				ImGui::Separator();
 				if (mat.m_NormalMapTexture)
-					ImGui::Image(mat.m_NormalMapTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+					ImGui::Image(mat.m_NormalMapTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Normal Texture");
 				ImGui::SameLine();
@@ -489,7 +497,7 @@ namespace QCat
 				ImGui::NextColumn();
 				ImGui::Separator();
 				if (mat.m_MetallicTexture)
-					ImGui::Image(mat.m_MetallicTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+					ImGui::Image(mat.m_MetallicTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Metallic Texture");
 				ImGui::SameLine();
@@ -505,7 +513,7 @@ namespace QCat
 				ImGui::NextColumn();
 				ImGui::Separator();
 				if (mat.m_RoughnessTexture)
-					ImGui::Image(mat.m_RoughnessTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+					ImGui::Image(mat.m_RoughnessTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Roughness Texture");
 				ImGui::SameLine();
@@ -521,7 +529,7 @@ namespace QCat
 				ImGui::NextColumn();
 				ImGui::Separator();
 				if (mat.m_AmbientOcclusionTexture)
-					ImGui::Image(mat.m_AmbientOcclusionTexture->GetTexture(), ImVec2(64, 64), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+					ImGui::Image(mat.m_AmbientOcclusionTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("AmbientOcclusion Texture");
 				ImGui::SameLine();
@@ -540,7 +548,7 @@ namespace QCat
 			}
 			);
 			DrawComponent<LightComponent>("Light", entity,
-				[](auto& component)
+				[&](auto& component)
 				{
 					static const char* lighttype[] = { "Directional","Point","Spot" };
 					static int selectedItem = 0;
@@ -561,7 +569,7 @@ namespace QCat
 					ImGui::Checkbox("See ShadowMap", &shadowmap);
 					if (shadowmap)
 					{
-						ImGui::Image(component.debugMap->GetTexture(), ImVec2(128, 128), RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? ImVec2{ 0,1 }, ImVec2{ 1,0 } : ImVec2{ 0,0 }, ImVec2{ 1,1 });
+						ImGui::Image(component.debugMap->GetTexture(), ImVec2(256, 256), uv1, uv2);
 						if (component.type == LightComponent::LightType::Point)
 						{
 							static int selectIndex = 0;

@@ -102,7 +102,7 @@ namespace QCat
 		//camera.Camera.SetViewportSize(1600.0f, 900.0f);
 		//camera.Camera.SetPerspective(1, 0.01f, 100.0f);
 
-		//Entity light1 = m_ActiveScene->CreateEntity("PointLight");
+		//light1 = m_ActiveScene->CreateEntity("PointLight");
 
 		//light1.GetComponent<TransformComponent>().Translation = glm::vec3(0,0,-2.0f);
 		//auto& comp = light1.AddComponent<LightComponent>();
@@ -110,7 +110,7 @@ namespace QCat
 		//comp.diffuse = { 1.0f,1.0f,1.0f };
 
 		//
-		//Material goldenBall;
+		//goldenBall;
 		//goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
 		//goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
 		//goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
@@ -299,7 +299,6 @@ namespace QCat
 
 			ImGui::EndMenuBar();
 		}
-
 		m_SceneHierarchyPanel.OnImguiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
@@ -335,7 +334,10 @@ namespace QCat
 		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
+			
 			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+			
+
 		}
 
 		/*auto windowSize = ImGui::GetWindowSize();
@@ -376,7 +378,6 @@ namespace QCat
 			// Entity transform
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
-			glm::mat4 delttransform;
 
 			// Sanapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
@@ -389,7 +390,7 @@ namespace QCat
 
 			// use all data
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),glm::value_ptr(delttransform),nullptr,snap ? snapValues : nullptr);
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),nullptr,nullptr,snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{

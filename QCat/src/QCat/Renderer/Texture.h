@@ -135,6 +135,11 @@ namespace QCat
 		std::unordered_map<std::string, Ref<Texture2D>> m_Textures;
 		std::vector <std::string> texturepathlist;
 	};
+	class TextureView
+	{
+	public:
+	private:
+	};
 	class TextureUtility
 	{
 	public:

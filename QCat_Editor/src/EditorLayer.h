@@ -56,7 +56,8 @@ namespace QCat
 		Entity m_CameraEntity;
 		Entity m_SecondCamera;
 		Entity m_HoveredEntity;
-
+		Entity light1;
+		Material goldenBall;
 		bool m_PrimaryCamera = true;
 		EditorCamera m_EditorCamera;
 

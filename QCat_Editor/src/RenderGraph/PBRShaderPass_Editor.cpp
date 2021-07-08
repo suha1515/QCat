@@ -72,8 +72,6 @@ namespace QCat
 
 		cameraConstantBuffer->SetData(&camData, sizeof(CameraData), 0);
 		m_PBRShader->Bind();
-		//m_PBRShader->SetMat4("u_ViewProjection", proj *(*viewMatrix), ShaderType::VS);
-		//m_PBRShader->SetFloat3("u_viewPosition", tc, ShaderType::VS);
 		auto lightView = registry.view<TransformComponent, LightComponent>();
 		int index = 0;
 		if (lightView.size() == 0)
@@ -92,9 +90,6 @@ namespace QCat
 				glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
 				LightComponent& comp = lightView.get<LightComponent>(entity);
 
-				std::string lightname = "pointLight[" + std::to_string(index) + "].";
-				//m_PBRShader->SetFloat3(lightname + "position", lightPos, ShaderType::PS);
-				//m_PBRShader->SetFloat3(lightname + "diffuse", comp.diffuse, ShaderType::PS);
 				light light;
 				light.position = lightPos;
 				light.diffuse = comp.diffuse;
@@ -121,14 +116,12 @@ namespace QCat
 		{
 			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
 			Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
-			(*transformBuffer)["Transform"s] = transform;
-			(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
-			//transformData.transform = transform;
-			//transformData.invtrnasform = glm::inverse(transform);
-			transformConstantBuffer->SetData(transformBuffer->GetData(), transformBuffer->GetSize(), 0);
+			//(*transformBuffer)["Transform"s] = transform;
+			//(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
+			transformData.transform = transform;
+			transformData.invtrnasform = glm::inverse(transform);
+			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
 
-			//m_PBRShader->SetMat4("u_Transform", transform, ShaderType::VS);
-			//m_PBRShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 			matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
 			matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
 			matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
@@ -141,12 +134,6 @@ namespace QCat
 			matData.ambientocclusion = mat.ao;
 
 			materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
-			//m_PBRShader->SetBool("material.IsAlbedoMap", mat.IsThereTexture(Material::TextureType::Diffuse), ShaderType::PS);
-			//m_PBRShader->SetBool("material.IsNormalMap", mat.IsThereTexture(Material::TextureType::Normal), ShaderType::PS);
-			//m_PBRShader->SetBool("material.IsMetallicMap", mat.IsThereTexture(Material::TextureType::Metallic), ShaderType::PS);
-			//m_PBRShader->SetBool("material.IsRoughnessMap", mat.IsThereTexture(Material::TextureType::Roughness), ShaderType::PS);
-			//m_PBRShader->SetBool("material.IsAoMap", mat.IsThereTexture(Material::TextureType::AmbientOcclusion), ShaderType::PS);
-			//m_PBRShader->UpdateBuffer();
 
 			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
 			for (auto& mesh : meshComponent.GetMeshes())
@@ -171,22 +158,16 @@ namespace QCat
 		colorConstantBuffer->SetData(&colData, sizeof(color), 0);
 
 		m_FlatColorShader->Bind();
-		//m_FlatColorShader->SetMat4("u_ViewProjection", proj * (*viewMatrix), ShaderType::VS);
-		//m_FlatColorShader->SetFloat4("u_color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), ShaderType::PS);
 		for (auto entity : lightView)
 		{
 			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
 			sphere->SetTranslation(lightPos);
 			sphere->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 			glm::mat4 transform = sphere->GetTransform();
-			//m_FlatColorShader->SetMat4("u_Transform", transform, ShaderType::VS);
-			//m_FlatColorShader->SetMat4("u_invTransform", glm::inverse(transform), ShaderType::VS);
 
 			transformData.transform = transform;
 			transformData.invtrnasform = glm::inverse(transform);
 			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
-
-			//m_FlatColorShader->UpdateBuffer();
 			sphere->Draw();
 		}
 		m_FlatColorShader->UnBind();

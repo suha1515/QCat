@@ -60,7 +60,7 @@ namespace QCat
 						UData[i]   = ((unsigned char*)stb_data)[j];
 						UData[i+1] = ((unsigned char*)stb_data)[j+1];
 						UData[i+2] = ((unsigned char*)stb_data)[j+2];
-						UData[i + 3] = 1;
+						UData[i + 3] =255;
 					}
 					break;
 				case 2:
@@ -70,8 +70,8 @@ namespace QCat
 					{
 						UData[i] = ((unsigned char*)stb_data)[j];
 						UData[i + 1] = ((unsigned char*)stb_data)[j + 1];
-						UData[i + 2] = 1;
-						UData[i + 3] = 1;
+						UData[i + 2] = 255;
+						UData[i + 3] = 255;
 					}
 					break;
 				case 1:

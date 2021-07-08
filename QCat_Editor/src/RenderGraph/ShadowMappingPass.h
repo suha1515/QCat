@@ -40,6 +40,8 @@ namespace QCat
 		struct DirectionalLightViewProj
 		{
 			glm::mat4 viewProjMatrix;
+			float nearz;
+			float farz;
 		};
 		Ref<ConstantBuffer> transformConstantBuffer;
 		Ref<ConstantBuffer> shadowMapMatrices;

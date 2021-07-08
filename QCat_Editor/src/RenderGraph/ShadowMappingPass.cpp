@@ -12,7 +12,7 @@ namespace QCat
 		pointdepthbuffer.Height = 1024;
 		pointdepthbuffer.Width = 1024;
 
-		AttachmentSpecification directiondepthbuffer = {{FramebufferUsage::Depth,TextureType::Texture2D,TextureFormat::DEPTH32,"DepthBuffer"} };
+		AttachmentSpecification directiondepthbuffer = { {FramebufferUsage::Depth,TextureType::Texture2D,TextureFormat::DEPTH32,"DepthBuffer"} };
 		directiondepthbuffer.Height = 1024;
 		directiondepthbuffer.Width = 1024;
 
@@ -24,7 +24,6 @@ namespace QCat
 		m_DirectionalLightShadow = FrameBufferEx::Create(directiondepthbuffer);
 		m_ColorBuffer = FrameBufferEx::Create(colorBuffer);
 
-		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
 		shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
 		
 
@@ -37,9 +36,9 @@ namespace QCat
 	}
 	void ShadowMappingPass::Initialize()
 	{
-		m_PointshadowMappingShader = ShaderLibrary::Load("Asset/shaders/glsl/ShadowMap/PointLightShadowMap.glsl");
-		m_DirectionalshadowMappingShader = ShaderLibrary::Load("Asset/shaders/glsl/ShadowMap/DirectionalLightShadowMap.glsl");
-		m_DebugShadowShader = ShaderLibrary::Load("Asset/shaders/glsl/ShadowMap/DebugShadow.glsl");
+		m_PointshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/PointShadowMap.glsl": "Asset/shaders/hlsl/ShadowMap/PointShadowMap.hlsl");
+		m_DirectionalshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/DirectionalShadowMap.glsl" : "Asset/shaders/hlsl/ShadowMap/DirectionalShadowMap.hlsl");
+		m_DebugShadowShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/DebugShadow.glsl" : "Asset/shaders/hlsl/ShadowMap/DebugShadow.hlsl");
 
 		float quadVertices[] =
 		{
@@ -97,6 +96,7 @@ namespace QCat
 		{
 			if (index < 1)
 			{
+				shadowProj = glm::ortho(-5.0f,5.0f,-5.0f, 5.0f,-5.0f,5.0f);
 				TransformComponent& transcomp = lightView.get<TransformComponent>(entity);
 				glm::vec3 lightPos = transcomp.Translation;
 				glm::mat4 transform = transcomp.GetTransform();
@@ -106,13 +106,17 @@ namespace QCat
 					glm::vec3 rightVector = glm::vec3(transform[0][0], transform[1][0], transform[2][0]);
 					glm::vec3 upVector = glm::vec3(transform[0][1], transform[1][1], transform[2][1]);
 					glm::vec3 forward = glm::vec3(transform[0][2], transform[1][2], transform[2][2]);
-					DirectionalLightViewProj data;
-					data.viewProjMatrix = shadowProj * glm::lookAt(lightPos, lightPos + forward, upVector);
-		
-					directionallightMatrix->SetData(&data, sizeof(DirectionalLightViewProj), 0);
-
+					
 					transformConstantBuffer->Bind(0, Type::Vetex);
 					directionallightMatrix->Bind(1, Type::Vetex);
+
+					DirectionalLightViewProj data;
+					//shadowProj = glm::ortho(-5.f, 5.f, -5.f, 5.f, 1.0f, 7.5f);
+					data.viewProjMatrix = shadowProj * glm::lookAt(lightPos, lightPos + forward, upVector);
+					data.farz = 0;
+					data.nearz = 0;
+					directionallightMatrix->SetData(&data, sizeof(DirectionalLightViewProj), 0);
+
 					m_DirectionalLightShadow->Bind();
 					RenderCommand::SetViewport(0, 0, 1024, 1024);
 					m_DirectionalLightShadow->DetachAll();
@@ -132,8 +136,8 @@ namespace QCat
 					
 					m_DebugShadowShader->Bind();
 					
-					m_SamplerForDebug->Bind(0);
 					comp.shadowMap->Bind(0);
+					m_SamplerForDebug->Bind(0);
 					RenderCommand::DrawIndexed(m_quad);
 					m_SamplerForDebug->UnBind(0);
 					m_DebugShadowShader->UnBind();
