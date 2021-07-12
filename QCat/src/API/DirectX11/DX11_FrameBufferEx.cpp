@@ -107,7 +107,7 @@ namespace QCat
 		case TextureType::Texture2D:
 			texture = Texture2D::Create(format, samplerDesc, texDesc.Width, texDesc.Height, texDesc.MipLevels, texDesc.SampleCount);
 			break;
-		case TextureType::TextureArray:
+		case TextureType::Texture2DArray:
 			break;
 		case TextureType::TextureCube:
 			texture = TextureCube::Create(format, samplerDesc, texDesc.Width, texDesc.Height, texDesc.MipLevels);
@@ -163,7 +163,7 @@ namespace QCat
 				rtvDesc.Texture2D.MipSlice =multisampled ? 0 : mipLevel;
 			}
 			break;
-			case TextureType::TextureArray:
+			case TextureType::Texture2DArray:
 			{
 				rtvDesc.ViewDimension = multisampled ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
 				if (multisampled)
@@ -217,7 +217,7 @@ namespace QCat
 				dsvDesc.Texture2D.MipSlice = multisampled ? 0 : mipLevel;
 			}
 			break;
-			case TextureType::TextureArray:
+			case TextureType::Texture2DArray:
 			{
 				dsvDesc.Format = Utils::MapTypeDSV(texFormat);
 				dsvDesc.ViewDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY: D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
@@ -247,12 +247,12 @@ namespace QCat
 				if (multisampled)
 				{
 					dsvDesc.Texture2DMSArray.ArraySize = 1;
-					dsvDesc.Texture2DMSArray.FirstArraySlice = GetFirstArraySlice(type);;
+					dsvDesc.Texture2DMSArray.FirstArraySlice = GetFirstArraySlice(type);
 				}
 				else
 				{
 					dsvDesc.Texture2DArray.ArraySize = 1;
-					dsvDesc.Texture2DArray.FirstArraySlice = GetFirstArraySlice(type);;
+					dsvDesc.Texture2DArray.FirstArraySlice = GetFirstArraySlice(type);
 					dsvDesc.Texture2DArray.MipSlice = mipLevel;
 				}
 			}

@@ -42,7 +42,10 @@ namespace QCat
 	enum class TextureType
 	{
 		None = 0,
-		Texture2D, TextureArray, TextureCube,
+		Texture1D,Texture1DArray,
+		Texture2D, Texture2DArray, 
+		TextureCube,TextureCubeArray,
+		Texture3D,
 		TextureCube_PositiveX,
 		TextureCube_NegativeX,
 		TextureCube_PositiveY,

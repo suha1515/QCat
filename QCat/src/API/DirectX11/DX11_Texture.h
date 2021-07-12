@@ -17,9 +17,10 @@ namespace QCat
 		DX11Texture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip=false,bool gamacorrection = false);
 		virtual ~DX11Texture2D();
 
-		virtual unsigned int GetWidth() const override { return m_width; }
-		virtual unsigned int GetHeight() const override { return m_height; }
+		virtual unsigned int GetWidth() const override { return desc.Width; }
+		virtual unsigned int GetHeight() const override { return desc.Height; }
 		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+		virtual void* GetTextureHandle() const override { return (void*)pTexture.Get(); };
 
 		virtual void GenerateMipMap() override;
 
@@ -40,9 +41,7 @@ namespace QCat
 
 		void Invalidate(void* pData);
 	private:
-		int samples = 0;
 		std::string m_path;
-		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
@@ -56,9 +55,10 @@ namespace QCat
 
 		~DX11TextureCube() = default;
 
-		virtual unsigned int GetWidth() const override { return m_width; }
-		virtual unsigned int GetHeight() const override { return m_height; }
+		virtual unsigned int GetWidth() const override { return desc.Width; }
+		virtual unsigned int GetHeight() const override { return desc.Height; }
 		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+		virtual void* GetTextureHandle() const override { return (void*)pTexture.Get(); };
 
 		virtual void GenerateMipMap() override;
 
@@ -78,8 +78,6 @@ namespace QCat
 		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
 		void Invalidate(void* pData);
 	private:
-		int samples = 0;
-		unsigned int m_width, m_height;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
@@ -97,6 +95,24 @@ namespace QCat
 		virtual void CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevl, QCAT_BOX boxregion) override
 		{};
 	private:
+
+	};
+
+	class DX11TextureView : public TextureView
+	{
+	public:
+		DX11TextureView() = default;
+		DX11TextureView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		virtual ~DX11TextureView() override;
+
+	private:
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView = nullptr;
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTargetView = nullptr;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView = nullptr;
+
+		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 
 	};
 }

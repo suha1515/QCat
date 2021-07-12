@@ -185,7 +185,6 @@ namespace QCat
 			out << YAML::Key << "Metallic" << YAML::Value << material.metallic;
 			out << YAML::Key << "Roughness" << YAML::Value << material.roughness;
 			out << YAML::Key << "AmbientOcclusion" << YAML::Value << material.ao;
-
 			out << YAML::Key << "AlbedoTexture" << YAML::Value << (material.m_DiffuseTexture != nullptr ? material.m_DiffuseTexture->GetTexturePath() : "none");
 			out << YAML::Key << "AlbedoTextureSampler" << (material.m_DiffuseTexture != nullptr ? material.m_DiffuseTexture->GetSamplerSignature() : "none");
 

@@ -105,10 +105,32 @@ namespace QCat
 			GLenum wrapmode = GetWrapMode(mode);
 			glTexParameteri(target, address, wrapmode);
 		}
-
-
-
 		//Texture
+		static uint32_t GetBitSizeFromFormat(TextureFormat format)
+		{
+			switch (format)
+			{
+				//64bit
+			case TextureFormat::RGBA16_Float:   return 64;
+				//128bit
+			case TextureFormat::RGBA32_Float:	return 128;
+				//48
+			case TextureFormat::RGB16_Float:	return 48;
+				//32 bit
+			case TextureFormat::RGBA8:			return 32;
+			case TextureFormat::RGBA8_SRGB:		return 32;
+			case TextureFormat::RED32_FLOAT:	return 32;
+			case TextureFormat::RED32_INTEGER:  return 32;
+			case TextureFormat::RG16_Float:	    return 32;
+				//24 bit
+			case TextureFormat::RGB8:			return 24;
+				//16bit
+			case TextureFormat::RG8:			return 16;
+				//depth
+			case TextureFormat::DEPTH32:	     return 32;
+			case TextureFormat::DEPTH24STENCIL8: return 32;
+			}
+		}
 		static GLenum GetOpengLDataType(TextureFormat format)
 		{
 			switch (format)
@@ -136,7 +158,7 @@ namespace QCat
 			switch (format)
 			{
 			case TextureType::Texture2D:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case TextureType::TextureArray:       return GL_TEXTURE_2D_ARRAY;
+			case TextureType::Texture2DArray:       return GL_TEXTURE_2D_ARRAY;
 			case TextureType::TextureCube:		  return GL_TEXTURE_CUBE_MAP;
 			case TextureType::TextureCube_PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 			case TextureType::TextureCube_NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
@@ -144,8 +166,25 @@ namespace QCat
 			case TextureType::TextureCube_NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
 			case TextureType::TextureCube_PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
 			case TextureType::TextureCube_NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+			}
+		}
 
-
+		static uint32_t GetDimensionFromType(TextureType type)
+		{
+			switch (type)
+			{
+			case TextureType::Texture1D:			return 1;
+			case TextureType::Texture1DArray:		return 1;
+			case TextureType::Texture2D:		    return 2;
+			case TextureType::Texture2DArray:       return 2;
+			case TextureType::TextureCube:		    return 2;
+			case TextureType::TextureCube_PositiveX: return 2;
+			case TextureType::TextureCube_NegativeX: return 2;
+			case TextureType::TextureCube_PositiveY: return 2;
+			case TextureType::TextureCube_NegativeY: return 2;
+			case TextureType::TextureCube_PositiveZ: return 2;
+			case TextureType::TextureCube_NegativeZ: return 2;
+			case TextureType::Texture3D:			 return 3;
 			}
 		}
 		static unsigned int GetTextureComponentCount(TextureFormat format)
@@ -208,8 +247,6 @@ namespace QCat
 			case TextureFormat::RG16_Float:	    return GL_RG16F;
 			case TextureFormat::RGBA16_Float:   return GL_RGBA16F;
 			case TextureFormat::RGBA32_Float:	return GL_RGBA32F;
-
-
 				//24 bit
 			case TextureFormat::RGB8:			return GL_RGB8;
 			case TextureFormat::RGB16_Float:	return GL_RGB16F;

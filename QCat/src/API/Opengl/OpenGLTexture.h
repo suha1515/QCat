@@ -3,17 +3,24 @@
 #include <glad/glad.h>
 namespace QCat
 {
+	class OpenGLTexture1D :public Texture1D
+	{
+
+	};
 	class OpenGLTexture2D :public Texture2D
 	{
 	public:
+		OpenGLTexture2D(Texture_Desc desc, Sampler_Desc sampDesc, void* pData);
 		OpenGLTexture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel=1,unsigned int samples=1, bool flip = false, bool gammaCorrection = false);
 		OpenGLTexture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
 
 		virtual ~OpenGLTexture2D();
 
-		virtual unsigned int GetWidth() const override { return m_width; }
-		virtual unsigned int GetHeight() const override {return m_height;}
+		virtual unsigned int GetWidth() const override { return desc.Width; }
+		virtual unsigned int GetHeight() const override {return desc.Height;}
 		virtual void*       GetTexture() const override { return (void*)m_renderID; }
+		virtual void* GetTextureHandle() const override { return (void*)m_renderID; }
+
 		virtual void GenerateMipMap() override;
 
 		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
@@ -28,28 +35,22 @@ namespace QCat
 		{
 			return m_renderID == ((OpenGLTexture2D&)other).m_renderID;
 		}
-		//virtual Texture& operator=(const Texture& other) override
-		//{
-		//	m_width = ((OpenGLTexture2D&)other).m_width;
-		//	m_height = ((OpenGLTexture2D&)other).m_height;
-		//	m_InternalFormat = ((OpenGLTexture2D&)other).m_InternalFormat;
-		//	m_DataFormat = ((OpenGLTexture2D&)other).m_DataFormat;
-		//}
-		void Validate(GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples, void* pData);
+		void Validate( void* pData);
 	private:
-		unsigned int m_width,m_height;
 		unsigned int m_renderID=0;
-		unsigned int m_mipLevel,m_samples;
-		bool flip=false, gammaCorrection = false;
-		GLenum m_InternalFormat, m_Format,m_DataFormat;
+		bool flip = false;
+		GLenum m_InternalFormat=0, m_Format=0,m_DataFormat=0;
 		Sampler_Desc  smpdesc;
 	};
+	class OpenGLTexture1DArray : public Texture1DArray
+	{
 
+	};
 	class OpenGLCubeMapTexture : public TextureCube
 	{
 	public:
 		OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels=1, bool flip = false, bool gammaCorrection = false);
-		OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevels = 1, void* pData = nullptr);
+		OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width,unsigned int height, unsigned int mipLevels = 1);
 
 		virtual ~OpenGLCubeMapTexture();
 
@@ -58,6 +59,8 @@ namespace QCat
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
 		virtual void* GetTexture() const override { return (void*)m_renderID; }
+		virtual void* GetTextureHandle() const override { return (void*)m_renderID; }
+
 		virtual void GenerateMipMap() override;
 
 		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
@@ -94,5 +97,37 @@ namespace QCat
 	private:
 		uint32_t m_RendererID;
 
+	};
+	class OpenGLTextureShaderView : public TextureShaderView
+	{
+	public:
+		OpenGLTextureShaderView() = default;
+		OpenGLTextureShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		virtual ~OpenGLTextureShaderView() override;
+
+		virtual void* GetTextureView() const override { return (void*)m_renderID; };
+		virtual void Bind(uint32_t slot, ShaderType type) const override;
+	private:
+		uint32_t m_renderID;
+	};
+	class OpenGLRenderTargetView : public TextureRenderTargetView
+	{
+	public:
+		OpenGLRenderTargetView() = default;
+		virtual ~OpenGLRenderTargetView() override {};
+
+		virtual void* GetTextureView() const override { return (void*)m_renderID; };
+	private:
+		uint32_t m_renderID;
+	};
+	class OpenGLDepthStencilView : public TextureDepthStencilView
+	{
+	public:
+		OpenGLDepthStencilView() = default;
+		virtual ~OpenGLDepthStencilView() override {};
+
+		virtual void* GetTextureView() const override { return (void*)m_renderID; };
+	private:
+		uint32_t m_renderID;
 	};
 }

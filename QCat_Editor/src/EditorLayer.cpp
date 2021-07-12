@@ -76,7 +76,7 @@ namespace QCat
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
-		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc,1, 1);
+		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc);
 
 		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
 		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));

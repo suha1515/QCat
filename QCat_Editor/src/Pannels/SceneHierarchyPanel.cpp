@@ -216,7 +216,8 @@ namespace QCat
 	{
 		ImVec2 uv1 = ImVec2(0.0f, 1.0f);
 		ImVec2 uv2 = ImVec2(1.0f, 0.0f);
-
+		uv1 = ImVec2(0.0f, 0.0f);
+		uv2 = ImVec2(1.0f, 1.0f);
 		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			uv1 = ImVec2(0.0f, 0.0f);
@@ -474,7 +475,7 @@ namespace QCat
 					OpenTexture(mat.m_DiffuseTexture);
 				}
 				if (mat.m_DiffuseTexture)
-					ImGui::Text(mat.m_DiffuseTexture->path.c_str());
+					ImGui::Text(mat.m_DiffuseTexture->pathes[0].c_str());
 				else
 					ImGui::Text("none");
 
@@ -490,7 +491,7 @@ namespace QCat
 					 OpenTexture(mat.m_NormalMapTexture);
 				}
 				if (mat.m_NormalMapTexture)
-					ImGui::Text(mat.m_NormalMapTexture->path.c_str());
+					ImGui::Text(mat.m_NormalMapTexture->pathes[0].c_str());
 				else
 					ImGui::Text("none");
 
@@ -506,7 +507,7 @@ namespace QCat
 					OpenTexture(mat.m_MetallicTexture);
 				}
 				if (mat.m_MetallicTexture)
-					ImGui::Text(mat.m_MetallicTexture->path.c_str());
+					ImGui::Text(mat.m_MetallicTexture->pathes[0].c_str());
 				else
 					ImGui::Text("none");
 
@@ -522,7 +523,7 @@ namespace QCat
 					OpenTexture(mat.m_RoughnessTexture );
 				}
 				if (mat.m_RoughnessTexture)
-					ImGui::Text(mat.m_RoughnessTexture->path.c_str());
+					ImGui::Text(mat.m_RoughnessTexture->pathes[0].c_str());
 				else
 					ImGui::Text("none");
 
@@ -538,7 +539,7 @@ namespace QCat
 					OpenTexture(mat.m_AmbientOcclusionTexture);
 				}
 				if (mat.m_AmbientOcclusionTexture)
-					ImGui::Text(mat.m_AmbientOcclusionTexture->path.c_str());
+					ImGui::Text(mat.m_AmbientOcclusionTexture->pathes[0].c_str());
 				else
 					ImGui::Text("none");
 

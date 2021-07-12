@@ -89,7 +89,7 @@ namespace QCat
 		case TextureType::Texture2D:
 			texture = Texture2D::Create(format,samplerDesc, texDesc.Width, texDesc.Height, texDesc.MipLevels, texDesc.SampleCount);
 			break;
-		case TextureType::TextureArray:
+		case TextureType::Texture2DArray:
 			break;
 		case TextureType::TextureCube:
 			texture = TextureCube::Create(format, samplerDesc, texDesc.Width, texDesc.Height, texDesc.MipLevels);
@@ -123,7 +123,7 @@ namespace QCat
 			switch (type)
 			{
 				case TextureType::Texture2D:			 return multisampled ? GL_TEXTURE_2D_MULTISAMPLE :GL_TEXTURE_2D;
-				case TextureType::TextureArray:			 return multisampled ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY : GL_TEXTURE_2D_ARRAY;
+				case TextureType::Texture2DArray:			 return multisampled ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY : GL_TEXTURE_2D_ARRAY;
 				case TextureType::TextureCube:			 return GL_TEXTURE_CUBE_MAP;
 				case TextureType::TextureCube_PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 				case TextureType::TextureCube_NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
@@ -147,6 +147,7 @@ namespace QCat
 			GLenum attachmentIndex = Utils::GetAttachmentType(attachType);
 			GLint texId = (GLint)texture->GetTexture();
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, Utils::GetTexTarget(type,multisampled), texId, mipLevel);
+			
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");
 		}
