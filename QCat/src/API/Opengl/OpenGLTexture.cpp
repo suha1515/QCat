@@ -8,30 +8,30 @@ namespace QCat
 {
 	namespace Utils
 	{
-		void SetTextureParameter(GLenum target, Sampler_Desc desc)
+		void SetTextureParameter(GLuint texture, Sampler_Desc desc)
 		{
-			Utils::SetTextureFilter(target, GL_TEXTURE_MIN_FILTER, desc.MIN, desc.MIP);
-			Utils::SetTextureFilter(target, GL_TEXTURE_MAG_FILTER, desc.MAG);
-			Utils::SetTextureWrapMethod(target, GL_TEXTURE_WRAP_S, desc.addressU);
-			Utils::SetTextureWrapMethod(target, GL_TEXTURE_WRAP_T, desc.addressV);
-			Utils::SetTextureWrapMethod(target, GL_TEXTURE_WRAP_R, desc.addressW);
+			Utils::SetTextureFilter(texture, GL_TEXTURE_MIN_FILTER, desc.MIN, desc.MIP);
+			Utils::SetTextureFilter(texture, GL_TEXTURE_MAG_FILTER, desc.MAG);
+			Utils::SetTextureWrapMethod(texture, GL_TEXTURE_WRAP_S, desc.addressU);
+			Utils::SetTextureWrapMethod(texture, GL_TEXTURE_WRAP_T, desc.addressV);
+			Utils::SetTextureWrapMethod(texture, GL_TEXTURE_WRAP_R, desc.addressW);
 
 			if (desc.mode == FilterMode::COMPARISON)
 			{
-				glTexParameteri(target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-				glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC, Utils::ComparisonToOpengl(desc.comparisonFunc));
+				glTextureParameteri(texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+				glTextureParameteri(texture, GL_TEXTURE_COMPARE_FUNC, Utils::ComparisonToOpengl(desc.comparisonFunc));
 			}
 			else
-				glTexParameteri(target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+				glTextureParameteri(texture, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
 			// min level of detail
-			glTexParameterf(target, GL_TEXTURE_MIN_LOD, desc.minLod);
+			glTextureParameterf(texture, GL_TEXTURE_MIN_LOD, desc.minLod);
 			// max level of detail
-			glTexParameterf(target, GL_TEXTURE_MAX_LOD, desc.maxLod);
+			glTextureParameterf(texture, GL_TEXTURE_MAX_LOD, desc.maxLod);
 			// mip level of detail bias
-			glTexParameterf(target, GL_TEXTURE_LOD_BIAS, desc.MipLodBias);
+			glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, desc.MipLodBias);
 			// border color
-			glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR,desc.borderColor);
+			glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR,desc.borderColor);
 		}
 
 		void* LoadImageFromFile(const std::string& path,bool gammaCorrection, bool flip,uint32_t& width,uint32_t& height,uint32_t& channels, GLenum& format, GLenum& internalformat, GLenum& dataformat)
@@ -206,8 +206,7 @@ namespace QCat
 			m_renderID = 0;
 		}
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
-		glBindTexture(GL_TEXTURE_2D, m_renderID);
-		Utils::SetTextureParameter(GL_TEXTURE_2D, smpdesc);
+		Utils::SetTextureParameter(m_renderID, smpdesc);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		if (desc.SampleCount > 1)
@@ -223,7 +222,7 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 		uint32_t width=0, height=0, channels=0;	
 		Validate(GL_TEXTURE_CUBE_MAP, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat);
-		Utils::SetTextureParameter(GL_TEXTURE_CUBE_MAP, desc);
+		Utils::SetTextureParameter(m_renderID, desc);
 	
 		void*pData =  Utils::LoadImageFromFile(imgPathes[0].c_str(), gammaCorrection, flip, width, height, channels, m_Format, m_InternalFormat, m_DataFormat);
 
@@ -281,7 +280,7 @@ namespace QCat
 		this->desc.SampleCount = 0;
 
 		Validate(GL_TEXTURE_CUBE_MAP, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat);
-		Utils::SetTextureParameter(GL_TEXTURE_CUBE_MAP, desc);
+		Utils::SetTextureParameter(m_renderID, desc);
 	}
 	OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
 	{
@@ -297,7 +296,6 @@ namespace QCat
 			m_renderID = 0;
 		}
 		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_renderID);;
-		glBindTexture(GL_TEXTURE_CUBE_MAP, m_renderID);
 		if (desc.SampleCount > 1)
 			glTexStorage2DMultisample(target, samples, m_InternalFormat, m_width, m_height, true);
 		else
