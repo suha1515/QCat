@@ -1,6 +1,10 @@
 #pragma once
 namespace QCat
 {
+	enum class ShaderType
+	{
+		VS = 0, PS, GS, CS
+	};
 	enum class COMPARISON_FUNC
 	{
 		NEVER, EQUAL,
@@ -47,6 +51,15 @@ namespace QCat
 		TextureCube,TextureCubeArray,
 		Texture3D,
 		TextureCube_PositiveX,
+		TextureCube_NegativeX,
+		TextureCube_PositiveY,
+		TextureCube_NegativeY,
+		TextureCube_PositiveZ,
+		TextureCube_NegativeZ
+	};
+	enum class TextureCubeFace
+	{
+		TextureCube_PositiveX=0,
 		TextureCube_NegativeX,
 		TextureCube_PositiveY,
 		TextureCube_NegativeY,
@@ -138,9 +151,8 @@ namespace QCat
 		case ShaderDataType::Int3:     return 4 * 3;
 		case ShaderDataType::Int4:     return 4 * 4;
 		case ShaderDataType::Bool:     return 4;
+		default:
+			return 0;
 		}
-
-		QCAT_CORE_ASSERT(false, "Unknown ShaderDataType!");
-		return 0;
 	}
 }

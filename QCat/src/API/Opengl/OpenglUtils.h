@@ -157,15 +157,24 @@ namespace QCat
 		{
 			switch (format)
 			{
+			case TextureType::Texture1D:		  return GL_TEXTURE_1D;
+			case TextureType::Texture1DArray:	  return GL_TEXTURE_1D_ARRAY;
 			case TextureType::Texture2D:		  return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-			case TextureType::Texture2DArray:       return GL_TEXTURE_2D_ARRAY;
-			case TextureType::TextureCube:		  return GL_TEXTURE_CUBE_MAP;
-			case TextureType::TextureCube_PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-			case TextureType::TextureCube_NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-			case TextureType::TextureCube_PositiveY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-			case TextureType::TextureCube_NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-			case TextureType::TextureCube_PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-			case TextureType::TextureCube_NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+			case TextureType::Texture2DArray:       return multisampled? GL_TEXTURE_2D_MULTISAMPLE_ARRAY: GL_TEXTURE_2D_ARRAY;
+			case TextureType::TextureCube:		     return GL_TEXTURE_CUBE_MAP;
+			case TextureType::Texture3D:			 return GL_TEXTURE_3D;
+			}
+		}
+		static GLenum GetTextureTargetFromCube(TextureCubeFace face, bool multisampled)
+		{
+			switch (face)
+			{
+			case TextureCubeFace::TextureCube_PositiveX:		  return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+			case TextureCubeFace::TextureCube_NegativeX:		  return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+			case TextureCubeFace::TextureCube_PositiveY:		  return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+			case TextureCubeFace::TextureCube_NegativeY:		  return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+			case TextureCubeFace::TextureCube_PositiveZ:		  return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+			case TextureCubeFace::TextureCube_NegativeZ:		  return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
 			}
 		}
 
@@ -178,12 +187,6 @@ namespace QCat
 			case TextureType::Texture2D:		    return 2;
 			case TextureType::Texture2DArray:       return 2;
 			case TextureType::TextureCube:		    return 2;
-			case TextureType::TextureCube_PositiveX: return 2;
-			case TextureType::TextureCube_NegativeX: return 2;
-			case TextureType::TextureCube_PositiveY: return 2;
-			case TextureType::TextureCube_NegativeY: return 2;
-			case TextureType::TextureCube_PositiveZ: return 2;
-			case TextureType::TextureCube_NegativeZ: return 2;
 			case TextureType::Texture3D:			 return 3;
 			}
 		}

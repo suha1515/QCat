@@ -71,9 +71,8 @@ namespace QCat
 			case DXGI_FORMAT_R8_UNORM:				  return TextureFormat::R8;
 			}
 		}
-		static D3D_SRV_DIMENSION GetSRVDimensionFromType(TextureType type,bool multisample)
+		static D3D11_SRV_DIMENSION GetSRVDimensionFromType(TextureType type,bool multisample)
 		{
-
 			switch (type)
 			{
 			case TextureType::Texture1D:			return D3D11_SRV_DIMENSION_TEXTURE1D;
@@ -81,15 +80,33 @@ namespace QCat
 			case TextureType::Texture2D:		    return multisample ? D3D11_SRV_DIMENSION_TEXTURE2DMS  : D3D11_SRV_DIMENSION_TEXTURE2D;
 			case TextureType::Texture2DArray:       return multisample ? D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY: D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 			case TextureType::TextureCube:		    return D3D11_SRV_DIMENSION_TEXTURECUBE;
-
-			case TextureType::TextureCube_PositiveX: return D3D11_SRV_DIMENSION_TEXTURE2D;
-			case TextureType::TextureCube_NegativeX: return D3D11_SRV_DIMENSION_TEXTURE2D;
-			case TextureType::TextureCube_PositiveY: return D3D11_SRV_DIMENSION_TEXTURE2D;
-			case TextureType::TextureCube_NegativeY: return D3D11_SRV_DIMENSION_TEXTURE2D;
-			case TextureType::TextureCube_PositiveZ: return D3D11_SRV_DIMENSION_TEXTURE2D;
-			case TextureType::TextureCube_NegativeZ: return D3D11_SRV_DIMENSION_TEXTURE2D;
 			case TextureType::TextureCubeArray:		 return D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
 			case TextureType::Texture3D:			 return D3D11_SRV_DIMENSION_TEXTURE3D;
+			}
+		}
+		static D3D11_RTV_DIMENSION GetRTVDimensionFromType(TextureType type, bool multisample)
+		{
+			switch (type)
+			{
+			case TextureType::Texture1D:			return D3D11_RTV_DIMENSION_TEXTURE1D;
+			case TextureType::Texture1DArray:		return D3D11_RTV_DIMENSION_TEXTURE1DARRAY;
+			case TextureType::Texture2D:		    return multisample ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+			case TextureType::Texture2DArray:       return multisample ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+			case TextureType::Texture3D:			 return D3D11_RTV_DIMENSION_TEXTURE3D;
+			default:
+				QCAT_CORE_ASSERT(false, "Wrong RTV textureType!");
+			}
+		}
+		static D3D11_DSV_DIMENSION GetDSVDimenstionFromType(TextureType type, bool multisample)
+		{
+			switch (type)
+			{
+			case TextureType::Texture1D:			return D3D11_DSV_DIMENSION_TEXTURE1D;
+			case TextureType::Texture1DArray:		return D3D11_DSV_DIMENSION_TEXTURE1DARRAY;
+			case TextureType::Texture2D:		    return multisample ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+			case TextureType::Texture2DArray:       return multisample ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+			default:
+				QCAT_CORE_ASSERT(false, "Wrong DSV textureType!");
 			}
 		}
 		static uint32_t GetDimensionFromType(TextureType type)
@@ -101,12 +118,6 @@ namespace QCat
 			case TextureType::Texture2D:		    return 2;
 			case TextureType::Texture2DArray:       return 2;
 			case TextureType::TextureCube:		    return 2;
-			case TextureType::TextureCube_PositiveX: return 2;
-			case TextureType::TextureCube_NegativeX: return 2;
-			case TextureType::TextureCube_PositiveY: return 2;
-			case TextureType::TextureCube_NegativeY: return 2;
-			case TextureType::TextureCube_PositiveZ: return 2;
-			case TextureType::TextureCube_NegativeZ: return 2;
 			case TextureType::Texture3D:			 return 3;
 			}
 		}
@@ -191,20 +202,6 @@ namespace QCat
 			case DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS: return DXGI_FORMAT_D32_FLOAT;
 			default:
 				return format;
-			}
-		}
-		static uint32_t GetFirstArraySliceFromCube(TextureType type)
-		{
-			switch (type)
-			{
-			case TextureType::TextureCube_PositiveX:	return 0;
-			case TextureType::TextureCube_NegativeX:	return 1;
-			case TextureType::TextureCube_PositiveY:	return 2;
-			case TextureType::TextureCube_NegativeY:	return 3;
-			case TextureType::TextureCube_PositiveZ:	return 4;
-			case TextureType::TextureCube_NegativeZ:	return 5;
-			default:
-				return 0;
 			}
 		}
 	

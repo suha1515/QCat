@@ -98,21 +98,44 @@ namespace QCat
 
 	};
 
-	class DX11TextureView : public TextureView
+	class DX11ShaderView : public TextureShaderView
 	{
 	public:
-		DX11TextureView() = default;
-		DX11TextureView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
-		virtual ~DX11TextureView() override;
+		DX11ShaderView() = default;
+		DX11ShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		virtual ~DX11ShaderView() override;
 
+		virtual void Bind(uint32_t slot, ShaderType type) const override;
+
+		virtual void* GetTextureView() const override { return (void*)pShaderView.Get(); };
 	private:
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView = nullptr;
-		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTargetView = nullptr;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView = nullptr;
-
-		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pShaderView = nullptr;
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 
 	};
+	class DX11RenderTargetView : public RenderTargetView
+	{
+	public:
+		DX11RenderTargetView() = default;
+		DX11RenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
+		virtual ~DX11RenderTargetView() override;
+
+		virtual void* GetTextureView() const override { return (void*)pRenderTargetView.Get(); };
+	private:
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRenderTargetView = nullptr;
+		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	};
+	class DX11DepthStencilView : public DepthStencilView
+	{
+	public:
+		DX11DepthStencilView() = default;
+		DX11DepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
+		virtual ~DX11DepthStencilView() override;
+
+		virtual void* GetTextureView() const override { return (void*)pDepthStencilView.Get(); };
+	private:
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView = nullptr;
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	};
+	
 }

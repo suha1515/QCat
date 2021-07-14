@@ -240,7 +240,6 @@ namespace QCat
 			case TextureType::TextureCube_NegativeY:
 			case TextureType::TextureCube_PositiveZ:
 			case TextureType::TextureCube_NegativeZ:
-			case TextureType::TextureCube:
 			{
 				dsvDesc.Format = Utils::MapTypeDSV(texFormat);
 				dsvDesc.ViewDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
@@ -256,6 +255,23 @@ namespace QCat
 					dsvDesc.Texture2DArray.MipSlice = mipLevel;
 				}
 			}
+			case TextureType::TextureCube:
+			{
+				dsvDesc.Format = Utils::MapTypeDSV(texFormat);
+				dsvDesc.ViewDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+				if (multisampled)
+				{
+					dsvDesc.Texture2DMSArray.ArraySize = 6;
+					dsvDesc.Texture2DMSArray.FirstArraySlice =0;
+				}
+				else
+				{
+					dsvDesc.Texture2DArray.ArraySize = 6;
+					dsvDesc.Texture2DArray.FirstArraySlice = 0;
+					dsvDesc.Texture2DArray.MipSlice = mipLevel;
+				}
+			}
+			
 			break;
 			}
 			return dsvDesc;

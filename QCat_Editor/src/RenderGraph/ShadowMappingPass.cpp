@@ -147,7 +147,6 @@ namespace QCat
 				else if (comp.type == LightComponent::LightType::Point)
 				{
 					float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
-					bias = 1.0f;
 					if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 					{
 						shadowProj = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
@@ -166,6 +165,7 @@ namespace QCat
 					}
 					else
 					{
+						shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
 						shadowTransforms.push_back(shadowProj *
 							glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
 						shadowTransforms.push_back(shadowProj *
@@ -181,8 +181,8 @@ namespace QCat
 					}
 					shadowMapMatrices->SetData(shadowTransforms.data(), sizeof(ShadowMatrix), 0);
 					
-					Sampler_Desc desc;
-					Ref<Texture> sliceTexture = Texture2D::Create(TextureFormat::DEPTH32, desc, 1024, 1024);
+					//Sampler_Desc desc;
+					//Ref<Texture> sliceTexture = Texture2D::Create(TextureFormat::DEPTH32, desc, 1024, 1024);
 					transformConstantBuffer->Bind(0, Type::Vetex);
 					shadowMapMatrices->Bind(1, Type::Geometry);
 
@@ -198,10 +198,12 @@ namespace QCat
 					m_PointLightShadow->UnBind();
 
 
-					QCAT_BOX box;
+				/*	QCAT_BOX box;
 					box.width = 1024;
 					box.height = 1024;
-					TextureUtility::CopyCubeMapFace2D(comp.shadowMap, sliceTexture,((uint32_t)TextureType::TextureCube_PositiveX + comp.textureindex), 0, box);
+					TextureUtility::CopyCubeMapFace2D(comp.shadowMap, sliceTexture,((uint32_t)TextureType::TextureCube_PositiveX + comp.textureindex), 0, box);*/
+
+					Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex,1);
 
 					m_ColorBuffer->Bind();
 					m_ColorBuffer->DetachAll();
@@ -209,7 +211,7 @@ namespace QCat
 					m_ColorBuffer->Clear();
 
 					m_DebugShadowShader->Bind();
-					sliceTexture->Bind(0);
+					view->Bind(0, ShaderType::PS);
 					m_SamplerForDebug->Bind(0);
 					
 					RenderCommand::DrawIndexed(m_quad);

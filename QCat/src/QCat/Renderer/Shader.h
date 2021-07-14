@@ -1,13 +1,9 @@
 #pragma once
 #include "Graphics.h"
 #include <glm/glm.hpp>
-
+#include "enums.h"
 namespace QCat
 {
-	enum class ShaderType
-	{
-		VS = 0, PS, GS, CS
-	};
 	class Shader
 	{
 	public:

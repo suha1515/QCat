@@ -110,21 +110,25 @@ namespace QCat
 	private:
 		uint32_t m_renderID;
 	};
-	class OpenGLRenderTargetView : public TextureRenderTargetView
+	class OpenGLRenderTargetView : public RenderTargetView
 	{
 	public:
 		OpenGLRenderTargetView() = default;
-		virtual ~OpenGLRenderTargetView() override {};
+		OpenGLRenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
+
+		virtual ~OpenGLRenderTargetView() override;
 
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
 	private:
 		uint32_t m_renderID;
 	};
-	class OpenGLDepthStencilView : public TextureDepthStencilView
+	class OpenGLDepthStencilView : public DepthStencilView
 	{
 	public:
 		OpenGLDepthStencilView() = default;
-		virtual ~OpenGLDepthStencilView() override {};
+		OpenGLDepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
+
+		virtual ~OpenGLDepthStencilView() override;
 
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
 	private:

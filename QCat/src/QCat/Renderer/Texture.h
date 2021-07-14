@@ -11,7 +11,7 @@ namespace QCat
 		uint32_t Height;
 		uint32_t Depth = 0;
 		uint32_t MipLevels = 0;
-		uint32_t ArraySize = 0;
+		uint32_t ArraySize = 1;
 		uint32_t SampleCount = 1;
 		uint32_t SampleQuality = 0;
 		TextureFormat Format;
@@ -172,11 +172,6 @@ namespace QCat
 	class TextureShaderView : public TextureView
 	{
 	public:
-		enum class ShaderType
-		{
-			VS=0,PS,GS
-		};
-	public:
 		static Ref<TextureShaderView> Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
 	public:
 		TextureShaderView() = default;
@@ -184,21 +179,21 @@ namespace QCat
 
 		virtual void Bind(uint32_t slot, ShaderType type) const = 0;
 	};
-	class TextureRenderTargetView : public TextureView
+	class RenderTargetView : public TextureView
 	{
 	public:
-		static Ref<TextureRenderTargetView> Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		static Ref<RenderTargetView> Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
 	public:
-		TextureRenderTargetView() = default;
-		virtual ~TextureRenderTargetView() = default;
+		RenderTargetView() = default;
+		virtual ~RenderTargetView() = default;
 	};
-	class TextureDepthStencilView : public TextureView
+	class DepthStencilView : public TextureView
 	{
 	public:
-		static Ref<TextureDepthStencilView> Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		static Ref<DepthStencilView> Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
 	public:
-		TextureDepthStencilView() = default;
-		virtual ~TextureDepthStencilView() = default;
+		DepthStencilView() = default;
+		virtual ~DepthStencilView() = default;
 
 	};
 

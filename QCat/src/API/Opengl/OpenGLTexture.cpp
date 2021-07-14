@@ -227,7 +227,7 @@ namespace QCat
 	
 		void*pData =  Utils::LoadImageFromFile(imgPathes[0].c_str(), gammaCorrection, flip, width, height, channels, m_Format, m_InternalFormat, m_DataFormat);
 
-		SetData(pData, width * height * channels, (uint32_t)TextureType::TextureCube_PositiveX );
+		SetData(pData, width * height * channels, (uint32_t)TextureCubeFace::TextureCube_PositiveX );
 		if (pData != nullptr)
 		{
 			free(pData);
@@ -253,7 +253,7 @@ namespace QCat
 				QCAT_CORE_ASSERT(false, "Failed to load Image!");
 				break;
 			}
-			SetData(pData, width * height * channels, (uint32_t)TextureType::TextureCube_PositiveX + i);
+			SetData(pData, width * height * channels, (uint32_t)TextureCubeFace::TextureCube_PositiveX + i);
 			if (pData != nullptr)
 			{
 				free(pData);
@@ -301,7 +301,7 @@ namespace QCat
 		if (desc.SampleCount > 1)
 			glTexStorage2DMultisample(target, samples, m_InternalFormat, m_width, m_height, true);
 		else
-			glTexStorage2D(target, m_mipLevel, m_InternalFormat, m_width, m_height);
+			glTextureStorage2D(m_renderID, m_mipLevel, m_InternalFormat, m_width, m_height);		
 	}
 	void OpenGLCubeMapTexture::GenerateMipMap()
 	{
@@ -314,16 +314,16 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 
-		if (textureindex > 3)
+		if (textureindex < 6)
 		{
-			TextureType tempType = static_cast<TextureType>(textureindex);
-			if (tempType == TextureType::TextureCube)
-				tempType = TextureType::TextureCube_PositiveX;
+			TextureCubeFace tempType = static_cast<TextureCubeFace>(textureindex);
 
 			unsigned int bpc = Utils::GetTextureComponentCount(desc.Format);
 			QCAT_CORE_ASSERT(size == desc.Width * desc.Height * bpc, "Data must be entire texture!");
+			//glTexSubImage2D(Utils::GetTextureTargetFromCube(tempType, false), 0, 0, 0, desc.Width, desc.Height, m_Format, m_DataFormat, data);
+			//glTextureSubImage2D(m_renderID, 0, 0, 0, desc.Width, desc.Height, m_Format, m_DataFormat, data);
+			glTextureSubImage3D(m_renderID, 0, 0, 0,0, desc.Width, desc.Height,textureindex, m_Format, m_DataFormat, data);
 
-			glTexSubImage2D(Utils::GetTextureTarget(tempType, false), 0, 0, 0, desc.Width, desc.Height, m_Format, m_DataFormat, data);
 		}
 		else
 			QCAT_CORE_ERROR("Texture SetData Error : CubeMapTexture Index Wrong!");
@@ -331,12 +331,10 @@ namespace QCat
 	}
 	void OpenGLCubeMapTexture::GetData(void* data, uint32_t mipLevel, uint32_t textureindex )
 	{
-		if (textureindex > 3)
+		if (textureindex < 6)
 		{
-			TextureType tempType = static_cast<TextureType>(textureindex);
-			if (tempType == TextureType::TextureCube)
-				tempType = TextureType::TextureCube_PositiveX;
-			glGetTexImage(Utils::GetTextureTarget(tempType, desc.SampleCount > 1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFormat(desc.Format), data);
+			TextureCubeFace tempType = static_cast<TextureCubeFace>(textureindex);
+			glGetTexImage(Utils::GetTextureTargetFromCube(tempType, desc.SampleCount > 1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFormat(desc.Format), data);
 		}
 		else
 			QCAT_CORE_ERROR("Texture GetData Error : CubeMapTexture Index Wrong!");
@@ -400,16 +398,16 @@ namespace QCat
 	void OpenGLTextureUtility::CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevel, QCAT_BOX boxregion)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-		TextureType type = TextureType(index);
+		TextureCubeFace type = TextureCubeFace(index);
 		GLenum cubeFace;
 		switch (type)
 		{
-		case TextureType::TextureCube_PositiveX:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;	break;
-		case TextureType::TextureCube_NegativeX:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;	break;
-		case TextureType::TextureCube_PositiveY:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;	break;
-		case TextureType::TextureCube_NegativeY:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;	break;
-		case TextureType::TextureCube_PositiveZ:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;	break;
-		case TextureType::TextureCube_NegativeZ:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;	break;
+		case TextureCubeFace::TextureCube_PositiveX:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;	break;
+		case TextureCubeFace::TextureCube_NegativeX:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;	break;
+		case TextureCubeFace::TextureCube_PositiveY:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;	break;
+		case TextureCubeFace::TextureCube_NegativeY:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;	break;
+		case TextureCubeFace::TextureCube_PositiveZ:  cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;	break;
+		case TextureCubeFace::TextureCube_NegativeZ:  cubeFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;	break;
 		default:
 			cubeFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 			QCAT_CORE_ERROR("CopyCubemapFace2D Error : Wrong CubeMapIndex!");
@@ -438,16 +436,15 @@ namespace QCat
 	OpenGLTextureShaderView::OpenGLTextureShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
 		:m_renderID(0)
 	{	
-
 		Texture_Desc srcdesc = texture->GetDesc();
 		bool multisampled = srcdesc.SampleCount > 1;
 		GLenum target = Utils::GetTextureTarget(type, multisampled);
-		GLenum internalformat = Utils::GetTextureFormat(format);
+		GLenum internalformat = Utils::GetTextureInternalFormat(format);
 
 		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
 		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
 
-		GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
+		//GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
 		uint32_t srcTexMipLevels = srcdesc.MipLevels;
 		uint32_t srcTexLayerNum = srcdesc.ArraySize;
 		GLuint srcTexID = (GLuint)texture->GetTexture();
@@ -455,45 +452,22 @@ namespace QCat
 		uint32_t viewDimension = Utils::GetDimensionFromType(type);
 		uint32_t srcDimension = Utils::GetDimensionFromType(srcdesc.Type);
 
-		bool pass = true;
-		if (viewDimension != srcDimension)
+		glGenTextures(1, &m_renderID);
+		switch (srcdesc.Type)
 		{
-			QCAT_CORE_ERROR("TextureView Contruction Error : Texture Dimension isnt Compitable!");
-			pass = false;
-		}
-		if (bitSize != srcBitSize)
-		{
-			QCAT_CORE_ERROR("TextureView Contruction Error : Texture Format Bit Size is different!");
-			pass = false;
-		}
-		if (srcTexMipLevels < startMip)
-		{
-			QCAT_CORE_ERROR("TextureView Contruction Error : *startMip is over Soruce Texture MipLevels!");
-			pass = false;
-		}
-			
-		if (srcTexMipLevels - startMip <= numMip)
-		{
-			QCAT_CORE_ERROR("TextureView Contruction Error : *numMip is over Soruce Texture MipLevels!");
-			pass = false;
-		}
-		if (srcTexLayerNum < startLayer)
-		{
-			QCAT_CORE_ERROR("TextureView Contruction Error : *startLayer is over Soruce Texture LayerCount!");
-			pass = false;
-		}
-		if (srcTexLayerNum - startLayer <= numlayer)
-		{
-			QCAT_CORE_ERROR("TextureView Contruction Error : *numlayer is over Soruce Texture LayerCount!");
-			pass = false;
-		}
-
-		if (pass == true)
-		{
-			glCreateTextures(target, 1, &m_renderID);
+		case TextureType::Texture1D:
+		case TextureType::Texture1DArray:
+		case TextureType::Texture2D:
+		case TextureType::Texture2DArray:
+		case TextureType::TextureCube:
+		case TextureType::Texture3D:
 			glTextureView(m_renderID, target, srcTexID, internalformat, startMip, numMip, startLayer, numlayer);
-
+			break;
+		default:
+			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for ShaderResourceView!");
+			break;
 		}
+
 		this->viewDesc = srcdesc;
 		this->viewDesc.ArraySize = numlayer;
 		this->viewDesc.MipLevels = numMip;
@@ -518,5 +492,82 @@ namespace QCat
 	void OpenGLTextureShaderView::Bind(uint32_t slot, ShaderType type) const
 	{
 		glBindTextureUnit(slot, m_renderID);
+	}
+	OpenGLRenderTargetView::OpenGLRenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+		:m_renderID(0)
+	{
+		Texture_Desc srcdesc = texture->GetDesc();
+		bool multisampled = srcdesc.SampleCount > 1;
+		GLenum target = Utils::GetTextureTarget(type, multisampled);
+		GLenum internalformat = Utils::GetTextureInternalFormat(format);
+
+		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
+		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
+
+		//GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
+		uint32_t srcTexMipLevels = srcdesc.MipLevels;
+		uint32_t srcTexLayerNum = srcdesc.ArraySize;
+		GLuint srcTexID = (GLuint)texture->GetTexture();
+
+		glGenTextures(1, &m_renderID);
+		switch (type)
+		{
+		case TextureType::Texture1D:
+		case TextureType::Texture1DArray:
+		case TextureType::Texture2D:
+		case TextureType::Texture2DArray:
+		case TextureType::Texture3D:
+			glTextureView(m_renderID, target, srcTexID, internalformat, startMip, 1, startLayer, numlayer);
+			break;
+		default:
+			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for RenderTargetView!");
+			break;
+		}
+		this->viewDesc = srcdesc;
+		this->viewDesc.ArraySize = numlayer;
+		this->viewDesc.MipLevels = 1;
+		this->viewDesc.Format = format;
+	}
+	OpenGLRenderTargetView::~OpenGLRenderTargetView()
+	{
+		glDeleteTextures(1, &m_renderID);
+	}
+	OpenGLDepthStencilView::OpenGLDepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+		:m_renderID(0)
+	{
+		Texture_Desc srcdesc = texture->GetDesc();
+		bool multisampled = srcdesc.SampleCount > 1;
+		GLenum target = Utils::GetTextureTarget(type, multisampled);
+		GLenum internalformat = Utils::GetTextureInternalFormat(format);
+
+		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
+		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
+
+		//GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
+		uint32_t srcTexMipLevels = srcdesc.MipLevels;
+		uint32_t srcTexLayerNum = srcdesc.ArraySize;
+		GLuint srcTexID = (GLuint)texture->GetTexture();
+
+		glGenTextures( 1, &m_renderID);
+		switch (type)
+		{
+		case TextureType::Texture1D:
+		case TextureType::Texture1DArray:
+		case TextureType::Texture2D:
+		case TextureType::Texture2DArray:
+			glTextureView(m_renderID, target, srcTexID, internalformat, startMip, 1, startLayer, numlayer);
+			break;
+		default:
+			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for DepthStencilView!");
+			break;
+		}
+		this->viewDesc = srcdesc;
+		this->viewDesc.ArraySize = numlayer;
+		this->viewDesc.MipLevels = 1;
+		this->viewDesc.Format = format;
+	}
+	OpenGLDepthStencilView::~OpenGLDepthStencilView()
+	{
+		glDeleteTextures(1, &m_renderID);
 	}
 }

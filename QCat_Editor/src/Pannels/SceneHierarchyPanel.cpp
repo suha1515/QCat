@@ -570,6 +570,11 @@ namespace QCat
 					ImGui::Checkbox("See ShadowMap", &shadowmap);
 					if (shadowmap)
 					{
+						if (component.type == LightComponent::LightType::Point)
+						{
+							uv1 = ImVec2(0.0f, 1.0f);
+							uv2 = ImVec2(1.0f, 0.0f);
+						}
 						ImGui::Image(component.debugMap->GetTexture(), ImVec2(256, 256), uv1, uv2);
 						if (component.type == LightComponent::LightType::Point)
 						{

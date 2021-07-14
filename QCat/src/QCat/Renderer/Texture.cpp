@@ -78,7 +78,31 @@ namespace  QCat
 		{
 		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
 		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLTextureShaderView>(type, originTexture, foramt, startMip, numMip, startLayer,numlayer);
-		case RenderAPI::API::DirectX11:		return CreateRef<OpenGLTextureShaderView>(type, originTexture, foramt, startMip, numMip, startLayer, numlayer);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11ShaderView>(type, originTexture, foramt, startMip, numMip, startLayer, numlayer);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+
+	Ref<RenderTargetView> RenderTargetView::Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLRenderTargetView>(type, originTexture, foramt, startMip, startLayer, numlayer);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11RenderTargetView>(type, originTexture, foramt, startMip, startLayer, numlayer);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+
+	Ref<DepthStencilView> DepthStencilView::Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip,uint32_t startLayer, uint32_t numlayer)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLDepthStencilView>(type, originTexture, foramt, startMip, startLayer, numlayer);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11DepthStencilView>(type, originTexture, foramt, startMip, startLayer, numlayer);
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
