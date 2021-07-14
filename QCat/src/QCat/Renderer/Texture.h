@@ -106,7 +106,15 @@ namespace QCat
 	class TextureLibrary
 	{
 	public:
-		static Ref<Texture2D>& Load(const std::string& path, Sampler_Desc desc = {}, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
+		static Ref<Texture2D> Load(const std::string& name)
+		{
+			return Get().Load_(name);
+		}
+		static Ref<Texture2D>& Load(const std::string& name, const std::string& path, Sampler_Desc desc = {}, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
+		{
+			return Get().Load_(name,path, desc, mipLevel, samples, flip, gamaCorrection);
+		}
+		static Ref<Texture2D>& Load(const std::string& path, Sampler_Desc desc , unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
 		{
 			return Get().Load_(path, desc, mipLevel, samples, flip, gamaCorrection);
 		}
@@ -128,6 +136,17 @@ namespace QCat
 		{
 			return m_Textures.find(path) != m_Textures.end();
 		}
+		Ref<Texture2D> Load_(const std::string& path)
+		{
+			if (Exists(path))
+			{
+				return m_Textures[path];
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
 		Ref<Texture2D>& Load_(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
 		{
 			if (Exists(path))
@@ -140,6 +159,20 @@ namespace QCat
 				Ref<Texture2D> texture = Texture2D::Create(path, desc, mipLevel, samples, flip, gamaCorrection);
 				m_Textures[path] = texture;
 				return m_Textures[path];
+			}
+		}
+		Ref<Texture2D>& Load_(const std::string& name,const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamaCorrection = false)
+		{
+			if (Exists(name))
+			{
+				return m_Textures[name];
+			}
+			else
+			{
+				texturepathlist.push_back(path);
+				Ref<Texture2D> texture = Texture2D::Create(path, desc, mipLevel, samples, flip, gamaCorrection);
+				m_Textures[name] = texture;
+				return m_Textures[name];
 			}
 		}
 		Ref<Texture2D>& Load_(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)

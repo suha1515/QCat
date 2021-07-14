@@ -45,6 +45,8 @@ namespace QCat
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
 	{
+		Sampler_Desc desc;
+		TextureLibrary::Load("CheckerBoard","Asset/textures/Checkerboard.png",desc);
 
 	}
 

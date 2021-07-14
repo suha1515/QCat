@@ -449,6 +449,9 @@ namespace QCat
 		DrawComponent<MaterialComponent>("Material", entity,
 			[&](auto& component)
 			{
+				Ref<Texture> checkerboardimg;
+					
+				checkerboardimg=TextureLibrary::Load("CheckerBoard");
 				Material& mat = component.GetMaterial();
 
 				ImGui::ColorEdit3("Ambient", glm::value_ptr(mat.ambient));
@@ -467,6 +470,8 @@ namespace QCat
 				ImGui::Separator();
 				if (mat.m_DiffuseTexture)
 					ImGui::Image(mat.m_DiffuseTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
+				else
+					ImGui::Image(checkerboardimg->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Albedo Texture");
 				ImGui::SameLine();
@@ -483,6 +488,8 @@ namespace QCat
 				ImGui::Separator();
 				if (mat.m_NormalMapTexture)
 					ImGui::Image(mat.m_NormalMapTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
+				else
+					ImGui::Image(checkerboardimg->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Normal Texture");
 				ImGui::SameLine();
@@ -499,6 +506,8 @@ namespace QCat
 				ImGui::Separator();
 				if (mat.m_MetallicTexture)
 					ImGui::Image(mat.m_MetallicTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
+				else
+					ImGui::Image(checkerboardimg->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("Metallic Texture");
 				ImGui::SameLine();
@@ -515,6 +524,9 @@ namespace QCat
 				ImGui::Separator();
 				if (mat.m_RoughnessTexture)
 					ImGui::Image(mat.m_RoughnessTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
+				else
+					ImGui::Image(checkerboardimg->GetTexture(), ImVec2(64, 64), uv1, uv2);
+					
 				ImGui::NextColumn();
 				ImGui::Text("Roughness Texture");
 				ImGui::SameLine();
@@ -531,6 +543,8 @@ namespace QCat
 				ImGui::Separator();
 				if (mat.m_AmbientOcclusionTexture)
 					ImGui::Image(mat.m_AmbientOcclusionTexture->GetTexture(), ImVec2(64, 64), uv1, uv2);
+				else
+					ImGui::Image(checkerboardimg->GetTexture(), ImVec2(64, 64), uv1, uv2);
 				ImGui::NextColumn();
 				ImGui::Text("AmbientOcclusion Texture");
 				ImGui::SameLine();
