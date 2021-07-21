@@ -73,7 +73,7 @@ namespace QCat
 		
 		//ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
 
-		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.1f, 1000.0f);
+		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.01f, 100.0f);
 		//m_EditorCamera.SetPosition({ 0.0f,0.0f,-2.0f });
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -82,10 +82,12 @@ namespace QCat
 
 		viewMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
 		projectionMatrix = CreateRef<glm::mat4>(glm::mat4(1.0f));
+		camData = CreateRef<glm::vec4>(1.0f);
 
 		EditorPBRRenderGraph.SetHdrImg(hdrImage);
 		EditorPBRRenderGraph.SetView(viewMatrix);
 		EditorPBRRenderGraph.SetProj(projectionMatrix);
+		EditorPBRRenderGraph.SetCameraProperties(camData);
 		EditorPBRRenderGraph.Initialize();
 
 		Sampler_Desc imgSamp;
@@ -162,6 +164,10 @@ namespace QCat
 			m_CameraController.OnResize(m_ViewPortSize.x, m_ViewPortSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewPortSize.x, m_ViewPortSize.y);
 			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			camData->x = m_EditorCamera.GetFov();
+			camData->y = m_EditorCamera.GetAspectRatio();
+			camData->z = m_EditorCamera.GetNear();
+			camData->w = m_EditorCamera.GetFar();
 		}
 
 		// Update

@@ -567,6 +567,7 @@ namespace QCat
 				{
 					static const char* lighttype[] = { "Directional","Point","Spot" };
 					static int selectedItem = 0;
+					selectedItem = int(component.type);
 					if (ImGui::Combo("LightType", &selectedItem, lighttype, IM_ARRAYSIZE(lighttype)))
 					{
 						LightComponent::LightType type = LightComponent::LightType(selectedItem);
@@ -574,12 +575,11 @@ namespace QCat
 						{
 							component.type = type;
 							component.Validate();
-						}
-							
+						}			
 					}
-					ImGui::DragFloat3("Albedo", glm::value_ptr(component.diffuse));
-					ImGui::DragFloat3("Ambient", glm::value_ptr(component.ambient));
-					ImGui::DragFloat3("Specular", glm::value_ptr(component.specular));
+					ImGui::DragFloat3("Albedo", glm::value_ptr(component.diffuse),1.0f,0.0f);
+					ImGui::DragFloat3("Ambient", glm::value_ptr(component.ambient),1.0f,0.0f);
+					ImGui::DragFloat3("Specular", glm::value_ptr(component.specular),1.0f,0.0f);
 					static bool shadowmap = false;
 					ImGui::Checkbox("See ShadowMap", &shadowmap);
 					if (shadowmap)
@@ -593,7 +593,18 @@ namespace QCat
 						if (component.type == LightComponent::LightType::Point)
 						{
 							static int selectIndex = 0;
+							selectIndex = component.textureindex;
 							static const char* index[] = { "X","-X","Y","-Y","Z","-Z" };
+							if (ImGui::Combo("TextureIndex", &selectIndex, index, IM_ARRAYSIZE(index)))
+							{
+								component.textureindex = selectIndex;
+							}
+						}
+						else if (component.type == LightComponent::LightType::Directional)
+						{
+							static int selectIndex = 0;
+							selectIndex = component.textureindex;
+							static const char* index[] = { "0","1","2" };
 							if (ImGui::Combo("TextureIndex", &selectIndex, index, IM_ARRAYSIZE(index)))
 							{
 								component.textureindex = selectIndex;

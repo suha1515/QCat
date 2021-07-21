@@ -35,6 +35,11 @@ namespace QCat
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+		float GetFov() const { return m_Fov; }
+		float GetAspectRatio()const{ return m_AspectRatio; }
+		float GetNear() const { return m_NearClip; }
+		float GetFar() const { return m_FarClip; }
+		
 	private:
 		void UpdateProjection();
 		void UpdateView();

@@ -119,7 +119,7 @@ namespace QCat
 		DX11RenderTargetView() = default;
 		DX11RenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
 		virtual ~DX11RenderTargetView() override;
-
+		virtual void Bind(uint32_t framebufferid, AttachmentType type) override {};
 		virtual void* GetTextureView() const override { return (void*)pRenderTargetView.Get(); };
 	private:
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRenderTargetView = nullptr;
@@ -131,6 +131,7 @@ namespace QCat
 		DX11DepthStencilView() = default;
 		DX11DepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
 		virtual ~DX11DepthStencilView() override;
+		virtual void Bind(uint32_t framebufferid, AttachmentType type) override {};
 
 		virtual void* GetTextureView() const override { return (void*)pDepthStencilView.Get(); };
 	private:

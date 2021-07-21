@@ -20,21 +20,37 @@ layout(std140,binding = 1) uniform Transform
 	mat4 u_Transform;
 	mat4 u_InvTransform;
 };
+layout(std140,binding = 4) uniform LightTransform
+{
+	mat4 LightMat[3];
+	float cascaedEndClipSpace[3];
+};
 struct VertexOutput
 {
     vec2 TexCoords;
 	vec3 v_Normal;
 	vec3 FragPos;
 	mat3 TBN;
+	vec4 lightSpacePos[3];
+	float clipspaceZ;
 };
 layout(location = 0 ) out VertexOutput Output;
 
 void main()
 {
+	//cascaed light Map
+	for(int i=0;i<3;++i)
+	{
+		Output.lightSpacePos[i] = LightMat[i]  *u_Transform* vec4(a_Position,1.0f);
+	}
+	
 	Output.TexCoords = a_TexCoord;
 	mat3 normalMatrix = mat3(transpose(u_InvTransform));
 	Output.v_Normal =normalMatrix * a_Normal;
 	gl_Position = u_Projection*u_View*u_Transform * vec4(a_Position, 1.0);
+	
+	//clipSpace Position Z
+	Output.clipspaceZ = gl_Position.z;
 	Output.FragPos = vec3(u_Transform * vec4(a_Position,1.0));
 
 	vec3 T = normalize(normalMatrix *a_Tangent);
@@ -67,6 +83,13 @@ struct PointLight
 {
 	vec3 position;
 	vec3 diffuse;
+	float isActive;
+};
+struct DirLight
+{	
+	vec3 lightDirection;
+	vec3 diffuse;
+	float isActive;
 };
 layout(std140,binding = 0) uniform Camera
 {
@@ -81,6 +104,12 @@ layout(std140,binding = 2) uniform Mat
 layout(std140,binding = 3) uniform Light
 {
 	PointLight pointLight[4];
+	DirLight	dirLight;
+};
+layout(std140,binding = 4) uniform LightTransform
+{
+	mat4 LightMat[3];
+	float cascaedEndClipSpace[3];
 };
 layout(location = 0) out vec4 color;
 
@@ -90,6 +119,8 @@ struct VertexOutput
 	vec3 v_Normal;
 	vec3 FragPos;
 	mat3 TBN;
+	vec4 lightSpacePos[3];
+	float clipspaceZ;
 };
 layout(location = 0 ) in VertexOutput Input;
 
@@ -102,6 +133,9 @@ layout (binding = 4) uniform sampler2D aoMap;
 layout (binding = 5) uniform samplerCube irradianceMap;
 layout (binding = 6) uniform samplerCube prefilterMap;
 layout (binding = 7) uniform sampler2D brdfLUT;
+
+//cascadeShadowMap
+layout (binding = 8) uniform sampler2DArrayShadow DirshadowMap;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -149,6 +183,69 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }   
+
+// calculate ShadowFactor
+float CalcShadowFactor(int cascadeIndex , vec4 LightSpacePos)
+{
+	vec3 projCoords = LightSpacePos.xyz /LightSpacePos.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	if(projCoords.z>1.0)
+		return 0.0;
+	float currentDepth = projCoords.z;
+	float bias = 0.01f;
+	float comparisonResult = 0.0;
+	vec2 texelSize = textureSize(DirshadowMap,0).xy;
+	texelSize  = 1.0f/texelSize;
+	for(int x = -1;x<=1;++x)
+	{
+		for(int y=-1;y<=1;++y)
+		{
+			vec4 coords = vec4(projCoords.xy + vec2(x,y) * texelSize.xy,cascadeIndex,currentDepth-bias);
+			comparisonResult += texture(DirshadowMap,coords);
+		}
+	}
+
+	comparisonResult /=9.0;
+	return comparisonResult;
+}
+vec3 CalculateDirectLight(vec3 normal,vec3 viewDir,vec3 lightDir,vec3 diffuse,float attenuation,float roughness,vec3 F0,vec3 albedo,float metallic)
+{
+	vec3 V = viewDir;
+	vec3 N = normal;
+	vec3 Lo;
+	// calculate per-light radiance
+    vec3 L = lightDir;
+    vec3 H = normalize(V + L);
+  
+    vec3 radiance = diffuse * attenuation;
+
+    // Cook-Torrance BRDF
+    float NDF = DistributionGGX(N, H, roughness);   
+    float G   = GeometrySmith(N, V, L,  roughness);      
+    vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+       
+    vec3 nominator    = NDF * G * F; 
+    float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+    vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+    
+    // kS is equal to Fresnel
+    vec3 kS = F;
+    // for energy conservation, the diffuse and specular light can't
+    // be above 1.0 (unless the surface emits light); to preserve this
+    // relationship the diffuse component (kD) should equal 1.0 - kS.
+    vec3 kD = vec3(1.0) - kS;
+    // multiply kD by the inverse metalness such that only non-metals 
+    // have diffuse lighting, or a linear blend if partly metal (pure metals
+    // have no diffuse light).
+    kD *= 1.0 - metallic;	  
+
+    // scale light by NdotL
+    float NdotL = max(dot(N, L), 0.0);        
+
+    // add to outgoing radiance Lo
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+	return Lo;
+}
 void main()
 {
 	vec3 albedo = material.albedo * (1.0- material.IsAlbedoMap) + pow(texture(albedoMap, Input.TexCoords).rgb,vec3(2.2)) * material.IsAlbedoMap;
@@ -161,8 +258,6 @@ void main()
 	//float roughness = material.IsRoughnessMap ? texture(roughnessMap, Input.TexCoords).r : material.roughness;
 	//float ao = material.IsAoMap ? texture(aoMap, Input.TexCoords).r : material.ambientocclusion;
 
-	vec3 N;
-	vec3 V;
 	vec3 normal = normalize(Input.v_Normal);
 	vec3 mapNormal = texture(normalMap,Input.TexCoords).rgb;
 	mapNormal.r = mapNormal.r *2.0 - 1.0;
@@ -170,8 +265,9 @@ void main()
 	mapNormal.b = mapNormal.b *2.0 - 1.0;
 	mapNormal = normalize(Input.TBN * mapNormal);
 
+	vec3 N;
+	vec3 V;
 	V =  normalize(u_viewPosition - Input.FragPos);
-
 	N = normal * (1.0f - material.IsNormalMap) + mapNormal * material.IsNormalMap;
 	vec3 R = reflect(-V, N); 
 
@@ -179,43 +275,34 @@ void main()
 	vec3 Lo = vec3(0.0);
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0,albedo,metallic);
-	
+
+	float shadowFactor=0.0f;
+	//DirLight
 	for(int i=0;i<1;++i)
 	{
-		// calculate per-light radiance
+		Lo +=CalculateDirectLight(N,V,-dirLight.lightDirection,dirLight.diffuse,1.0f,roughness,F0,albedo,metallic) * dirLight.isActive;
+		
+		for (int i = 0 ; i < 3 ; i++) 
+		{
+			if (Input.clipspaceZ <= cascaedEndClipSpace[i]) 
+			{
+				shadowFactor = CalcShadowFactor(i, Input.lightSpacePos[i]);
+				break;   
+			}
+		}
+		if(dirLight.isActive <1.0f)
+			shadowFactor = 1.0f;
+	}
+	//PointLight
+	for(int i=0;i<4;++i)
+	{
         vec3 L = normalize(pointLight[i].position - Input.FragPos);
-        vec3 H = normalize(V + L);
-        float distance = length(pointLight[i].position - Input.FragPos);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = pointLight[i].diffuse * attenuation;
-
-        // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L,  roughness);      
-        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-           
-        vec3 nominator    = NDF * G * F; 
-        float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        vec3 specular = nominator / max(denominator, 0.001); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
-        
-        // kS is equal to Fresnel
-        vec3 kS = F;
-        // for energy conservation, the diffuse and specular light can't
-        // be above 1.0 (unless the surface emits light); to preserve this
-        // relationship the diffuse component (kD) should equal 1.0 - kS.
-        vec3 kD = vec3(1.0) - kS;
-        // multiply kD by the inverse metalness such that only non-metals 
-        // have diffuse lighting, or a linear blend if partly metal (pure metals
-        // have no diffuse light).
-        kD *= 1.0 - metallic;	  
-
-        // scale light by NdotL
-        float NdotL = max(dot(N, L), 0.0);        
-
-        // add to outgoing radiance Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		float distance = length(pointLight[i].position - Input.FragPos);
+		float attenuation = 1.0 / (distance * distance);
+		Lo +=CalculateDirectLight(N,V,L,pointLight[i].diffuse,attenuation,roughness,F0,albedo,metallic) *pointLight[i].isActive;
 	}
 
+	// indirect part
 	// ambient light (use ibl for ambient)
 	vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
 	vec3 kS = F;
@@ -232,12 +319,16 @@ void main()
 
 	vec3 ambient = (kD * diffuse + specular) * ao;
 
-	result = ambient + Lo;
+	
+	Lo = mix(vec3(0.0f),Lo,shadowFactor);
+	//Lo = Lo * shadowFactor;
+
+	result = (ambient + Lo);
+
 
 	//HDR toneMapping
 	result = result / (result + vec3(1.0));
 	result = pow(result,vec3(1.0/2.2));
 
 	color = vec4(result,1.0f);
-
 }

@@ -195,6 +195,21 @@ namespace QCat
 			switch (type)
 			{
 			case LightType::Directional:
+				if (debugMap != nullptr)
+					debugMap.reset();
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, m_shadowMapWidth, m_shadowMapHeight);
+				desc.MIN = Filtering::LINEAR;
+				desc.MAG = Filtering::LINEAR;
+				desc.MIP = Filtering::NONE;
+				desc.addressU = WrapingMode::CLAMP;
+				desc.addressV = WrapingMode::CLAMP;
+				desc.addressW = WrapingMode::CLAMP;
+				desc.mode = FilterMode::COMPARISON;
+				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+				if (shadowMap != nullptr)
+					shadowMap.reset();
+				shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, m_shadowMapWidth, m_shadowMapHeight,3);
+				break;
 			case LightType::Spot:
 				if (debugMap != nullptr)
 					debugMap.reset();

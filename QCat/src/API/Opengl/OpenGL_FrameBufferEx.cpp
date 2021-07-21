@@ -1,6 +1,6 @@
 #include "qcpch.h"
 #include "OpenGL_FrameBufferEx.h"
-
+#include "OpenglUtils.h"
 namespace QCat
 {
 	OpenGLFrameBufferEx::OpenGLFrameBufferEx(const AttachmentSpecification& attachments)
@@ -105,19 +105,6 @@ namespace QCat
 	
 	namespace Utils
 	{	
-		GLenum GetAttachmentType(AttachmentType type)
-		{
-			switch (type)
-			{
-				case AttachmentType::Color_0: return GL_COLOR_ATTACHMENT0;
-				case AttachmentType::Color_1: return GL_COLOR_ATTACHMENT1;
-				case AttachmentType::Color_2: return GL_COLOR_ATTACHMENT2;
-				case AttachmentType::Color_3: return GL_COLOR_ATTACHMENT3;
-				case AttachmentType::Color_4: return GL_COLOR_ATTACHMENT4;
-				case AttachmentType::Depth:	  return GL_DEPTH_ATTACHMENT;
-				case AttachmentType::Depth_Stencil: return GL_DEPTH_STENCIL_ATTACHMENT;
-			}
-		}
 		GLenum GetTexTarget(TextureType type,bool multisampled)
 		{
 			switch (type)
@@ -176,6 +163,28 @@ namespace QCat
 			QCAT_CORE_ERROR("FrameBuffer attach error texture is nullptr");
 		}
 	}
+
+	void OpenGLFrameBufferEx::AttachColorTexture(const Ref<RenderTargetView>& textureView, AttachmentType type)
+	{
+		if (textureView != nullptr)
+		{
+			textureView->Bind(m_RendererID, type);
+		}
+		else
+			QCAT_CORE_ERROR("FrameBuffer attach error texture is nullptr");
+	}
+
+	void OpenGLFrameBufferEx::AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type)
+	{
+		if (textureView != nullptr)
+		{
+			textureView->Bind(m_RendererID, type);
+		}
+		else
+			QCAT_CORE_ERROR("FrameBuffer attach error texture is nullptr");
+	}
+
+
 
 	void OpenGLFrameBufferEx::DetachTexture(AttachmentType attachType)
 	{

@@ -65,11 +65,11 @@ namespace QCat
 						bound = true;
 						break;
 					}
-					if (!bound)
-					{
-						QCAT_CORE_ERROR("PassName {0} not found",inputPassName);
-						std::runtime_error("RenderGraph LinkInput Error!");
-					}
+				}
+				if (!bound)
+				{
+					QCAT_CORE_ERROR("PassName {0} not found", inputPassName);
+					std::runtime_error("RenderGraph LinkInput Error!");
 				}
 			}
 		}

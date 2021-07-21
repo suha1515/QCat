@@ -19,6 +19,8 @@ namespace QCat
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 
+		RegisterInput(DataInput<ShadowMappingPass::LightMatrix>::Make("DirlightTransform", dirlightTransform, DataType::Struct));
+
 		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -32,8 +34,10 @@ namespace QCat
 		cameraConstantBuffer = ConstantBuffer::Create(sizeof(CameraData), 0);
 		transformConstantBuffer = ConstantBuffer::Create(sizeof(Transform), 1);
 		materialConstantBuffer = ConstantBuffer::Create(sizeof(Mat), 2);
-		lightConstantBuffer = ConstantBuffer::Create(sizeof(light), 3);
+		lightConstantBuffer = ConstantBuffer::Create(sizeof(Light), 3);
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
+		dirlighbuffer = ConstantBuffer::Create(sizeof(ShadowMappingPass::LightMatrix), 4);
+		
 
 		LayoutElement lay(ShaderDataType::Struct,"Struct");
 		lay.Add(ShaderDataType::Mat4, "Transform");
@@ -71,35 +75,36 @@ namespace QCat
 		camData.view = *viewMatrix;
 
 		cameraConstantBuffer->SetData(&camData, sizeof(CameraData), 0);
+		
 		m_PBRShader->Bind();
 		auto lightView = registry.view<TransformComponent, LightComponent>();
-		int index = 0;
-		if (lightView.size() == 0)
-		{
-			for (int i = 0; i < 1; ++i)
-			{
-				glm::vec3 pos = { 0.0f,0.0f,0.0f };
-				glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
-				litData.emplace_back(pos, diffuse);
-			}
-		}
+		int dirLightCount = 0;
+		int pointLightCount = 0;
+		Light light;
 		for (auto entity : lightView)
 		{
-			if (index < 1)
+			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
+			LightComponent& comp = lightView.get<LightComponent>(entity);
+			if (comp.type == LightComponent::LightType::Directional && dirLightCount <= 0)
 			{
-				glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
-				LightComponent& comp = lightView.get<LightComponent>(entity);
+				m_DirLightMap = comp.shadowMap;
+				ShadowMappingPass::LightMatrix data = *dirlightTransform;
+				dirlighbuffer->SetData(&data, sizeof(ShadowMappingPass::LightMatrix), 0);
+				dirLightCount++;
 
-				light light;
-				light.position = lightPos;
-				light.diffuse = comp.diffuse;
-
-				litData.emplace_back(lightPos, comp.diffuse);
-				index++;
+				light.dirlight.diffuse = comp.diffuse;
+				light.dirlight.isActive = 1.0f;
+				light.dirlight.lightDirection = comp.lightDirection;
 			}
+			else if (comp.type == LightComponent::LightType::Point && pointLightCount < 4)
+			{
+				light.pointLight[pointLightCount].diffuse = comp.diffuse;
+				light.pointLight[pointLightCount].isActive = 1.0f;
+				light.pointLight[pointLightCount].position = lightPos;
+				pointLightCount++;
+			}		
 		}
-		lightConstantBuffer->SetData(litData.data(), sizeof(light) * litData.size(), 0);
-		litData.clear();
+		lightConstantBuffer->SetData(&light, sizeof(Light), 0);
 
 		matData.albedo = glm::vec3(1.0f, 1.0f, 1.0f);
 		matData.metallic = 1.0f;
@@ -110,6 +115,8 @@ namespace QCat
 		transformConstantBuffer->Bind(1, Type::Vetex);
 		materialConstantBuffer->Bind(2, Type::Pixel);
 		lightConstantBuffer->Bind(3, Type::Pixel);
+		dirlighbuffer->Bind(4, Type::Vetex);
+		//dirlighbuffer->Bind(4, Type::Pixel);
 
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
 		for (auto entity : group)
@@ -147,9 +154,9 @@ namespace QCat
 				m_IrradianceCubeMap->Bind(5);
 				m_PrefilterMap->Bind(6);
 				m_BRDFLutTextrue->Bind(7);
+				m_DirLightMap->Bind(8);
 				RenderCommand::DrawIndexed(mesh);
 			}
-			
 		}
 		m_PBRShader->UnBind();
 

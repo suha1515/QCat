@@ -40,8 +40,16 @@ namespace QCat
 	};
 	enum class AttachmentType
 	{
-		Color_0,Color_1,Color_2,Color_3,Color_4,
+		Color_0=0,Color_1,Color_2,Color_3,Color_4,
 		Depth,Stencil,Depth_Stencil
+	};
+	enum class ColorAttachmentType
+	{
+		Color_0, Color_1, Color_2, Color_3, Color_4,
+	};
+	enum class DepthAttachmentType
+	{
+		Depth, Stencil, Depth_Stencil
 	};
 	enum class TextureType
 	{
@@ -130,7 +138,7 @@ namespace QCat
 	enum class DataType
 	{
 		None, Float, Float2, Float3, Float4, Matrix,
-		Int, Int2, Int3, Int4
+		Int, Int2, Int3, Int4,Array,Struct,Object
 	};
 	enum class ShaderDataType
 	{

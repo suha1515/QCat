@@ -40,6 +40,7 @@ namespace QCat
 		Ref<Texture> hdrImage;
 		Ref<glm::mat4> viewMatrix;
 		Ref<glm::mat4> projectionMatrix;
+		Ref<glm::vec4> camData;
 		Entity m_Camera;
 		//camera
 		OrthographicCameraController m_CameraController;

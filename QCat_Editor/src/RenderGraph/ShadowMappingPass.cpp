@@ -1,5 +1,5 @@
 #include "ShadowMappingPass.h"
-
+#include <limits>
 
 namespace QCat
 {
@@ -8,11 +8,23 @@ namespace QCat
 		this->level = level;
 		this->name = name;
 
+		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
+		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
+		RegisterInput(DataInput<glm::vec4>::Make("forArNearFar", forArNearFar, DataType::Float4));
+
+		RegisterOutput(DataOutput<LightMatrix>::Make("DirlightTransform", DirlightTransform, DataType::Struct));
+		DirlightTransform = CreateRef<LightMatrix>();
+
+
 		AttachmentSpecification pointdepthbuffer = { {FramebufferUsage::Depth,TextureType::TextureCube,TextureFormat::DEPTH32,"DepthBuffer"} };
 		pointdepthbuffer.Height = 1024;
 		pointdepthbuffer.Width = 1024;
 
-		AttachmentSpecification directiondepthbuffer = { {FramebufferUsage::Depth,TextureType::Texture2D,TextureFormat::DEPTH32,"DepthBuffer"} };
+		AttachmentSpecification directiondepthbuffer = { {FramebufferUsage::Depth,TextureType::Texture2DArray,TextureFormat::DEPTH32,"DepthBuffer"} };
+		directiondepthbuffer.Height = 1024;
+		directiondepthbuffer.Width = 1024;
+
+		AttachmentSpecification spotLightDepthBuffer = { {FramebufferUsage::Depth,TextureType::Texture2D,TextureFormat::DEPTH32,"DepthBuffer"} };
 		directiondepthbuffer.Height = 1024;
 		directiondepthbuffer.Width = 1024;
 
@@ -20,23 +32,27 @@ namespace QCat
 		colorBuffer.Height = 1024;
 		colorBuffer.Width = 1024;
 
+
+
 		m_PointLightShadow = FrameBufferEx::Create(pointdepthbuffer);
 		m_DirectionalLightShadow = FrameBufferEx::Create(directiondepthbuffer);
+		m_SpotLightShadow = FrameBufferEx::Create(spotLightDepthBuffer);
 		m_ColorBuffer = FrameBufferEx::Create(colorBuffer);
 
 		shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-		
+
 
 		shadowMapMatrices = ConstantBuffer::Create(sizeof(ShadowMatrix), 0);
+		csmMatrices = ConstantBuffer::Create(sizeof(CsmMatrix), 0);
 		transformConstantBuffer = ConstantBuffer::Create(sizeof(Transform), 0);
 		directionallightMatrix = ConstantBuffer::Create(sizeof(DirectionalLightViewProj), 0);
-		
+
 		Sampler_Desc desc;
 		m_SamplerForDebug = SamplerState::Create(desc);
 	}
 	void ShadowMappingPass::Initialize()
 	{
-		m_PointshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/PointShadowMap.glsl": "Asset/shaders/hlsl/ShadowMap/PointShadowMap.hlsl");
+		m_PointshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/PointShadowMap.glsl" : "Asset/shaders/hlsl/ShadowMap/PointShadowMap.hlsl");
 		m_DirectionalshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/DirectionalShadowMap.glsl" : "Asset/shaders/hlsl/ShadowMap/DirectionalShadowMap.hlsl");
 		m_DebugShadowShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/DebugShadow.glsl" : "Asset/shaders/hlsl/ShadowMap/DebugShadow.hlsl");
 
@@ -85,145 +101,260 @@ namespace QCat
 			}
 		}
 	}
+	void ShadowMappingPass::CsmPass(glm::vec3 lightDirection, glm::vec3 upVector)
+	{
+		// Get CameraInv Matrix
+		glm::mat4 camview = (*viewMatrix);
+		glm::mat4 projView = (*projectionMatrix) * camview;
+
+		glm::mat4 camInv = glm::inverse(camview);
+		glm::mat4 projviewInv = glm::inverse(projView);
+		glm::mat4 projInv = glm::inverse(*projectionMatrix);
+		float fov = forArNearFar->x;
+		float ar = forArNearFar->y;
+		float nearZ = forArNearFar->z;
+		float farZ = forArNearFar->w;
+
+		float tanHalfVFov = tanf(glm::radians(fov / 2.0f));
+		float tanHalfHFov = tanHalfVFov * ar;
+
+		float incrementZ = (nearZ + farZ) / 4;
+
+		m_cascadeEnd[0] = nearZ;
+		m_cascadeEnd[1] = 5.f;
+		m_cascadeEnd[2] = 14.f;
+		m_cascadeEnd[3] = farZ;
+
+		for (uint32_t i = 0; i < 3; ++i)
+		{
+			float xn = m_cascadeEnd[i] * tanHalfHFov;
+			float xf = m_cascadeEnd[i + 1] * tanHalfHFov;
+			float yn = m_cascadeEnd[i] * tanHalfVFov;
+			float yf = m_cascadeEnd[i + 1] * tanHalfVFov;
+
+			glm::vec4 frustumCorners[8] =
+			{
+				//near Face
+				{xn,yn,m_cascadeEnd[i],1.0f},
+				{-xn,yn,m_cascadeEnd[i],1.0f},
+				{xn,-yn,m_cascadeEnd[i],1.0f},
+				{-xn,-yn,m_cascadeEnd[i],1.0f},
+				//far Face
+				{xf,yf,m_cascadeEnd[i + 1],1.0f},
+				{-xf,yf,m_cascadeEnd[i + 1],1.0f},
+				{xf,-yf,m_cascadeEnd[i + 1],1.0f},
+				{-xf,-yf,m_cascadeEnd[i + 1],1.0f}
+			};
+
+			glm::vec4 frustumCornersL[8];
+			glm::vec3 centerFrusta = glm::vec3(0.0f);
+
+			glm::vec4 centerPos = glm::vec4(0.0f);
+			for (uint32_t j = 0; j < 8; ++j)
+			{
+				frustumCorners[j] = camInv * frustumCorners[j];
+				centerPos += frustumCorners[j];
+			}
+			centerPos /= 8.0f;
+
+			float radius = 0.0f;
+			for (uint32_t j = 0; j < 8; ++j)
+			{
+				float distance = glm::length(frustumCorners[j] - centerPos);
+				radius = std::max(radius, distance);
+			}
+			// why we need this code?
+			radius = std::ceil(radius * 16.0f) / 16.0f;
+
+			// using radius ,  we made aabb box
+			glm::vec3 maxExtents = glm::vec3(radius, radius, radius);
+			glm::vec3 minExtents = -maxExtents;
+
+			glm::vec3 shadowCamPos = glm::vec3(centerPos) - (glm::normalize(lightDirection) * (-minExtents.z));
+			glm::mat4 lightMatrix = glm::lookAt(shadowCamPos, glm::vec3(centerPos), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			glm::vec3 cascadeExtents = maxExtents - minExtents;
+			m_shadowOrthoProj[i] = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, cascadeExtents.z) * lightMatrix;
+
+		}
+	}
 	void ShadowMappingPass::Execute(Ref<Scene>& scene)
 	{
 		std::vector<glm::mat4> shadowTransforms;
 
 		entt::registry& registry = scene->GetRegistry();
-		auto lightView = registry.view<TransformComponent, LightComponent>();
+		auto lightView = registry.view<TransformComponent, LightComponent,TagComponent>();
 		int index = 0;
+		int dirLightCount = 0;
+		int pointLightCount = 0;
 		for (auto& entity : lightView)
 		{
-			if (index < 1)
+			TransformComponent& transcomp = lightView.get<TransformComponent>(entity);
+			TagComponent& tag = lightView.get<TagComponent>(entity);
+
+			glm::vec3 lightPos = transcomp.Translation;
+			glm::mat4 transform = transcomp.GetTransform();
+			LightComponent& comp = lightView.get<LightComponent>(entity);
+			glm::vec3 rightVector = glm::vec3(transform[0][0], transform[1][0], transform[2][0]);
+			glm::vec3 upVector = glm::vec3(transform[0][1], transform[1][1], transform[2][1]);
+			glm::vec3 forward = glm::vec3(transform[0][2], transform[1][2], transform[2][2]);
+
+			transformConstantBuffer->Bind(0, Type::Vetex);
+			if (comp.type == LightComponent::LightType::Directional && dirLightCount ==0)
 			{
-				shadowProj = glm::ortho(-5.0f,5.0f,-5.0f, 5.0f,-5.0f,5.0f);
-				TransformComponent& transcomp = lightView.get<TransformComponent>(entity);
-				glm::vec3 lightPos = transcomp.Translation;
-				glm::mat4 transform = transcomp.GetTransform();
-				LightComponent& comp = lightView.get<LightComponent>(entity);
-				if (comp.type == LightComponent::LightType::Directional)
+				comp.lightDirection = forward;
+				csmMatrices->Bind(1, Type::Geometry);
+				CsmPass(forward, upVector);
+				CsmMatrix matrix;
+				matrix.matrices[0] = m_shadowOrthoProj[0];
+				matrix.matrices[1] = m_shadowOrthoProj[1];
+				matrix.matrices[2] = m_shadowOrthoProj[2];
+
+				DirlightTransform->matrices[0] = m_shadowOrthoProj[0];
+				DirlightTransform->matrices[1] = m_shadowOrthoProj[1];
+				DirlightTransform->matrices[2] = m_shadowOrthoProj[2];
+
+				for (int i = 0; i < 3; ++i)
 				{
-					glm::vec3 rightVector = glm::vec3(transform[0][0], transform[1][0], transform[2][0]);
-					glm::vec3 upVector = glm::vec3(transform[0][1], transform[1][1], transform[2][1]);
-					glm::vec3 forward = glm::vec3(transform[0][2], transform[1][2], transform[2][2]);
-					
-					transformConstantBuffer->Bind(0, Type::Vetex);
-					directionallightMatrix->Bind(1, Type::Vetex);
-
-					DirectionalLightViewProj data;
-					//shadowProj = glm::ortho(-5.f, 5.f, -5.f, 5.f, 1.0f, 7.5f);
-					data.viewProjMatrix = shadowProj * glm::lookAt(lightPos, lightPos + forward, upVector);
-					data.farz = 0;
-					data.nearz = 0;
-					directionallightMatrix->SetData(&data, sizeof(DirectionalLightViewProj), 0);
-
-					m_DirectionalLightShadow->Bind();
-					RenderCommand::SetViewport(0, 0, 1024, 1024);
-					m_DirectionalLightShadow->DetachAll();
-					m_DirectionalLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::Texture2D,0);
-					m_DirectionalLightShadow->Clear();
-
-					m_DirectionalshadowMappingShader->Bind();
-					DrawModel(registry);
-					m_DirectionalshadowMappingShader->UnBind();
-
-					m_DirectionalLightShadow->UnBind();
-
-					m_ColorBuffer->Bind();
-					m_ColorBuffer->DetachAll();
-					m_ColorBuffer->AttachTexture(comp.debugMap, AttachmentType::Color_0, TextureType::Texture2D, 0);
-					m_ColorBuffer->Clear();
-					
-					m_DebugShadowShader->Bind();
-					
-					comp.shadowMap->Bind(0);
-					m_SamplerForDebug->Bind(0);
-					RenderCommand::DrawIndexed(m_quad);
-					m_SamplerForDebug->UnBind(0);
-					m_DebugShadowShader->UnBind();
-					m_ColorBuffer->UnBind();
-
+					glm::vec4 vclip = (*projectionMatrix) * glm::vec4(0.0f, 0.0f, m_cascadeEnd[i + 1], 1.0f);
+					DirlightTransform->cascadedEndClip[i].x = vclip.z;
 				}
-				else if (comp.type == LightComponent::LightType::Point)
-				{
-					float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
-					if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-					{
-						shadowProj = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAtRH(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAtRH(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f * bias)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f * bias)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-					}
-					else
-					{
-						shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f * bias)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f * bias)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-						shadowTransforms.push_back(shadowProj *
-							glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
-					}
-					shadowMapMatrices->SetData(shadowTransforms.data(), sizeof(ShadowMatrix), 0);
-					
-					//Sampler_Desc desc;
-					//Ref<Texture> sliceTexture = Texture2D::Create(TextureFormat::DEPTH32, desc, 1024, 1024);
-					transformConstantBuffer->Bind(0, Type::Vetex);
-					shadowMapMatrices->Bind(1, Type::Geometry);
+				csmMatrices->SetData(&matrix, sizeof(CsmMatrix), 0u);
 
-					m_PointLightShadow->Bind();
-					RenderCommand::SetViewport(0, 0, 1024, 1024);
-					m_PointLightShadow->DetachAll();
-					m_PointLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::TextureCube,0);
-					m_PointLightShadow->Clear();
+				m_DirectionalLightShadow->Bind();
+				RenderCommand::SetViewport(0, 0, 1024, 1024);
+				m_DirectionalLightShadow->DetachAll();
+				Ref<DepthStencilView> view = DepthStencilView::Create(TextureType::Texture2DArray, comp.shadowMap, TextureFormat::DEPTH32, 0, 0, 3);
 
-					m_PointshadowMappingShader->Bind();
-					DrawModel(registry);		
-					m_PointshadowMappingShader->UnBind();
-					m_PointLightShadow->UnBind();
+				m_DirectionalLightShadow->AttachDepthTexture(view, AttachmentType::Depth);
+				m_DirectionalLightShadow->Clear();
+				m_DirectionalshadowMappingShader->Bind();
+				DrawModel(registry);
+				m_DirectionalshadowMappingShader->UnBind();
+				m_DirectionalLightShadow->UnBind();
 
+				m_ColorBuffer->Bind();
+				m_ColorBuffer->DetachAll();
+				m_ColorBuffer->AttachTexture(comp.debugMap, AttachmentType::Color_0, TextureType::Texture2D, 0);
+				m_ColorBuffer->Clear();
 
-				/*	QCAT_BOX box;
-					box.width = 1024;
-					box.height = 1024;
-					TextureUtility::CopyCubeMapFace2D(comp.shadowMap, sliceTexture,((uint32_t)TextureType::TextureCube_PositiveX + comp.textureindex), 0, box);*/
+				Ref<TextureShaderView> shaderview = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, comp.textureindex, 1);
 
-					Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex,1);
+				m_DebugShadowShader->Bind();
+				shaderview->Bind(0, ShaderType::PS);
+				m_SamplerForDebug->Bind(0);
 
-					m_ColorBuffer->Bind();
-					m_ColorBuffer->DetachAll();
-					m_ColorBuffer->AttachTexture(comp.debugMap, AttachmentType::Color_0, TextureType::Texture2D, 0);
-					m_ColorBuffer->Clear();
+				RenderCommand::DrawIndexed(m_quad);
+				m_SamplerForDebug->UnBind(0);
+				m_DebugShadowShader->UnBind();
+				m_ColorBuffer->UnBind();
 
-					m_DebugShadowShader->Bind();
-					view->Bind(0, ShaderType::PS);
-					m_SamplerForDebug->Bind(0);
-					
-					RenderCommand::DrawIndexed(m_quad);
-					m_SamplerForDebug->UnBind(0);
-					m_DebugShadowShader->UnBind();
-					m_ColorBuffer->UnBind();
-
-					//delete[] data;
-				}	
+				dirLightCount++;
 			}
-			index++;
-		}	
-	}	
+			else if (comp.type == LightComponent::LightType::Spot)
+			{
+				shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+				directionallightMatrix->Bind(1, Type::Vetex);
+
+				DirectionalLightViewProj data;
+				data.viewProjMatrix = shadowProj * glm::lookAt(lightPos, lightPos + forward, upVector);
+				data.farz = 0;
+				data.nearz = 0;
+				directionallightMatrix->SetData(&data, sizeof(DirectionalLightViewProj), 0);
+
+				m_DirectionalLightShadow->Bind();
+				RenderCommand::SetViewport(0, 0, 1024, 1024);
+				m_DirectionalLightShadow->DetachAll();
+				m_DirectionalLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::Texture2D, 0);
+				m_DirectionalLightShadow->Clear();
+
+				m_DirectionalshadowMappingShader->Bind();
+				DrawModel(registry);
+				m_DirectionalshadowMappingShader->UnBind();
+
+				m_DirectionalLightShadow->UnBind();
+
+				m_ColorBuffer->Bind();
+				m_ColorBuffer->DetachAll();
+				m_ColorBuffer->AttachTexture(comp.debugMap, AttachmentType::Color_0, TextureType::Texture2D, 0);
+				m_ColorBuffer->Clear();
+
+				m_DebugShadowShader->Bind();
+
+				comp.shadowMap->Bind(0);
+				m_SamplerForDebug->Bind(0);
+				RenderCommand::DrawIndexed(m_quad);
+				m_SamplerForDebug->UnBind(0);
+				m_DebugShadowShader->UnBind();
+				m_ColorBuffer->UnBind();
+			}
+			else if (comp.type == LightComponent::LightType::Point && pointLightCount< 4)
+			{
+				float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
+				if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+				{
+					shadowProj = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAtRH(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAtRH(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f * bias)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f * bias)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAtRH(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+				}
+				else
+				{
+					shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f * bias)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f * bias)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+					shadowTransforms.push_back(shadowProj *
+						glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
+				}
+				shadowMapMatrices->Bind(1, Type::Geometry);
+				shadowMapMatrices->SetData(shadowTransforms.data(), sizeof(ShadowMatrix), 0);
+				shadowTransforms.clear();
+				m_PointLightShadow->Bind();
+				RenderCommand::SetViewport(0, 0, 1024, 1024);
+				m_PointLightShadow->DetachAll();
+				m_PointLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::TextureCube, 0);
+				m_PointLightShadow->Clear();
+
+				m_PointshadowMappingShader->Bind();
+				DrawModel(registry);
+				m_PointshadowMappingShader->UnBind();
+				m_PointLightShadow->UnBind();
+
+				Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex, 1);
+
+				m_ColorBuffer->Bind();
+				m_ColorBuffer->DetachAll();
+				m_ColorBuffer->AttachTexture(comp.debugMap, AttachmentType::Color_0, TextureType::Texture2D, 0);
+				m_ColorBuffer->Clear();
+
+				m_DebugShadowShader->Bind();
+				view->Bind(0, ShaderType::PS);
+				m_SamplerForDebug->Bind(0);
+
+				RenderCommand::DrawIndexed(m_quad);
+				m_SamplerForDebug->UnBind(0);
+				m_DebugShadowShader->UnBind();
+				m_ColorBuffer->UnBind();
+				pointLightCount++;
+			}
+		}
+	}
 }
 

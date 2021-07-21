@@ -215,6 +215,102 @@ namespace QCat
 			glTextureStorage2D(m_renderID, desc.MipLevels, m_InternalFormat, desc.Width, desc.Height);
 		if (pData != nullptr)
 			glTextureSubImage2D(m_renderID, 0, 0, 0, desc.Width, desc.Height, m_Format, m_DataFormat, pData);
+
+		sampler = SamplerState::Create(smpdesc);
+	}
+	OpenGlTexture2DArray::OpenGlTexture2DArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel, unsigned int samples)
+		:smpdesc(desc)
+	{
+		// Immutable
+		QCAT_PROFILE_FUNCTION();		
+
+		this->sampDesc = smpdesc;
+		m_InternalFormat = Utils::GetTextureInternalFormat(format);
+		m_Format = Utils::GetTextureFormat(format);
+		m_DataFormat = Utils::GetTextureDataFormat(format);
+
+		this->desc.Format = format;
+		this->desc.Type = TextureType::Texture2DArray;
+		this->desc.Width = width;
+		this->desc.Height = height;
+		this->desc.ArraySize = depth;
+		this->desc.usage = TextureUsage::Immutable;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+
+		QCAT_CORE_ASSERT(m_InternalFormat & m_Format, "Format is not supported!");
+		Validate();
+	}
+	OpenGlTexture2DArray::OpenGlTexture2DArray(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples, bool flip, bool gamacorrection)
+		:smpdesc(desc)
+	{
+		// Immutable
+		QCAT_PROFILE_FUNCTION();
+		this->sampDesc = smpdesc;
+
+		this->pathes = imagePath;
+		uint32_t width = 0, height = 0, channels = 0;
+		for (auto path : imagePath)
+		{
+			void* pData = Utils::LoadImageFromFile(path, gamacorrection, flip, width, height, channels, m_Format, m_InternalFormat, m_DataFormat);
+			Validate(pData);
+			if (pData != nullptr)
+				free(pData);
+		}
+		this->desc.Format = Utils::GetTextureFormatFromGL(m_InternalFormat);
+		this->desc.Type = TextureType::Texture2DArray;
+		this->desc.Width = width;
+		this->desc.Height = height;
+		this->desc.Depth = imagePath.size();
+		this->desc.usage = TextureUsage::Immutable;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+
+		QCAT_CORE_ASSERT(m_InternalFormat & m_Format, "Format is not supported!");
+		
+	}
+	void OpenGlTexture2DArray::GenerateMipMap()
+	{
+		if (desc.MipLevels > 0 && smpdesc.MIP != Filtering::NONE)
+			glGenerateTextureMipmap(m_renderID);
+		else
+			QCAT_CORE_ERROR("this texture can't generate mipmap!");
+	}
+	void OpenGlTexture2DArray::SetData(void* data, unsigned int size, uint32_t textureindex)
+	{
+	}
+	void OpenGlTexture2DArray::GetData(void* data, uint32_t mipLevel, uint32_t textureindex)
+	{
+	}
+	void OpenGlTexture2DArray::SetSize(uint32_t width, uint32_t height, uint32_t depth)
+	{
+	}
+	void OpenGlTexture2DArray::Bind(unsigned int slot) const
+	{
+		QCAT_PROFILE_FUNCTION();
+		glBindTextureUnit(slot, m_renderID);
+	}
+	void OpenGlTexture2DArray::Validate(void* pData, uint32_t index)
+	{
+		if (m_renderID > 0)
+		{
+			glDeleteTextures(1, &m_renderID);
+			m_renderID = 0;
+		}
+		GLuint error;
+		glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_renderID);
+		Utils::SetTextureParameter(m_renderID, smpdesc);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		if (desc.SampleCount > 1)
+			glTextureStorage3DMultisample(m_renderID, desc.SampleCount, m_InternalFormat, desc.Width, desc.Height,desc.Depth, true);
+		else
+			glTextureStorage3D(m_renderID, desc.MipLevels, m_InternalFormat, desc.Width, desc.Height,desc.ArraySize);
+		error = glGetError();
+		if (pData != nullptr && index < desc.Depth)
+			glTextureSubImage3D(m_renderID, 0, 0, 0,0, desc.Width, desc.Height, index, m_Format, m_DataFormat, pData);
+
+		sampler = SamplerState::Create(smpdesc);
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
 		:flip(flip),gammaCorrection(gammaCorrection), smpdesc(desc)
@@ -300,6 +396,8 @@ namespace QCat
 			glTexStorage2DMultisample(target, samples, m_InternalFormat, m_width, m_height, true);
 		else
 			glTextureStorage2D(m_renderID, m_mipLevel, m_InternalFormat, m_width, m_height);		
+
+		sampler = SamplerState::Create(smpdesc);
 	}
 	void OpenGLCubeMapTexture::GenerateMipMap()
 	{
@@ -434,6 +532,8 @@ namespace QCat
 	OpenGLTextureShaderView::OpenGLTextureShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
 		:m_renderID(0)
 	{	
+		this->type = ViewType::ShaderResourceView;
+
 		Texture_Desc srcdesc = texture->GetDesc();
 		bool multisampled = srcdesc.SampleCount > 1;
 		GLenum target = Utils::GetTextureTarget(type, multisampled);
@@ -482,6 +582,7 @@ namespace QCat
 		}
 		this->viewDesc.Width = temp_width;
 		this->viewDesc.Height = temp_height;
+		this->viewDesc.Type = type;
 	}
 	OpenGLTextureShaderView::~OpenGLTextureShaderView()
 	{
@@ -492,8 +593,10 @@ namespace QCat
 		glBindTextureUnit(slot, m_renderID);
 	}
 	OpenGLRenderTargetView::OpenGLRenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
-		:m_renderID(0)
+		:m_renderID(0), m_startMip(startMip)
 	{
+		this->type = ViewType::RenderTargetView;
+
 		Texture_Desc srcdesc = texture->GetDesc();
 		bool multisampled = srcdesc.SampleCount > 1;
 		GLenum target = Utils::GetTextureTarget(type, multisampled);
@@ -525,14 +628,43 @@ namespace QCat
 		this->viewDesc.ArraySize = numlayer;
 		this->viewDesc.MipLevels = 1;
 		this->viewDesc.Format = format;
+		this->viewDesc.Type = type;
 	}
 	OpenGLRenderTargetView::~OpenGLRenderTargetView()
 	{
 		glDeleteTextures(1, &m_renderID);
 	}
-	OpenGLDepthStencilView::OpenGLDepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
-		:m_renderID(0)
+	void OpenGLRenderTargetView::Bind(uint32_t framebufferid, AttachmentType type)
 	{
+		if (uint32_t(type) <= uint32_t(AttachmentType::Color_4))
+		{
+			GLenum attachmentIndex = Utils::GetAttachmentType(type);
+			bool multisampled = viewDesc.SampleCount > 1;
+			GLenum target = Utils::GetTextureTarget(viewDesc.Type, multisampled);
+
+			switch (viewDesc.Type)
+			{
+			case TextureType::Texture1D:
+				glFramebufferTexture1D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				break;
+			case TextureType::Texture2D:
+				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				break;
+			case TextureType::Texture1DArray:
+			case TextureType::Texture2DArray:
+			case TextureType::Texture3D:
+				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, m_renderID, m_startMip);
+				break;
+			}
+		}
+		else
+			QCAT_CORE_ERROR("RenderTarget Bind Error! : Wrong Type for Binding");
+	}
+	OpenGLDepthStencilView::OpenGLDepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+		:m_renderID(0),m_startMip(startMip)
+	{
+		this->type = ViewType::DepthStencilView;
+
 		Texture_Desc srcdesc = texture->GetDesc();
 		bool multisampled = srcdesc.SampleCount > 1;
 		GLenum target = Utils::GetTextureTarget(type, multisampled);
@@ -545,7 +677,7 @@ namespace QCat
 		uint32_t srcTexMipLevels = srcdesc.MipLevels;
 		uint32_t srcTexLayerNum = srcdesc.ArraySize;
 		GLuint srcTexID = (GLuint)texture->GetTexture();
-
+		GLuint error;
 		glGenTextures( 1, &m_renderID);
 		switch (type)
 		{
@@ -554,6 +686,7 @@ namespace QCat
 		case TextureType::Texture2D:
 		case TextureType::Texture2DArray:
 			glTextureView(m_renderID, target, srcTexID, internalformat, startMip, 1, startLayer, numlayer);
+			error = glGetError();
 			break;
 		default:
 			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for DepthStencilView!");
@@ -563,9 +696,40 @@ namespace QCat
 		this->viewDesc.ArraySize = numlayer;
 		this->viewDesc.MipLevels = 1;
 		this->viewDesc.Format = format;
+		this->viewDesc.Type = type;
 	}
 	OpenGLDepthStencilView::~OpenGLDepthStencilView()
 	{
 		glDeleteTextures(1, &m_renderID);
 	}
+
+	void OpenGLDepthStencilView::Bind(uint32_t framebufferid, AttachmentType type)
+	{
+		if (uint32_t(type) > uint32_t(AttachmentType::Color_4))
+		{
+			GLenum attachmentIndex = Utils::GetAttachmentType(type);
+			bool multisampled = viewDesc.SampleCount > 1;
+			GLenum target = Utils::GetTextureTarget(viewDesc.Type, multisampled);
+
+			switch (viewDesc.Type)
+			{
+			case TextureType::Texture1D:
+				glFramebufferTexture1D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				break;
+			case TextureType::Texture2D:
+				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				break;
+			case TextureType::Texture1DArray:
+			case TextureType::Texture2DArray:
+			case TextureType::Texture3D:
+				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, m_renderID,m_startMip);
+				break;
+			}
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");
+		}
+		else
+			QCAT_CORE_ERROR("DepthStencil Bind Error! : Wrong Type for Binding");
+	}
+	
 }

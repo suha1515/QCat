@@ -153,6 +153,19 @@ namespace QCat
 
 			}
 		}
+		static GLenum GetAttachmentType(AttachmentType type)
+		{
+			switch (type)
+			{
+			case AttachmentType::Color_0: return GL_COLOR_ATTACHMENT0;
+			case AttachmentType::Color_1: return GL_COLOR_ATTACHMENT1;
+			case AttachmentType::Color_2: return GL_COLOR_ATTACHMENT2;
+			case AttachmentType::Color_3: return GL_COLOR_ATTACHMENT3;
+			case AttachmentType::Color_4: return GL_COLOR_ATTACHMENT4;
+			case AttachmentType::Depth:	  return GL_DEPTH_ATTACHMENT;
+			case AttachmentType::Depth_Stencil: return GL_DEPTH_STENCIL_ATTACHMENT;
+			}
+		}
 		static GLenum GetTextureTarget(TextureType format, bool multisampled)
 		{
 			switch (format)

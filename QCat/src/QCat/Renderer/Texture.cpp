@@ -30,6 +30,28 @@ namespace  QCat
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
+	Ref<Texture2DArray> Texture2DArray::Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel, unsigned int samples )
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGlTexture2DArray>(format, desc, width,height,depth, mipLevel, samples);
+		//case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2DArray>(path, desc, mipLevel, samples, flip, gamacorrection);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+	Ref<Texture2DArray> Texture2DArray::Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples , bool flip, bool gamacorrection )
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGlTexture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
+		//case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2D>(path, desc, mipLevel, samples, flip, gamacorrection);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
 
 	Ref<TextureCube> TextureCube::Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel,bool flip, bool gammacorrection)
 	{

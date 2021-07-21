@@ -2,6 +2,8 @@
 #include "QCat.h"
 #include "../Geometry/Sphere.h"
 #include "../Geometry/Cube.h"
+#include "ShadowMappingPass.h"
+
 namespace QCat
 {
 	class PBRShaderPass : public Pass
@@ -30,11 +32,12 @@ namespace QCat
 
 		Ref<Texture> m_ColorBuffer;
 		Ref<Texture> m_DepthBuffer;
+		Ref<ShadowMappingPass::LightMatrix> dirlightTransform;
+		Ref<ConstantBuffer> dirlighbuffer;
+		Ref<Texture> m_DirLightMap;
 		//Material materials[5];
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
-
-		
 
 		struct CameraData
 		{
@@ -61,17 +64,26 @@ namespace QCat
 			int IsRoughnessMap;
 			int IsAoMap;
 		};
-		struct light
+		struct DirLight
 		{
-			light(){}
-			light(const glm::vec3& pos, const glm::vec3& diffuse)
-				:position(pos),diffuse(diffuse)
-			{}
+			glm::vec3 lightDirection = { 0.0f,0.0f,0.0f };
+			float padding;
+			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
+			float isActive=0.0f;
+		};
+		struct PointLight
+		{
 			glm::vec3 position = { 0.0f,0.0f,0.0f };
 			float padding;
 			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
-			float padding2;
+			float isActive =0.0f;
 		};
+		struct Light
+		{
+			PointLight pointLight[4];
+			DirLight dirlight;
+		};
+	
 		struct color
 		{
 			glm::vec4 color;
@@ -79,7 +91,7 @@ namespace QCat
 		CameraData camData;
 		Transform transformData;
 		Mat		matData;
-		std::vector<light> litData;
+
 		color colData;
 		Ref<ConstantBuffer> cameraConstantBuffer;
 		Ref<ConstantBuffer> transformConstantBuffer;
@@ -88,6 +100,7 @@ namespace QCat
 		Ref<ConstantBuffer> colorConstantBuffer;
 
 		Ref<ElementBuffer> transformBuffer;
+
 
 	};
 }

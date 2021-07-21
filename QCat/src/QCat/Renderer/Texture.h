@@ -19,7 +19,7 @@ namespace QCat
 		TextureUsage usage;
 		//for Directx11
 		uint32_t bindFlags = 0;
-		bool gammaCorrection;
+		bool gammaCorrection = false;
 	};
 	struct QCAT_BOX
 	{
@@ -86,8 +86,8 @@ namespace QCat
 	class Texture2DArray : public Texture
 	{
 	public:
-		static Ref<Texture2DArray> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr) {};
-		static Ref<Texture2DArray> Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamacorrection = false) {};
+		static Ref<Texture2DArray> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height,unsigned int depth, unsigned int mipLevel = 1, unsigned int samples = 1);
+		static Ref<Texture2DArray> Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamacorrection = false) ;
 	};
 	class TextureCube : public Texture
 	{
@@ -195,12 +195,16 @@ namespace QCat
 	class TextureView
 	{
 	public:
+		enum class ViewType{ShaderResourceView=0,RenderTargetView,DepthStencilView};
+	public:
 		TextureView() = default;
 		virtual ~TextureView() = default;
 		virtual void* GetTextureView() const = 0;
 		Texture_Desc GetViewDesc() { return viewDesc; }
+		ViewType GetType() { return type; }
 	protected:
 		Texture_Desc viewDesc;
+		ViewType type;
 	};
 	class TextureShaderView : public TextureView
 	{
@@ -219,6 +223,8 @@ namespace QCat
 	public:
 		RenderTargetView() = default;
 		virtual ~RenderTargetView() = default;
+
+		virtual void Bind(uint32_t framebufferid, AttachmentType type)=0;
 	};
 	class DepthStencilView : public TextureView
 	{
@@ -227,6 +233,8 @@ namespace QCat
 	public:
 		DepthStencilView() = default;
 		virtual ~DepthStencilView() = default;
+		virtual void Bind(uint32_t framebufferid, AttachmentType type)=0;
+
 
 	};
 

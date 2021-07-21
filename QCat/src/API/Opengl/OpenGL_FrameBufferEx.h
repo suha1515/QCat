@@ -15,6 +15,10 @@ namespace QCat
 		virtual void InitializeTexture(const std::string& name, const Texture_Desc& texDesc, const Sampler_Desc& samplerDesc) override;
 		virtual void AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel)override;
 		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)override;
+		
+		virtual void AttachColorTexture(const Ref<RenderTargetView>& textureView, AttachmentType type) override;
+		virtual void AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type) override;
+
 		virtual void DetachTexture(AttachmentType attachType) override;
 		virtual void DetachAll() override;
 
