@@ -44,6 +44,7 @@ namespace QCat
 		struct CsmMatrix
 		{
 			glm::mat4 matrices[3];
+			glm::mat4 projmatrices[3];
 		};
 		struct Transform
 		{

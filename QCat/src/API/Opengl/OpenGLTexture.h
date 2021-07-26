@@ -87,7 +87,7 @@ namespace QCat
 
 		virtual ~OpenGLCubeMapTexture();
 
-		void Validate(GLenum target, GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples);
+		void Validate();
 
 		virtual unsigned int GetWidth() const override { return m_width; }
 		virtual unsigned int GetHeight() const override { return m_height; }
@@ -135,9 +135,9 @@ namespace QCat
 	{
 	public:
 		OpenGLTextureShaderView() = default;
-		OpenGLTextureShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		OpenGLTextureShaderView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		
 		virtual ~OpenGLTextureShaderView() override;
-
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
 		virtual void Bind(uint32_t slot, ShaderType type) const override;
 	private:
@@ -147,12 +147,12 @@ namespace QCat
 	{
 	public:
 		OpenGLRenderTargetView() = default;
-		OpenGLRenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
+		OpenGLRenderTargetView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
 
 		virtual ~OpenGLRenderTargetView() override;
-
 		virtual void Bind(uint32_t framebufferid, AttachmentType type) override;
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
+
 	private:
 		uint32_t m_renderID;
 		uint32_t m_startMip;
@@ -161,11 +161,10 @@ namespace QCat
 	{
 	public:
 		OpenGLDepthStencilView() = default;
-		OpenGLDepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
+		OpenGLDepthStencilView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer);
 
 		virtual ~OpenGLDepthStencilView() override;
 		virtual void Bind(uint32_t framebufferid, AttachmentType type) override;
-
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
 	private:
 		uint32_t m_renderID;

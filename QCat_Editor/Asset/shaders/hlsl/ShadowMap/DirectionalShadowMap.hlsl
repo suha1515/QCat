@@ -1,3 +1,4 @@
+//Cascade Shadow Map applied
 #type vertex
 struct VSIn
 {
@@ -11,12 +12,6 @@ cbuffer Transform : register(b0)
 	matrix u_Transform;
 	matrix u_InvTransform;
 }
-cbuffer Camera : register(b1)
-{
-	matrix u_ViewProjection;
-	float near;
-	float far;
-}
 struct VSOut
 {
 	float2 tc		: Texcoords;
@@ -27,10 +22,42 @@ VSOut VSMain(VSIn input)
 {
 	VSOut output;
 	output.tc = input.tc;
-	output.position = mul(u_ViewProjection, mul(u_Transform, float4(input.pos, 1.0f)));
+	output.position = mul(u_Transform, float4(input.pos, 1.0f));
 	return output;
 }
+#type geometry
+cbuffer LightTransform : register(b1)
+{
+	matrix lightTransform[3];
+}
+struct GSIn
+{
+	float2 tc : Texcoords;
+	float4 position : SV_POSITION;
+};
+struct GSOutput
+{
+	float2 tc : Texcoords;
+	float4 pos : SV_POSITION;
+	uint RTIndex : SV_RenderTargetArrayIndex;
+};
 
+[maxvertexcount(9)]
+void GSMain(triangle GSIn input[3], inout TriangleStream <GSOutput> output)
+{
+	for (int face = 0; face < 3; ++face)
+	{
+		GSOutput element;
+		element.RTIndex = face;
+		for (int i = 0; i < 3; ++i)
+		{
+			element.pos = mul(lightTransform[face], input[i].position);
+			element.tc = input[i].tc;
+			output.Append(element);
+		}
+		output.RestartStrip();
+	}
+}
 #type pixel
 struct PSIn
 {

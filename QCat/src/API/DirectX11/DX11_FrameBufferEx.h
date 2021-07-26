@@ -14,11 +14,11 @@ namespace QCat
 		virtual void Bind() override;
 		virtual void UnBind()override;
 		virtual void InitializeTexture(const std::string& name, const Texture_Desc& texDesc, const Sampler_Desc& samplerDesc) override;
-		virtual void AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel)override;
-		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)override;
+		virtual void AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel = 0, uint32_t layerStart = 0, uint32_t layerLevel = 1)override;
+		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel = 0, uint32_t layerStart = 0, uint32_t layerLevel = 1)override;
 
-		virtual void AttachColorTexture(const Ref<RenderTargetView>& textureView,AttachmentType type) override {};
-		virtual void AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type) override {};
+		virtual void AttachColorTexture(const Ref<RenderTargetView>& textureView,AttachmentType type) override;
+		virtual void AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type) override;
 
 		virtual void DetachTexture(AttachmentType attachType) override;
 		virtual void DetachAll() override;
@@ -32,6 +32,8 @@ namespace QCat
 		AttachmentSpecification m_spec;
 
 		std::vector<Ref<DX11RenderTarget>> m_ColorAttachments;
+		std::vector<Ref<DX11RenderTargetView>> m_RenderTargets;
+		Ref<DX11DepthStencilView> m_DepthStencilView;
 		Ref<DX11DepthStencil> m_DepthAttachment;
 	};
 }

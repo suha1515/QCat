@@ -29,7 +29,8 @@ namespace QCat
 				depthbit = true;
 			}
 		}
-		m_ColorAttachments.resize(5);
+		m_RenderTargets.resize(8);
+		m_ColorAttachments.resize(8);
 	}
 	DirectXFrameBufferEx::~DirectXFrameBufferEx()
 	{
@@ -45,7 +46,7 @@ namespace QCat
 		gfx.GetContext()->PSSetShaderResources(0, 16, pSRV);
 
 		std::vector<ID3D11RenderTargetView*> renderTargets;
-		for (auto& renderTarget : m_ColorAttachments)
+		/*for (auto& renderTarget : m_ColorAttachments)
 		{
 			if (renderTarget)
 				renderTargets.push_back(renderTarget->GetRenderTargetView());
@@ -55,22 +56,20 @@ namespace QCat
 		if (m_DepthAttachment)
 			gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], m_DepthAttachment->GetDepthStencil());
 		else
-			gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], nullptr);
+			gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], nullptr);*/
 
-		//if (!renderTargets.empty())
-		//{
-		//	if (m_DepthAttachment)
-		//		gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], m_DepthAttachment->GetDepthStencil());
-		//	else
-		//		gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], nullptr);
-		//}
-		//else
-		//{
-		//	if (m_DepthAttachment)
-		//		gfx.GetContext()->OMSetRenderTargets(0, nullptr, m_DepthAttachment->GetDepthStencil());
-		//	else
-		//		gfx.GetContext()->OMSetRenderTargets(0, nullptr, nullptr);
-		//}
+		for (auto& renderTarget : m_RenderTargets)
+		{
+			if (renderTarget)
+				renderTargets.push_back((ID3D11RenderTargetView*)renderTarget->GetTextureView());
+			else
+				renderTargets.push_back(nullptr);
+		}
+		if (m_DepthStencilView)
+			gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], (ID3D11DepthStencilView *)m_DepthStencilView->GetTextureView());
+		else
+			gfx.GetContext()->OMSetRenderTargets(renderTargets.size(), &renderTargets[0], nullptr); 
+
 	}
 	void DirectXFrameBufferEx::UnBind()
 	{
@@ -123,20 +122,6 @@ namespace QCat
 	}
 	namespace Utils
 	{
-		uint32_t GetFirstArraySlice(TextureType type)
-		{
-			switch (type)
-			{
-				case TextureType::TextureCube_PositiveX:	return 0;
-				case TextureType::TextureCube_NegativeX:	return 1;
-				case TextureType::TextureCube_PositiveY:	return 2;
-				case TextureType::TextureCube_NegativeY:	return 3;
-				case TextureType::TextureCube_PositiveZ:	return 4;
-				case TextureType::TextureCube_NegativeZ:	return 5;
-			default:
-				return 0;
-			}
-		}
 		uint32_t GetAttachmentIndex(AttachmentType type)
 		{
 			switch (type)
@@ -146,6 +131,9 @@ namespace QCat
 			case AttachmentType::Color_2:	return 2;
 			case AttachmentType::Color_3:	return 3;
 			case AttachmentType::Color_4:	return 4;
+			case AttachmentType::Color_5:	return 5;
+			case AttachmentType::Color_6:	return 6;
+			case AttachmentType::Color_7:	return 7;
 			default:
 				return 0;
 			}
@@ -177,26 +165,8 @@ namespace QCat
 				rtvDesc.Texture2DArray.MipSlice = mipLevel;
 			}
 			break;
-			case TextureType::TextureCube_PositiveX:
-			case TextureType::TextureCube_NegativeX:
-			case TextureType::TextureCube_PositiveY:
-			case TextureType::TextureCube_NegativeY:
-			case TextureType::TextureCube_PositiveZ:
-			case TextureType::TextureCube_NegativeZ:
 			case TextureType::TextureCube:
 			{
-				rtvDesc.ViewDimension = multisampled ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-				if (multisampled)
-				{
-					rtvDesc.Texture2DMSArray.ArraySize = 1;
-					rtvDesc.Texture2DMSArray.FirstArraySlice = GetFirstArraySlice(type);
-				}
-				else
-				rtvDesc.Texture2DArray.ArraySize = 1;
-				rtvDesc.Texture2DArray.FirstArraySlice = GetFirstArraySlice(type);
-				//rtvDesc.Texture2DArray.FirstArraySlice = GetFirstArraySlice(type);
-
-				rtvDesc.Texture2DArray.MipSlice = mipLevel;
 			}
 			break;
 			}
@@ -234,27 +204,6 @@ namespace QCat
 				}
 			}
 			break;
-			case TextureType::TextureCube_PositiveX:
-			case TextureType::TextureCube_NegativeX:
-			case TextureType::TextureCube_PositiveY:
-			case TextureType::TextureCube_NegativeY:
-			case TextureType::TextureCube_PositiveZ:
-			case TextureType::TextureCube_NegativeZ:
-			{
-				dsvDesc.Format = Utils::MapTypeDSV(texFormat);
-				dsvDesc.ViewDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-				if (multisampled)
-				{
-					dsvDesc.Texture2DMSArray.ArraySize = 1;
-					dsvDesc.Texture2DMSArray.FirstArraySlice = GetFirstArraySlice(type);
-				}
-				else
-				{
-					dsvDesc.Texture2DArray.ArraySize = 1;
-					dsvDesc.Texture2DArray.FirstArraySlice = GetFirstArraySlice(type);
-					dsvDesc.Texture2DArray.MipSlice = mipLevel;
-				}
-			}
 			case TextureType::TextureCube:
 			{
 				dsvDesc.Format = Utils::MapTypeDSV(texFormat);
@@ -277,61 +226,11 @@ namespace QCat
 			return dsvDesc;
 		}
 	}
-	void DirectXFrameBufferEx::AttachTexture(const std::string& name,AttachmentType attachType, TextureType type, uint32_t mipLevel)
+	void DirectXFrameBufferEx::AttachTexture(const std::string& name,AttachmentType attachType, TextureType type, uint32_t mipLevel, uint32_t layerStart, uint32_t layerLevel)
 	{
 		Ref<Texture> texture = m_Textures[name];
-
-		if (texture != nullptr)
-		{
-			TextureFormat format = texture->GetTextureFormat();
-			TextureType textype = texture->GetTextureType();
-			bool multisampled = texture->GetDesc().SampleCount > 1;
-
-			if (attachType == AttachmentType::Depth || attachType == AttachmentType::Stencil || attachType == AttachmentType::Depth_Stencil)
-			{
-				D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = Utils::SetDepthStencilInfo(format, type, texture->GetDesc().ArraySize, mipLevel, multisampled);
-				Ref<DX11DepthStencil> depthStencil;
-				if (textype == TextureType::Texture2D)
-				{
-					Ref<DX11Texture2D> texture2D = std::static_pointer_cast<DX11Texture2D>(texture);
-					depthStencil = DX11DepthStencil::Create(texture2D->GetDXTexture(), dsvDesc);
-				}
-				else if (textype == TextureType::TextureCube)
-				{
-					Ref<DX11TextureCube> textureArray = std::static_pointer_cast<DX11TextureCube>(texture);
-					depthStencil = DX11DepthStencil::Create(textureArray->GetDXTexture(), dsvDesc);
-				}
-				if (depthStencil == nullptr)
-					QCAT_CORE_ERROR("renderTarget is nullptr : DX FrameBufferEX Attach Error");
-
-				m_DepthAttachment = depthStencil;
-			}
-			else
-			{
-				D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = Utils::SetRenderTargetInfo(format, type, texture->GetDesc().ArraySize, mipLevel, multisampled);
-				Ref<DX11RenderTarget> renderTarget;
-				if (textype == TextureType::Texture2D)
-				{
-					Ref<DX11Texture2D> texture2D = std::static_pointer_cast<DX11Texture2D>(texture);
-					renderTarget = DX11RenderTarget::Create(texture2D->GetDXTexture(), rtvDesc);
-				}
-				else if (textype == TextureType::TextureCube)
-				{
-					Ref<DX11TextureCube> textureArray = std::static_pointer_cast<DX11TextureCube>(texture);
-					renderTarget = DX11RenderTarget::Create(textureArray->GetDXTexture(), rtvDesc);
-				}
-				if (renderTarget == nullptr)
-					QCAT_CORE_ERROR("renderTarget is nullptr : DX FrameBufferEX Attach Error");
-				m_ColorAttachments[Utils::GetAttachmentIndex(attachType)] = renderTarget;
-			}
-		}
-		else
-		{
-			QCAT_CORE_ERROR("texture is nullptr : DX FrameBufferEX Attach Error");
-		}
-		Bind();
 	}
-	void DirectXFrameBufferEx::AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)
+	void DirectXFrameBufferEx::AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel, uint32_t layerStart, uint32_t layerLevel)
 	{
 		if (texture != nullptr)
 		{
@@ -341,40 +240,15 @@ namespace QCat
 
 			if (attachType == AttachmentType::Depth || attachType == AttachmentType::Stencil || attachType == AttachmentType::Depth_Stencil)
 			{
-				D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = Utils::SetDepthStencilInfo(format,type,texture->GetDesc().ArraySize,mipLevel,multisampled);
-				Ref<DX11DepthStencil> depthStencil;
-				if (textype == TextureType::Texture2D)
-				{
-					Ref<DX11Texture2D> texture2D = std::static_pointer_cast<DX11Texture2D>(texture);
-					depthStencil = DX11DepthStencil::Create(texture2D->GetDXTexture(),dsvDesc);
-				}
-				else if (textype == TextureType::TextureCube)
-				{
-					Ref<DX11TextureCube> textureArray = std::static_pointer_cast<DX11TextureCube>(texture);
-					depthStencil = DX11DepthStencil::Create(textureArray->GetDXTexture(), dsvDesc);
-				}
-				if (depthStencil == nullptr)
-					QCAT_CORE_ERROR("renderTarget is nullptr : DX FrameBufferEX Attach Error");
-
-				m_DepthAttachment = depthStencil;
+				Ref<DX11DepthStencilView> depthStencilView;
+				depthStencilView = CreateRef<DX11DepthStencilView>(type, texture, format, mipLevel, layerStart, layerLevel);
+				m_DepthStencilView = depthStencilView;
 			}
 			else
 			{
-				D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = Utils::SetRenderTargetInfo(format, type, texture->GetDesc().ArraySize, mipLevel, multisampled);
-				Ref<DX11RenderTarget> renderTarget;
-				if (textype == TextureType::Texture2D)
-				{
-					Ref<DX11Texture2D> texture2D = std::static_pointer_cast<DX11Texture2D>(texture);
-					renderTarget = DX11RenderTarget::Create(texture2D->GetDXTexture(), rtvDesc);
-				}
-				else if (textype == TextureType::TextureCube)
-				{
-					Ref<DX11TextureCube> textureArray = std::static_pointer_cast<DX11TextureCube>(texture);
-					renderTarget = DX11RenderTarget::Create(textureArray->GetDXTexture(), rtvDesc);
-				}
-				if (renderTarget == nullptr)
-					QCAT_CORE_ERROR("renderTarget is nullptr : DX FrameBufferEX Attach Error");
-				m_ColorAttachments[Utils::GetAttachmentIndex(attachType)] = renderTarget;
+				Ref<DX11RenderTargetView> renderTargetView;
+				renderTargetView = CreateRef<DX11RenderTargetView>(type, texture, format, mipLevel, layerStart, layerLevel);
+				m_RenderTargets[Utils::GetAttachmentIndex(attachType)] = renderTargetView;
 			}		
 		}
 		else
@@ -383,6 +257,16 @@ namespace QCat
 		}
 		Bind();
 	}
+	void DirectXFrameBufferEx::AttachColorTexture(const Ref<RenderTargetView>& textureView, AttachmentType type)
+	{
+		m_RenderTargets[Utils::GetAttachmentIndex(type)] = dynamic_pointer_cast<DX11RenderTargetView>(textureView);
+	}
+	void DirectXFrameBufferEx::AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type)
+	{
+		m_DepthStencilView = dynamic_pointer_cast<DX11DepthStencilView>(textureView);
+	}
+
+
 	void DirectXFrameBufferEx::DetachTexture(AttachmentType attachType)
 	{
 		if (attachType == AttachmentType::Depth || attachType == AttachmentType::Stencil || attachType == AttachmentType::Depth_Stencil)
@@ -397,9 +281,9 @@ namespace QCat
 	}
 	void DirectXFrameBufferEx::DetachAll()
 	{
-		m_DepthAttachment = nullptr;
-		for (auto& attachment : m_ColorAttachments)
-			attachment = nullptr;
+		m_DepthStencilView.reset();
+		for (auto& renderTarget : m_RenderTargets)
+			renderTarget.reset();
 	}
 	Ref<Texture> DirectXFrameBufferEx::GetTexture(const std::string& name)
 	{
@@ -413,12 +297,12 @@ namespace QCat
 	{
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 
-		for (auto& rendertarget : m_ColorAttachments)
+		for (auto& rendertarget : m_RenderTargets)
 		{
 			if(rendertarget!=nullptr)
-				rendertarget->Clear(gfx, color);
+				rendertarget->Clear(color);
 		}
-		if(m_DepthAttachment)
-			m_DepthAttachment->Clear(gfx);
+		if(m_DepthStencilView)
+			m_DepthStencilView->Clear();
 	}
 }

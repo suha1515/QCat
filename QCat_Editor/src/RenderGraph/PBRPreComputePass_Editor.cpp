@@ -94,20 +94,21 @@ namespace QCat
 
 		m_IrradianceCubeMap = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 32, 32);
 		m_BRDFLutTexture = Texture2D::Create(TextureFormat::RG16_Float, smpDesc, 512, 512);
-		CubeMapPass->InitializeTexture("DepthBuffer", texDesc, smpDesc);
-
+		m_DepthTexture = Texture2D::Create(TextureFormat::DEPTH24STENCIL8, smpDesc, 512, 512);
+		
 		smpDesc.MIP = Filtering::LINEAR;
 		m_HdrCubeMap = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 512, 512, 8);
 		m_PrefilterMap = TextureCube::Create(TextureFormat::RGB16_Float, smpDesc, 128, 128, 5);
 		m_PrefilterMap->GenerateMipMap();
 
 		RenderCommand::SetCullMode(CullMode::None);
-		CubeMapPass->Bind();
 		RenderCommand::SetViewport(0, 0, 512, 512);
+		
+		CubeMapPass->Bind();
 		CubeMapPass->AttachTexture(m_BRDFLutTexture, AttachmentType::Color_0, TextureType::Texture2D, 0);
-		CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+		CubeMapPass->AttachTexture(m_DepthTexture, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		CubeMapPass->Clear();
-
+		
 		// Make BRDF
 		m_BRDFLutShader->Bind();
 		m_quad->Bind();
@@ -130,49 +131,46 @@ namespace QCat
 	void PBRPreComputePass::MakeTextureMap()
 	{
 		RenderCommand::SetCullMode(CullMode::None);
+		RenderCommand::SetViewport(0, 0, 512, 512);
+
+		auto desc = m_DepthTexture->GetDesc();
+	
+
+		if(desc.Width !=512&& desc.Height != 512)
+			m_DepthTexture->SetSize(512, 512);
 		
 		CubeMapPass->Bind();
-		RenderCommand::SetViewport(0, 0, 512, 512);
-		CubeMapPass->GetTexture("DepthBuffer")->SetSize(512, 512);
 		CubeMapPass->DetachAll();
-		CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+		CubeMapPass->AttachTexture(m_DepthTexture, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+
 		//HDR image to CubeMap
 		m_HdrToCubeMapShader->Bind();
-		//m_HdrToCubeMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		cameraConstantBuffer->Bind(0,Type::Vetex);
 		CameraBuffer.projection = captureProjection;
 		for (int i = 0; i < 6; ++i)
 		{
-			int index = (int)TextureType::TextureCube_PositiveX + i;
-			CubeMapPass->AttachTexture(m_HdrCubeMap, AttachmentType::Color_0, (TextureType)index, 0);
+			CubeMapPass->AttachTexture(m_HdrCubeMap, AttachmentType::Color_0,TextureType::Texture2D,0,i,1);
 			CubeMapPass->Clear();
-			//m_HdrToCubeMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
 			CameraBuffer.view = captureViews[i];
 			cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
 			m_HdrImage->Bind(0);
-			//m_HdrToCubeMapShader->UpdateBuffer();
 			cube->Draw();
 		}
 		m_HdrToCubeMapShader->UnBind();
 		m_HdrCubeMap->GenerateMipMap();
 
 		RenderCommand::SetViewport(0, 0, 32, 32);
-		CubeMapPass->GetTexture("DepthBuffer")->SetSize(32, 32);
+		m_DepthTexture->SetSize(32, 32);
 		CubeMapPass->DetachAll();
-		CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
-		CubeMapPass->AttachTexture(m_IrradianceCubeMap, AttachmentType::Color_0, TextureType::TextureCube_PositiveX, 0);
+		CubeMapPass->AttachTexture(m_DepthTexture, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 
 		m_IrradianceMapShader->Bind();
-		//m_IrradianceMapShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		for (int i = 0; i < 6; ++i)
 		{
-			int index = (int)TextureType::TextureCube_PositiveX + i;
-			CubeMapPass->AttachTexture(m_IrradianceCubeMap, AttachmentType::Color_0, (TextureType)index, 0);
+			CubeMapPass->AttachTexture(m_IrradianceCubeMap, AttachmentType::Color_0,TextureType::Texture2D, 0,i,1);
 			CubeMapPass->Clear();
 			CameraBuffer.view = captureViews[i];
 			cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
-			//m_IrradianceMapShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
-			//m_IrradianceMapShader->UpdateBuffer();
 			m_HdrCubeMap->Bind(0);
 			cube->Draw();
 		}
@@ -182,32 +180,27 @@ namespace QCat
 
 		m_PrefilterShader->Bind();
 		roughnessConstantBuffer->Bind(1, Type::Pixel);
-		//m_PrefilterShader->SetMat4("u_Projection", captureProjection, ShaderType::VS);
 		unsigned int maxMipLevels = 5;
 		for (int mip = 0; mip < maxMipLevels; ++mip)
 		{
 			unsigned int mipWidth = 128 * std::pow(0.5, mip);
 			unsigned int mipHeight = 128 * std::pow(0.5, mip);
-
-			CubeMapPass->GetTexture("DepthBuffer")->SetSize(mipWidth, mipHeight);
-			CubeMapPass->DetachAll();
-			CubeMapPass->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 			RenderCommand::SetViewport(0, 0, mipWidth, mipHeight);
 
+			m_DepthTexture->SetSize(mipWidth, mipHeight);
+			CubeMapPass->DetachAll();
+			CubeMapPass->AttachTexture(m_DepthTexture, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
+
 			float roughtness = (float)mip / (float)(maxMipLevels - 1);
-			//m_PrefilterShader->SetFloat("roughness", roughtness, ShaderType::PS);
 			roughBuffer.roughtness = roughtness;
 			roughnessConstantBuffer->SetData(&roughBuffer,sizeof(roughBuffer),0);
 			for (int i = 0; i < 6; ++i)
 			{
-				int index = (int)TextureType::TextureCube_PositiveX + i;
-				//m_PrefilterShader->SetMat4("u_View", captureViews[i], ShaderType::VS);
 				CameraBuffer.view = captureViews[i];
 				cameraConstantBuffer->SetData(&CameraBuffer, sizeof(CameraData), 0);
-				CubeMapPass->AttachTexture(m_PrefilterMap, AttachmentType::Color_0, (TextureType)index, mip);
+				CubeMapPass->AttachTexture(m_PrefilterMap, AttachmentType::Color_0, TextureType::Texture2D, mip,i,1);
 				CubeMapPass->Clear();
 				m_HdrCubeMap->Bind(0);
-				//m_PrefilterShader->UpdateBuffer();
 				cube->Draw();
 			}
 		}

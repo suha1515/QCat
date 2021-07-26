@@ -70,6 +70,7 @@ namespace QCat
 			float padding;
 			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
 			float isActive=0.0f;
+			int isDebug = 0;
 		};
 		struct PointLight
 		{

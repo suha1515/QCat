@@ -53,10 +53,11 @@ namespace QCat
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{
-		m_Framebuffer->Bind();
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
 		RenderCommand::SetCullMode(CullMode::Back);
+
+		m_Framebuffer->Bind();
 		m_Framebuffer->DetachAll();
 		m_Framebuffer->AttachTexture(m_ColorBuffer, AttachmentType::Color_0, TextureType::Texture2D, 0);
 		m_Framebuffer->AttachTexture(m_DepthBuffer, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
@@ -95,6 +96,7 @@ namespace QCat
 				light.dirlight.diffuse = comp.diffuse;
 				light.dirlight.isActive = 1.0f;
 				light.dirlight.lightDirection = comp.lightDirection;
+				light.dirlight.isDebug = comp.isDebug;
 			}
 			else if (comp.type == LightComponent::LightType::Point && pointLightCount < 4)
 			{
@@ -115,8 +117,7 @@ namespace QCat
 		transformConstantBuffer->Bind(1, Type::Vetex);
 		materialConstantBuffer->Bind(2, Type::Pixel);
 		lightConstantBuffer->Bind(3, Type::Pixel);
-		dirlighbuffer->Bind(4, Type::Vetex);
-		//dirlighbuffer->Bind(4, Type::Pixel);
+		dirlighbuffer->Bind(4, Type::Pixel);
 
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
 		for (auto entity : group)

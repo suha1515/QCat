@@ -584,7 +584,7 @@ namespace QCat
 					ImGui::Checkbox("See ShadowMap", &shadowmap);
 					if (shadowmap)
 					{
-						if (component.type == LightComponent::LightType::Point)
+						if (component.type == LightComponent::LightType::Point && RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 						{
 							uv1 = ImVec2(0.0f, 1.0f);
 							uv2 = ImVec2(1.0f, 0.0f);
@@ -610,7 +610,10 @@ namespace QCat
 								component.textureindex = selectIndex;
 							}
 						}
+						component.isDebug = true;
 					}
+					else
+						component.isDebug = false;
 
 					DrawVec3Control("LightDirection", component.lightDirection);
 					ImGui::DragFloat("Constant", &component.constant, 0.1f);

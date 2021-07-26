@@ -30,7 +30,7 @@ namespace QCat
 			}			
 		}
 
-		if (ColorBufferCount > 1)
+		if (ColorBufferCount >=1)
 		{
 			std::vector<GLenum> buffers;
 			for (int i = 0; i < ColorBufferCount; ++i)
@@ -38,6 +38,7 @@ namespace QCat
 				buffers.push_back(GL_COLOR_ATTACHMENT0 + i);
 			}
 			glDrawBuffers(ColorBufferCount, buffers.data());
+			
 		}
 		else if (ColorBufferCount == 0)
 		{
@@ -45,6 +46,8 @@ namespace QCat
 			glReadBuffer(GL_NONE);
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		m_RenderTargets.resize(8);
+		m_DepthStencilView = nullptr;
 	}
 	OpenGLFrameBufferEx::~OpenGLFrameBufferEx()
 	{
@@ -112,12 +115,6 @@ namespace QCat
 				case TextureType::Texture2D:			 return multisampled ? GL_TEXTURE_2D_MULTISAMPLE :GL_TEXTURE_2D;
 				case TextureType::Texture2DArray:			 return multisampled ? GL_TEXTURE_2D_MULTISAMPLE_ARRAY : GL_TEXTURE_2D_ARRAY;
 				case TextureType::TextureCube:			 return GL_TEXTURE_CUBE_MAP;
-				case TextureType::TextureCube_PositiveX: return GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-				case TextureType::TextureCube_NegativeX: return GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-				case TextureType::TextureCube_PositiveY: return GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-				case TextureType::TextureCube_NegativeY: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-				case TextureType::TextureCube_PositiveZ: return GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-				case TextureType::TextureCube_NegativeZ: return GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
 			}
 		}
 		void BindTexture(TextureType format, bool multisampled, uint32_t id)
@@ -125,7 +122,7 @@ namespace QCat
 			glBindTexture(GetTexTarget(format, multisampled), id);
 		}
 	}
-	void OpenGLFrameBufferEx::AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel)
+	void OpenGLFrameBufferEx::AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel, uint32_t layerStart, uint32_t layerLevel)
 	{
 		Ref<Texture> texture = m_Textures[name];
 		if (texture != nullptr)
@@ -144,19 +141,48 @@ namespace QCat
 		}	
 	}
 
-	void OpenGLFrameBufferEx::AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)
+	void OpenGLFrameBufferEx::AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel, uint32_t layerStart, uint32_t layerLevel )
 	{
 		if (texture != nullptr)
-		{
+		{			
 			bool multisampled = texture->GetDesc().SampleCount > 1;
 			GLenum attachmentIndex = Utils::GetAttachmentType(attachType);
 			GLint texId = (GLint)texture->GetTexture();
+			GLint target = Utils::GetTexTarget(type, multisampled);
+			if (texture->GetDesc().Type == TextureType::TextureCube &&type == TextureType::Texture2D)
+			{
+				target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layerStart;
+			}
 			if (type == TextureType::TextureCube)
 				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, texId, mipLevel);
 			else
-				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, Utils::GetTexTarget(type, multisampled), texId, mipLevel);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, texId, mipLevel);
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");
+			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");	
+			/*uint32_t index = (uint32_t)attachType;
+			if (attachType <= AttachmentType::Color_7)
+			{
+				if (m_RenderTargets.size() > index)
+				{
+					if (m_RenderTargets[index] != nullptr)
+						m_RenderTargets[index].reset();
+
+					Ref<OpenGLRenderTargetView> targetview = CreateRef<OpenGLRenderTargetView>(type, texture, texture->GetDesc().Format, mipLevel, layerStart, layerLevel);
+					targetview->Bind(m_RendererID, attachType);
+					m_RenderTargets[index] = targetview;
+				}
+				else
+					QCAT_CORE_ERROR("RenderTarget Attachment Point is over RenderTarget Vector Size!");
+			}
+			else
+			{
+				if (m_DepthStencilView != nullptr)
+					m_DepthStencilView.reset();
+
+				Ref<OpenGLDepthStencilView> depthView = CreateRef<OpenGLDepthStencilView>(type, texture, texture->GetDesc().Format, mipLevel, layerStart, layerLevel);
+				depthView->Bind(m_RendererID, attachType);
+				m_DepthStencilView = depthView;
+			}*/
 		}
 		else
 		{
@@ -184,8 +210,6 @@ namespace QCat
 			QCAT_CORE_ERROR("FrameBuffer attach error texture is nullptr");
 	}
 
-
-
 	void OpenGLFrameBufferEx::DetachTexture(AttachmentType attachType)
 	{
 		GLenum attachmentIndex = Utils::GetAttachmentType(attachType);
@@ -194,6 +218,14 @@ namespace QCat
 
 	void OpenGLFrameBufferEx::DetachAll()
 	{
+		if (m_DepthStencilView)
+			m_DepthStencilView.reset();
+		for (auto& rendertarget : m_RenderTargets)
+		{
+			if (rendertarget)
+				rendertarget.reset();
+		}
+	
 		unsigned int colorCount = 0;
 		for (auto& sepc : m_AttachmentSpecifications)
 		{
@@ -205,7 +237,7 @@ namespace QCat
 				colorCount++;
 		}
 
-		for(int i=0;i<colorCount;++i)
+		for (int i = 0; i < colorCount; ++i)
 			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, 0, 0);
 	}
 

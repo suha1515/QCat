@@ -264,6 +264,7 @@ namespace QCat
 		Ref<Texture> shadowMap;
 		Ref<Texture> debugMap;
 		int textureindex = 0;
+		bool isDebug = false;
 	};
 	struct AnimatorComponent
 	{

@@ -23,6 +23,7 @@ namespace QCat
 		Ref<Texture> m_IrradianceCubeMap;
 		Ref<Texture> m_HdrCubeMap;
 		Ref<Texture> m_BRDFLutTexture;
+		Ref<Texture> m_DepthTexture;
 		Ref<Texture> m_PrefilterMap;
 
 		Ref<Shader> m_BRDFLutShader;

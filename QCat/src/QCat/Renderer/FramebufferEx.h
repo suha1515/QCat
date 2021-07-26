@@ -38,8 +38,8 @@ namespace QCat
 		virtual void UnBind() = 0;
 		
 		virtual void InitializeTexture(const std::string& name,const Texture_Desc& texDesc,const Sampler_Desc& samplerDesc)=0;
-		virtual void AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel) = 0;
-		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel)=0;
+		virtual void AttachTexture(const std::string& name, AttachmentType attachType, TextureType type, uint32_t mipLevel=0,uint32_t layerStart=0,uint32_t layerLevel=1) = 0;
+		virtual void AttachTexture(const Ref<Texture>& texture, AttachmentType attachType, TextureType type, uint32_t mipLevel=0,uint32_t layerStart = 0, uint32_t layerLevel = 1)=0;
 
 		virtual void AttachColorTexture(const Ref<RenderTargetView>& textureView, AttachmentType type)=0;
 		virtual void AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type) = 0;

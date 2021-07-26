@@ -32,8 +32,6 @@ namespace QCat
 		colorBuffer.Height = 1024;
 		colorBuffer.Width = 1024;
 
-
-
 		m_PointLightShadow = FrameBufferEx::Create(pointdepthbuffer);
 		m_DirectionalLightShadow = FrameBufferEx::Create(directiondepthbuffer);
 		m_SpotLightShadow = FrameBufferEx::Create(spotLightDepthBuffer);
@@ -121,8 +119,8 @@ namespace QCat
 		float incrementZ = (nearZ + farZ) / 4;
 
 		m_cascadeEnd[0] = nearZ;
-		m_cascadeEnd[1] = 5.f;
-		m_cascadeEnd[2] = 14.f;
+		m_cascadeEnd[1] = 6.f;
+		m_cascadeEnd[2] = 18.f;
 		m_cascadeEnd[3] = farZ;
 
 		for (uint32_t i = 0; i < 3; ++i)
@@ -148,6 +146,7 @@ namespace QCat
 
 			glm::vec4 frustumCornersL[8];
 			glm::vec3 centerFrusta = glm::vec3(0.0f);
+			
 
 			glm::vec4 centerPos = glm::vec4(0.0f);
 			for (uint32_t j = 0; j < 8; ++j)
@@ -157,12 +156,24 @@ namespace QCat
 			}
 			centerPos /= 8.0f;
 
+		/*	glm::mat4 lightMatrix = glm::lookAt(glm::vec3(centerPos), glm::vec3(centerPos)+ lightDirection, glm::vec3(0.0f, 1.0f, 0.0f));
+			for (uint32_t j = 0; j < 8; j++)
+			{
+				frustumCornersL[j] = lightMatrix * frustumCorners[j];
+				centerPos += frustumCornersL[j];
+			}
+			centerPos /= 8.0f;*/
 			float radius = 0.0f;
 			for (uint32_t j = 0; j < 8; ++j)
 			{
 				float distance = glm::length(frustumCorners[j] - centerPos);
 				radius = std::max(radius, distance);
 			}
+			/*for (uint32_t j = 0; j < 8; ++j)
+			{
+				float distance = glm::length(frustumCornersL[j] - centerPos);
+				radius = std::max(radius, distance);
+			}*/
 			// why we need this code?
 			radius = std::ceil(radius * 16.0f) / 16.0f;
 
@@ -170,12 +181,16 @@ namespace QCat
 			glm::vec3 maxExtents = glm::vec3(radius, radius, radius);
 			glm::vec3 minExtents = -maxExtents;
 
-			glm::vec3 shadowCamPos = glm::vec3(centerPos) - (glm::normalize(lightDirection) * (-minExtents.z));
+			glm::vec3 shadowCamPos = glm::vec3(centerPos) + (glm::normalize(lightDirection) * (minExtents.z));
 			glm::mat4 lightMatrix = glm::lookAt(shadowCamPos, glm::vec3(centerPos), glm::vec3(0.0f, 1.0f, 0.0f));
 
+			//glm::mat4 lightMatrix = glm::lookAt(glm::vec3(centerPos), glm::vec3(centerPos) +lightDirection, glm::vec3(0.0f, 1.0f, 0.0f));
 			glm::vec3 cascadeExtents = maxExtents - minExtents;
-			m_shadowOrthoProj[i] = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, cascadeExtents.z) * lightMatrix;
-
+			if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+				m_shadowOrthoProj[i] = glm::orthoLH_ZO(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, cascadeExtents.z) * lightMatrix;
+			else
+				m_shadowOrthoProj[i] = glm::orthoLH_NO(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y,0.0f, cascadeExtents.z) * lightMatrix;
+			//m_shadowOrthoProj[i] = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, minExtents.z,maxExtents.z) * lightMatrix;
 		}
 	}
 	void ShadowMappingPass::Execute(Ref<Scene>& scene)
@@ -329,7 +344,7 @@ namespace QCat
 				m_PointLightShadow->Bind();
 				RenderCommand::SetViewport(0, 0, 1024, 1024);
 				m_PointLightShadow->DetachAll();
-				m_PointLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::TextureCube, 0);
+				m_PointLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::TextureCube, 0,0,6);
 				m_PointLightShadow->Clear();
 
 				m_PointshadowMappingShader->Bind();

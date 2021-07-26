@@ -40,7 +40,7 @@ namespace QCat
 	};
 	enum class AttachmentType
 	{
-		Color_0=0,Color_1,Color_2,Color_3,Color_4,
+		Color_0=0,Color_1,Color_2,Color_3,Color_4,Color_5,Color_6,Color_7,
 		Depth,Stencil,Depth_Stencil
 	};
 	enum class ColorAttachmentType
@@ -57,13 +57,7 @@ namespace QCat
 		Texture1D,Texture1DArray,
 		Texture2D, Texture2DArray, 
 		TextureCube,TextureCubeArray,
-		Texture3D,
-		TextureCube_PositiveX,
-		TextureCube_NegativeX,
-		TextureCube_PositiveY,
-		TextureCube_NegativeY,
-		TextureCube_PositiveZ,
-		TextureCube_NegativeZ
+		Texture3D
 	};
 	enum class TextureCubeFace
 	{

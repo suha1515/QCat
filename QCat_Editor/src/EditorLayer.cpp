@@ -71,10 +71,7 @@ namespace QCat
 
 		m_ActiveScene = CreateRef<Scene>();
 		
-		//ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
-
-		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.01f, 100.0f);
-		//m_EditorCamera.SetPosition({ 0.0f,0.0f,-2.0f });
+		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.05f,50.f);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
@@ -96,50 +93,6 @@ namespace QCat
 		imgSamp.MIN = Filtering::LINEAR;
 		imgSamp.MAG = Filtering::LINEAR;
 		imgSamp.MIP = Filtering::NONE;
-
-		//m_Camera = m_ActiveScene->CreateEntity("Camera");
-
-		//auto& tc = m_Camera.GetComponent<TransformComponent>();
-		//tc.Translation = { 0.0f,0.0f,-2.0f };
-
-		//auto& camera = m_Camera.AddComponent<CameraComponent>();
-		//camera.Camera.SetViewportSize(1600.0f, 900.0f);
-		//camera.Camera.SetPerspective(1, 0.01f, 100.0f);
-
-		//light1 = m_ActiveScene->CreateEntity("PointLight");
-
-		//light1.GetComponent<TransformComponent>().Translation = glm::vec3(0,0,-2.0f);
-		//auto& comp = light1.AddComponent<LightComponent>();
-		////comp.type = LightComponent::LightType::Point;
-		//comp.diffuse = { 1.0f,1.0f,1.0f };
-
-		//
-		//goldenBall;
-		//goldenBall.SetTexture("Asset/textures/PBR/gold/albedo.png", imgSamp, Material::TextureType::Diffuse);
-		//goldenBall.SetTexture("Asset/textures/PBR/gold/normal.png", imgSamp, Material::TextureType::Normal);
-		//goldenBall.SetTexture("Asset/textures/PBR/gold/metallic.png", imgSamp, Material::TextureType::Metallic);
-		//goldenBall.SetTexture("Asset/textures/PBR/gold/roughness.png", imgSamp, Material::TextureType::Roughness);
-		//goldenBall.SetTexture("Asset/textures/PBR/gold/ao.png", imgSamp, Material::TextureType::AmbientOcclusion);
-
-		//Entity ball = m_ActiveScene->CreateEntity("GoldenBall");
-		//ball.GetComponent<TransformComponent>().Translation = { -1.0f,0.0f,0.0f };
-		//ball.AddComponent<MeshComponent>("Cube");
-		//ball.AddComponent<MaterialComponent>(goldenBall);
-
-		//model = ModelLoader::LoadModel("Asset/model/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX", m_ActiveScene);
-
-		//Material gunMat;
-		//imgSamp.MIP = Filtering::NONE;
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_A.tga", imgSamp, Material::TextureType::Diffuse);
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_M.tga", imgSamp, Material::TextureType::Metallic);
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_N.tga", imgSamp, Material::TextureType::Normal);
-		//gunMat.SetTexture("Asset/model/Cerberus_by_Andrew_Maximov/textures/Cerberus_R.tga", imgSamp, Material::TextureType::Roughness);
-
-		//SetMaterial(model, gunMat,m_ActiveScene.get());
-		//model.GetComponent<TransformComponent>().Scale = { 0.01f,0.01f,0.01f };
-		//model.GetComponent<TransformComponent>().Rotation = { 3.2f,1.6f,0.0f };
-		//model.GetComponent<TransformComponent>().Translation = { 0.0,-0.4f,-1.0f };
-		//UpdateTransform(model, glm::mat4(1.0f), m_ActiveScene.get());
 	}
 
 	void EditorLayer::OnDetach()
@@ -179,20 +132,8 @@ namespace QCat
 		m_EditorCamera.OnUpdate(ts);
 		*viewMatrix = m_EditorCamera.GetViewMatrix();
 		*projectionMatrix = m_EditorCamera.GetProjection();
-		//UpdateTransform(model, glm::mat4(1.0f));
-		// Render
-		// Reset stats here
-		//m_Framebuffer->Bind();
-		//m_Framebuffer->Clear();
-		
-		/*m_FrameBufferEx->Bind();
-		m_FrameBufferEx->AttachTexture("ColorBuffer1", AttachmentType::Color_0, TextureType::Texture2D,0);
-		m_FrameBufferEx->AttachTexture("DepthBuffer", AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
-		m_FrameBufferEx->Clear();*/
+
 		EditorPBRRenderGraph.Execute(m_ActiveScene);
-		// clear out entity ID attacment to -1
-		//int value = -1;
-		//m_Framebuffer->ClearAttachment(1, &value);
 
 		// Update Scene
 		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
@@ -344,7 +285,6 @@ namespace QCat
 		{
 			
 			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
-			
 
 		}
 

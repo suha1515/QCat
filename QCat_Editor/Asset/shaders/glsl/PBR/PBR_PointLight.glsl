@@ -31,19 +31,12 @@ struct VertexOutput
 	vec3 v_Normal;
 	vec3 FragPos;
 	mat3 TBN;
-	vec4 lightSpacePos[3];
 	float clipspaceZ;
 };
 layout(location = 0 ) out VertexOutput Output;
 
 void main()
 {
-	//cascaed light Map
-	for(int i=0;i<3;++i)
-	{
-		Output.lightSpacePos[i] = LightMat[i]  *u_Transform* vec4(a_Position,1.0f);
-	}
-	
 	Output.TexCoords = a_TexCoord;
 	mat3 normalMatrix = mat3(transpose(u_InvTransform));
 	Output.v_Normal =normalMatrix * a_Normal;
@@ -90,6 +83,7 @@ struct DirLight
 	vec3 lightDirection;
 	vec3 diffuse;
 	float isActive;
+	bool isDebug;
 };
 layout(std140,binding = 0) uniform Camera
 {
@@ -119,7 +113,6 @@ struct VertexOutput
 	vec3 v_Normal;
 	vec3 FragPos;
 	mat3 TBN;
-	vec4 lightSpacePos[3];
 	float clipspaceZ;
 };
 layout(location = 0 ) in VertexOutput Input;
@@ -277,6 +270,19 @@ void main()
 	F0 = mix(F0,albedo,metallic);
 
 	float shadowFactor=0.0f;
+	vec3 checkcolor[3];
+	checkcolor[0] = vec3(1.0,0.0,0.0);
+	checkcolor[1] = vec3(0.0,0.0,1.0);
+	checkcolor[2] = vec3(0.0,1.0,0.0);
+	vec3 debugColor = vec3(0.0);
+
+	vec4 lightSpacePos[3];
+	//cascaed light Map
+	for(int i=0;i<3;++i)
+	{
+		lightSpacePos[i] = LightMat[i]  *vec4(Input.FragPos,1.0f);
+	}
+
 	//DirLight
 	for(int i=0;i<1;++i)
 	{
@@ -286,7 +292,8 @@ void main()
 		{
 			if (Input.clipspaceZ <= cascaedEndClipSpace[i]) 
 			{
-				shadowFactor = CalcShadowFactor(i, Input.lightSpacePos[i]);
+				shadowFactor = CalcShadowFactor(i,lightSpacePos[i]);
+				debugColor =checkcolor[i];
 				break;   
 			}
 		}
@@ -320,10 +327,11 @@ void main()
 	vec3 ambient = (kD * diffuse + specular) * ao;
 
 	
-	Lo = mix(vec3(0.0f),Lo,shadowFactor);
-	//Lo = Lo * shadowFactor;
-
-	result = (ambient + Lo);
+	//Lo = mix(vec3(0.0f),Lo,shadowFactor);
+	//Lo = Lo +  * shadowFactor;
+	if(dirLight.isDebug)
+		Lo +=debugColor;
+	result = (ambient + (Lo)*shadowFactor);
 
 
 	//HDR toneMapping

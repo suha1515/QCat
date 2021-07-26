@@ -271,7 +271,7 @@ namespace QCat
 	}
 	void OpenGlTexture2DArray::GenerateMipMap()
 	{
-		if (desc.MipLevels > 0 && smpdesc.MIP != Filtering::NONE)
+		if (desc.MipLevels > 1 && smpdesc.MIP != Filtering::NONE)
 			glGenerateTextureMipmap(m_renderID);
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap!");
@@ -317,11 +317,11 @@ namespace QCat
 	{
 		QCAT_PROFILE_FUNCTION();
 		uint32_t width=0, height=0, channels=0;	
-		Validate(GL_TEXTURE_CUBE_MAP, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat);
+		
 		Utils::SetTextureParameter(m_renderID, desc);
 	
 		void*pData =  Utils::LoadImageFromFile(imgPathes[0].c_str(), gammaCorrection, flip, width, height, channels, m_Format, m_InternalFormat, m_DataFormat);
-
+		Validate();
 		SetData(pData, width * height * channels, (uint32_t)TextureCubeFace::TextureCube_PositiveX );
 		if (pData != nullptr)
 		{
@@ -375,7 +375,7 @@ namespace QCat
 		this->desc.MipLevels = m_mipLevel;
 		this->desc.SampleCount = 0;
 
-		Validate(GL_TEXTURE_CUBE_MAP, 0, m_InternalFormat, width, height, 0, m_Format, m_DataFormat);
+		Validate();
 		Utils::SetTextureParameter(m_renderID, desc);
 	}
 	OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
@@ -384,7 +384,7 @@ namespace QCat
 
 		glDeleteTextures(1, &m_renderID);
 	}
-	void OpenGLCubeMapTexture::Validate(GLenum target, GLenum format, GLenum internalFormat, GLenum dataFormat, uint32_t width, uint32_t heigth, uint32_t mipLevels, uint32_t samples)
+	void OpenGLCubeMapTexture::Validate()
 	{
 		if (m_renderID > 0)
 		{
@@ -393,16 +393,23 @@ namespace QCat
 		}
 		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_renderID);;
 		if (desc.SampleCount > 1)
-			glTexStorage2DMultisample(target, samples, m_InternalFormat, m_width, m_height, true);
+			glTexStorage2DMultisample(GL_TEXTURE_CUBE_MAP, desc.SampleCount, m_InternalFormat, m_width, m_height, true);
 		else
 			glTextureStorage2D(m_renderID, m_mipLevel, m_InternalFormat, m_width, m_height);		
+
+		//if (m_mipLevel > 1 && smpdesc.MIP != Filtering::NONE)
+		//{
+		//	glGenerateTextureMipmap(m_renderID);
+		//}
 
 		sampler = SamplerState::Create(smpdesc);
 	}
 	void OpenGLCubeMapTexture::GenerateMipMap()
 	{
-		if (m_mipLevel > 0 && smpdesc.MIP != Filtering::NONE)
+		if (m_mipLevel > 1 && smpdesc.MIP != Filtering::NONE)
+		{
 			glGenerateTextureMipmap(m_renderID);
+		}
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap!");
 	}
@@ -529,7 +536,7 @@ namespace QCat
 		glFramebufferTexture(GL_FRAMEBUFFER, AttachmentType1, 0, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-	OpenGLTextureShaderView::OpenGLTextureShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
+	OpenGLTextureShaderView::OpenGLTextureShaderView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
 		:m_renderID(0)
 	{	
 		this->type = ViewType::ShaderResourceView;
@@ -592,7 +599,7 @@ namespace QCat
 	{
 		glBindTextureUnit(slot, m_renderID);
 	}
-	OpenGLRenderTargetView::OpenGLRenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+	OpenGLRenderTargetView::OpenGLRenderTargetView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
 		:m_renderID(0), m_startMip(startMip)
 	{
 		this->type = ViewType::RenderTargetView;
@@ -605,11 +612,10 @@ namespace QCat
 		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
 		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
 
-		//GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
 		uint32_t srcTexMipLevels = srcdesc.MipLevels;
 		uint32_t srcTexLayerNum = srcdesc.ArraySize;
 		GLuint srcTexID = (GLuint)texture->GetTexture();
-
+		GLenum error;
 		glGenTextures(1, &m_renderID);
 		switch (type)
 		{
@@ -624,10 +630,23 @@ namespace QCat
 			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for RenderTargetView!");
 			break;
 		}
+		error = glGetError();
 		this->viewDesc = srcdesc;
 		this->viewDesc.ArraySize = numlayer;
 		this->viewDesc.MipLevels = 1;
 		this->viewDesc.Format = format;
+
+		uint32_t temp_width = srcdesc.Width;
+		uint32_t temp_height = srcdesc.Height;
+		for (int i = 0; i < startMip; ++i)
+		{
+			if (temp_width == 1 || temp_height == 1)
+				break;
+			temp_width = std::max<unsigned int>(1, (temp_width / 2));
+			temp_height = std::max<unsigned int>(1, (temp_height / 2));
+		}
+		this->viewDesc.Width = temp_width;
+		this->viewDesc.Height = temp_height;
 		this->viewDesc.Type = type;
 	}
 	OpenGLRenderTargetView::~OpenGLRenderTargetView()
@@ -645,22 +664,28 @@ namespace QCat
 			switch (viewDesc.Type)
 			{
 			case TextureType::Texture1D:
-				glFramebufferTexture1D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				//glFramebufferTexture1D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				glNamedFramebufferTexture(framebufferid, attachmentIndex, m_renderID, m_startMip);
 				break;
 			case TextureType::Texture2D:
 				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				//glNamedFramebufferTexture(framebufferid, attachmentIndex, m_renderID, m_startMip);
 				break;
 			case TextureType::Texture1DArray:
 			case TextureType::Texture2DArray:
 			case TextureType::Texture3D:
-				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, m_renderID, m_startMip);
+				//glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, m_renderID, m_startMip);
+				glNamedFramebufferTexture(framebufferid, attachmentIndex, m_renderID, m_startMip);
 				break;
 			}
+
+			GLenum status = glCheckNamedFramebufferStatus(framebufferid,GL_FRAMEBUFFER);
+			QCAT_CORE_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status is bad");
 		}
 		else
 			QCAT_CORE_ERROR("RenderTarget Bind Error! : Wrong Type for Binding");
 	}
-	OpenGLDepthStencilView::OpenGLDepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+	OpenGLDepthStencilView::OpenGLDepthStencilView(TextureType type,const  Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
 		:m_renderID(0),m_startMip(startMip)
 	{
 		this->type = ViewType::DepthStencilView;
@@ -677,7 +702,6 @@ namespace QCat
 		uint32_t srcTexMipLevels = srcdesc.MipLevels;
 		uint32_t srcTexLayerNum = srcdesc.ArraySize;
 		GLuint srcTexID = (GLuint)texture->GetTexture();
-		GLuint error;
 		glGenTextures( 1, &m_renderID);
 		switch (type)
 		{
@@ -685,8 +709,7 @@ namespace QCat
 		case TextureType::Texture1DArray:
 		case TextureType::Texture2D:
 		case TextureType::Texture2DArray:
-			glTextureView(m_renderID, target, srcTexID, internalformat, startMip, 1, startLayer, numlayer);
-			error = glGetError();
+			glTextureView(m_renderID, target, srcTexID, internalformat, startMip , 1, startLayer, numlayer);
 			break;
 		default:
 			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for DepthStencilView!");
@@ -696,6 +719,17 @@ namespace QCat
 		this->viewDesc.ArraySize = numlayer;
 		this->viewDesc.MipLevels = 1;
 		this->viewDesc.Format = format;
+		uint32_t temp_width = srcdesc.Width;
+		uint32_t temp_height = srcdesc.Height;
+		for (int i = 0; i < startMip; ++i)
+		{
+			if (temp_width == 1 || temp_height == 1)
+				break;
+			temp_width = std::max<unsigned int>(1, (temp_width / 2));
+			temp_height = std::max<unsigned int>(1, (temp_height / 2));
+		}
+		this->viewDesc.Width = temp_width;
+		this->viewDesc.Height = temp_height;
 		this->viewDesc.Type = type;
 	}
 	OpenGLDepthStencilView::~OpenGLDepthStencilView()
@@ -714,15 +748,18 @@ namespace QCat
 			switch (viewDesc.Type)
 			{
 			case TextureType::Texture1D:
-				glFramebufferTexture1D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				//glFramebufferTexture1D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				glNamedFramebufferTexture(framebufferid, attachmentIndex, m_renderID, m_startMip);
 				break;
 			case TextureType::Texture2D:
-				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				//glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, m_renderID, m_startMip);
+				glNamedFramebufferTexture(framebufferid, attachmentIndex, m_renderID, m_startMip);
 				break;
 			case TextureType::Texture1DArray:
 			case TextureType::Texture2DArray:
 			case TextureType::Texture3D:
-				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, m_renderID,m_startMip);
+				glNamedFramebufferTexture(framebufferid, attachmentIndex, m_renderID, m_startMip);
+				//glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, m_renderID,m_startMip);
 				break;
 			}
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

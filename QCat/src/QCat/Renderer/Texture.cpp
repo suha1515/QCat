@@ -36,7 +36,7 @@ namespace  QCat
 		{
 		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
 		case RenderAPI::API::OpenGL:		return CreateRef<OpenGlTexture2DArray>(format, desc, width,height,depth, mipLevel, samples);
-		//case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2DArray>(path, desc, mipLevel, samples, flip, gamacorrection);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2DArray>(format, desc, width, height, depth, mipLevel, samples);
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
@@ -47,7 +47,7 @@ namespace  QCat
 		{
 		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
 		case RenderAPI::API::OpenGL:		return CreateRef<OpenGlTexture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
-		//case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2D>(path, desc, mipLevel, samples, flip, gamacorrection);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
@@ -94,7 +94,7 @@ namespace  QCat
 		return util;
 	}
 
-	Ref<TextureShaderView> TextureShaderView::Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
+	Ref<TextureShaderView> TextureShaderView::Create(TextureType type, const Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -106,7 +106,7 @@ namespace  QCat
 		return nullptr;
 	}
 
-	Ref<RenderTargetView> RenderTargetView::Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
+	Ref<RenderTargetView> RenderTargetView::Create(TextureType type, const Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -118,7 +118,7 @@ namespace  QCat
 		return nullptr;
 	}
 
-	Ref<DepthStencilView> DepthStencilView::Create(TextureType type, Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip,uint32_t startLayer, uint32_t numlayer)
+	Ref<DepthStencilView> DepthStencilView::Create(TextureType type, const Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip,uint32_t startLayer, uint32_t numlayer)
 	{
 		switch (Renderer::GetAPI())
 		{

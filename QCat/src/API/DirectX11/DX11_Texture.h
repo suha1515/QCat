@@ -10,6 +10,14 @@ namespace QCat
 	// Texture2D[] is each Textures dont have to be same foramt or data but Texture2DArray must be same
 	// so when you use Texute2D[] in your hlsl code each Texture2D has own slot for using
 	// Like Texuture2D[0]'s slot 0 and Texture2D[1]'s slot is 1
+	class DX11Texture1D :public Texture1D
+	{
+
+	};
+	class DX11Texture1DArray : public Texture1DArray
+	{
+
+	};
 	class DX11Texture2D : public Texture2D
 	{
 	public:
@@ -42,6 +50,40 @@ namespace QCat
 		void Invalidate(void* pData);
 	private:
 		std::string m_path;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
+		DXGI_FORMAT m_dataFormat;
+		D3D11_TEXTURE2D_DESC textureDesc;
+	};
+	class DX11Texture2DArray : public Texture2DArray
+	{
+	public:
+		DX11Texture2DArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel = 1, unsigned int samples = 1);
+		DX11Texture2DArray(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamacorrection = false);
+		virtual ~DX11Texture2DArray() {};
+
+		virtual unsigned int GetWidth() const override { return desc.Width; }
+		virtual unsigned int GetHeight() const override { return desc.Height; }
+		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+		virtual void* GetTextureHandle() const override { return (void*)pTexture.Get(); };
+
+		virtual void GenerateMipMap() override;
+
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override;
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) override;
+		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
+
+		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) {};
+
+		virtual void Bind(unsigned int slot = 0) const override;
+
+		virtual bool operator==(const Texture& other) const override
+		{
+			return pTexture.Get() == ((DX11Texture2DArray&)other).pTexture.Get();
+		}
+		void Validate(std::vector<void*> pData = {});
+		void Update(void* pData, uint32_t index, uint32_t mipSlice);
+	private:
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
 		DXGI_FORMAT m_dataFormat;
@@ -102,7 +144,7 @@ namespace QCat
 	{
 	public:
 		DX11ShaderView() = default;
-		DX11ShaderView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
+		DX11ShaderView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer);
 		virtual ~DX11ShaderView() override;
 
 		virtual void Bind(uint32_t slot, ShaderType type) const override;
@@ -117,10 +159,11 @@ namespace QCat
 	{
 	public:
 		DX11RenderTargetView() = default;
-		DX11RenderTargetView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
+		DX11RenderTargetView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
 		virtual ~DX11RenderTargetView() override;
 		virtual void Bind(uint32_t framebufferid, AttachmentType type) override {};
 		virtual void* GetTextureView() const override { return (void*)pRenderTargetView.Get(); };
+		void Clear(const glm::vec4& color);
 	private:
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pRenderTargetView = nullptr;
 		D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -129,11 +172,11 @@ namespace QCat
 	{
 	public:
 		DX11DepthStencilView() = default;
-		DX11DepthStencilView(TextureType type, Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
+		DX11DepthStencilView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip,uint32_t startLayer, uint32_t numlayer);
 		virtual ~DX11DepthStencilView() override;
 		virtual void Bind(uint32_t framebufferid, AttachmentType type) override {};
-
 		virtual void* GetTextureView() const override { return (void*)pDepthStencilView.Get(); };
+		void Clear(float depth = 1.0f, float stencil = 0.0f);
 	private:
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView = nullptr;
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};

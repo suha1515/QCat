@@ -10,6 +10,7 @@ cbuffer Transform : register(b1)
 	matrix u_Transform;
 	matrix u_invTransform;
 }
+
 struct VSOut
 {
 	float2 tc			     : Texcoord;
@@ -18,6 +19,7 @@ struct VSOut
 	float3x3 TBN		     : TBN;
 	float3 viewPosition      : ViewPos;
 	float4 pos :SV_Position;
+	float clipSpacePosZ : ClipPosZ;
 };
 
 struct VSIn
@@ -31,10 +33,10 @@ struct VSIn
 VSOut VSMain(VSIn Input)
 {
 	VSOut vso;
-
 	matrix viewprojMat = mul(u_Projection, mul(u_View,u_Transform));
 	float3x3 normalMat = (float3x3)transpose(u_invTransform);
 	vso.pos = mul(viewprojMat, float4(Input.pos, 1.0f));
+	vso.clipSpacePosZ = vso.pos.z;
 	vso.tc = Input.tc;
 	vso.normal = mul(normalMat, Input.normal);
 
@@ -55,10 +57,18 @@ VSOut VSMain(VSIn Input)
 	return vso;
 }
 #type pixel
+struct DirLight
+{
+	float3 lightDirection;
+	float3 diffuse;
+	float isActive;
+	bool isDebug;
+};
 struct PointLight
 {
 	float3 position;
 	float3 diffuse;
+	float isActive;
 };
 struct Material
 {
@@ -80,7 +90,13 @@ cbuffer material : register(b2)
 }
 cbuffer light : register(b3)
 {
-	PointLight pointLight[1];
+	PointLight pointLight[4];
+	DirLight dirLight;
+}
+cbuffer LightTransform : register(b4)
+{
+	matrix lightPVW[3];
+	float cascadeEndClipSpace[3];
 }
 Texture2D albedoMap : register(t0);
 SamplerState  albedoMapSplr: register(s0);
@@ -100,6 +116,10 @@ SamplerState  prefilterMapSplr: register(s6);
 Texture2D brdfLUT: register(t7);
 SamplerState  brdfLUTSplr: register(s7);
 
+//Shadow Map
+Texture2DArray cascadeShadowMap : register(t8);
+SamplerComparisonState cascadeShadowMapSplr : register(s8);
+
 struct PSIn
 {
 	float2 tc			     : Texcoord;
@@ -108,6 +128,7 @@ struct PSIn
 	float3x3 TBN		     : TBN;
 	float3 viewPosition      : ViewPos;
 	float4 pos :SV_Position;
+	float clipSpacePosZ : ClipPosZ;
 };
 struct PS_OUT
 {
@@ -160,6 +181,73 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 {
 	return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
+
+//Cascade Shadow Factor Calculation
+
+float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos)
+{
+	float3 projCoords = lightspacepos.xyz / lightspacepos.w;
+	projCoords.x = projCoords.x * 0.5 + 0.5f;
+	projCoords.y = -projCoords.y * 0.5 + 0.5f;
+	if (projCoords.z > 1.0)
+		return 0.0f;
+
+	float currentDepth = projCoords.z;
+	float bias = 0.01f;
+	float shadow = 0.0;
+
+	float3 samplePos = projCoords;
+	samplePos.z = cascadeIndex;
+	[unroll]
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			shadow += cascadeShadowMap.SampleCmpLevelZero(cascadeShadowMapSplr, samplePos, currentDepth - bias, int2(x, y));
+		}
+	}
+	shadow /= 9.0f;
+	return shadow;
+}
+
+float3 CalculateDirectLight(float3 normal, float3 viewDir, float3 lightDir, float3 diffuse, float roughness, float metallic, float3 F0, float3 albedo, float attenuation)
+{
+	float3 V = viewDir;
+	float3 N = normal;
+	float3 Lo = float3(0.0f, 0.0f, 0.0f);
+	// Calc light Radiance
+	float3 L = lightDir;
+	float3 H = normalize(V + L);
+
+	float3 radiance = diffuse * attenuation;
+
+	// Cook - Torrance BRDF
+	float NDF = DistributionGGX(N, H, roughness);
+	float G = GeometrySmith(N, V, L, roughness);
+	float3 F = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+
+	float3 nominator = NDF * G * F;
+	float denominator = 4 * max(0.0, dot(N, V)) * max(0.0, dot(N, L));
+	float3 specular = nominator / max(0.001, denominator); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
+
+	 // kS is equal to Fresnel
+	float3 kS = F;
+	// for energy conservation, the diffuse and specular light can't
+	// be above 1.0 (unless the surface emits light); to preserve this
+	// relationship the diffuse component (kD) should equal 1.0 - kS.
+	float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
+	// multiply kD by the inverse metalness such that only non-metals 
+	// have diffuse lighting, or a linear blend if partly metal (pure metals
+	// have no diffuse light).
+	kD *= 1.0 - metallic;
+
+	// scale light by NdotL
+	float NdotL = max(dot(N, L), 0.0);
+
+	// add to outgoing radiance Lo
+	Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+	return Lo;
+}
 PS_OUT PSMain(PSIn input)
 {
 	PS_OUT output;
@@ -192,41 +280,51 @@ PS_OUT PSMain(PSIn input)
 	float3 F0 = float3(0.04f, 0.04f, 0.04f);
 	F0 = lerp(F0, albedo, metallic);
 
-	[unroll]
-	for (int i = 0; i < 1; ++i)
+	//Direct Light Part
+	//Directional Light Calc
+	float shadowFactor = 0.0f;
+	float3 checkcolor[3];
+	checkcolor[0] = float3(1.0, 0.0, 0.0);
+	checkcolor[1] = float3(0.0, 0.0, 1.0);
+	checkcolor[2] = float3(0.0, 1.0, 0.0);
+	float3 debugColor = float3(0.0, 0.0, 0.0);
+	float4 cascadeLightPos[3];
+
+	if (dirLight.isActive == 1.0f)
 	{
-		float3 L = normalize(pointLight[i].position - input.fragPos);
-		float3 H = normalize(V + L);
-		float distance = length(pointLight[i].position - input.fragPos);
-		float attenuation = 1.0 / (distance * distance);
-		float3 radiance = pointLight[i].diffuse * attenuation;
-
-		// Cook - Torrance BRDF
-		float NDF = DistributionGGX(N, H, roughness);
-		float G = GeometrySmith(N, V, L, roughness);
-		float3 F = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-
-		float3 nominator = NDF * G * F;
-		float denominator = 4 * max(0.0, dot(N, V)) * max(0.0, dot(N, L));
-		float3 specular = nominator / max(0.001, denominator); // prevent divide by zero for NdotV=0.0 or NdotL=0.0
-
-		 // kS is equal to Fresnel
-		float3 kS = F;
-		// for energy conservation, the diffuse and specular light can't
-		// be above 1.0 (unless the surface emits light); to preserve this
-		// relationship the diffuse component (kD) should equal 1.0 - kS.
-		float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
-		// multiply kD by the inverse metalness such that only non-metals 
-		// have diffuse lighting, or a linear blend if partly metal (pure metals
-		// have no diffuse light).
-		kD *= 1.0 - metallic;
-
-		// scale light by NdotL
-		float NdotL = max(dot(N, L), 0.0);
-
-		// add to outgoing radiance Lo
-		Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		Lo += CalculateDirectLight(N, V, -dirLight.lightDirection, dirLight.diffuse, roughness, metallic, F0, albedo, 1.0f) * dirLight.isActive;
+		[unroll]
+		for (int i = 0; i < 3; ++i)
+		{
+			cascadeLightPos[i] = mul(lightPVW[i], float4(input.fragPos, 1.0f));
+		}
+		[unroll]
+		for (int j = 0; j < 3; ++j)
+		{
+			if (input.clipSpacePosZ <= cascadeEndClipSpace[j])
+			{
+				shadowFactor = CalcCascadeShadowFactor(j, cascadeLightPos[j]);
+				debugColor = checkcolor[j];
+				break;
+			}
+		}
 	}
+	else
+		shadowFactor = 1.0f;
+
+	// Point Light Calc
+	[unroll]
+	for (int k = 0; k < 4; ++k)
+	{
+		if (pointLight[k].isActive == 1.0f)
+		{
+			float3 L = normalize(pointLight[k].position - input.fragPos);
+			float distance = length(pointLight[k].position - input.fragPos);
+			float attenuation = 1.0 / (distance * distance);
+			Lo += CalculateDirectLight(N, V, L, pointLight[k].diffuse, roughness, metallic, F0, albedo, attenuation);
+		}
+	}
+	//InDirectLight Part
 	//ambient light
 	float3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
 	float3 kS = F;
@@ -242,7 +340,10 @@ PS_OUT PSMain(PSIn input)
 
 	float3 ambient = (kD * diffuse + specular) * ao;
 
-	result = ambient + Lo;
+	if (dirLight.isDebug)
+		Lo += debugColor;
+
+	result = ambient + Lo * shadowFactor;
 	//HDR tonemapping
 	result = result / (result + float3(1.0f, 1.0f, 1.0f));
 	result = pow(result, 1.0f / 2.2f);
