@@ -96,7 +96,7 @@ cbuffer light : register(b3)
 cbuffer LightTransform : register(b4)
 {
 	matrix lightPVW[3];
-	float cascadeEndClipSpace[3];
+	float cascadeEndClipSpace[4];
 }
 Texture2D albedoMap : register(t0);
 SamplerState  albedoMapSplr: register(s0);
@@ -197,7 +197,13 @@ float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos)
 	float shadow = 0.0;
 
 	float3 samplePos = projCoords;
+	
 	samplePos.z = cascadeIndex;
+	//float sampleZ  =cascadeShadowMap.Sample(albedoMapSplr, samplePos).r;
+	//if (currentDepth - bias < sampleZ)
+	//{
+	//	shadow = 1.0f;
+	//}
 	[unroll]
 	for (int x = -1; x <= 1; ++x)
 	{
@@ -282,13 +288,12 @@ PS_OUT PSMain(PSIn input)
 
 	//Direct Light Part
 	//Directional Light Calc
-	float shadowFactor = 0.0f;
+	float shadowFactor = 1.0f;
 	float3 checkcolor[3];
 	checkcolor[0] = float3(1.0, 0.0, 0.0);
 	checkcolor[1] = float3(0.0, 0.0, 1.0);
 	checkcolor[2] = float3(0.0, 1.0, 0.0);
 	float3 debugColor = float3(0.0, 0.0, 0.0);
-	float4 cascadeLightPos[3];
 
 	if (dirLight.isActive == 1.0f)
 	{
@@ -296,21 +301,32 @@ PS_OUT PSMain(PSIn input)
 		[unroll]
 		for (int i = 0; i < 3; ++i)
 		{
-			cascadeLightPos[i] = mul(lightPVW[i], float4(input.fragPos, 1.0f));
-		}
-		[unroll]
-		for (int j = 0; j < 3; ++j)
-		{
-			if (input.clipSpacePosZ <= cascadeEndClipSpace[j])
+			float nearZ = cascadeEndClipSpace[i];
+			float farZ = cascadeEndClipSpace[i + 1];
+			float cascadeEdge = (farZ - nearZ) * 0.2;
+			float csmx = farZ - cascadeEdge;
+			float shadowMain = 1.0f;
+			if (input.clipSpacePosZ >= nearZ && input.clipSpacePosZ <= farZ)
 			{
-				shadowFactor = CalcCascadeShadowFactor(j, cascadeLightPos[j]);
-				debugColor = checkcolor[j];
+				float4 cascadeLightPos = mul(lightPVW[i], float4(input.fragPos, 1.0f));
+				shadowMain = CalcCascadeShadowFactor(i, cascadeLightPos);
+				float shadowFallback = 1.0f;
+				if (input.clipSpacePosZ >= csmx)
+				{
+					float ratio = (input.clipSpacePosZ - csmx) / (farZ - csmx);
+					if (i < 2)
+					{
+						cascadeLightPos = mul(lightPVW[i + 1],float4(input.fragPos, 1.0f));
+						shadowFallback = CalcCascadeShadowFactor(i + 1, cascadeLightPos);
+					}
+					shadowMain = lerp(shadowMain, shadowFallback, ratio);
+				}
+				shadowFactor = shadowMain;
+				debugColor = checkcolor[i];
 				break;
 			}
 		}
 	}
-	else
-		shadowFactor = 1.0f;
 
 	// Point Light Calc
 	[unroll]

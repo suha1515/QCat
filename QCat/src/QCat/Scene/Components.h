@@ -185,8 +185,6 @@ namespace QCat
 		};
 		LightComponent()
 		{
-			m_shadowMapWidth = 1024;
-			m_shadowMapHeight = 1024;
 			Validate();
 		};
 		void Validate()
@@ -197,7 +195,7 @@ namespace QCat
 			case LightType::Directional:
 				if (debugMap != nullptr)
 					debugMap.reset();
-				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, m_shadowMapWidth, m_shadowMapHeight);
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
 				desc.MIN = Filtering::LINEAR;
 				desc.MAG = Filtering::LINEAR;
 				desc.MIP = Filtering::NONE;
@@ -208,12 +206,12 @@ namespace QCat
 				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
 				if (shadowMap != nullptr)
 					shadowMap.reset();
-				shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, m_shadowMapWidth, m_shadowMapHeight,3);
+				shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, resolution, resolution,3);
 				break;
 			case LightType::Spot:
 				if (debugMap != nullptr)
 					debugMap.reset();
-				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, m_shadowMapWidth, m_shadowMapHeight);
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
 				desc.MIN = Filtering::LINEAR;
 				desc.MAG = Filtering::LINEAR;
 				desc.MIP = Filtering::NONE;
@@ -224,12 +222,12 @@ namespace QCat
 				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
 				if (shadowMap != nullptr)
 					shadowMap.reset();
-				shadowMap = Texture2D::Create(TextureFormat::DEPTH32, desc, m_shadowMapWidth, m_shadowMapHeight);
+				shadowMap = Texture2D::Create(TextureFormat::DEPTH32, desc, resolution, resolution);
 				break;
 			case LightType::Point:
 				if (debugMap != nullptr)
 					debugMap.reset();
-				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, m_shadowMapWidth, m_shadowMapHeight);
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
 				desc.MIN = Filtering::LINEAR;
 				desc.MAG = Filtering::LINEAR;
 				desc.MIP = Filtering::NONE;
@@ -240,7 +238,7 @@ namespace QCat
 				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
 				if (shadowMap != nullptr)
 					shadowMap.reset();
-				shadowMap = TextureCube::Create(TextureFormat::DEPTH32, desc, m_shadowMapWidth, m_shadowMapHeight);
+				shadowMap = TextureCube::Create(TextureFormat::DEPTH32, desc, resolution, resolution);
 				break;
 			default:
 				break;
@@ -258,7 +256,7 @@ namespace QCat
 		float outerCutOff = glm::cos(glm::radians(17.5f));
 		float radius = 0.0f;
 
-		uint32_t m_shadowMapWidth,m_shadowMapHeight;
+		uint32_t resolution = 1024;
 		LightType type = LightType::Directional;
 
 		Ref<Texture> shadowMap;

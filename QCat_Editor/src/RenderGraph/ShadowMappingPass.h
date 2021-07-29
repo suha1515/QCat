@@ -10,7 +10,7 @@ namespace QCat
 		struct LightMatrix
 		{
 			glm::mat4 matrices[3];
-			glm::vec4 cascadedEndClip[3];
+			glm::vec4 cascadedEndClip[4];
 		};
 	public:
 		ShadowMappingPass(unsigned int level, const std::string& name);
@@ -20,7 +20,7 @@ namespace QCat
 		virtual void Execute(Ref<Scene>& scene) override;
 
 		void DrawModel(entt::registry& registry);
-		void CsmPass(glm::vec3 lightDirection, glm::vec3 upVector);
+		void CsmPass(glm::vec3 lightDirection, glm::vec3 upVector,float resoultion);
 	private:
 
 		Ref<Shader> m_PointshadowMappingShader;

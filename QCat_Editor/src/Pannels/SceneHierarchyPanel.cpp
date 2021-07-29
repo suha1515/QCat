@@ -580,6 +580,23 @@ namespace QCat
 					ImGui::DragFloat3("Albedo", glm::value_ptr(component.diffuse),1.0f,0.0f);
 					ImGui::DragFloat3("Ambient", glm::value_ptr(component.ambient),1.0f,0.0f);
 					ImGui::DragFloat3("Specular", glm::value_ptr(component.specular),1.0f,0.0f);
+
+					static const char* Resoultion[] = { "512x512","1024x1024","2048x2048","4096x4096" };
+					int res[4] = { 512,1024,2048,4096 };
+					static int selectedItem2 = 0;
+					for (int i = 0; i < 4; ++i)
+					{
+						if (res[i] == component.resolution)
+							selectedItem2 = i;
+					}
+					if (ImGui::Combo("ShadowResoultion", &selectedItem2, Resoultion, IM_ARRAYSIZE(Resoultion)))
+					{
+						if (component.resolution != res[selectedItem2])
+						{
+							component.resolution = res[selectedItem2];
+							component.Validate();
+						}
+					}
 					static bool shadowmap = false;
 					ImGui::Checkbox("See ShadowMap", &shadowmap);
 					if (shadowmap)

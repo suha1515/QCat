@@ -23,7 +23,7 @@ layout(std140,binding = 1) uniform Transform
 layout(std140,binding = 4) uniform LightTransform
 {
 	mat4 LightMat[3];
-	float cascaedEndClipSpace[3];
+	float cascadeEndClipSpace[4];
 };
 struct VertexOutput
 {
@@ -103,7 +103,7 @@ layout(std140,binding = 3) uniform Light
 layout(std140,binding = 4) uniform LightTransform
 {
 	mat4 LightMat[3];
-	float cascaedEndClipSpace[3];
+	float cascadeEndClipSpace[4];
 };
 layout(location = 0) out vec4 color;
 
@@ -197,9 +197,17 @@ float CalcShadowFactor(int cascadeIndex , vec4 LightSpacePos)
 			comparisonResult += texture(DirshadowMap,coords);
 		}
 	}
-
 	comparisonResult /=9.0;
 	return comparisonResult;
+}
+bool IsInTexSpace(vec4 texpos)
+{
+	if(0<=texpos.x && texpos.x <=1.0 && 0<=texpos.y && texpos.y<=1.0&& 0<=texpos.z && texpos.z<=1.0)
+	{
+		return true;
+	}
+	else
+		return false;
 }
 vec3 CalculateDirectLight(vec3 normal,vec3 viewDir,vec3 lightDir,vec3 diffuse,float attenuation,float roughness,vec3 F0,vec3 albedo,float metallic)
 {
@@ -269,7 +277,7 @@ void main()
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0,albedo,metallic);
 
-	float shadowFactor=0.0f;
+	float shadowFactor=1.0f;
 	vec3 checkcolor[3];
 	checkcolor[0] = vec3(1.0,0.0,0.0);
 	checkcolor[1] = vec3(0.0,0.0,1.0);
@@ -277,23 +285,43 @@ void main()
 	vec3 debugColor = vec3(0.0);
 
 	vec4 lightSpacePos[3];
-	//cascaed light Map
-	for(int i=0;i<3;++i)
-	{
-		lightSpacePos[i] = LightMat[i]  *vec4(Input.FragPos,1.0f);
-	}
 
 	//DirLight
 	for(int i=0;i<1;++i)
 	{
 		Lo +=CalculateDirectLight(N,V,-dirLight.lightDirection,dirLight.diffuse,1.0f,roughness,F0,albedo,metallic) * dirLight.isActive;
 		
-		for (int i = 0 ; i < 3 ; i++) 
+		for (int j = 0; j < 3 ; j++) 
 		{
-			if (Input.clipspaceZ <= cascaedEndClipSpace[i]) 
+			if (Input.clipspaceZ <= cascadeEndClipSpace[j+1]) 
 			{
-				shadowFactor = CalcShadowFactor(i,lightSpacePos[i]);
-				debugColor =checkcolor[i];
+				debugColor =checkcolor[j];
+				vec4 lightSpacePos = LightMat[j] * vec4(Input.FragPos,1.0f);
+
+				float nearZ =cascadeEndClipSpace[j];
+				float farZ =cascadeEndClipSpace[j+1];
+				//20% edge
+				float cascadeEdge = (farZ - nearZ) * 0.2;
+				float cascadeCenter = (farZ - nearZ) * 0.5;
+				float csmx = farZ - cascadeEdge;
+				float csmy = nearZ + cascadeEdge;
+				float shadowMain =1.0f;
+				if(Input.clipspaceZ >= nearZ && Input.clipspaceZ <= farZ)
+				{
+					shadowMain = CalcShadowFactor(j,lightSpacePos);
+					float shadowFallback = 1.0f;
+					if(Input.clipspaceZ >= csmx)
+					{
+						float ratio = (Input.clipspaceZ - csmx) / (farZ - csmx);
+						if(j<2)
+						{
+							lightSpacePos = LightMat[j+1] * vec4(Input.FragPos,1.0f);
+							shadowFallback = CalcShadowFactor(j+1,lightSpacePos);
+						}
+						shadowMain = mix(shadowMain , shadowFallback , ratio);						
+					}
+				 }
+				shadowFactor = shadowMain;
 				break;   
 			}
 		}
