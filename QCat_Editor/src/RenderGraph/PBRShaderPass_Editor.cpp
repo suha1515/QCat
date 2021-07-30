@@ -18,6 +18,10 @@ namespace QCat
 		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
+		RegisterInput(DataInput<bool>::Make("DebugMode", m_DebugShadow, DataType::Bool));
+		RegisterInput(DataInput<bool>::Make("SoftShadow", m_SoftShadow, DataType::Bool));
+
+
 
 		RegisterInput(DataInput<ShadowMappingPass::LightMatrix>::Make("DirlightTransform", dirlightTransform, DataType::Struct));
 
@@ -44,6 +48,13 @@ namespace QCat
 		lay.Add(ShaderDataType::Mat4, "InvTransform");
 		
 		transformBuffer = CreateRef<ElementBuffer>(lay);
+
+		Sampler_Desc desc;
+		desc.MIN = Filtering::POINT;
+		desc.MAG = Filtering::POINT;
+		desc.MIP = Filtering::NONE;
+
+		m_normalSampler = SamplerState::Create(desc);
 	}
 	void PBRShaderPass::Initialize()
 	{
@@ -96,7 +107,9 @@ namespace QCat
 				light.dirlight.diffuse = comp.diffuse;
 				light.dirlight.isActive = 1.0f;
 				light.dirlight.lightDirection = comp.lightDirection;
-				light.dirlight.isDebug = comp.isDebug;
+
+				light.dirlight.isDebug = *m_DebugShadow;
+				light.dirlight.isSoft = *m_SoftShadow;
 			}
 			else if (comp.type == LightComponent::LightType::Point && pointLightCount < 4)
 			{
@@ -155,7 +168,24 @@ namespace QCat
 				m_IrradianceCubeMap->Bind(5);
 				m_PrefilterMap->Bind(6);
 				m_BRDFLutTextrue->Bind(7);
-				m_DirLightMap->Bind(8);
+				
+				if (*m_SoftShadow)
+				{
+					m_DirLightMap->Bind(8);
+				}
+				else
+				{
+					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+					{
+						m_DirLightMap->Bind(8);
+						m_normalSampler->Bind(9);
+					}
+					else
+					{
+						m_DirLightMap->Bind(9);
+						m_normalSampler->Bind(9);
+					}
+				}
 				RenderCommand::DrawIndexed(mesh);
 			}
 		}

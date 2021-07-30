@@ -1,4 +1,5 @@
 #pragma once
+#include <QCat.h>
 #include <filesystem>
 #include <QCat/Renderer/Texture.h>
 #include <Imgui/imgui.h>

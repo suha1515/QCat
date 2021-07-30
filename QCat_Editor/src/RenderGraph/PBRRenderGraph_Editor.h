@@ -15,6 +15,10 @@ namespace QCat
 		void SetProj(Ref<glm::mat4>& projMat) { projectionMatrix = projMat; }
 		void SetSize(uint32_t width, uint32_t height);
 		void SetCameraProperties(Ref<glm::vec4>& camData) { forArNearFar = camData; }
+
+		void SetCascadeSplits(float v) { *m_CascadeSplits = v; }
+		void SetDebugMode(bool debug) { *m_DebugShadow = debug; }
+		void SetSoftShadow(bool v) { *m_SoftShadow = v; }
 		Ref<Texture>& GetColorBuffer() { return m_Colorbuffer; }
 	public:
 		uint32_t width, height;
@@ -28,6 +32,10 @@ namespace QCat
 		Ref<Texture> m_Colorbuffer;
 		Ref<Texture> m_DepthBuffer;
 
+		Ref<float> m_CascadeSplits;
+		Ref<float> m_ShadowMaxDistance;
+		Ref<bool> m_DebugShadow;
+		Ref<bool> m_SoftShadow;
 		
 	};
 }

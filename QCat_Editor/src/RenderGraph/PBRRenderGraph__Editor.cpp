@@ -9,6 +9,11 @@ namespace QCat
     {
         width = 1600;
         height = 900;
+
+        m_CascadeSplits = CreateRef<float>(0.5f);
+        m_DebugShadow = CreateRef<bool>(false);
+        m_SoftShadow = CreateRef<bool>(false);
+
     }
     void PBRRenderGraph::Initialize()
     {
@@ -23,6 +28,9 @@ namespace QCat
         AddGlobalOutput(DataOutput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
         AddGlobalOutput(DataOutput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
         AddGlobalOutput(DataOutput<glm::vec4>::Make("forArNearFar", forArNearFar, DataType::Float4));
+        AddGlobalOutput(DataOutput<bool>::Make("DebugMode", m_DebugShadow, DataType::Bool));
+        AddGlobalOutput(DataOutput<bool>::Make("SoftShadow", m_SoftShadow, DataType::Bool));
+        AddGlobalOutput(DataOutput<float>::Make("CasacadeSplits", m_CascadeSplits, DataType::Float));
 
 
         AddGlobalOutput(TextureOutput::Make("ColorBuffer", m_Colorbuffer));
@@ -41,8 +49,11 @@ namespace QCat
         ShadowPass->SetInputLink("viewMatrix", "$.viewMatrix");
         ShadowPass->SetInputLink("projectionMatrix", "$.projectionMatrix");
         ShadowPass->SetInputLink("forArNearFar", "$.forArNearFar");
+        ShadowPass->SetInputLink("CasacadeSplits", "$.CasacadeSplits");
+
         AppendPass(ShadowPass);
 
+        //PbrShading Pass
         Ref<Pass> pbrShaderPass = CreateRef<PBRShaderPass>(1, "pbrrenderpass");
         pbrShaderPass->SetInputLink("HdrCubeMap", "precomputepass.HdrCubeMap");
         pbrShaderPass->SetInputLink("IrradianceCubeMap", "precomputepass.IrradianceCubeMap");
@@ -53,9 +64,10 @@ namespace QCat
         pbrShaderPass->SetInputLink("ColorBuffer", "$.ColorBuffer");
         pbrShaderPass->SetInputLink("DepthBuffer", "$.DepthBuffer");
         pbrShaderPass->SetInputLink("DirlightTransform", "shadowmappingpass.DirlightTransform");
-        AppendPass(pbrShaderPass);
+        pbrShaderPass->SetInputLink("DebugMode", "$.DebugMode");
+        pbrShaderPass->SetInputLink("SoftShadow", "$.SoftShadow");
 
-     
+        AppendPass(pbrShaderPass);
     }
     void PBRRenderGraph::SetSize(uint32_t width, uint32_t height)
     {

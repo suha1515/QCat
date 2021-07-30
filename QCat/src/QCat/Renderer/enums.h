@@ -131,7 +131,7 @@ namespace QCat
 	};
 	enum class DataType
 	{
-		None, Float, Float2, Float3, Float4, Matrix,
+		None,Bool, Float, Float2, Float3, Float4, Matrix,
 		Int, Int2, Int3, Int4,Array,Struct,Object
 	};
 	enum class ShaderDataType

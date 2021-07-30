@@ -1,7 +1,4 @@
-#include "qcpch.h"
 #include "ContentBrowserPanel.h"
-
-
 #include <QCat/Renderer/RenderAPI.h>
 
 namespace QCat

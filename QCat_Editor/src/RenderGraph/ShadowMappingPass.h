@@ -66,6 +66,8 @@ namespace QCat
 		Ref<glm::mat4> viewMatrix;
 		Ref<glm::mat4> projectionMatrix;
 		Ref<glm::vec4> forArNearFar;
+		Ref<float> m_CascadeSplits;
+
 		Ref<LightMatrix> DirlightTransform;
 
 		glm::mat4 m_shadowOrthoProj[3];

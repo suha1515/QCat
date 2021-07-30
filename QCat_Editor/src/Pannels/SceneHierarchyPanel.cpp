@@ -627,10 +627,7 @@ namespace QCat
 								component.textureindex = selectIndex;
 							}
 						}
-						component.isDebug = true;
 					}
-					else
-						component.isDebug = false;
 
 					DrawVec3Control("LightDirection", component.lightDirection);
 					ImGui::DragFloat("Constant", &component.constant, 0.1f);

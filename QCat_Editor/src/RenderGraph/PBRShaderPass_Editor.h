@@ -71,6 +71,7 @@ namespace QCat
 			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
 			float isActive=0.0f;
 			int isDebug = 0;
+			int isSoft = 0;
 		};
 		struct PointLight
 		{
@@ -101,7 +102,10 @@ namespace QCat
 		Ref<ConstantBuffer> colorConstantBuffer;
 
 		Ref<ElementBuffer> transformBuffer;
+		Ref<bool> m_SoftShadow;
+		Ref<bool> m_DebugShadow;
 
+		Ref<SamplerState> m_normalSampler;
 
 	};
 }

@@ -84,6 +84,7 @@ struct DirLight
 	vec3 diffuse;
 	float isActive;
 	bool isDebug;
+	bool isSoft;
 };
 layout(std140,binding = 0) uniform Camera
 {
@@ -129,6 +130,7 @@ layout (binding = 7) uniform sampler2D brdfLUT;
 
 //cascadeShadowMap
 layout (binding = 8) uniform sampler2DArrayShadow DirshadowMap;
+layout (binding = 9) uniform sampler2DArray dirshadowMapHarsh;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -178,7 +180,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 }   
 
 // calculate ShadowFactor
-float CalcShadowFactor(int cascadeIndex , vec4 LightSpacePos)
+float CalcShadowFactor(int cascadeIndex , vec4 LightSpacePos,bool isSoft)
 {
 	vec3 projCoords = LightSpacePos.xyz /LightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
@@ -187,17 +189,29 @@ float CalcShadowFactor(int cascadeIndex , vec4 LightSpacePos)
 	float currentDepth = projCoords.z;
 	float bias = 0.01f;
 	float comparisonResult = 0.0;
-	vec2 texelSize = textureSize(DirshadowMap,0).xy;
-	texelSize  = 1.0f/texelSize;
-	for(int x = -1;x<=1;++x)
+	if(isSoft)
 	{
-		for(int y=-1;y<=1;++y)
+		vec2 texelSize = textureSize(DirshadowMap,0).xy;
+		texelSize  = 1.0f/texelSize;
+		for(int x = -1;x<=1;++x)
 		{
-			vec4 coords = vec4(projCoords.xy + vec2(x,y) * texelSize.xy,cascadeIndex,currentDepth-bias);
-			comparisonResult += texture(DirshadowMap,coords);
+			for(int y=-1;y<=1;++y)
+			{
+				vec4 coords = vec4(projCoords.xy + vec2(x,y) * texelSize.xy,cascadeIndex,currentDepth-bias);
+				comparisonResult += texture(DirshadowMap,coords);
+			}
 		}
+		comparisonResult /=9.0;
 	}
-	comparisonResult /=9.0;
+	else
+	{
+		vec3 coords = vec3(projCoords.xy ,cascadeIndex);
+		float result = texture(dirshadowMapHarsh,coords).r;
+		if(result< currentDepth - bias)
+			comparisonResult = 0.0f;
+		else
+			comparisonResult = 1.0f;
+	}
 	return comparisonResult;
 }
 bool IsInTexSpace(vec4 texpos)
@@ -302,13 +316,11 @@ void main()
 				float farZ =cascadeEndClipSpace[j+1];
 				//20% edge
 				float cascadeEdge = (farZ - nearZ) * 0.2;
-				float cascadeCenter = (farZ - nearZ) * 0.5;
 				float csmx = farZ - cascadeEdge;
-				float csmy = nearZ + cascadeEdge;
 				float shadowMain =1.0f;
 				if(Input.clipspaceZ >= nearZ && Input.clipspaceZ <= farZ)
 				{
-					shadowMain = CalcShadowFactor(j,lightSpacePos);
+					shadowMain = CalcShadowFactor(j,lightSpacePos,dirLight.isSoft);
 					float shadowFallback = 1.0f;
 					if(Input.clipspaceZ >= csmx)
 					{
@@ -316,7 +328,7 @@ void main()
 						if(j<2)
 						{
 							lightSpacePos = LightMat[j+1] * vec4(Input.FragPos,1.0f);
-							shadowFallback = CalcShadowFactor(j+1,lightSpacePos);
+							shadowFallback = CalcShadowFactor(j+1,lightSpacePos,dirLight.isSoft);
 						}
 						shadowMain = mix(shadowMain , shadowFallback , ratio);						
 					}

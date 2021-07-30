@@ -63,6 +63,7 @@ struct DirLight
 	float3 diffuse;
 	float isActive;
 	bool isDebug;
+	bool isSoft;
 };
 struct PointLight
 {
@@ -119,6 +120,7 @@ SamplerState  brdfLUTSplr: register(s7);
 //Shadow Map
 Texture2DArray cascadeShadowMap : register(t8);
 SamplerComparisonState cascadeShadowMapSplr : register(s8);
+SamplerState  harshShadowSplr: register(s9);
 
 struct PSIn
 {
@@ -184,7 +186,7 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 
 //Cascade Shadow Factor Calculation
 
-float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos)
+float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos,bool isSoft)
 {
 	float3 projCoords = lightspacepos.xyz / lightspacepos.w;
 	projCoords.x = projCoords.x * 0.5 + 0.5f;
@@ -204,15 +206,27 @@ float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos)
 	//{
 	//	shadow = 1.0f;
 	//}
-	[unroll]
-	for (int x = -1; x <= 1; ++x)
+	if (isSoft)
 	{
-		for (int y = -1; y <= 1; ++y)
+		[unroll]
+		for (int x = -1; x <= 1; ++x)
 		{
-			shadow += cascadeShadowMap.SampleCmpLevelZero(cascadeShadowMapSplr, samplePos, currentDepth - bias, int2(x, y));
+			for (int y = -1; y <= 1; ++y)
+			{
+				shadow += cascadeShadowMap.SampleCmpLevelZero(cascadeShadowMapSplr, samplePos, currentDepth - bias, int2(x, y));
+			}
 		}
+		shadow /= 9.0f;
 	}
-	shadow /= 9.0f;
+	else
+	{
+		shadow = cascadeShadowMap.Sample(harshShadowSplr, samplePos).r;
+		if (shadow < currentDepth - bias)
+			return 0.0f;
+		else
+			return 1.0f;
+	}
+	
 	return shadow;
 }
 
@@ -309,7 +323,7 @@ PS_OUT PSMain(PSIn input)
 			if (input.clipSpacePosZ >= nearZ && input.clipSpacePosZ <= farZ)
 			{
 				float4 cascadeLightPos = mul(lightPVW[i], float4(input.fragPos, 1.0f));
-				shadowMain = CalcCascadeShadowFactor(i, cascadeLightPos);
+				shadowMain = CalcCascadeShadowFactor(i, cascadeLightPos,dirLight.isSoft);
 				float shadowFallback = 1.0f;
 				if (input.clipSpacePosZ >= csmx)
 				{
@@ -317,7 +331,7 @@ PS_OUT PSMain(PSIn input)
 					if (i < 2)
 					{
 						cascadeLightPos = mul(lightPVW[i + 1],float4(input.fragPos, 1.0f));
-						shadowFallback = CalcCascadeShadowFactor(i + 1, cascadeLightPos);
+						shadowFallback = CalcCascadeShadowFactor(i + 1, cascadeLightPos,dirLight.isSoft);
 					}
 					shadowMain = lerp(shadowMain, shadowFallback, ratio);
 				}

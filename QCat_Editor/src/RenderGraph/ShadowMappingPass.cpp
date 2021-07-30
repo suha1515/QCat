@@ -11,6 +11,7 @@ namespace QCat
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::vec4>::Make("forArNearFar", forArNearFar, DataType::Float4));
+		RegisterInput(DataInput<float>::Make("CasacadeSplits", m_CascadeSplits, DataType::Float));
 
 		RegisterOutput(DataOutput<LightMatrix>::Make("DirlightTransform", DirlightTransform, DataType::Struct));
 		DirlightTransform = CreateRef<LightMatrix>();
@@ -129,7 +130,7 @@ namespace QCat
 		float tanHalfVFov = tanf(glm::radians(fov / 2.0f));
 		float tanHalfHFov = tanHalfVFov * ar;
 
-		std::vector<float> splits = GetPracticalSplit(nearZ, 20.f, 4, 0.5f);
+		std::vector<float> splits = GetPracticalSplit(nearZ, farZ, 4, *m_CascadeSplits);
 		m_cascadeEnd[0] = splits[0];
 		m_cascadeEnd[1] = splits[1];
 		m_cascadeEnd[2] = splits[2];

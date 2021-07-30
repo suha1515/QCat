@@ -71,7 +71,7 @@ namespace QCat
 
 		m_ActiveScene = CreateRef<Scene>();
 		
-		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.05f,50.f);
+		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.01f,100.0f);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
@@ -120,7 +120,7 @@ namespace QCat
 			camData->x = m_EditorCamera.GetFov();
 			camData->y = m_EditorCamera.GetAspectRatio();
 			camData->z = m_EditorCamera.GetNear();
-			camData->w = m_EditorCamera.GetFar();
+			
 		}
 
 		// Update
@@ -135,6 +135,10 @@ namespace QCat
 
 		EditorPBRRenderGraph.Execute(m_ActiveScene);
 
+		EditorPBRRenderGraph.SetDebugMode(m_ProjectpropertyPanel.m_IsDebugCascade);
+		EditorPBRRenderGraph.SetCascadeSplits(m_ProjectpropertyPanel.m_CascadeSplitsLamda);
+		EditorPBRRenderGraph.SetSoftShadow(m_ProjectpropertyPanel.m_SoftShadow);
+		camData->w = m_ProjectpropertyPanel.m_ShadowMaxDistance;
 		// Update Scene
 		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
 		m_ActiveScene->OnUpdateRuntime(ts);
@@ -250,6 +254,7 @@ namespace QCat
 		}
 		m_SceneHierarchyPanel.OnImguiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
+		m_ProjectpropertyPanel.OnImGuiRender();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("ViewPort");

@@ -3,6 +3,7 @@
 #include "QCat.h"
 #include "Pannels/SceneHierarchyPanel.h"
 #include "Pannels/ContentBrowserPanel.h"
+#include "Pannels/ProjectPropertiesPanel.h"
 
 #include <QCat/Renderer/EditorCamera.h>
 #include "RenderGraph/PBRRenderGraph_Editor.h"
@@ -72,6 +73,6 @@ namespace QCat
 		// Panels	
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		ContentBrowserPanel m_ContentBrowserPanel;
-
+		ProjectPropertiesPanel m_ProjectpropertyPanel;
 	};
 }
