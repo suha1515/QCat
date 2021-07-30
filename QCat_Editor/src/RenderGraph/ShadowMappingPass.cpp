@@ -99,6 +99,21 @@ namespace QCat
 			}
 		}
 	}
+	std::vector<float> GetPracticalSplit(float nearz,float farz,int amount,float lamda)
+	{
+		std::vector<float> zSplits;
+		zSplits.resize(amount);
+		zSplits[0] = nearz;
+		zSplits[amount - 1] = farz;
+		for (int i = 1; i < amount-1; ++i)
+		{
+			float index = (i / (float)amount);
+			float uniformSplit = nearz + (farz - nearz) * index;
+			float logarithmSplit = nearz * std::powf((farz / nearz), index);
+			zSplits[i] = std::lerp(logarithmSplit, uniformSplit, lamda);
+		}
+		return zSplits;
+	}
 	void ShadowMappingPass::CsmPass(glm::vec3 lightDirection, glm::vec3 upVector,float resoultion)
 	{
 		// Get CameraInv Matrix
@@ -114,10 +129,11 @@ namespace QCat
 		float tanHalfVFov = tanf(glm::radians(fov / 2.0f));
 		float tanHalfHFov = tanHalfVFov * ar;
 
-		m_cascadeEnd[0] = nearZ;
-		m_cascadeEnd[1] = 5.f;
-		m_cascadeEnd[2] = 10.f;
-		m_cascadeEnd[3] = 20.f;
+		std::vector<float> splits = GetPracticalSplit(nearZ, 20.f, 4, 0.5f);
+		m_cascadeEnd[0] = splits[0];
+		m_cascadeEnd[1] = splits[1];
+		m_cascadeEnd[2] = splits[2];
+		m_cascadeEnd[3] = splits[3];
 
 		for (uint32_t i = 0; i < 3; ++i)
 		{
