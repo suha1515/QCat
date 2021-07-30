@@ -621,7 +621,7 @@ namespace QCat
 						{
 							static int selectIndex = 0;
 							selectIndex = component.textureindex;
-							static const char* index[] = { "0","1","2" };
+							static const char* index[] = { "0","1","2","3","4" };
 							if (ImGui::Combo("TextureIndex", &selectIndex, index, IM_ARRAYSIZE(index)))
 							{
 								component.textureindex = selectIndex;

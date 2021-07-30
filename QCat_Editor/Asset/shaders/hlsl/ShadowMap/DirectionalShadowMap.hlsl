@@ -28,7 +28,7 @@ VSOut VSMain(VSIn input)
 #type geometry
 cbuffer LightTransform : register(b1)
 {
-	matrix lightTransform[3];
+	matrix lightTransform[5];
 }
 struct GSIn
 {
@@ -42,14 +42,14 @@ struct GSOutput
 	uint RTIndex : SV_RenderTargetArrayIndex;
 };
 
-[maxvertexcount(9)]
+[maxvertexcount(15)]
 void GSMain(triangle GSIn input[3], inout TriangleStream <GSOutput> output)
 {
-	for (int face = 0; face < 3; ++face)
+	for (int face = 0; face < 5; ++face)
 	{
 		GSOutput element;
 		element.RTIndex = face;
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i <3; ++i)
 		{
 			element.pos = mul(lightTransform[face], input[i].position);
 			element.tc = input[i].tc;

@@ -9,8 +9,8 @@ namespace QCat
 	public:
 		struct LightMatrix
 		{
-			glm::mat4 matrices[3];
-			glm::vec4 cascadedEndClip[4];
+			glm::mat4 matrices[5];
+			glm::vec4 cascadedEndClip[6];
 		};
 	public:
 		ShadowMappingPass(unsigned int level, const std::string& name);
@@ -43,8 +43,7 @@ namespace QCat
 		};
 		struct CsmMatrix
 		{
-			glm::mat4 matrices[3];
-			glm::mat4 projmatrices[3];
+			glm::mat4 matrices[5];
 		};
 		struct Transform
 		{
@@ -70,9 +69,9 @@ namespace QCat
 
 		Ref<LightMatrix> DirlightTransform;
 
-		glm::mat4 m_shadowOrthoProj[3];
+		glm::mat4 m_shadowOrthoProj[5];
 
-		float m_cascadeEnd[4];
+		float m_cascadeEnd[6];
 
 	};
 }

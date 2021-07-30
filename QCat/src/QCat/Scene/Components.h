@@ -206,7 +206,7 @@ namespace QCat
 				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
 				if (shadowMap != nullptr)
 					shadowMap.reset();
-				shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, resolution, resolution,3);
+				shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, resolution, resolution,5);
 				break;
 			case LightType::Spot:
 				if (debugMap != nullptr)

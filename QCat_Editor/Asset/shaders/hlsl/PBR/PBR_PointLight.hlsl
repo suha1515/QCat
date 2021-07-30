@@ -96,8 +96,8 @@ cbuffer light : register(b3)
 }
 cbuffer LightTransform : register(b4)
 {
-	matrix lightPVW[3];
-	float cascadeEndClipSpace[4];
+	matrix lightPVW[5];
+	float cascadeEndClipSpace[6];
 }
 Texture2D albedoMap : register(t0);
 SamplerState  albedoMapSplr: register(s0);
@@ -303,17 +303,19 @@ PS_OUT PSMain(PSIn input)
 	//Direct Light Part
 	//Directional Light Calc
 	float shadowFactor = 1.0f;
-	float3 checkcolor[3];
+	float3 checkcolor[5];
 	checkcolor[0] = float3(1.0, 0.0, 0.0);
-	checkcolor[1] = float3(0.0, 0.0, 1.0);
-	checkcolor[2] = float3(0.0, 1.0, 0.0);
+	checkcolor[1] = float3(0.0, 1.0, 0.0);
+	checkcolor[2] = float3(0.0, 0.0, 1.0);
+	checkcolor[3] = float3(1.0, 1.0, 0.0);
+	checkcolor[4] = float3(0.0, 1.0, 1.0);
 	float3 debugColor = float3(0.0, 0.0, 0.0);
 
 	if (dirLight.isActive == 1.0f)
 	{
 		Lo += CalculateDirectLight(N, V, -dirLight.lightDirection, dirLight.diffuse, roughness, metallic, F0, albedo, 1.0f) * dirLight.isActive;
 		[unroll]
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < 5; ++i)
 		{
 			float nearZ = cascadeEndClipSpace[i];
 			float farZ = cascadeEndClipSpace[i + 1];
@@ -328,7 +330,7 @@ PS_OUT PSMain(PSIn input)
 				if (input.clipSpacePosZ >= csmx)
 				{
 					float ratio = (input.clipSpacePosZ - csmx) / (farZ - csmx);
-					if (i < 2)
+					if (i < 4)
 					{
 						cascadeLightPos = mul(lightPVW[i + 1],float4(input.fragPos, 1.0f));
 						shadowFallback = CalcCascadeShadowFactor(i + 1, cascadeLightPos,dirLight.isSoft);

@@ -130,13 +130,13 @@ namespace QCat
 		float tanHalfVFov = tanf(glm::radians(fov / 2.0f));
 		float tanHalfHFov = tanHalfVFov * ar;
 
-		std::vector<float> splits = GetPracticalSplit(nearZ, farZ, 4, *m_CascadeSplits);
-		m_cascadeEnd[0] = splits[0];
-		m_cascadeEnd[1] = splits[1];
-		m_cascadeEnd[2] = splits[2];
-		m_cascadeEnd[3] = splits[3];
+		std::vector<float> splits = GetPracticalSplit(nearZ, farZ, 6, *m_CascadeSplits);
+		for (int i = 0 ; i < splits.size(); ++i)
+		{
+			m_cascadeEnd[i] = splits[i];
+		}
 
-		for (uint32_t i = 0; i < 3; ++i)
+		for (uint32_t i = 0; i < 5; ++i)
 		{
 			float xn = m_cascadeEnd[i] * tanHalfHFov;
 			float xf = m_cascadeEnd[i + 1] * tanHalfHFov;
@@ -238,12 +238,16 @@ namespace QCat
 				matrix.matrices[0] = m_shadowOrthoProj[0];
 				matrix.matrices[1] = m_shadowOrthoProj[1];
 				matrix.matrices[2] = m_shadowOrthoProj[2];
+				matrix.matrices[3] = m_shadowOrthoProj[3];
+				matrix.matrices[4] = m_shadowOrthoProj[4];
 
 				DirlightTransform->matrices[0] = m_shadowOrthoProj[0];
 				DirlightTransform->matrices[1] = m_shadowOrthoProj[1];
 				DirlightTransform->matrices[2] = m_shadowOrthoProj[2];
+				DirlightTransform->matrices[3] = m_shadowOrthoProj[3];
+				DirlightTransform->matrices[4] = m_shadowOrthoProj[4];
 
-				for (int i = 0; i < 4; ++i)
+				for (int i = 0; i < 6; ++i)
 				{
 					glm::vec4 vclip = (*projectionMatrix) * glm::vec4(0.0f, 0.0f, m_cascadeEnd[i], 1.0f);
 					DirlightTransform->cascadedEndClip[i].x = vclip.z;
@@ -253,7 +257,7 @@ namespace QCat
 				m_DirectionalLightShadow->Bind();
 				RenderCommand::SetViewport(0, 0, resoultion, resoultion);
 				m_DirectionalLightShadow->DetachAll();
-				Ref<DepthStencilView> view = DepthStencilView::Create(TextureType::Texture2DArray, comp.shadowMap, TextureFormat::DEPTH32, 0, 0, 3);
+				Ref<DepthStencilView> view = DepthStencilView::Create(TextureType::Texture2DArray, comp.shadowMap, TextureFormat::DEPTH32, 0, 0,5);
 
 				m_DirectionalLightShadow->AttachDepthTexture(view, AttachmentType::Depth);
 				m_DirectionalLightShadow->Clear();

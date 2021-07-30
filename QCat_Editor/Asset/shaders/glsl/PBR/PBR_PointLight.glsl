@@ -22,8 +22,8 @@ layout(std140,binding = 1) uniform Transform
 };
 layout(std140,binding = 4) uniform LightTransform
 {
-	mat4 LightMat[3];
-	float cascadeEndClipSpace[4];
+	mat4 LightMat[5];
+	float cascadeEndClipSpace[6];
 };
 struct VertexOutput
 {
@@ -103,8 +103,8 @@ layout(std140,binding = 3) uniform Light
 };
 layout(std140,binding = 4) uniform LightTransform
 {
-	mat4 LightMat[3];
-	float cascadeEndClipSpace[4];
+	mat4 LightMat[5];
+	float cascadeEndClipSpace[6];
 };
 layout(location = 0) out vec4 color;
 
@@ -292,20 +292,20 @@ void main()
 	F0 = mix(F0,albedo,metallic);
 
 	float shadowFactor=1.0f;
-	vec3 checkcolor[3];
+	vec3 checkcolor[5];
 	checkcolor[0] = vec3(1.0,0.0,0.0);
-	checkcolor[1] = vec3(0.0,0.0,1.0);
-	checkcolor[2] = vec3(0.0,1.0,0.0);
+	checkcolor[1] = vec3(0.0,1.0,0.0);
+	checkcolor[2] = vec3(0.0,0.0,1.0);
+	checkcolor[3]= vec3(1.0,1.0,0.0);
+	checkcolor[4] = vec3(0.0,1.0,1.0);
 	vec3 debugColor = vec3(0.0);
-
-	vec4 lightSpacePos[3];
 
 	//DirLight
 	for(int i=0;i<1;++i)
 	{
 		Lo +=CalculateDirectLight(N,V,-dirLight.lightDirection,dirLight.diffuse,1.0f,roughness,F0,albedo,metallic) * dirLight.isActive;
 		
-		for (int j = 0; j < 3 ; j++) 
+		for (int j = 0; j < 5 ; j++) 
 		{
 			if (Input.clipspaceZ <= cascadeEndClipSpace[j+1]) 
 			{
@@ -325,7 +325,7 @@ void main()
 					if(Input.clipspaceZ >= csmx)
 					{
 						float ratio = (Input.clipspaceZ - csmx) / (farZ - csmx);
-						if(j<2)
+						if(j<4)
 						{
 							lightSpacePos = LightMat[j+1] * vec4(Input.FragPos,1.0f);
 							shadowFallback = CalcShadowFactor(j+1,lightSpacePos,dirLight.isSoft);

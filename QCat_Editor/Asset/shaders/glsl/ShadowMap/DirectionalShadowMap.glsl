@@ -27,11 +27,11 @@ void main()
 #version 450 core
 
 layout(triangles) in;
-layout(triangle_strip,max_vertices=9) out;
+layout(triangle_strip,max_vertices=15) out;
 const int NUM_CASCADES = 3;
 layout(std140,binding = 1) uniform ShadowTransform
 {
-	mat4 lightTransform[3];
+	mat4 lightTransform[5];
 };
 struct VertexOutput
 {
@@ -48,7 +48,7 @@ layout(location = 1) out GeometryOutput Output;
 
 void main()
 {
-	for(int face = 0;face<3;++face)
+	for(int face = 0;face<5;++face)
 	{
 		gl_Layer = face;
 		for(int i=0;i<3;++i)
