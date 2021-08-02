@@ -4,9 +4,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include<QCat/Scene/Components.h>
 #include <QCat/Uitiliy/PlatformUtils.h>
+#include <filesystem>
 
 namespace QCat
 {
+	extern const std::filesystem::path g_AssetPath;
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
 	{
 		SetContext(context);
@@ -475,14 +478,34 @@ namespace QCat
 				ImGui::NextColumn();
 				ImGui::Text("Albedo Texture");
 				ImGui::SameLine();
+
 				if (ImGui::SmallButton("Set Texture##albedo"))
-				{
 					OpenTexture(mat.m_DiffuseTexture);
-				}
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set None"))
+					mat.m_DiffuseTexture = nullptr;
+
+				std::string name;
 				if (mat.m_DiffuseTexture)
-					ImGui::Text(mat.m_DiffuseTexture->pathes[0].c_str());
+					name = mat.m_DiffuseTexture->pathes[0];
 				else
-					ImGui::Text("none");
+					name = "none";
+					
+				ImGui::InputText("##Albedo", name.data(), name.length(), ImGuiInputTextFlags_ReadOnly);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturepath = std::filesystem::path(g_AssetPath) / path;
+						Sampler_Desc desc;
+						auto& texture = TextureLibrary::Load(texturepath.string(), desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+						if (texture)
+							mat.m_DiffuseTexture = texture;
+					}
+
+					ImGui::EndDragDropTarget();
+				}	
 
 				ImGui::NextColumn();
 				ImGui::Separator();
@@ -493,14 +516,33 @@ namespace QCat
 				ImGui::NextColumn();
 				ImGui::Text("Normal Texture");
 				ImGui::SameLine();
+
 				if (ImGui::SmallButton("Set Texture##normal"))
-				{
 					 OpenTexture(mat.m_NormalMapTexture);
-				}
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set None"))
+					mat.m_NormalMapTexture = nullptr;
+
 				if (mat.m_NormalMapTexture)
-					ImGui::Text(mat.m_NormalMapTexture->pathes[0].c_str());
+					name = mat.m_NormalMapTexture->pathes[0];
 				else
-					ImGui::Text("none");
+					name = "none";
+
+				ImGui::InputText("##Normal", name.data(), name.length(), ImGuiInputTextFlags_ReadOnly);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturepath = std::filesystem::path(g_AssetPath) / path;
+						Sampler_Desc desc;
+						auto& texture = TextureLibrary::Load(texturepath.string(), desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+						if (texture)
+							mat.m_NormalMapTexture = texture;
+					}
+
+					ImGui::EndDragDropTarget();
+				}
 
 				ImGui::NextColumn();
 				ImGui::Separator();
@@ -512,13 +554,31 @@ namespace QCat
 				ImGui::Text("Metallic Texture");
 				ImGui::SameLine();
 				if (ImGui::SmallButton("Set Texture##metaillic"))
-				{
 					OpenTexture(mat.m_MetallicTexture);
-				}
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set None"))
+					mat.m_MetallicTexture = nullptr;
+
 				if (mat.m_MetallicTexture)
-					ImGui::Text(mat.m_MetallicTexture->pathes[0].c_str());
+					name =  mat.m_MetallicTexture->pathes[0];
 				else
-					ImGui::Text("none");
+					name = "none";
+
+				ImGui::InputText("##Metallic", name.data(), name.length(), ImGuiInputTextFlags_ReadOnly);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturepath = std::filesystem::path(g_AssetPath) / path;
+						Sampler_Desc desc;
+						auto& texture = TextureLibrary::Load(texturepath.string(), desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+						if (texture)
+							mat.m_MetallicTexture = texture;
+					}
+
+					ImGui::EndDragDropTarget();
+				}
 
 				ImGui::NextColumn();
 				ImGui::Separator();
@@ -531,13 +591,31 @@ namespace QCat
 				ImGui::Text("Roughness Texture");
 				ImGui::SameLine();
 				if (ImGui::SmallButton("Set Texture##roughness"))
-				{
 					OpenTexture(mat.m_RoughnessTexture );
-				}
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set None"))
+					mat.m_RoughnessTexture = nullptr;
+
 				if (mat.m_RoughnessTexture)
-					ImGui::Text(mat.m_RoughnessTexture->pathes[0].c_str());
+					name = mat.m_RoughnessTexture->pathes[0];
 				else
-					ImGui::Text("none");
+					name = "none";
+
+				ImGui::InputText("##Roughness", name.data(), name.length(), ImGuiInputTextFlags_ReadOnly);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturepath = std::filesystem::path(g_AssetPath) / path;
+						Sampler_Desc desc;
+						auto& texture = TextureLibrary::Load(texturepath.string(), desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+						if (texture)
+							mat.m_RoughnessTexture = texture;
+					}
+
+					ImGui::EndDragDropTarget();
+				}
 
 				ImGui::NextColumn();
 				ImGui::Separator();
@@ -549,13 +627,31 @@ namespace QCat
 				ImGui::Text("AmbientOcclusion Texture");
 				ImGui::SameLine();
 				if (ImGui::SmallButton("Set Texture##ambient"))
-				{
 					OpenTexture(mat.m_AmbientOcclusionTexture);
-				}
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Set None"))
+					mat.m_AmbientOcclusionTexture = nullptr;
+
 				if (mat.m_AmbientOcclusionTexture)
-					ImGui::Text(mat.m_AmbientOcclusionTexture->pathes[0].c_str());
+					name = mat.m_AmbientOcclusionTexture->pathes[0];
 				else
-					ImGui::Text("none");
+					name = "none";
+
+				ImGui::InputText("##AmbientOcclusion", name.data(), name.length(), ImGuiInputTextFlags_ReadOnly);
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+					{
+						const wchar_t* path = (const wchar_t*)payload->Data;
+						std::filesystem::path texturepath = std::filesystem::path(g_AssetPath) / path;
+						Sampler_Desc desc;
+						auto& texture = TextureLibrary::Load(texturepath.string(), desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
+						if (texture)
+							mat.m_AmbientOcclusionTexture = texture;
+					}
+
+					ImGui::EndDragDropTarget();
+				}
 
 				ImGui::Columns(1);
 				ImGui::Separator();
@@ -655,7 +751,7 @@ namespace QCat
 		desc.addressV = WrapingMode::CLAMP;
 		desc.MIN = Filtering::LINEAR;
 		desc.MAG = Filtering::LINEAR;
-		std::optional<std::string> filepath = FileDialogs::OpenFile("Image File \0*.PNG;*.JPEG;*.JPG;\0");
+		std::optional<std::string> filepath = FileDialogs::OpenFile("Image File \0*.PNG;*.JPEG;*.JPG;*.TGA;\0");
 		if (filepath)
 		{
 			texture = TextureLibrary::Load(*filepath, desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);

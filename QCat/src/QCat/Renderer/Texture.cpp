@@ -21,14 +21,28 @@ namespace  QCat
 	}
 	Ref<Texture2D> Texture2D::Create(const std::string& path, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples, bool flip,bool gamacorrection)
 	{
-		switch (Renderer::GetAPI())
+
+		auto begin = path.find_last_of('.');
+		std::string extension = path.substr(begin + 1, path.length());
+		if (extension == "jpg" || extension == "png" || extension == "tga" || extension == "jpeg"
+			|| extension == "hdr" || extension == "ibl")
 		{
-		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
-		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLTexture2D>(path, desc, mipLevel, samples, flip,gamacorrection);
-		case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2D>(path, desc, mipLevel, samples, flip,gamacorrection);
+			switch (Renderer::GetAPI())
+			{
+			case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+			case RenderAPI::API::OpenGL:		return CreateRef<OpenGLTexture2D>(path, desc, mipLevel, samples, flip, gamacorrection);
+			case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2D>(path, desc, mipLevel, samples, flip, gamacorrection);
+			}
+			QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+			return nullptr;
 		}
-		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
-		return nullptr;
+		else
+		{
+			QCAT_CORE_ERROR("Texture2D Create Error : Wrong Texture Extension {0} ", extension);
+			return nullptr;
+		}
+		
+
 	}
 	Ref<Texture2DArray> Texture2DArray::Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel, unsigned int samples )
 	{
@@ -43,26 +57,66 @@ namespace  QCat
 	}
 	Ref<Texture2DArray> Texture2DArray::Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples , bool flip, bool gamacorrection )
 	{
-		switch (Renderer::GetAPI())
+		bool allcheck = true;
+		for (auto path : imagePath)
 		{
-		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
-		case RenderAPI::API::OpenGL:		return CreateRef<OpenGlTexture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
-		case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
+			auto begin = path.find_last_of('.');
+			std::string extension = path.substr(begin + 1, path.length());
+			if (extension == "jpg" || extension == "png" || extension == "tga" || extension == "jpeg"
+				|| extension == "hdr" || extension == "ibl")
+			{			
+			}
+			else
+				allcheck = false;
 		}
-		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
-		return nullptr;
+		if (allcheck)
+		{
+			switch (Renderer::GetAPI())
+			{
+			case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+			case RenderAPI::API::OpenGL:		return CreateRef<OpenGlTexture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
+			case RenderAPI::API::DirectX11:		return CreateRef<DX11Texture2DArray>(imagePath, desc, mipLevel, samples, flip, gamacorrection);
+			}
+			QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+			return nullptr;
+		}
+		else
+		{
+			QCAT_CORE_ERROR("Texture2DArray Create Error : Wrong Texture Extension");
+			return nullptr;
+		}		
 	}
 
 	Ref<TextureCube> TextureCube::Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel,bool flip, bool gammacorrection)
 	{
-		switch (Renderer::GetAPI())
+		bool allcheck = true;
+		for (auto path : imagePath)
 		{
-		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
-		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLCubeMapTexture>(imagePath, desc, mipLevel, flip, gammacorrection);
-		case RenderAPI::API::DirectX11:		return CreateRef<DX11TextureCube>(imagePath, desc, mipLevel, flip, gammacorrection);
+			auto begin = path.find_last_of('.');
+			std::string extension = path.substr(begin + 1, path.length());
+			if (extension == "jpg" || extension == ".png" || extension == ".tga" || extension == "jpeg"
+				|| extension == "hdr" || extension == "ibl")
+			{
+			}
+			else
+				allcheck = false;
 		}
-		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
-		return nullptr;
+		if (allcheck)
+		{
+			switch (Renderer::GetAPI())
+			{
+			case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+			case RenderAPI::API::OpenGL:		return CreateRef<OpenGLCubeMapTexture>(imagePath, desc, mipLevel, flip, gammacorrection);
+			case RenderAPI::API::DirectX11:		return CreateRef<DX11TextureCube>(imagePath, desc, mipLevel, flip, gammacorrection);
+			}
+			QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+			return nullptr;
+			}
+		else
+		{
+			QCAT_CORE_ERROR("Texture2DArray Create Error : Wrong Texture Extension");
+			return nullptr;
+		}
 	}
 
 	Ref<TextureCube> TextureCube::Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, void* pData)

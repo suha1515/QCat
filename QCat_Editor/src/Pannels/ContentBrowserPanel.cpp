@@ -3,10 +3,10 @@
 
 namespace QCat
 {
-	static const std::filesystem::path s_AssetPath = "Asset";
+	extern const std::filesystem::path g_AssetPath = "Asset";
 
 	ContentBrowserPanel::ContentBrowserPanel()
-		:m_CurrentDirectory(s_AssetPath)
+		:m_CurrentDirectory(g_AssetPath)
 	{
 		Sampler_Desc desc;
 		m_DirectoryIcon = TextureLibrary::Load("DirectoryIcon", "Resources/ContentBrowser/folder.png");
@@ -28,7 +28,7 @@ namespace QCat
 	{
 		ImGui::Begin("Content Browser");
 
-		if (m_CurrentDirectory != std::filesystem::path(s_AssetPath))
+		if (m_CurrentDirectory != std::filesystem::path(g_AssetPath))
 		{
 			if (ImGui::Button("<-"))
 			{
@@ -36,7 +36,7 @@ namespace QCat
 			}
 		}
 		static float padding = 16.0f;
-		static float thumbnailSize = 128.f;
+		static float thumbnailSize =64.f;
 		float cellSize = thumbnailSize + padding;
 		// 272
 		// 1000
@@ -50,12 +50,37 @@ namespace QCat
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto path = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(path, s_AssetPath);
+			auto relativePath = std::filesystem::relative(path, g_AssetPath);
 			std::string filenameString = relativePath.filename().string();
 
-			Ref<Texture>& icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
-
+			ImGui::PushID(filenameString.c_str());
+			Ref<Texture> icon;
+			if (directoryEntry.is_directory())
+				icon = m_DirectoryIcon;
+			else
+			{
+				if (path.extension() == ".jpg" || path.extension() == ".png" || path.extension() == ".tga" || path.extension() == ".jpeg"
+					|| path.extension() == ".hdr" || path.extension() == ".ibl")
+				{
+					icon = m_ImageIcon;
+				}
+				else
+					icon = m_FileIcon;
+			}
+		
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 			ImGui::ImageButton(icon->GetTexture(), { thumbnailSize,thumbnailSize },uv1,uv2);
+
+			if (ImGui::BeginDragDropSource())
+			{
+				const wchar_t* itemPath = relativePath.c_str();
+				ImGui::SetDragDropPayload("CONTENT_BRWOSER_ITEM", itemPath, (wcslen(itemPath)+1) * sizeof(wchar_t),ImGuiCond_Once);
+				ImGui::Image(icon->GetTexture(), { 64.f,64.f }, uv1, uv2);
+				ImGui::Text(filenameString.c_str());
+				ImGui::EndDragDropSource();
+			}
+
+			ImGui::PopStyleColor();
 			if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 			{
 				if (directoryEntry.is_directory())
@@ -65,10 +90,11 @@ namespace QCat
 			ImGui::TextWrapped(filenameString.c_str());
 	
 			ImGui::NextColumn();
+			ImGui::PopID();
 		}
 		ImGui::Columns(1);
-		ImGui::SliderFloat("Thumbnail Size",& thumbnailSize,16,512);
-		ImGui::SliderFloat("Padding ", &padding, 0, 32);
+		//ImGui::SliderFloat("Thumbnail Size",& thumbnailSize,16,512);
+		//ImGui::SliderFloat("Padding ", &padding, 0, 32);
 		ImGui::End();
 	}
 }

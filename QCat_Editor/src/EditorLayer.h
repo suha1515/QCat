@@ -10,6 +10,8 @@
 #include "Geometry/Sphere.h"
 #include "Geometry/Cube.h"
 
+#include <filesystem>
+
 namespace QCat
 {
 	class EditorLayer : public Layer
@@ -31,6 +33,7 @@ namespace QCat
 
 		void NewScene();
 		void OpenScene();
+		void OpenScene(const std::filesystem::path& path);
 		void SaveSceneAs();
 	private:
 		Ref<Sphere> sphere;

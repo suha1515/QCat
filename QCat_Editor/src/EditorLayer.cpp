@@ -14,6 +14,8 @@
 
 namespace QCat
 {
+	extern const std::filesystem::path g_AssetPath;
+
 	void SetMaterial(Entity& entity, Material& mat,Scene* activeScene)
 	{
 		if (entity.HasComponent<MaterialComponent>())
@@ -302,6 +304,16 @@ namespace QCat
 		m_ViewportBounds[0] = { minBound.x,minBound.y };
 		m_ViewportBounds[1] = { maxBound.x,maxBound.y };*/
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				OpenScene(std::filesystem::path(g_AssetPath)/ path);
+			}
+		
+			ImGui::EndDragDropTarget();
+		}
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -531,14 +543,28 @@ namespace QCat
 		std::optional<std::string> filepath = FileDialogs::OpenFile("QCat Scene (*.QScene)\0*.QScene\0");
 		if (filepath)
 		{
+			OpenScene(*filepath);
+		}
+		
+	}
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	{
+		std::string filepath = path.string();
+		auto begin = filepath.find_last_of('.');
+		std::string extension = filepath.substr(begin + 1, filepath.length());
+		if (extension != "QScene")
+		{
+			QCAT_CORE_ERROR("Wrong Extension for LoadScene! Wrong Extension : {0}", extension);
+		}
+		else
+		{
 			m_ActiveScene = CreateRef<Scene>();
 			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 			SceneSerializer serializer(m_ActiveScene);
-			serializer.DeSerialize(*filepath);
+			serializer.DeSerialize(path.string());
 		}
-		
 	}
 
 	void EditorLayer::SaveSceneAs()
