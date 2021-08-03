@@ -1,10 +1,9 @@
 #include "qcpch.h"
 #include "Application.h"
-
 #include "Platform/Windows/WindowsWindow.h"
 #include "Input.h"
-
 #include "QCat/Renderer/Renderer.h"
+
 
 namespace wrl = Microsoft::WRL;
 

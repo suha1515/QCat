@@ -1,5 +1,5 @@
 #include "ProjectPropertiesPanel.h"
-
+#include <Imgui/imgui_internal.h>
 namespace QCat
 {
 	ProjectPropertiesPanel::ProjectPropertiesPanel()
@@ -8,6 +8,9 @@ namespace QCat
 	void ProjectPropertiesPanel::OnImGuiRender()
 	{
 		ImGui::Begin("Project property");
+		ImGuiContext& g = *ImGui::GetCurrentContext();
+		ImGuiIO& io = g.IO;
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
 		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap;
 		bool cascade_open = ImGui::TreeNodeEx("Cascade Settings", flags);

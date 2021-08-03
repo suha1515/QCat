@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <wrl.h>
+#include <chrono>
 
 #include "QCat/Core/QCatCore.h"
 #include "QCat/Core/Log.h"

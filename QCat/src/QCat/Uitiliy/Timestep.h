@@ -11,8 +11,8 @@ namespace QCat
 
 		operator float() const { return m_time; }
 
-		float GetSeconds()const { return m_time; }
-		float GetMilliseconds() const { return m_time*1000.0f; }
+		float GetSeconds()const { return m_time ; }
+		float GetMilliseconds() const { return m_time * 1000.f;}
 	private:
 		float m_time;
 	};
