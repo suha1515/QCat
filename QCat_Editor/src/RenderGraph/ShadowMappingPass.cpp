@@ -13,9 +13,33 @@ namespace QCat
 		RegisterInput(DataInput<glm::vec4>::Make("forArNearFar", forArNearFar, DataType::Float4));
 		RegisterInput(DataInput<float>::Make("CasacadeSplits", m_CascadeSplits, DataType::Float));
 
+		// Directional Light ShadowTransform
 		RegisterOutput(DataOutput<LightMatrix>::Make("DirlightTransform", DirlightTransform, DataType::Struct));
-		DirlightTransform = CreateRef<LightMatrix>();
+		// Directional Light ShadowMap
+		RegisterOutput(TextureOutput::Make("DirectionalLightShadowMap", m_DirLightShadowMap));
+		// Point Light ShadowMap
+		RegisterOutput(TextureOutput::Make("PointLightShadowMap", m_PointLightShadowMap));
+		// Spot Light ShadowMap
+		RegisterOutput(TextureOutput::Make("SpotLightShadowMap", m_SpotLightShadowMap));
 
+		DirlightTransform = CreateRef<LightMatrix>();
+		Sampler_Desc desc;
+		desc.MIN = Filtering::LINEAR;
+		desc.MAG = Filtering::LINEAR;
+		desc.MIP = Filtering::NONE;
+		desc.addressU = WrapingMode::CLAMP;
+		desc.addressV = WrapingMode::CLAMP;
+		desc.addressW = WrapingMode::CLAMP;
+		desc.mode = FilterMode::COMPARISON;
+		desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+		desc.borderColor[0] = 1.0f;
+		desc.borderColor[1] = 1.0f;
+		desc.borderColor[2] = 1.0f;
+		desc.borderColor[3] = 1.0f;
+		m_DirLightShadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, 2048, 2048, 5);
+		m_SpotLightShadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, 512, 512, 8);
+
+		m_PointLightShadowMap = TextureCubeArray::Create(TextureFormat::DEPTH32, desc, 512, 512, 4);
 
 		AttachmentSpecification pointdepthbuffer = { {FramebufferUsage::Depth,TextureType::TextureCube,TextureFormat::DEPTH32,"DepthBuffer"} };
 		pointdepthbuffer.Height = 1024;
@@ -25,7 +49,7 @@ namespace QCat
 		directiondepthbuffer.Height = 1024;
 		directiondepthbuffer.Width = 1024;
 
-		AttachmentSpecification spotLightDepthBuffer = { {FramebufferUsage::Depth,TextureType::Texture2D,TextureFormat::DEPTH32,"DepthBuffer"} };
+		AttachmentSpecification spotLightDepthBuffer = { {FramebufferUsage::Depth,TextureType::Texture2DArray,TextureFormat::DEPTH32,"DepthBuffer"} };
 		directiondepthbuffer.Height = 1024;
 		directiondepthbuffer.Width = 1024;
 
@@ -44,15 +68,16 @@ namespace QCat
 		shadowMapMatrices = ConstantBuffer::Create(sizeof(ShadowMatrix), 0);
 		csmMatrices = ConstantBuffer::Create(sizeof(CsmMatrix), 0);
 		transformConstantBuffer = ConstantBuffer::Create(sizeof(Transform), 0);
-		directionallightMatrix = ConstantBuffer::Create(sizeof(DirectionalLightViewProj), 0);
+		spotlightMatrix = ConstantBuffer::Create(sizeof(SpotMatrix), 0);
 
-		Sampler_Desc desc;
-		m_SamplerForDebug = SamplerState::Create(desc);
+		Sampler_Desc desc2;
+		m_SamplerForDebug = SamplerState::Create(desc2);
 	}
 	void ShadowMappingPass::Initialize()
 	{
 		m_PointshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/PointShadowMap.glsl" : "Asset/shaders/hlsl/ShadowMap/PointShadowMap.hlsl");
 		m_DirectionalshadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/DirectionalShadowMap.glsl" : "Asset/shaders/hlsl/ShadowMap/DirectionalShadowMap.hlsl");
+		m_SpotLightShadowMappingShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/SpotLightShadowMap.glsl" : "Asset/shaders/hlsl/ShadowMap/SpotLightShadowMap.hlsl");
 		m_DebugShadowShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? "Asset/shaders/glsl/ShadowMap/DebugShadow.glsl" : "Asset/shaders/hlsl/ShadowMap/DebugShadow.hlsl");
 
 		float quadVertices[] =
@@ -215,6 +240,8 @@ namespace QCat
 		int index = 0;
 		int dirLightCount = 0;
 		int pointLightCount = 0;
+		int spotLightCount = 0;
+
 		for (auto& entity : lightView)
 		{
 			TransformComponent& transcomp = lightView.get<TransformComponent>(entity);
@@ -226,12 +253,13 @@ namespace QCat
 			glm::vec3 rightVector = glm::vec3(transform[0][0], transform[1][0], transform[2][0]);
 			glm::vec3 upVector = glm::vec3(transform[0][1], transform[1][1], transform[2][1]);
 			glm::vec3 forward = glm::vec3(transform[0][2], transform[1][2], transform[2][2]);
-
+			comp.lightDirection = forward;
 			transformConstantBuffer->Bind(0, Type::Vetex);
-			uint32_t resoultion = comp.resolution;
+			uint32_t resoultion = 0;
 			if (comp.type == LightComponent::LightType::Directional && dirLightCount ==0)
 			{
-				comp.lightDirection = forward;
+				resoultion = 2048;
+				
 				csmMatrices->Bind(1, Type::Geometry);
 				CsmPass(forward, upVector, resoultion);
 				CsmMatrix matrix;
@@ -241,11 +269,11 @@ namespace QCat
 				matrix.matrices[3] = m_shadowOrthoProj[3];
 				matrix.matrices[4] = m_shadowOrthoProj[4];
 
-				DirlightTransform->matrices[0] = m_shadowOrthoProj[0];
-				DirlightTransform->matrices[1] = m_shadowOrthoProj[1];
-				DirlightTransform->matrices[2] = m_shadowOrthoProj[2];
-				DirlightTransform->matrices[3] = m_shadowOrthoProj[3];
-				DirlightTransform->matrices[4] = m_shadowOrthoProj[4];
+				DirlightTransform->dirlightmatrices[0] = m_shadowOrthoProj[0];
+				DirlightTransform->dirlightmatrices[1] = m_shadowOrthoProj[1];
+				DirlightTransform->dirlightmatrices[2] = m_shadowOrthoProj[2];
+				DirlightTransform->dirlightmatrices[3] = m_shadowOrthoProj[3];
+				DirlightTransform->dirlightmatrices[4] = m_shadowOrthoProj[4];
 
 				for (int i = 0; i < 6; ++i)
 				{
@@ -257,7 +285,8 @@ namespace QCat
 				m_DirectionalLightShadow->Bind();
 				RenderCommand::SetViewport(0, 0, resoultion, resoultion);
 				m_DirectionalLightShadow->DetachAll();
-				Ref<DepthStencilView> view = DepthStencilView::Create(TextureType::Texture2DArray, comp.shadowMap, TextureFormat::DEPTH32, 0, 0,5);
+				//Ref<DepthStencilView> view = DepthStencilView::Create(TextureType::Texture2DArray, comp.shadowMap, TextureFormat::DEPTH32, 0, 0,5);
+				Ref<DepthStencilView> view = DepthStencilView::Create(TextureType::Texture2DArray,m_DirLightShadowMap, TextureFormat::DEPTH32, 0, 0, 5);
 
 				m_DirectionalLightShadow->AttachDepthTexture(view, AttachmentType::Depth);
 				m_DirectionalLightShadow->Clear();
@@ -271,7 +300,7 @@ namespace QCat
 				m_ColorBuffer->AttachTexture(comp.debugMap, AttachmentType::Color_0, TextureType::Texture2D, 0);
 				m_ColorBuffer->Clear();
 
-				Ref<TextureShaderView> shaderview = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, comp.textureindex, 1);
+				Ref<TextureShaderView> shaderview = TextureShaderView::Create(TextureType::Texture2D, m_DirLightShadowMap, TextureFormat::DEPTH32, 0, 1, comp.textureindex, 1);
 
 				m_DebugShadowShader->Bind();
 				shaderview->Bind(0, ShaderType::PS);
@@ -284,28 +313,38 @@ namespace QCat
 
 				dirLightCount++;
 			}
-			else if (comp.type == LightComponent::LightType::Spot)
+			else if (comp.type == LightComponent::LightType::Spot && spotLightCount <8)
 			{
-				shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-				directionallightMatrix->Bind(1, Type::Vetex);
+				resoultion=512;
+				SpotMatrix Spotlightdata;
+				float angle = (comp.outerCutOff) * 2.0f;
+				if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+					shadowProj = glm::perspectiveLH_ZO(glm::radians(angle), 1.0f, comp.near_plane, comp.far_plane);
+				else
+					shadowProj = glm::perspectiveLH_NO(glm::radians(angle), 1.0f, comp.near_plane, comp.far_plane);
 
-				DirectionalLightViewProj data;
-				data.viewProjMatrix = shadowProj * glm::lookAt(lightPos, lightPos + forward, upVector);
-				data.farz = 0;
-				data.nearz = 0;
-				directionallightMatrix->SetData(&data, sizeof(DirectionalLightViewProj), 0);
+				Spotlightdata.matrix = shadowProj * glm::lookAt(lightPos, lightPos + forward, upVector);
+				DirlightTransform->spotlightmatrices[spotLightCount] = Spotlightdata.matrix;
+			
+				spotlightMatrix->Bind(1, Type::Vetex);
+				spotlightMatrix->SetData(&Spotlightdata, sizeof(SpotMatrix), 0);
 
-				m_DirectionalLightShadow->Bind();
+				m_SpotLightShadow->Bind();
 				RenderCommand::SetViewport(0, 0, resoultion, resoultion);
-				m_DirectionalLightShadow->DetachAll();
-				m_DirectionalLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::Texture2D, 0);
-				m_DirectionalLightShadow->Clear();
+				m_SpotLightShadow->DetachAll();
+				// TODO
+				Ref<DepthStencilView> depthview = DepthStencilView::Create(TextureType::Texture2D, m_SpotLightShadowMap, TextureFormat::DEPTH32, 0, spotLightCount, 1);
+				m_SpotLightShadow->AttachDepthTexture(depthview, AttachmentType::Depth);
+				//m_DirectionalLightShadow->AttachTexture(, AttachmentType::Depth, TextureType::Texture2D, 0);
+				m_SpotLightShadow->Clear();
 
-				m_DirectionalshadowMappingShader->Bind();
+				m_SpotLightShadowMappingShader->Bind();
 				DrawModel(registry);
-				m_DirectionalshadowMappingShader->UnBind();
+				m_SpotLightShadowMappingShader->UnBind();
 
-				m_DirectionalLightShadow->UnBind();
+				m_SpotLightShadow->UnBind();
+
+				Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, m_SpotLightShadowMap, TextureFormat::DEPTH32, 0, 1, spotLightCount, 1);
 
 				m_ColorBuffer->Bind();
 				m_ColorBuffer->DetachAll();
@@ -313,20 +352,21 @@ namespace QCat
 				m_ColorBuffer->Clear();
 
 				m_DebugShadowShader->Bind();
-
-				comp.shadowMap->Bind(0);
+				view->Bind(0, ShaderType::PS);
+				
 				m_SamplerForDebug->Bind(0);
 				RenderCommand::DrawIndexed(m_quad);
 				m_SamplerForDebug->UnBind(0);
 				m_DebugShadowShader->UnBind();
 				m_ColorBuffer->UnBind();
+				spotLightCount++;
 			}
 			else if (comp.type == LightComponent::LightType::Point && pointLightCount< 4)
 			{
 				float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? -1.0f : 1.0f;
 				if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 				{
-					shadowProj = glm::perspectiveRH(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+					shadowProj = glm::perspectiveRH_NO(glm::radians(90.0f), 1.0f, comp.near_plane, comp.far_plane);
 					shadowTransforms.push_back(shadowProj *
 						glm::lookAtRH(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
 					shadowTransforms.push_back(shadowProj *
@@ -342,7 +382,7 @@ namespace QCat
 				}
 				else
 				{
-					shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+					shadowProj = glm::perspectiveLH_ZO(glm::radians(90.0f), 1.0f, comp.near_plane, comp.far_plane);
 					shadowTransforms.push_back(shadowProj *
 						glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
 					shadowTransforms.push_back(shadowProj *
@@ -356,13 +396,16 @@ namespace QCat
 					shadowTransforms.push_back(shadowProj *
 						glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
 				}
+				resoultion = 512;
 				shadowMapMatrices->Bind(1, Type::Geometry);
 				shadowMapMatrices->SetData(shadowTransforms.data(), sizeof(ShadowMatrix), 0);
 				shadowTransforms.clear();
 				m_PointLightShadow->Bind();
 				RenderCommand::SetViewport(0, 0, resoultion, resoultion);
 				m_PointLightShadow->DetachAll();
-				m_PointLightShadow->AttachTexture(comp.shadowMap, AttachmentType::Depth, TextureType::TextureCube, 0,0,6);
+				//m_PointLightShadow->AttachTexture(m_PointLightShadowMap, AttachmentType::Depth, TextureType::TextureCubeArray, 0, pointLightCount,6);
+				Ref<DepthStencilView> depthview = DepthStencilView::Create(TextureType::Texture2DArray, m_PointLightShadowMap, TextureFormat::DEPTH32, 0, pointLightCount*6, 6);
+				m_PointLightShadow->AttachDepthTexture(depthview,AttachmentType::Depth);
 				m_PointLightShadow->Clear();
 
 				m_PointshadowMappingShader->Bind();
@@ -370,7 +413,8 @@ namespace QCat
 				m_PointshadowMappingShader->UnBind();
 				m_PointLightShadow->UnBind();
 
-				Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex, 1);
+				//Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex, 1);
+				Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, m_PointLightShadowMap, TextureFormat::DEPTH32, 0, 1, (pointLightCount * 6) + (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex,1);
 
 				m_ColorBuffer->Bind();
 				m_ColorBuffer->DetachAll();
@@ -387,7 +431,7 @@ namespace QCat
 				m_ColorBuffer->UnBind();
 				pointLightCount++;
 			}
-		}
+		}	
 	}
 }
 

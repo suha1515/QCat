@@ -130,7 +130,17 @@ namespace  QCat
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
-
+	Ref<TextureCubeArray> TextureCubeArray::Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel , unsigned int samples )
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLCubeMapArray>(format, desc, width, height,depth, mipLevel,samples);
+		//case RenderAPI::API::DirectX11:		//return CreateRef<DX11TextureCube>(format, desc, width, height, mipLevel, pData);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
 	Ref<TextureUtility> TextureUtility::Get_()
 	{
 		static Ref<TextureUtility> util;
@@ -183,5 +193,9 @@ namespace  QCat
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
+
+
+
+	
 
 }

@@ -470,6 +470,55 @@ namespace QCat
 		// 1st parameter is for slot
 		glBindTextureUnit(slot, m_renderID);
 	}
+	OpenGLCubeMapArray::OpenGLCubeMapArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel, unsigned int samples)
+	{
+		GLenum internalFormat = Utils::GetTextureInternalFormat(format);
+		GLenum textureformat = Utils::GetTextureFormat(format);
+		GLenum dataFormat = Utils::GetTextureDataFormat(format);
+		m_InternalFormat = internalFormat;
+		m_Format = textureformat;
+		m_DataFormat = dataFormat;
+
+		this->desc.Format = format;
+		this->desc.Type = TextureType::TextureCube;
+		this->desc.Width = width;
+		this->desc.Height = height;
+		this->desc.ArraySize = depth;
+		this->desc.Format = Utils::GetTextureFormatFromGL(m_InternalFormat);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.MipLevels = mipLevel;
+		this->desc.SampleCount = samples;
+
+		Validate();
+		Utils::SetTextureParameter(m_renderID, desc);
+	}
+
+	OpenGLCubeMapArray::~OpenGLCubeMapArray()
+	{
+	}
+
+	void OpenGLCubeMapArray::Validate()
+	{
+		if (m_renderID > 0)
+		{
+			glDeleteTextures(1, &m_renderID);
+			m_renderID = 0;
+		}
+		glCreateTextures(GL_TEXTURE_CUBE_MAP_ARRAY, 1, &m_renderID);;
+		if (desc.SampleCount > 1)
+			glTexStorage3DMultisample(m_renderID, desc.SampleCount, m_InternalFormat, desc.Width, desc.Height,desc.ArraySize*6, true);
+		else
+			glTextureStorage3D(m_renderID, desc.MipLevels, m_InternalFormat, desc.Width, desc.Height,desc.ArraySize*6);
+
+		sampler = SamplerState::Create(smpdesc);
+	}
+
+	void OpenGLCubeMapArray::Bind(unsigned int slot) const
+	{
+		QCAT_PROFILE_FUNCTION();
+		// 1st parameter is for slot
+		glBindTextureUnit(slot, m_renderID);
+	}
 	
 	//Texture Utility
 	OpenGLTextureUtility::OpenGLTextureUtility()
@@ -769,4 +818,6 @@ namespace QCat
 			QCAT_CORE_ERROR("DepthStencil Bind Error! : Wrong Type for Binding");
 	}
 	
+	
+
 }

@@ -477,6 +477,7 @@ namespace QCat
 					default:
 						break;
 					}	
+					lc.Validate();
 				}
 
 ;				auto cameraComponent = entity["CameraComponent"];

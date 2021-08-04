@@ -729,8 +729,8 @@ namespace QCat
 					ImGui::DragFloat("Constant", &component.constant, 0.1f);
 					ImGui::DragFloat("Linear", &component.linear, 0.1f);
 					ImGui::DragFloat("Quadratic", &component.quadratic, 0.1f);
-					ImGui::DragFloat("CutOff", &component.cutoff, 0.1f);
-					ImGui::DragFloat("OuterCutOff", &component.outerCutOff, 0.1f);
+					ImGui::DragFloat("CutOff", &component.cutoff, 0.1f,12.5f, component.outerCutOff-2.0f);
+					ImGui::DragFloat("OuterCutOff", &component.outerCutOff, 0.1f, component.cutoff + 2.0f,60.0f);
 					ImGui::DragFloat("Radius", &component.radius, 0.1f);
 					
 				}

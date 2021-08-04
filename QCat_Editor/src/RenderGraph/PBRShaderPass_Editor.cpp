@@ -13,6 +13,10 @@ namespace QCat
 		RegisterInput(TextureInput::Make("IrradianceCubeMap", m_IrradianceCubeMap));
 		RegisterInput(TextureInput::Make("BRDFLutTexture", m_BRDFLutTextrue));
 		RegisterInput(TextureInput::Make("PrefilterMap", m_PrefilterMap));
+		RegisterInput(TextureInput::Make("DirectionalLightShadowMap", m_DirectionalLightShadowMap));
+		RegisterInput(TextureInput::Make("PointLightShadowMap", m_PointLightShadowMap));
+		RegisterInput(TextureInput::Make("SpotLightShadowMap", m_SpotLightShadowMap));
+
 
 		RegisterInput(TextureInput::Make("ColorBuffer", m_ColorBuffer));
 		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
@@ -20,7 +24,6 @@ namespace QCat
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 		RegisterInput(DataInput<bool>::Make("DebugMode", m_DebugShadow, DataType::Bool));
 		RegisterInput(DataInput<bool>::Make("SoftShadow", m_SoftShadow, DataType::Bool));
-
 
 
 		RegisterInput(DataInput<ShadowMappingPass::LightMatrix>::Make("DirlightTransform", dirlightTransform, DataType::Struct));
@@ -92,6 +95,7 @@ namespace QCat
 		auto lightView = registry.view<TransformComponent, LightComponent>();
 		int dirLightCount = 0;
 		int pointLightCount = 0;
+		int spotLightCount = 0;
 		Light light;
 		for (auto entity : lightView)
 		{
@@ -99,26 +103,39 @@ namespace QCat
 			LightComponent& comp = lightView.get<LightComponent>(entity);
 			if (comp.type == LightComponent::LightType::Directional && dirLightCount <= 0)
 			{
-				m_DirLightMap = comp.shadowMap;
-				ShadowMappingPass::LightMatrix data = *dirlightTransform;
-				dirlighbuffer->SetData(&data, sizeof(ShadowMappingPass::LightMatrix), 0);
+				m_DirLightMap = m_DirectionalLightShadowMap;
 				dirLightCount++;
 
 				light.dirlight.diffuse = comp.diffuse;
-				light.dirlight.isActive = 1.0f;
+				light.dirlight.isActive = true;
 				light.dirlight.lightDirection = comp.lightDirection;
-
-				light.dirlight.isDebug = *m_DebugShadow;
-				light.dirlight.isSoft = *m_SoftShadow;
 			}
 			else if (comp.type == LightComponent::LightType::Point && pointLightCount < 4)
 			{
 				light.pointLight[pointLightCount].diffuse = comp.diffuse;
-				light.pointLight[pointLightCount].isActive = 1.0f;
+				light.pointLight[pointLightCount].isActive = true;
 				light.pointLight[pointLightCount].position = lightPos;
+				light.pointLight[pointLightCount].far_plane = comp.far_plane;
+				light.pointLight[pointLightCount].near_plane = comp.near_plane;
 				pointLightCount++;
-			}		
+			}
+			else if (comp.type == LightComponent::LightType::Spot && spotLightCount < 8)
+			{
+				light.spotLight[spotLightCount].diffuse = comp.diffuse;
+				light.spotLight[spotLightCount].isActive = true;
+				light.spotLight[spotLightCount].position = lightPos;
+				light.spotLight[spotLightCount].far_plane = comp.far_plane;
+				light.spotLight[spotLightCount].cutoff = glm::cos(glm::radians(comp.cutoff));
+				light.spotLight[spotLightCount].outercutoff = glm::cos(glm::radians(comp.outerCutOff));
+				light.spotLight[spotLightCount].lightDirection = comp.lightDirection;
+				spotLightCount++;
+			}
 		}
+		ShadowMappingPass::LightMatrix data = *dirlightTransform;
+		dirlighbuffer->SetData(&data, sizeof(ShadowMappingPass::LightMatrix), 0);
+
+		light.isDebug = *m_DebugShadow;
+		light.isSoft = *m_SoftShadow;
 		lightConstantBuffer->SetData(&light, sizeof(Light), 0);
 
 		matData.albedo = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -172,18 +189,26 @@ namespace QCat
 				if (*m_SoftShadow)
 				{
 					m_DirLightMap->Bind(8);
+					m_PointLightShadowMap->Bind(10);
+					m_SpotLightShadowMap->Bind(12);
 				}
 				else
 				{
 					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 					{
 						m_DirLightMap->Bind(8);
+						m_PointLightShadowMap->Bind(9);
+						m_SpotLightShadowMap->Bind(10);
 						m_normalSampler->Bind(9);
 					}
 					else
 					{
 						m_DirLightMap->Bind(9);
+						m_PointLightShadowMap->Bind(11);
+						m_SpotLightShadowMap->Bind(13);
 						m_normalSampler->Bind(9);
+						m_normalSampler->Bind(11);
+						m_normalSampler->Bind(13);
 					}
 				}
 				RenderCommand::DrawIndexed(mesh);

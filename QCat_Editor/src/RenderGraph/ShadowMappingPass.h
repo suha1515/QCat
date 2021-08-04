@@ -9,7 +9,8 @@ namespace QCat
 	public:
 		struct LightMatrix
 		{
-			glm::mat4 matrices[5];
+			glm::mat4 dirlightmatrices[5];
+			glm::mat4 spotlightmatrices[8];
 			glm::vec4 cascadedEndClip[6];
 		};
 	public:
@@ -25,7 +26,9 @@ namespace QCat
 
 		Ref<Shader> m_PointshadowMappingShader;
 		Ref<Shader> m_DirectionalshadowMappingShader;
+		Ref<Shader> m_SpotLightShadowMappingShader;
 		Ref<Shader> m_DebugShadowShader;
+		
 		Ref<SamplerState> m_SamplerForDebug;
 
 		Ref<FrameBufferEx> m_PointLightShadow;
@@ -45,6 +48,10 @@ namespace QCat
 		{
 			glm::mat4 matrices[5];
 		};
+		struct SpotMatrix
+		{
+			glm::mat4 matrix;
+		};
 		struct Transform
 		{
 			glm::mat4 transform;
@@ -60,7 +67,7 @@ namespace QCat
 		Ref<ConstantBuffer> transformConstantBuffer;
 		Ref<ConstantBuffer> shadowMapMatrices;
 		Ref<ConstantBuffer> csmMatrices;
-		Ref<ConstantBuffer> directionallightMatrix;
+		Ref<ConstantBuffer> spotlightMatrix;
 
 		Ref<glm::mat4> viewMatrix;
 		Ref<glm::mat4> projectionMatrix;
@@ -72,6 +79,10 @@ namespace QCat
 		glm::mat4 m_shadowOrthoProj[5];
 
 		float m_cascadeEnd[6];
+
+		Ref<Texture> m_DirLightShadowMap;
+		Ref<Texture> m_PointLightShadowMap;
+		Ref<Texture> m_SpotLightShadowMap;
 
 	};
 }

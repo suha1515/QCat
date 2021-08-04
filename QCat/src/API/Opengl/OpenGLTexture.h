@@ -100,7 +100,7 @@ namespace QCat
 		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) override;
 		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
-		virtual void ReadData(uint32_t face, uint32_t x, uint32_t y, const void* outdata) {};
+		virtual void ReadData(uint32_t face, uint32_t x, uint32_t y, const void* outdata) override {};
 
 		virtual void Bind(unsigned int slot = 0) const override;
 
@@ -113,6 +113,36 @@ namespace QCat
 		unsigned int m_renderID;
 		unsigned int m_mipLevel, m_samples;
 		bool flip = false, gammaCorrection = false;
+		GLenum m_InternalFormat, m_Format, m_DataFormat;
+		Sampler_Desc  smpdesc;
+	};
+	class OpenGLCubeMapArray : public TextureCubeArray
+	{
+	public:
+		OpenGLCubeMapArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel = 1, unsigned int samples = 1);
+
+		virtual ~OpenGLCubeMapArray();
+
+		void Validate();
+
+		virtual unsigned int GetWidth() const override { return desc.Width; }
+		virtual unsigned int GetHeight() const override { return desc.Height; }
+		virtual void* GetTexture() const override { return (void*)m_renderID; }
+		virtual void* GetTextureHandle() const override { return (void*)m_renderID; }
+		virtual void GenerateMipMap() override {};
+
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override {};
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) override {};
+		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override {};
+
+		virtual void Bind(unsigned int slot = 0) const override;
+
+		virtual bool operator==(const Texture& other) const override
+		{
+			return m_renderID == ((OpenGLCubeMapArray&)other).m_renderID;
+		}
+	private:
+		unsigned int m_renderID;
 		GLenum m_InternalFormat, m_Format, m_DataFormat;
 		Sampler_Desc  smpdesc;
 	};

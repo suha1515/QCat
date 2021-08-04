@@ -195,24 +195,30 @@ namespace QCat
 			case LightType::Directional:
 				if (debugMap != nullptr)
 					debugMap.reset();
+				resolution = 2048;
 				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
-				desc.MIN = Filtering::LINEAR;
-				desc.MAG = Filtering::LINEAR;
-				desc.MIP = Filtering::NONE;
-				desc.addressU = WrapingMode::CLAMP;
-				desc.addressV = WrapingMode::CLAMP;
-				desc.addressW = WrapingMode::CLAMP;
-				desc.mode = FilterMode::COMPARISON;
-				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
-				if (shadowMap != nullptr)
-					shadowMap.reset();
-				shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, resolution, resolution,5);
+				
+				//desc.MIN = Filtering::LINEAR;
+				//desc.MAG = Filtering::LINEAR;
+				//desc.MIP = Filtering::NONE;
+				//desc.addressU = WrapingMode::CLAMP;
+				//desc.addressV = WrapingMode::CLAMP;
+				//desc.addressW = WrapingMode::CLAMP;
+				//desc.mode = FilterMode::COMPARISON;
+				//desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+				//if (shadowMap != nullptr)
+				//	shadowMap.reset();
+				//shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, resolution, resolution,5);
 				break;
 			case LightType::Spot:
 				if (debugMap != nullptr)
 					debugMap.reset();
-				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
-				desc.MIN = Filtering::LINEAR;
+				resolution = 512;
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, 512, 512);
+				far_plane = 10.0f;
+				near_plane = 0.1f;
+				
+				/*desc.MIN = Filtering::LINEAR;
 				desc.MAG = Filtering::LINEAR;
 				desc.MIP = Filtering::NONE;
 				desc.addressU = WrapingMode::CLAMP;
@@ -222,23 +228,27 @@ namespace QCat
 				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
 				if (shadowMap != nullptr)
 					shadowMap.reset();
-				shadowMap = Texture2D::Create(TextureFormat::DEPTH32, desc, resolution, resolution);
+				shadowMap = Texture2D::Create(TextureFormat::DEPTH32, desc, resolution, resolution);*/
 				break;
 			case LightType::Point:
 				if (debugMap != nullptr)
 					debugMap.reset();
-				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
-				desc.MIN = Filtering::LINEAR;
-				desc.MAG = Filtering::LINEAR;
-				desc.MIP = Filtering::NONE;
-				desc.addressU = WrapingMode::CLAMP;
-				desc.addressV = WrapingMode::CLAMP;
-				desc.addressW = WrapingMode::CLAMP;
-				desc.mode = FilterMode::COMPARISON;
-				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
-				if (shadowMap != nullptr)
-					shadowMap.reset();
-				shadowMap = TextureCube::Create(TextureFormat::DEPTH32, desc, resolution, resolution);
+				resolution = 512;
+				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, 512, 512);
+				far_plane = 10.0f;
+				near_plane = 0.1f;
+				
+				//desc.MIN = Filtering::LINEAR;
+				//desc.MAG = Filtering::LINEAR;
+				//desc.MIP = Filtering::NONE;
+				//desc.addressU = WrapingMode::CLAMP;
+				//desc.addressV = WrapingMode::CLAMP;
+				//desc.addressW = WrapingMode::CLAMP;
+				//desc.mode = FilterMode::COMPARISON;
+				//desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
+				//if (shadowMap != nullptr)
+				//	shadowMap.reset();
+				//shadowMap = TextureCube::Create(TextureFormat::DEPTH32, desc, resolution, resolution);
 				break;
 			default:
 				break;
@@ -252,14 +262,15 @@ namespace QCat
 		float constant = 1.0f;
 		float linear = 0.09f;
 		float quadratic = 0.032f;
-		float cutoff = glm::cos(glm::radians(12.5f));
-		float outerCutOff = glm::cos(glm::radians(17.5f));
+		float cutoff = 12.5f;
+		float outerCutOff = 17.5f;
 		float radius = 0.0f;
-
+		float far_plane = 10.0f;
+		float near_plane = 0.1f;
 		uint32_t resolution = 1024;
 		LightType type = LightType::Directional;
 
-		Ref<Texture> shadowMap;
+		//Ref<Texture> shadowMap;
 		Ref<Texture> debugMap;
 		int textureindex = 0;
 	};

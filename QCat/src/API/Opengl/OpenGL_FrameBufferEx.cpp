@@ -155,6 +155,10 @@ namespace QCat
 			}
 			if (type == TextureType::TextureCube)
 				glFramebufferTexture(GL_FRAMEBUFFER, attachmentIndex, texId, mipLevel);
+			else if (type == TextureType::Texture2DArray || type == TextureType::TextureCubeArray)
+			{
+				glFramebufferTextureLayer(GL_FRAMEBUFFER, attachmentIndex, texId, mipLevel,layerStart);
+			}
 			else
 				glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentIndex, target, texId, mipLevel);
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

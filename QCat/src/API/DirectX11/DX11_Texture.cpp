@@ -1012,6 +1012,15 @@ namespace QCat
 		default:
 			break;
 		}
+		uint32_t layerstart = startLayer;
+		uint32_t layercount = numlayer;
+		uint32_t mipstart = startMip;
+		if (TextureType::TextureCubeArray == type)
+		{
+			dstDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+			layerstart *= 6;
+		}
+			
 		if (numlayer > 1 || startLayer > 0)
 		{
 			if (TextureType::Texture1D == type )
@@ -1020,30 +1029,30 @@ namespace QCat
 				dstDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 			dsvDesc.ViewDimension = dstDimension;
 		}
-		uint32_t layercount = numlayer;
+	
 		switch (dstDimension)
 		{
 		case D3D11_DSV_DIMENSION_TEXTURE1D:
-			dsvDesc.Texture1D.MipSlice = startMip;
+			dsvDesc.Texture1D.MipSlice = mipstart;
 			break;
 		case D3D11_DSV_DIMENSION_TEXTURE1DARRAY:
-			dsvDesc.Texture1DArray.MipSlice = startMip;
-			dsvDesc.Texture1DArray.ArraySize = numlayer;
-			dsvDesc.Texture1DArray.FirstArraySlice = startLayer;
+			dsvDesc.Texture1DArray.MipSlice = mipstart;
+			dsvDesc.Texture1DArray.ArraySize = layercount;
+			dsvDesc.Texture1DArray.FirstArraySlice = layerstart;
 			break;
 		case D3D11_DSV_DIMENSION_TEXTURE2D:
-			dsvDesc.Texture2D.MipSlice = startMip;
+			dsvDesc.Texture2D.MipSlice = mipstart;
 			break;
 		case D3D11_DSV_DIMENSION_TEXTURE2DMS:
 			break;
 		case D3D11_DSV_DIMENSION_TEXTURE2DARRAY:
-			dsvDesc.Texture2DArray.MipSlice = startMip;
+			dsvDesc.Texture2DArray.MipSlice = mipstart;
 			dsvDesc.Texture2DArray.ArraySize = layercount;
-			dsvDesc.Texture2DArray.FirstArraySlice = startLayer;
+			dsvDesc.Texture2DArray.FirstArraySlice = layerstart;
 			break;
 		case D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY:
 			dsvDesc.Texture2DMSArray.ArraySize = layercount;
-			dsvDesc.Texture2DMSArray.FirstArraySlice = startLayer;
+			dsvDesc.Texture2DMSArray.FirstArraySlice = layerstart;
 			break;
 		default:
 			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for DepthStenilView!");

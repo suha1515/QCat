@@ -63,9 +63,15 @@ namespace QCat
         pbrShaderPass->SetInputLink("projectionMatrix", "$.projectionMatrix");
         pbrShaderPass->SetInputLink("ColorBuffer", "$.ColorBuffer");
         pbrShaderPass->SetInputLink("DepthBuffer", "$.DepthBuffer");
-        pbrShaderPass->SetInputLink("DirlightTransform", "shadowmappingpass.DirlightTransform");
         pbrShaderPass->SetInputLink("DebugMode", "$.DebugMode");
         pbrShaderPass->SetInputLink("SoftShadow", "$.SoftShadow");
+        // Shadowmap Link from ShadowPass
+        pbrShaderPass->SetInputLink("DirlightTransform", "shadowmappingpass.DirlightTransform");
+        pbrShaderPass->SetInputLink("DirectionalLightShadowMap", "shadowmappingpass.DirectionalLightShadowMap");
+        pbrShaderPass->SetInputLink("PointLightShadowMap", "shadowmappingpass.PointLightShadowMap");
+        pbrShaderPass->SetInputLink("SpotLightShadowMap", "shadowmappingpass.SpotLightShadowMap");
+
+        
 
         AppendPass(pbrShaderPass);
     }

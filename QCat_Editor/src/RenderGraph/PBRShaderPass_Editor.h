@@ -20,6 +20,9 @@ namespace QCat
 		Ref<Texture> m_IrradianceCubeMap;
 		Ref<Texture> m_BRDFLutTextrue;
 		Ref<Texture> m_PrefilterMap;
+		Ref<Texture> m_DirectionalLightShadowMap;
+		Ref<Texture> m_PointLightShadowMap;
+		Ref<Texture> m_SpotLightShadowMap;
 
 		Ref<Shader>  m_PBRShader;
 		Ref<Shader>  m_FlatColorShader;
@@ -35,6 +38,7 @@ namespace QCat
 		Ref<ShadowMappingPass::LightMatrix> dirlightTransform;
 		Ref<ConstantBuffer> dirlighbuffer;
 		Ref<Texture> m_DirLightMap;
+
 		//Material materials[5];
 		Ref<Cube> cube;
 		Ref<Sphere> sphere;
@@ -69,21 +73,40 @@ namespace QCat
 			glm::vec3 lightDirection = { 0.0f,0.0f,0.0f };
 			float padding;
 			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
-			float isActive=0.0f;
-			int isDebug = 0;
-			int isSoft = 0;
+			int isActive=0;
 		};
 		struct PointLight
 		{
 			glm::vec3 position = { 0.0f,0.0f,0.0f };
 			float padding;
 			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
-			float isActive =0.0f;
+			float far_plane = 0.0f;
+
+			float near_plane = 0.0f;
+			int isActive = 0;
+			glm::vec2 padding2;
+		};
+		struct SpotLight
+		{
+			glm::vec3 position = { 0.0f,0.0f,0.0f };
+			float padding;
+			glm::vec3 lightDirection = { 0.0f,0.0f,0.0f };
+			float padding2;
+			glm::vec3 diffuse = { 0.0f,0.0f,0.0f };
+			float far_plane = 0.0f;
+			
+			float cutoff = 0.0f;
+			float outercutoff = 0.0f;
+			int isActive = 0;
+			float padding3;
 		};
 		struct Light
 		{
 			PointLight pointLight[4];
+			SpotLight spotLight[8];
 			DirLight dirlight;
+			int isSoft = 0;
+			int isDebug = 0;
 		};
 	
 		struct color

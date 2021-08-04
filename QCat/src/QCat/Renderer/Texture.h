@@ -96,6 +96,11 @@ namespace QCat
 		static Ref<TextureCube> Create(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel = 1, bool flip = false, bool gammacorrection = false);
 		static Ref<TextureCube> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, void* pData = nullptr);
 	};
+	class TextureCubeArray : public Texture
+	{
+	public:
+		static Ref<TextureCubeArray> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel = 1, unsigned int samples = 1);
+	};
 	class Texture3D : public Texture
 	{
 	public:
