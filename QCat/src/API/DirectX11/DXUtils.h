@@ -120,6 +120,7 @@ namespace QCat
 			case TextureType::Texture2D:		    return 2;
 			case TextureType::Texture2DArray:       return 2;
 			case TextureType::TextureCube:		    return 2;
+			case TextureType::TextureCubeArray:		return 2;
 			case TextureType::Texture3D:			 return 3;
 			}
 		}
@@ -190,8 +191,10 @@ namespace QCat
 		{
 			switch (format)
 			{
+			case DXGI_FORMAT::DXGI_FORMAT_R16_TYPELESS:	return DXGI_FORMAT_R16_UNORM;
 			case DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS: return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 			case DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS: return DXGI_FORMAT_R32_FLOAT;
+			case DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS: return DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
 			default:
 				return format;
 			}
@@ -200,8 +203,11 @@ namespace QCat
 		{
 			switch (format)
 			{
+			case DXGI_FORMAT::DXGI_FORMAT_R16_TYPELESS:	return DXGI_FORMAT_D16_UNORM;
 			case DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS: return DXGI_FORMAT_D24_UNORM_S8_UINT;
 			case DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS: return DXGI_FORMAT_D32_FLOAT;
+			case DXGI_FORMAT::DXGI_FORMAT_R32G8X24_TYPELESS: return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+
 			default:
 				return format;
 			}

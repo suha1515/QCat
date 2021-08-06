@@ -95,7 +95,7 @@ namespace QCat
 		DX11TextureCube(const std::vector<std::string>& imgPathes, Sampler_Desc desc, unsigned int mipLevel = 1, bool flip = false, bool gammaCorrection = false);
 		DX11TextureCube(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, void* pData = nullptr);
 
-		~DX11TextureCube() = default;
+		virtual ~DX11TextureCube() = default;
 
 		virtual unsigned int GetWidth() const override { return desc.Width; }
 		virtual unsigned int GetHeight() const override { return desc.Height; }
@@ -119,6 +119,40 @@ namespace QCat
 
 		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
 		void Invalidate(void* pData);
+	private:
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;
+		DXGI_FORMAT m_dataFormat;
+		D3D11_TEXTURE2D_DESC textureDesc;
+	};
+	class DX11TextureCubeArray : public TextureCubeArray
+	{
+	public:
+		DX11TextureCubeArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height,unsigned int depth, unsigned int mipLevel = 1,unsigned int samples =1);
+
+		virtual ~DX11TextureCubeArray() = default;
+
+		virtual unsigned int GetWidth() const override { return desc.Width; }
+		virtual unsigned int GetHeight() const override { return desc.Height; }
+		virtual void* GetTexture() const override { return (void*)pTextureView.Get(); }
+		virtual void* GetTextureHandle() const override { return (void*)pTexture.Get(); };
+
+		virtual void GenerateMipMap() override {};
+
+		virtual void SetData(void* data, unsigned int size, uint32_t textureindex = 0) override {};
+		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) {};
+		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override{};
+
+		virtual void Bind(unsigned int slot = 0) const override;
+
+
+		virtual bool operator==(const Texture & other) const override
+		{
+			return pTexture.Get() == ((DX11TextureCubeArray&)other).pTexture.Get();
+		}
+
+		ID3D11Texture2D* GetDXTexture() { return pTexture.Get(); }
+		void Validate();
 	private:
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pTexture;

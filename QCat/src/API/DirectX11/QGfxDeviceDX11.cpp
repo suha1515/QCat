@@ -268,7 +268,7 @@ namespace QCat {
 	void QGfxDeviceDX11::BeginFrame(glm::vec4 color)
 	{
 		SetRenderTarget();
-		//Clear(color);
+		Clear(color);
 		//immediateContext->OMSetDepthStencilState(pDSState.Get(), 1);
 	}
 	void QGfxDeviceDX11::EndFrame()

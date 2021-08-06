@@ -129,6 +129,5 @@ namespace QCat
 		Ref<bool> m_DebugShadow;
 
 		Ref<SamplerState> m_normalSampler;
-
 	};
 }

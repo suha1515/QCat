@@ -259,11 +259,19 @@ namespace QCat
 	}
 	void DirectXFrameBufferEx::AttachColorTexture(const Ref<RenderTargetView>& textureView, AttachmentType type)
 	{
+		if (m_RenderTargets[Utils::GetAttachmentIndex(type)])
+			m_RenderTargets[Utils::GetAttachmentIndex(type)].reset();
 		m_RenderTargets[Utils::GetAttachmentIndex(type)] = dynamic_pointer_cast<DX11RenderTargetView>(textureView);
+
+		Bind();
 	}
 	void DirectXFrameBufferEx::AttachDepthTexture(const Ref<DepthStencilView>& textureView, AttachmentType type)
 	{
+		if (m_DepthAttachment)
+			m_DepthAttachment.reset();
 		m_DepthStencilView = dynamic_pointer_cast<DX11DepthStencilView>(textureView);
+
+		Bind();
 	}
 
 

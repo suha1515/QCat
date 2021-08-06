@@ -273,6 +273,7 @@ namespace QCat
 		//Ref<Texture> shadowMap;
 		Ref<Texture> debugMap;
 		int textureindex = 0;
+		int lightindex = 0;
 	};
 	struct AnimatorComponent
 	{

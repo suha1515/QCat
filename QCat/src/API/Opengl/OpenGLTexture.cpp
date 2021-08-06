@@ -269,6 +269,12 @@ namespace QCat
 		QCAT_CORE_ASSERT(m_InternalFormat & m_Format, "Format is not supported!");
 		
 	}
+	OpenGlTexture2DArray::~OpenGlTexture2DArray()
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		glDeleteTextures(1, &m_renderID);
+	}
 	void OpenGlTexture2DArray::GenerateMipMap()
 	{
 		if (desc.MipLevels > 1 && smpdesc.MIP != Filtering::NONE)
@@ -495,8 +501,10 @@ namespace QCat
 
 	OpenGLCubeMapArray::~OpenGLCubeMapArray()
 	{
-	}
+		QCAT_PROFILE_FUNCTION();
 
+		glDeleteTextures(1, &m_renderID);
+	}
 	void OpenGLCubeMapArray::Validate()
 	{
 		if (m_renderID > 0)

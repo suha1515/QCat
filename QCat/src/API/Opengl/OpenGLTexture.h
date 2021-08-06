@@ -52,7 +52,7 @@ namespace QCat
 		OpenGlTexture2DArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel = 1, unsigned int samples = 1);
 		OpenGlTexture2DArray(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamacorrection = false);
 	
-		virtual ~OpenGlTexture2DArray() {};
+		virtual ~OpenGlTexture2DArray();
 
 		virtual unsigned int GetWidth() const override { return desc.Width; }
 		virtual unsigned int GetHeight() const override { return desc.Height; }

@@ -188,9 +188,20 @@ namespace QCat
 				
 				if (*m_SoftShadow)
 				{
-					m_DirLightMap->Bind(8);
-					m_PointLightShadowMap->Bind(10);
-					m_SpotLightShadowMap->Bind(12);
+					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+					{
+						m_DirLightMap->Bind(8);
+						m_PointLightShadowMap->Bind(9);
+						m_SpotLightShadowMap->Bind(10);
+						m_normalSampler->Bind(9);
+					}
+					else
+					{
+						m_DirLightMap->Bind(8);
+						m_PointLightShadowMap->Bind(10);
+						m_SpotLightShadowMap->Bind(12);
+						m_normalSampler->Bind(9);
+					}
 				}
 				else
 				{

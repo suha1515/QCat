@@ -237,7 +237,6 @@ namespace QCat
 
 		entt::registry& registry = scene->GetRegistry();
 		auto lightView = registry.view<TransformComponent, LightComponent,TagComponent>();
-		int index = 0;
 		int dirLightCount = 0;
 		int pointLightCount = 0;
 		int spotLightCount = 0;
@@ -397,6 +396,7 @@ namespace QCat
 						glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f * bias, 0.0f)));
 				}
 				resoultion = 512;
+				comp.lightindex = pointLightCount;
 				shadowMapMatrices->Bind(1, Type::Geometry);
 				shadowMapMatrices->SetData(shadowTransforms.data(), sizeof(ShadowMatrix), 0);
 				shadowTransforms.clear();
@@ -404,7 +404,7 @@ namespace QCat
 				RenderCommand::SetViewport(0, 0, resoultion, resoultion);
 				m_PointLightShadow->DetachAll();
 				//m_PointLightShadow->AttachTexture(m_PointLightShadowMap, AttachmentType::Depth, TextureType::TextureCubeArray, 0, pointLightCount,6);
-				Ref<DepthStencilView> depthview = DepthStencilView::Create(TextureType::Texture2DArray, m_PointLightShadowMap, TextureFormat::DEPTH32, 0, pointLightCount*6, 6);
+				Ref<DepthStencilView> depthview = DepthStencilView::Create(TextureType::Texture2DArray, m_PointLightShadowMap, TextureFormat::DEPTH32,0, pointLightCount*6, 6);
 				m_PointLightShadow->AttachDepthTexture(depthview,AttachmentType::Depth);
 				m_PointLightShadow->Clear();
 
@@ -413,8 +413,7 @@ namespace QCat
 				m_PointshadowMappingShader->UnBind();
 				m_PointLightShadow->UnBind();
 
-				//Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, comp.shadowMap, TextureFormat::DEPTH32, 0, 1, (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex, 1);
-				Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, m_PointLightShadowMap, TextureFormat::DEPTH32, 0, 1, (pointLightCount * 6) + (uint32_t)TextureCubeFace::TextureCube_PositiveX + comp.textureindex,1);
+				Ref<TextureShaderView> view = TextureShaderView::Create(TextureType::Texture2D, m_PointLightShadowMap, TextureFormat::DEPTH32, 0, 1, (pointLightCount * 6)  + comp.textureindex,1);
 
 				m_ColorBuffer->Bind();
 				m_ColorBuffer->DetachAll();

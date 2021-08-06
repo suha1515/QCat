@@ -728,6 +728,76 @@ namespace QCat
 			pTexture.Get(), &srvDesc, &pTextureView
 		);
 	}
+	DX11TextureCubeArray::DX11TextureCubeArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel, unsigned int samples )
+	{
+		QCAT_PROFILE_FUNCTION();
+		m_dataFormat = Utils::GetDirectDataType(format);
+
+		textureDesc = {};
+		textureDesc.Width = width;
+		textureDesc.Height = height;
+		textureDesc.MipLevels = mipLevel;
+		textureDesc.ArraySize = depth * 6;
+		textureDesc.Format = m_dataFormat;
+		textureDesc.SampleDesc.Count = samples;
+		textureDesc.SampleDesc.Quality = 0;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		textureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+		if (m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS && m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS)
+			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		else
+			textureDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+
+		textureDesc.CPUAccessFlags = 0;
+		if (mipLevel > 1 && !(textureDesc.BindFlags & D3D11_BIND_DEPTH_STENCIL))
+			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+		this->desc.Width = width;
+		this->desc.Height = height;
+		this->desc.Type = TextureType::TextureCubeArray;
+		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
+		this->desc.usage = TextureUsage::Default;
+		this->desc.SampleCount = samples;
+		this->desc.MipLevels = mipLevel;
+		this->desc.ArraySize = depth * 6;
+		this->desc.bindFlags = textureDesc.BindFlags;
+
+		Validate();
+
+		sampler = DX11Sampler::Create(desc);
+	}
+	void DX11TextureCubeArray::Bind(unsigned int slot) const
+	{
+		QCAT_PROFILE_FUNCTION();
+		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
+		sampler->Bind(slot);
+	}
+	void DX11TextureCubeArray::Validate()
+	{
+		if (pTexture)
+			pTexture.Reset();
+		if (pTextureView)
+			pTextureView.Reset();
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexture);
+
+		// Texture resource view
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Format = Utils::MapTypeSRV(m_dataFormat);
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+		srvDesc.TextureCubeArray.First2DArrayFace = 0;
+		srvDesc.TextureCubeArray.MipLevels = desc.MipLevels;
+		srvDesc.TextureCubeArray.MostDetailedMip = 0;
+		srvDesc.TextureCubeArray.NumCubes = (desc.ArraySize/6);
+
+		// Create ShaderResouceView
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(
+			pTexture.Get(), &srvDesc, &pTextureView
+		);
+		if (textureDesc.MipLevels > 0 && (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_GENERATE_MIPS))
+			QGfxDeviceDX11::GetInstance()->GetContext()->GenerateMips(pTextureView.Get());
+	}
 	DX11ShaderView::DX11ShaderView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t numMip, uint32_t startLayer, uint32_t numlayer)
 	{
 		Texture_Desc srcTexDesc = texture->GetDesc();
@@ -783,47 +853,51 @@ namespace QCat
 			break;
 		}
 		uint32_t layercount = numlayer;
+		uint32_t layerstart = startLayer;
+		uint32_t mipcount = numMip;
+		uint32_t mipstart = startMip;
+		
 		switch (dstDimension)
 		{
 		case D3D11_SRV_DIMENSION_TEXTURE1D:
-			srvDesc.Texture1D.MipLevels = numMip;
-			srvDesc.Texture1D.MostDetailedMip = startMip;
+			srvDesc.Texture1D.MipLevels = mipcount;
+			srvDesc.Texture1D.MostDetailedMip = mipstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURE1DARRAY:
-			srvDesc.Texture1DArray.MipLevels = numMip;
-			srvDesc.Texture1DArray.MostDetailedMip = startMip;
-			srvDesc.Texture1DArray.ArraySize = numlayer;
-			srvDesc.Texture1DArray.FirstArraySlice = startLayer;
+			srvDesc.Texture1DArray.MipLevels = mipcount;
+			srvDesc.Texture1DArray.MostDetailedMip = mipstart;
+			srvDesc.Texture1DArray.ArraySize = layercount;
+			srvDesc.Texture1DArray.FirstArraySlice = layerstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURE2D:
-			srvDesc.Texture2D.MipLevels = numMip;
-			srvDesc.Texture2D.MostDetailedMip = startMip;
+			srvDesc.Texture2D.MipLevels = mipcount;
+			srvDesc.Texture2D.MostDetailedMip = mipstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURE2DMS:
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURE2DARRAY:
-			srvDesc.Texture2DArray.MipLevels = numMip;
-			srvDesc.Texture2DArray.MostDetailedMip = startMip;
+			srvDesc.Texture2DArray.MipLevels = mipcount;
+			srvDesc.Texture2DArray.MostDetailedMip = mipstart;
 			srvDesc.Texture2DArray.ArraySize = layercount;
-			srvDesc.Texture2DArray.FirstArraySlice = startLayer;
+			srvDesc.Texture2DArray.FirstArraySlice = layerstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY:
 			srvDesc.Texture2DMSArray.ArraySize = layercount;
-			srvDesc.Texture2DMSArray.FirstArraySlice = startLayer;
+			srvDesc.Texture2DMSArray.FirstArraySlice = layerstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURECUBE:
-			srvDesc.TextureCube.MipLevels = numMip;
-			srvDesc.TextureCube.MostDetailedMip = startMip;
+			srvDesc.TextureCube.MipLevels = mipcount;
+			srvDesc.TextureCube.MostDetailedMip = mipstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURECUBEARRAY:
-			srvDesc.TextureCubeArray.MipLevels = numMip;
-			srvDesc.TextureCubeArray.MostDetailedMip = startMip;
-			srvDesc.TextureCubeArray.NumCubes = numlayer;
-			srvDesc.TextureCubeArray.First2DArrayFace = startLayer;
+			srvDesc.TextureCubeArray.MipLevels = mipcount;
+			srvDesc.TextureCubeArray.MostDetailedMip = mipstart;
+			srvDesc.TextureCubeArray.NumCubes = layercount;
+			srvDesc.TextureCubeArray.First2DArrayFace = layerstart;
 			break;
 		case D3D11_SRV_DIMENSION_TEXTURE3D:
-			srvDesc.Texture3D.MipLevels = numMip;
-			srvDesc.Texture3D.MostDetailedMip = startMip;
+			srvDesc.Texture3D.MipLevels = mipcount;
+			srvDesc.Texture3D.MostDetailedMip = mipstart;
 			break;
 		default:
 			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for ShaderResoruceView!");
@@ -1015,12 +1089,11 @@ namespace QCat
 		uint32_t layerstart = startLayer;
 		uint32_t layercount = numlayer;
 		uint32_t mipstart = startMip;
-		if (TextureType::TextureCubeArray == type)
-		{
-			dstDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-			layerstart *= 6;
-		}
-			
+		//if (TextureType::TextureCubeArray == type)
+		//{
+		//	dstDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+		//}
+
 		if (numlayer > 1 || startLayer > 0)
 		{
 			if (TextureType::Texture1D == type )
@@ -1087,4 +1160,5 @@ namespace QCat
 		else
 			gfx->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH , depth, stencil);
 	}
+	
 }

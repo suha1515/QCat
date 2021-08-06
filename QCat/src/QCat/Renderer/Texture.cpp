@@ -136,7 +136,7 @@ namespace  QCat
 		{
 		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
 		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLCubeMapArray>(format, desc, width, height,depth, mipLevel,samples);
-		//case RenderAPI::API::DirectX11:		//return CreateRef<DX11TextureCube>(format, desc, width, height, mipLevel, pData);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11TextureCubeArray>(format, desc, width, height,depth, mipLevel,samples);
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;

@@ -28,7 +28,7 @@ namespace QCat
 		inline static void SetDefaultFrameBuffer()
 		{
 			s_renderAPI->SetDefaultFrameBuffer();
-			s_renderAPI->Clear();
+			//s_renderAPI->Clear();
 		}
 		inline static void SetClearColor(const glm::vec4& color)
 		{

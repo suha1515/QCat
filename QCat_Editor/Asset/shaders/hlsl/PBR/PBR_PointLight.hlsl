@@ -61,15 +61,26 @@ struct DirLight
 {
 	float3 lightDirection;
 	float3 diffuse;
-	float isActive;
-	bool isDebug;
-	bool isSoft;
+	bool isActive;
 };
 struct PointLight
 {
 	float3 position;
 	float3 diffuse;
-	float isActive;
+	float farPlane;
+	float nearPlane;
+	bool isActive;
+};
+struct SpotLight
+{
+	float3 position;
+	float3 lightDirection;
+	float3 diffuse;
+	float farPlane;
+
+	float cutOff;
+	float outerCutOff;
+	bool isActive;
 };
 struct Material
 {
@@ -92,11 +103,15 @@ cbuffer material : register(b2)
 cbuffer light : register(b3)
 {
 	PointLight pointLight[4];
+	SpotLight spotLight[8];
 	DirLight dirLight;
+	bool isSoft;
+	bool isDebug;
 }
 cbuffer LightTransform : register(b4)
 {
-	matrix lightPVW[5];
+	matrix DirLightMat[5];
+	matrix SpotLightMat[8];
 	float cascadeEndClipSpace[6];
 }
 Texture2D albedoMap : register(t0);
@@ -119,8 +134,10 @@ SamplerState  brdfLUTSplr: register(s7);
 
 //Shadow Map
 Texture2DArray cascadeShadowMap : register(t8);
-SamplerComparisonState cascadeShadowMapSplr : register(s8);
-SamplerState  harshShadowSplr: register(s9);
+TextureCubeArray pointShadowMap : register(t9);
+Texture2DArray spotShadowMap : register(t10);
+SamplerComparisonState shadowSplr : register(s8);
+SamplerState  defaultSplr: register(s9);
 
 struct PSIn
 {
@@ -136,7 +153,13 @@ struct PS_OUT
 {
 	float4 color :SV_TARGET0;
 };
-
+const static float3 gridSamplingDisk[20] = {
+	{ 1, 1, 1}, { 1,-1, 1}, {-1,-1, 1}, {-1, 1, 1},
+	{ 1, 1,-1}, { 1,-1,-1}, {-1,-1,-1}, {-1, 1,-1},
+	{ 1, 1, 0}, { 1,-1, 0}, {-1,-1, 0}, {-1, 1, 0},
+	{ 1, 0, 1}, {-1, 0, 1}, { 1, 0,-1}, {-1, 0,-1},
+	{ 0, 1, 1}, { 0,-1, 1}, { 0,-1,-1}, { 0, 1,-1},
+};
 
 static const float PI = 3.14159265359;
 float DistributionGGX(float3 N, float3 H, float roughness)
@@ -184,8 +207,83 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 	return F0 + (max(float3(1.0 - roughness, 1.0 - roughness, 1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
-//Cascade Shadow Factor Calculation
 
+float CalcDepthInShadow(const in float3 fragPos,float far_plane,float near_plane)
+{
+	const float c1 = far_plane / (far_plane - near_plane);
+	const float c0 = -near_plane * far_plane / (far_plane - near_plane);
+	const float3 m = abs(fragPos).xyz;
+	const float major = max(m.x, max(m.y, m.z));
+	return (c1 * major + c0) / major;
+}
+float CalcPointShadowFactor(int index,TextureCubeArray cubeTex, float4 fragToLight, float far_plane, float near_plane, bool isSoft)
+{
+	float  currentDepth = CalcDepthInShadow(fragToLight.xyz, far_plane, near_plane);
+	float width, height,element;
+	cubeTex.GetDimensions(width, height,element);
+	float textureSize = 1.0f / width;
+	fragToLight = normalize(fragToLight);
+
+	float bias = 0.01f;
+	float shadow = 0.0f;
+	float4 direction = float4(fragToLight + gridSamplingDisk[index] * (textureSize * 2),0.0f);
+	direction.w = index;
+	if (isSoft)
+	{
+		for (int i = 0; i < 20; ++i)
+		{
+			shadow += cubeTex.SampleCmpLevelZero(shadowSplr, direction, currentDepth - bias);
+		}
+		shadow /= 20.0f;
+	}
+	else
+	{
+		shadow = cubeTex.Sample(defaultSplr, direction).r;
+		if (shadow < currentDepth - bias)
+			shadow = 0.0f;
+		else
+			shadow = 1.0f;
+	}
+	return shadow;
+}
+float CalcDirSpotShadowFactor(int index, float4 lightSpacePos, Texture2DArray tex,bool isSoft)
+{
+	float3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+	projCoords.x = projCoords.x * 0.5 + 0.5f;
+	projCoords.y = -projCoords.y * 0.5 + 0.5f;
+	if (projCoords.z > 1.0)
+		return 0.0f;
+
+	float currentDepth = projCoords.z;
+	float bias = 0.01f;
+	float shadow = 0.0;
+
+	float3 samplePos = projCoords;
+	samplePos.z = index;
+
+	if (isSoft)
+	{
+		[unroll]
+		for (int x = -1; x <= 1; ++x)
+		{
+			for (int y = -1; y <= 1; ++y)
+			{
+				shadow += tex.SampleCmpLevelZero(shadowSplr, samplePos, currentDepth - bias, int2(x, y));
+			}
+		}
+		shadow /= 9.0f;
+	}
+	else
+	{
+		shadow = tex.Sample(defaultSplr, samplePos).r;
+		if (shadow < currentDepth - bias)
+			return 0.0f;
+		else
+			return 1.0f;
+	}
+
+	return shadow;
+}
 float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos,bool isSoft)
 {
 	float3 projCoords = lightspacepos.xyz / lightspacepos.w;
@@ -201,11 +299,6 @@ float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos,bool isSoft
 	float3 samplePos = projCoords;
 	
 	samplePos.z = cascadeIndex;
-	//float sampleZ  =cascadeShadowMap.Sample(albedoMapSplr, samplePos).r;
-	//if (currentDepth - bias < sampleZ)
-	//{
-	//	shadow = 1.0f;
-	//}
 	if (isSoft)
 	{
 		[unroll]
@@ -213,24 +306,23 @@ float CalcCascadeShadowFactor(int cascadeIndex, float4 lightspacepos,bool isSoft
 		{
 			for (int y = -1; y <= 1; ++y)
 			{
-				shadow += cascadeShadowMap.SampleCmpLevelZero(cascadeShadowMapSplr, samplePos, currentDepth - bias, int2(x, y));
+				shadow += cascadeShadowMap.SampleCmpLevelZero(shadowSplr, samplePos, currentDepth - bias, int2(x, y));
 			}
 		}
 		shadow /= 9.0f;
 	}
 	else
 	{
-		shadow = cascadeShadowMap.Sample(harshShadowSplr, samplePos).r;
+		shadow = cascadeShadowMap.Sample(defaultSplr, samplePos).r;
 		if (shadow < currentDepth - bias)
 			return 0.0f;
 		else
 			return 1.0f;
 	}
-	
 	return shadow;
 }
 
-float3 CalculateDirectLight(float3 normal, float3 viewDir, float3 lightDir, float3 diffuse, float roughness, float metallic, float3 F0, float3 albedo, float attenuation)
+float3 CalculateDirectLight(float3 normal, float3 viewDir, float3 lightDir, float3 diffuse, float roughness, float metallic, float3 F0, float3 albedo, float attenuation,float intensity)
 {
 	float3 V = viewDir;
 	float3 N = normal;
@@ -239,7 +331,7 @@ float3 CalculateDirectLight(float3 normal, float3 viewDir, float3 lightDir, floa
 	float3 L = lightDir;
 	float3 H = normalize(V + L);
 
-	float3 radiance = diffuse * attenuation;
+	float3 radiance = diffuse * attenuation * intensity;
 
 	// Cook - Torrance BRDF
 	float NDF = DistributionGGX(N, H, roughness);
@@ -311,9 +403,9 @@ PS_OUT PSMain(PSIn input)
 	checkcolor[4] = float3(0.0, 1.0, 1.0);
 	float3 debugColor = float3(0.0, 0.0, 0.0);
 
-	if (dirLight.isActive == 1.0f)
+	if (dirLight.isActive)
 	{
-		Lo += CalculateDirectLight(N, V, -dirLight.lightDirection, dirLight.diffuse, roughness, metallic, F0, albedo, 1.0f) * dirLight.isActive;
+		float shadowMain = 1.0f;
 		[unroll]
 		for (int i = 0; i < 5; ++i)
 		{
@@ -321,19 +413,19 @@ PS_OUT PSMain(PSIn input)
 			float farZ = cascadeEndClipSpace[i + 1];
 			float cascadeEdge = (farZ - nearZ) * 0.2;
 			float csmx = farZ - cascadeEdge;
-			float shadowMain = 1.0f;
 			if (input.clipSpacePosZ >= nearZ && input.clipSpacePosZ <= farZ)
 			{
-				float4 cascadeLightPos = mul(lightPVW[i], float4(input.fragPos, 1.0f));
-				shadowMain = CalcCascadeShadowFactor(i, cascadeLightPos,dirLight.isSoft);
+				float4 cascadeLightPos = mul(DirLightMat[i], float4(input.fragPos, 1.0f));
+				shadowMain = CalcDirSpotShadowFactor(i, cascadeLightPos, cascadeShadowMap, isSoft);
+				//shadowMain = CalcCascadeShadowFactor(i, cascadeLightPos,dirLight.isSoft);
 				float shadowFallback = 1.0f;
 				if (input.clipSpacePosZ >= csmx)
 				{
 					float ratio = (input.clipSpacePosZ - csmx) / (farZ - csmx);
 					if (i < 4)
 					{
-						cascadeLightPos = mul(lightPVW[i + 1],float4(input.fragPos, 1.0f));
-						shadowFallback = CalcCascadeShadowFactor(i + 1, cascadeLightPos,dirLight.isSoft);
+						cascadeLightPos = mul(DirLightMat[i + 1],float4(input.fragPos, 1.0f));
+						shadowFallback = CalcDirSpotShadowFactor(i+1, cascadeLightPos, cascadeShadowMap, isSoft);
 					}
 					shadowMain = lerp(shadowMain, shadowFallback, ratio);
 				}
@@ -342,20 +434,59 @@ PS_OUT PSMain(PSIn input)
 				break;
 			}
 		}
+		Lo += CalculateDirectLight(N, V, -dirLight.lightDirection, dirLight.diffuse, roughness, metallic, F0, albedo, 1.0f, 1.0f) * shadowMain;
 	}
+	float nearZ = cascadeEndClipSpace[4];
+	float farZ = cascadeEndClipSpace[5];
+	//20% edge
+	float cascadeEdge = (farZ - nearZ) * 0.2;
+	float csmx = farZ - cascadeEdge;
+	float ratio = (input.clipSpacePosZ - csmx) / (farZ - csmx);
+	ratio = clamp(ratio, 0.0, 1.0);
 
 	// Point Light Calc
 	[unroll]
 	for (int k = 0; k < 4; ++k)
 	{
-		if (pointLight[k].isActive == 1.0f)
+		float distance = length(pointLight[k].position - input.fragPos);
+		if (pointLight[k].isActive)
 		{
 			float3 L = normalize(pointLight[k].position - input.fragPos);
-			float distance = length(pointLight[k].position - input.fragPos);
+			float4 fragToLight = float4(input.fragPos - pointLight[k].position, 0.0f);
 			float attenuation = 1.0 / (distance * distance);
-			Lo += CalculateDirectLight(N, V, L, pointLight[k].diffuse, roughness, metallic, F0, albedo, attenuation);
+			float shadowMain = 1.0f;
+			shadowMain = CalcPointShadowFactor(k, pointShadowMap, fragToLight, pointLight[k].farPlane, pointLight[k].nearPlane, isSoft);
+			shadowMain = lerp(shadowMain, 1.0f, ratio);
+
+			Lo += CalculateDirectLight(N, V, L, pointLight[k].diffuse, roughness, metallic, F0, albedo, attenuation,1.0f)*shadowMain;
 		}
 	}
+
+	//SpotLight Calc
+	[unroll]
+	for (int j = 0; j < 8; ++j)
+	{
+		if (spotLight[j].isActive)
+		{
+			float3 L = normalize(spotLight[j].position - input.fragPos);
+			float distance = length(spotLight[j].position - input.fragPos);
+			float4 lightSpacePos = mul(SpotLightMat[j], float4(input.fragPos, 1.0f));
+			float attenuation = 1.0 / (distance * distance);
+
+			
+			float theta = dot(L, -spotLight[j].lightDirection);
+			float epsilon = spotLight[j].cutOff - spotLight[j].outerCutOff;
+			float intensity = clamp((theta - spotLight[j].outerCutOff) / epsilon, 0.0, 1.0);
+			float shadowMain = 1.0f;
+
+			shadowMain = CalcDirSpotShadowFactor(j, lightSpacePos, spotShadowMap, isSoft);
+			shadowMain *= intensity;
+			shadowMain = lerp(shadowMain, 1.0f, ratio),0.0,1.0;
+
+			Lo += CalculateDirectLight(N, V, L, spotLight[j].diffuse, roughness, metallic, F0, albedo, attenuation, intensity) * shadowMain;
+		}
+	}
+
 	//InDirectLight Part
 	//ambient light
 	float3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
@@ -372,10 +503,10 @@ PS_OUT PSMain(PSIn input)
 
 	float3 ambient = (kD * diffuse + specular) * ao;
 
-	if (dirLight.isDebug)
+	if (isDebug)
 		Lo += debugColor;
 
-	result = ambient + Lo * shadowFactor;
+	result = ambient + Lo;
 	//HDR tonemapping
 	result = result / (result + float3(1.0f, 1.0f, 1.0f));
 	result = pow(result, 1.0f / 2.2f);

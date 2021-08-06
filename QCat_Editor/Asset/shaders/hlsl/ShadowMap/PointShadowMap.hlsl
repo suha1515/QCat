@@ -1,5 +1,4 @@
 #type vertex
-
 cbuffer Transform : register(b0)
 {
 	matrix u_Transform;
