@@ -103,7 +103,6 @@ namespace QCat
 			LightComponent& comp = lightView.get<LightComponent>(entity);
 			if (comp.type == LightComponent::LightType::Directional && dirLightCount <= 0)
 			{
-				m_DirLightMap = m_DirectionalLightShadowMap;
 				dirLightCount++;
 
 				light.dirlight.diffuse = comp.diffuse;
@@ -190,14 +189,14 @@ namespace QCat
 				{
 					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 					{
-						m_DirLightMap->Bind(8);
+						m_DirectionalLightShadowMap->Bind(8);
 						m_PointLightShadowMap->Bind(9);
 						m_SpotLightShadowMap->Bind(10);
 						m_normalSampler->Bind(9);
 					}
 					else
 					{
-						m_DirLightMap->Bind(8);
+						m_DirectionalLightShadowMap->Bind(8);
 						m_PointLightShadowMap->Bind(10);
 						m_SpotLightShadowMap->Bind(12);
 						m_normalSampler->Bind(9);
@@ -207,14 +206,14 @@ namespace QCat
 				{
 					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 					{
-						m_DirLightMap->Bind(8);
+						m_DirectionalLightShadowMap->Bind(8);
 						m_PointLightShadowMap->Bind(9);
 						m_SpotLightShadowMap->Bind(10);
 						m_normalSampler->Bind(9);
 					}
 					else
 					{
-						m_DirLightMap->Bind(9);
+						m_DirectionalLightShadowMap->Bind(9);
 						m_PointLightShadowMap->Bind(11);
 						m_SpotLightShadowMap->Bind(13);
 						m_normalSampler->Bind(9);

@@ -63,9 +63,9 @@ namespace QCat
 			QCAT_ASSERT(false, error + importer.GetErrorString());
 		}
 
-		return ProcessNodeEntity(scene->mRootNode, scene, pScene, nullptr);
+		return ProcessNodeEntity(path,scene->mRootNode, scene, pScene, nullptr);
 	}
-	Entity ModelLoader::ProcessNodeEntity(aiNode* node, const aiScene* scene, const Ref<Scene>& pScene, Entity* parentEntity)
+	Entity ModelLoader::ProcessNodeEntity(const std::string& path, aiNode* node, const aiScene* scene, const Ref<Scene>& pScene, Entity* parentEntity)
 	{
 		// if node has meshes, Node has a meshIndex and Scene has a real mesh so
 		// if node want to acess its own meshes , pass the nodes meshIndex to scene->mMeshes
@@ -83,24 +83,31 @@ namespace QCat
 		entity.GetComponent<TransformComponent>().Translation = translation;
 		
 		std::vector<Ref<VertexArray>> vertexArrays;
+		Material material;
 		for (uint32_t i = 0; i < node->mNumMeshes; ++i)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			vertexArrays.push_back(ProcessMeshEntity(node, mesh, scene));
+			vertexArrays.push_back(ProcessMesh(node, mesh, scene));
+			if (i < 1)
+			{
+				material = ProcessMaterial(path, scene, mesh);
+			}	
 		}
+		if(node->mNumMeshes>1)
+			QCAT_CORE_WARN("node has mesh morethan one");
 		if (node->mNumMeshes != 0)
 		{
 			entity.AddComponent<MeshComponent>().vertexArray = vertexArrays;
-			entity.AddComponent<MaterialComponent>();
+			entity.AddComponent<MaterialComponent>().material = material;
 		}
 		// and also node can have child nodes, do this procedure recursively
 		for (uint32_t i = 0; i < node->mNumChildren; ++i)
 		{
-			ProcessNodeEntity(node->mChildren[i], scene, pScene, &entity);
+			ProcessNodeEntity(path,node->mChildren[i], scene, pScene, &entity);
 		}
 		return entity;
 	}
-	Ref<VertexArray> ModelLoader::ProcessMeshEntity(aiNode* node, aiMesh* mesh, const aiScene* scene)
+	Ref<VertexArray> ModelLoader::ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -194,5 +201,166 @@ namespace QCat
 		vertarray->UnBind();
 		MeshLibrary::Set(meshName, vertarray);
 		return vertarray;
+	}
+	Material ModelLoader::ProcessMaterial(const std::string& path, const aiScene* scene, aiMesh* mesh)
+	{
+		size_t index =  path.find_last_of("/\\")+1;
+		std::string dir = path.substr(0, index);
+		Material material;
+		std::string fullpath;
+		aiMaterial* aimaterial = scene->mMaterials[mesh->mMaterialIndex];
+		Sampler_Desc desc;
+		// Diffuse Texture
+		if (aimaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir+path.data;
+				material.m_DiffuseTexture = TextureLibrary::Load(fullpath, desc);
+			}
+		}
+		// Specular Texture
+		if (aimaterial->GetTextureCount(aiTextureType_SPECULAR) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+				material.m_SpecularTexture = TextureLibrary::Load(fullpath, desc);
+				material.m_MetallicTexture = TextureLibrary::Load(fullpath, desc);
+			}
+		}
+		// Ambient Texture
+		if (aimaterial->GetTextureCount(aiTextureType_AMBIENT) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Emissive Texture
+		if (aimaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_EMISSIVE, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Height Texture
+		if (aimaterial->GetTextureCount(aiTextureType_HEIGHT) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Normal Texture
+		if (aimaterial->GetTextureCount(aiTextureType_NORMALS) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+				material.m_NormalMapTexture = TextureLibrary::Load(fullpath, desc);
+			}
+		}
+		// Shininess Texture
+		if (aimaterial->GetTextureCount(aiTextureType_SHININESS) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_SHININESS, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Opacity Texture (Transparent)
+		if (aimaterial->GetTextureCount(aiTextureType_OPACITY) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_OPACITY, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Displacement Texture
+		if (aimaterial->GetTextureCount(aiTextureType_DISPLACEMENT) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_DISPLACEMENT, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// LightMap Texture
+		if (aimaterial->GetTextureCount(aiTextureType_LIGHTMAP) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_LIGHTMAP, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// PBR Texture
+		// BaseColor Texture
+		if (aimaterial->GetTextureCount(aiTextureType_BASE_COLOR) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Emissive Color Texture
+		if (aimaterial->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Metalness Texture
+		if (aimaterial->GetTextureCount(aiTextureType_METALNESS) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_METALNESS, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Roughness Texture
+		if (aimaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Ambient Occlusion Texture
+		if (aimaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+		// Unknown
+		// Occlusion Texture
+		if (aimaterial->GetTextureCount(aiTextureType_UNKNOWN) > 0)
+		{
+			aiString path;
+			if (aimaterial->GetTexture(aiTextureType_UNKNOWN, 0, &path) == AI_SUCCESS)
+			{
+				fullpath = dir + path.data;
+			}
+		}
+
+		return material;
 	}
 }

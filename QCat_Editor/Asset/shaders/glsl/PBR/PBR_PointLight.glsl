@@ -301,41 +301,6 @@ float CalcDefaultShadowFactor(int lightIndex , vec4 LightSpacePos,sampler2DArray
 
 	return comparisonResult;
 }
-
-float CalcShadowFactor(int cascadeIndex , vec4 LightSpacePos,bool isSoft)
-{
-	vec3 projCoords = LightSpacePos.xyz /LightSpacePos.w;
-	projCoords = projCoords * 0.5 + 0.5;
-	if(projCoords.z>1.0)
-		return 0.0;
-	float currentDepth = projCoords.z;
-	float bias = 0.01f;
-	float comparisonResult = 0.0;
-	if(isSoft)
-	{
-		vec2 texelSize = textureSize(DirshadowMap,0).xy;
-		texelSize  = 1.0f/texelSize;
-		for(int x = -1;x<=1;++x)
-		{
-			for(int y=-1;y<=1;++y)
-			{
-				vec4 coords = vec4(projCoords.xy + vec2(x,y) * texelSize.xy,cascadeIndex,currentDepth-bias);
-				comparisonResult += texture(DirshadowMap,coords);
-			}
-		}
-		comparisonResult /=9.0;
-	}
-	else
-	{
-		vec3 coords = vec3(projCoords.xy ,cascadeIndex);
-		float result = texture(dirshadowMapHarsh,coords).r;
-		if(result< currentDepth - bias)
-			comparisonResult = 0.0f;
-		else
-			comparisonResult = 1.0f;
-	}
-	return comparisonResult;
-}
 vec3 CalculateDirectLight(vec3 normal,vec3 viewDir,vec3 lightDir,vec3 diffuse,float attenuation,float intensity,float roughness,vec3 F0,vec3 albedo,float metallic)
 {
 	vec3 V = viewDir;
@@ -432,7 +397,6 @@ void main()
 				if(Input.clipspaceZ >= nearZ && Input.clipspaceZ <= farZ)
 				{
 					shadowMain = isSoft ? CalcPCFShadowFactor(j,lightSpacePos,DirshadowMap) :  CalcDefaultShadowFactor(j, lightSpacePos,dirshadowMapHarsh);
-					//shadowMain = CalcShadowFactor(j,lightSpacePos,isSoft);
 					float shadowFallback = 1.0f;
 					if(Input.clipspaceZ >= csmx)
 					{
@@ -450,6 +414,13 @@ void main()
 		}
 		Lo +=CalculateDirectLight(N,V,-dirLight.lightDirection,dirLight.diffuse,1.0f,1.0f,roughness,F0,albedo,metallic) * shadowMain;
 	}
+	float nearZ = cascadeEndClipSpace[4];
+	float farZ = cascadeEndClipSpace[5];
+	//20% edge
+	float cascadeEdge = (farZ - nearZ) * 0.2;
+	float csmx = farZ - cascadeEdge;
+	float ratio = (Input.clipspaceZ - csmx) / (farZ - csmx);
+	ratio = clamp(ratio, 0.0, 1.0);
 	//PointLight
 	for(int i=0;i<4;++i)
 	{
@@ -461,6 +432,7 @@ void main()
 			float attenuation = 1.0 / (distance * distance);
 			float shadowMain =1.0f;
 			shadowMain =  PointShadowCalculation(i,fragToLight,pointLight[i].farPlane,pointLight[i].nearPlane,isSoft);
+			shadowMain =  mix(shadowMain, 1.0f, ratio);
 			Lo +=CalculateDirectLight(N,V,L,pointLight[i].diffuse,attenuation,1.0f,roughness,F0,albedo,metallic) * shadowMain;
 		}	
 	}
@@ -477,26 +449,13 @@ void main()
 
 			float theta = dot(L,-spotLight[i].lightDirection);
 			float epsilon = spotLight[i].cutOff - spotLight[i].outerCutoff;
-			float intensity = clamp((theta - spotLight[i].outerCutoff)/epsilon,0.0,1.0);
+			 float intensity = clamp((theta - spotLight[i].outerCutoff)/epsilon,0.0,1.0);
 			float shadowMain =1.0f;
 
-			float nearZ =cascadeEndClipSpace[4];
-			float farZ =cascadeEndClipSpace[5];
-			//20% edge
-			float cascadeEdge = (farZ - nearZ) * 0.2;
-			float csmx = farZ - cascadeEdge;
-			if(Input.clipspaceZ <= farZ)
-			{
-				shadowMain =  isSoft ? CalcPCFShadowFactor(i,lightSpacePos,spotShadowMap) :  CalcDefaultShadowFactor(i, lightSpacePos,_spotShadowMap);
-				shadowMain *= intensity;
-				if(Input.clipspaceZ >= csmx)
-				{
-					float ratio = (Input.clipspaceZ - csmx) / (farZ - csmx);
-					shadowMain = mix(shadowMain , 1.0f , ratio);
-				}
-			}		
-			//shadowMain =  CalcPCFShadowFactor(i,lightSpacePos,spotShadowMap);
-			
+			shadowMain =  isSoft ? CalcPCFShadowFactor(i,lightSpacePos,spotShadowMap) :  CalcDefaultShadowFactor(i, lightSpacePos,_spotShadowMap);
+			shadowMain *=intensity;
+			shadowMain =  mix(shadowMain, 1.0f, ratio);
+
 			Lo +=CalculateDirectLight(N,V,L,spotLight[i].diffuse,attenuation,intensity,roughness,F0,albedo,metallic) *shadowMain;
 
 		}
