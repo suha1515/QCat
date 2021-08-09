@@ -5,6 +5,7 @@
 #include<QCat/Scene/Components.h>
 #include <QCat/Uitiliy/PlatformUtils.h>
 #include <filesystem>
+#include "../Model/ModelLoader.h"
 
 namespace QCat
 {
@@ -22,6 +23,23 @@ namespace QCat
 	void SceneHierarchyPanel::OnImguiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				std::filesystem::path realpath = std::filesystem::path(g_AssetPath) / path;
+				QCAT_CORE_WARN("{0}", realpath.string());
+				if (realpath.extension() == ".obj" || realpath.extension() == ".fbx" || realpath.extension() == ".FBX")
+				{
+					std::string temp = realpath.string();
+					ModelLoader::LoadModel(temp.c_str(), m_Context);
+					
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
 
 		auto view = m_Context->m_Registry.view<RelationShipComponent>();
 
@@ -75,6 +93,24 @@ namespace QCat
 
 		
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+		// Drag On Entity
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BRWOSER_ITEM"))
+			{
+				const wchar_t* path = (const wchar_t*)payload->Data;
+				std::filesystem::path realpath = std::filesystem::path(g_AssetPath) / path;
+				QCAT_CORE_WARN("{0}", realpath.string());
+				if (realpath.extension() == ".obj" || realpath.extension() == ".fbx" || realpath.extension() == ".FBX")
+				{
+					std::string temp = realpath.string();
+					ModelLoader::LoadModel(temp.c_str(), m_Context,&entity);
+
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
 		if (ImGui::IsItemClicked())
 		{
 			m_SelectionContext = entity;
@@ -380,7 +416,7 @@ namespace QCat
 			{
 				static ImGuiComboFlags flags = 0;
 				MeshComponent& mesh = component;
-				auto& vertexArray = mesh.GetMeshes();
+				auto& vertexArray = mesh.GetMesh();
 				std::vector<std::string> meshNames;
 				for (const auto& mesh : MeshLibrary::GetMeshes())
 				{
@@ -402,50 +438,34 @@ namespace QCat
 					ImGui::EndCombo();
 				}
 				ImGui::SameLine();
-				if (ImGui::Button("Add"))
+				if (ImGui::Button("Set"))
 				{
 					std::string currentSelectedMeshName = meshNames[item_current_idx];
-					auto iter = std::find_if(mesh.vertexArray.begin(), mesh.vertexArray.end(),
-						[&](const Ref<VertexArray>& mesh)
-						{
-							return mesh->GetMeshName() == currentSelectedMeshName;
-						});
-					if(iter == mesh.vertexArray.end())
-						mesh.vertexArray.push_back(MeshLibrary::Load(currentSelectedMeshName));
-					else
+					if (mesh.vertexArray != nullptr)
 					{
-
+						if (mesh.vertexArray->GetMeshName() != currentSelectedMeshName)
+							mesh.vertexArray = MeshLibrary::Load(currentSelectedMeshName);
+						else
+						{
+						}
 					}
+					else
+						mesh.vertexArray = MeshLibrary::Load(currentSelectedMeshName);
+					
 				}
 				if(ImGui::Button("Load"))
 				{
 					OpenModel();
 				}
 				static int mesh_current_idx = 0;
-				if (ImGui::ListBoxHeader("MeshList", vertexArray.size()))
+				if(mesh.vertexArray!=nullptr)
+					ImGui::Text("Mesh Name : %s",mesh.vertexArray->GetMeshName().c_str());
+				else
+					ImGui::Text("There is no Mesh");
+				if (ImGui::Button("Remove"))
 				{
-					for (int i = 0; i < vertexArray.size(); ++i)
-					{
-						const bool is_selected = (mesh_current_idx == i);
-						std::string meshName = vertexArray[i]->GetMeshName();
-						if (ImGui::Selectable(meshName.c_str(), is_selected))
-							mesh_current_idx = i;
-
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-					ImGui::ListBoxFooter();
-				}
-				
-				if (vertexArray.size() > 0)
-				{
-					if (mesh_current_idx<vertexArray.size())
-					{
-						if (ImGui::Button("Remove"))
-						{
-							vertexArray.erase(vertexArray.begin() + mesh_current_idx);
-						}
-					}
+					if (mesh.vertexArray != nullptr)
+						mesh.vertexArray = nullptr;
 				}
 			}
 			);
@@ -461,10 +481,10 @@ namespace QCat
 				ImGui::ColorEdit3("Diffuse", glm::value_ptr(mat.diffuse));
 				ImGui::ColorEdit3("Specaulr", glm::value_ptr(mat.specular));
 
-				ImGui::DragFloat("Shininess",&mat.shininess);
-				ImGui::DragFloat("Metalic", &mat.metallic, 0.1f);
-				ImGui::DragFloat("Rougness",&mat.roughness, 0.1f);
-				ImGui::DragFloat("Ao", &mat.ao, 0.1f);
+				ImGui::DragFloat("Shininess",&mat.shininess,0.1f,0.0f,1.0f);
+				ImGui::DragFloat("Metalic", &mat.metallic, 0.1f,0.0f,1.0f);
+				ImGui::DragFloat("Rougness",&mat.roughness, 0.1f,0.0f,1.0f);
+				ImGui::DragFloat("Ao", &mat.ao, 0.1f,0.0f,1.0f);
 
 				ImGui::Separator();
 				ImGui::Columns(2);

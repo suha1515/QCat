@@ -20,11 +20,13 @@ namespace QCat
 	public:
 		ModelLoader() = default;
 		~ModelLoader() = default;
-		static Entity  LoadModel(const char* path, const Ref<Scene>& pScene);
+		static Entity  LoadModel(const char* path, const Ref<Scene>& pScene, Entity* parentEntity = nullptr);
 	private:
-		static Entity LoadModelEntity(const std::string& path, const Ref<Scene>& pScene);
+		static Entity LoadModelEntity(const std::string& path, const Ref<Scene>& pScene, Entity* parentEntity = nullptr);
 		static Entity ProcessNodeEntity(const std::string& path,aiNode* node, const aiScene* scene, const Ref<Scene>& pScene, Entity* parentEntity);
-		static Ref<VertexArray> ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene);
+		static Ref<VertexArray> ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene,unsigned index=0);
 		static Material ProcessMaterial(const std::string& path,const aiScene* scene , aiMesh* mesh);
+
 	};
 }
+ 

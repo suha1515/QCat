@@ -364,7 +364,10 @@ PS_OUT PSMain(PSIn input)
 {
 	PS_OUT output;
 
-	float3 albedo = material.albedo * (1 - material.IsAlbedoMap) + pow(albedoMap.Sample(albedoMapSplr, input.tc).rgb, 2.2f) * material.IsAlbedoMap;
+	float4 texvalue = albedoMap.Sample(albedoMapSplr, input.tc);
+	clip(texvalue.a < 0.1f ? -1 : 1);
+	float3 albedo = material.albedo * (1 - material.IsAlbedoMap) + pow(texvalue.rgb, 2.2f) * material.IsAlbedoMap;
+	
 	float metallic = material.metallic * (1-material.IsMetallicMap) + metallicMap.Sample(metallicMapSplr, input.tc).r * material.IsMetallicMap;
 	float roughness = material.roughness * (1-material.IsRoughnessMap) + roughnessMap.Sample(roughnessMapSplr, input.tc).r * material.IsRoughnessMap;
 	float ao = material.ambientocclusion * (1 - material.IsAoMap) + aoMap.Sample(aoMapSplr, input.tc).r * material.IsAoMap;

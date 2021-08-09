@@ -161,15 +161,13 @@ namespace QCat
 
 		if (entity.HasComponent<MeshComponent>())
 		{
-			out << YAML::Key << "MeshComponent" << YAML::Value << YAML::BeginSeq;
+			out << YAML::Key << "MeshComponent";
 			auto& meshComponent = entity.GetComponent<MeshComponent>();
-			for (auto& mesh : meshComponent.GetMeshes())
-			{
-				out << YAML::BeginMap;
-				out << YAML::Key << "Meshname" << YAML::Value << mesh->GetMeshName();
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
+
+			out << YAML::BeginMap;
+			out << YAML::Key << "Meshname" << YAML::Value << meshComponent.GetMesh()->GetMeshName();
+			out << YAML::EndMap; 
+
 		}
 
 		if (entity.HasComponent<MaterialComponent>())
@@ -365,11 +363,8 @@ namespace QCat
 				if (meshComponent)
 				{
 					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
-					for (auto meshName : meshComponent)
-					{
-						std::string name = meshName["Meshname"].as<std::string>();
-						mc.AddMesh(name);
-					}
+					std::string name = meshComponent["Meshname"].as<std::string>();
+					mc.AddMesh(name);
 				}
 
 				auto materialComponent = entity["MaterialComponent"];

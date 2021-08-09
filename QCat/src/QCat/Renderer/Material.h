@@ -45,6 +45,7 @@ namespace QCat
 		//{
 
 		//}
+		std::string name = "";
 	public:
 		glm::vec3 ambient;
 		glm::vec3 diffuse;
@@ -66,5 +67,53 @@ namespace QCat
 		Ref<Texture> m_WhiteTexture;
 
 	};
-
+	class MaterialLibrary
+	{
+	public:
+		static Ref<Material> GetMaterial(const std::string& name)
+		{
+			return Get().GetMaterial_(name);
+		}
+		static Ref<Material> SetMaterial(Material& material)
+		{
+			Ref<Material> mat = CreateRef<Material>();
+			*mat = material;
+			return Get().SetMaterial_(mat->name, mat);
+		}
+	private:
+		bool IsExist(const std::string& name)
+		{
+			const auto& iter = m_materials.find(name);
+			if (iter != m_materials.end())
+				return true;
+			else
+				return false;
+		}
+		Ref<Material> GetMaterial_(const std::string& name)
+		{
+			if(IsExist(name))
+				return m_materials[name];
+			else
+			{
+				QCAT_CORE_ERROR("There is no Material ID : {0}", name);
+				return nullptr;
+			}
+		}
+		Ref<Material> SetMaterial_(const std::string& name, Ref<Material>& material)
+		{
+			if (!IsExist(name))
+				return m_materials[name] = material;
+			else
+			{
+				QCAT_CORE_ERROR("There is already Material at ID : {0}", name);
+				return nullptr;
+			}
+		}
+		static MaterialLibrary& Get()
+		{
+			static MaterialLibrary lib;
+			return lib;
+		}
+		std::unordered_map<std::string,Ref<Material>> m_materials;
+	};
 }

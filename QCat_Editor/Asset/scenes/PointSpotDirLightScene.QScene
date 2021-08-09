@@ -54,7 +54,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [0.590000033, 0.590000033, 0.590000033]
     MeshComponent:
-      - Meshname: Cube
+      Meshname: Cube
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]
@@ -88,7 +88,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [0.600000024, 0.600000024, 0.600000024]
     MeshComponent:
-      - Meshname: Sphere
+      Meshname: Sphere
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]
@@ -122,7 +122,7 @@ Entities:
       Rotation: [1.63012326, 0.163184777, -0.0324576683]
       Scale: [0.0100000454, 0.0100000743, 0.0100000156]
     MeshComponent:
-      - Meshname: Cerberus00_Fixed
+      Meshname: Cerberus00_Fixed
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]
@@ -156,7 +156,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [6.13258028, 0.0348667018, 5.08510113]
     MeshComponent:
-      - Meshname: Cube
+      Meshname: Cube
     MaterialComponent:
       Albedo: [1, 1, 1]
       Specular: [1, 1, 1]

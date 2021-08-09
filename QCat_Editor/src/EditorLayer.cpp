@@ -47,16 +47,14 @@ namespace QCat
 	EditorLayer::EditorLayer()
 		:Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f)
 	{
-		Sampler_Desc desc;
-		TextureLibrary::Load("CheckerBoard","Asset/textures/Checkerboard.png",desc);
-
+		
 	}
 
 	void EditorLayer::OnAttach()
 	{
 		QCAT_PROFILE_FUNCTION();
-		sphere = CreateRef<Sphere>(glm::vec3(0.0f, 0.0f, 0.0f), 1.f);
-		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
+		Cube::Initialize();
+		Sphere::Initialize();
 
 		Sampler_Desc desc;
 
@@ -71,10 +69,9 @@ namespace QCat
 		desc.MIN = Filtering::LINEAR;
 		desc.MAG = Filtering::LINEAR;
 
-		m_ActiveScene = CreateRef<Scene>();
-		
+		NewScene();
+
 		m_EditorCamera = EditorCamera(60.f, 1.778f, 0.01f,100.0f);
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_HoveredEntity = Entity();
 		hdrImage = TextureLibrary::Load("Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr", desc);
@@ -254,8 +251,8 @@ namespace QCat
 
 			ImGui::EndMenuBar();
 		}
-		m_SceneHierarchyPanel.OnImguiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
+		m_SceneHierarchyPanel.OnImguiRender();
 		m_ProjectpropertyPanel.OnImGuiRender();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
@@ -533,6 +530,13 @@ namespace QCat
 
 	void EditorLayer::NewScene()
 	{
+		TextureLibrary::Reset();
+		MeshLibrary::Reset();
+		Cube::Initialize();
+		Sphere::Initialize();
+		Sampler_Desc desc;
+		TextureLibrary::Load("CheckerBoard", "Asset/textures/Checkerboard.png", desc);
+
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -558,9 +562,7 @@ namespace QCat
 		}
 		else
 		{
-			m_ActiveScene = CreateRef<Scene>();
-			m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-			m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+			NewScene();
 
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.DeSerialize(path.string());

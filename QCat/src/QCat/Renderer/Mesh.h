@@ -25,6 +25,10 @@ namespace QCat
 	class MeshLibrary
 	{
 	public:
+		static void Reset()
+		{
+			Get().Reset_();
+		}
 		static Ref<VertexArray> Load(const std::string& meshName)
 		{
 			return Get().Load_(meshName);
@@ -34,19 +38,27 @@ namespace QCat
 			return Get().Set_(meshName, vertexArray);
 		}
 		static std::unordered_map<std::string, Ref<VertexArray>>& GetMeshes() { return Get().m_vertexArray; }
+		static bool IsExist(const std::string& meshName)
+		{
+			return Get().IsExist_(meshName);
+		}
 	private:
 		static MeshLibrary& Get()
 		{
 			static MeshLibrary lib;
 			return lib;
 		}
-		bool IsExist(const std::string& meshName) const
+		void Reset_()
+		{
+			m_vertexArray.clear();
+		}
+		bool IsExist_(const std::string& meshName) const
 		{
 			return m_vertexArray.find(meshName) != m_vertexArray.end();
 		}
 		Ref<VertexArray> Load_(const std::string& meshName)
 		{
-			if (IsExist(meshName))
+			if (IsExist_(meshName))
 			{
 				return m_vertexArray[meshName];
 			}
@@ -55,8 +67,9 @@ namespace QCat
 		}
 		bool Set_(const std::string& meshName, Ref<VertexArray>& vertexArray)
 		{
-			if (IsExist(meshName))
+			if (IsExist_(meshName))
 			{
+				QCAT_CORE_ERROR("There is alread same meshname :{0}", meshName);
 				return false;
 			}
 			else

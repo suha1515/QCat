@@ -111,6 +111,10 @@ namespace QCat
 	class TextureLibrary
 	{
 	public:
+		static void Reset()
+		{
+			Get().Reset_();
+		}
 		static Ref<Texture2D> Load(const std::string& name)
 		{
 			return Get().Load_(name);
@@ -136,6 +140,10 @@ namespace QCat
 		{
 			static TextureLibrary lib;
 			return lib;
+		}
+		void Reset_()
+		{
+			m_Textures.clear();
 		}
 		bool Exists(const std::string& path) const
 		{

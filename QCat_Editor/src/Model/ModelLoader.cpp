@@ -35,12 +35,21 @@ namespace QCat
 			};
 		}
 	}
-	Entity ModelLoader::LoadModel(const char* path, const Ref<Scene>& pScene)
+	Entity ModelLoader::LoadModel(const char* path, const Ref<Scene>& pScene, Entity* parentEntity)
 	{
-		ModelLibrary::GetModelList().push_back(path);
-		return LoadModelEntity(path, pScene);
+		auto& list = ModelLibrary::GetModelList();
+		auto iter = std::find_if(list.begin(), list.end(), [path](const std::string& modelpath) {
+			if (path == modelpath)
+				return true;
+			else
+				return false;
+			});
+		if (iter == list.end())
+			list.push_back(path);
+
+		return LoadModelEntity(path, pScene, parentEntity);
 	}
-	Entity ModelLoader::LoadModelEntity(const std::string& path, const Ref<Scene>& pScene)
+	Entity ModelLoader::LoadModelEntity(const std::string& path, const Ref<Scene>& pScene, Entity* parentEntity)
 	{
 		Assimp::Importer importer;
 
@@ -54,6 +63,7 @@ namespace QCat
 
 		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 			flag |= aiProcess_FlipUVs;
+
 		const aiScene* scene = importer.ReadFile(path,
 			flag);
 
@@ -63,7 +73,7 @@ namespace QCat
 			QCAT_ASSERT(false, error + importer.GetErrorString());
 		}
 
-		return ProcessNodeEntity(path,scene->mRootNode, scene, pScene, nullptr);
+		return ProcessNodeEntity(path,scene->mRootNode, scene, pScene, parentEntity);
 	}
 	Entity ModelLoader::ProcessNodeEntity(const std::string& path, aiNode* node, const aiScene* scene, const Ref<Scene>& pScene, Entity* parentEntity)
 	{
@@ -81,24 +91,26 @@ namespace QCat
 		entity.GetComponent<TransformComponent>().Rotation = glm::eulerAngles(rotation);
 		entity.GetComponent<TransformComponent>().Scale = scale;
 		entity.GetComponent<TransformComponent>().Translation = translation;
-		
-		std::vector<Ref<VertexArray>> vertexArrays;
-		Material material;
+		if (node->mNumMeshes != 0)
+		{
+			entity.AddComponent<MeshComponent>();
+			entity.AddComponent<MaterialComponent>();
+		}
 		for (uint32_t i = 0; i < node->mNumMeshes; ++i)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			vertexArrays.push_back(ProcessMesh(node, mesh, scene));
 			if (i < 1)
 			{
-				material = ProcessMaterial(path, scene, mesh);
+				entity.GetComponent<MeshComponent>().vertexArray = ProcessMesh(node, mesh, scene);
+				entity.GetComponent<MaterialComponent>().material = ProcessMaterial(path, scene, mesh);
 			}	
-		}
-		if(node->mNumMeshes>1)
-			QCAT_CORE_WARN("node has mesh morethan one");
-		if (node->mNumMeshes != 0)
-		{
-			entity.AddComponent<MeshComponent>().vertexArray = vertexArrays;
-			entity.AddComponent<MaterialComponent>().material = material;
+			else
+			{
+				Entity sub = pScene->CreateEntity(mesh->mName.data);
+				sub.SetParent(&entity);
+				sub.AddComponent<MeshComponent>().vertexArray = ProcessMesh(node, mesh, scene,i);
+				sub.AddComponent<MaterialComponent>().material = ProcessMaterial(path, scene, mesh);
+			}
 		}
 		// and also node can have child nodes, do this procedure recursively
 		for (uint32_t i = 0; i < node->mNumChildren; ++i)
@@ -107,8 +119,24 @@ namespace QCat
 		}
 		return entity;
 	}
-	Ref<VertexArray> ModelLoader::ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene)
+	Ref<VertexArray> ModelLoader::ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene, unsigned index)
 	{
+		// Check is there mesh in library
+		std::string meshName = mesh->mName.C_Str();
+		if (meshName == "")
+		{
+			meshName = node->mName.C_Str();
+			meshName += "_Mesh";
+		}
+		if (index != 0)
+			meshName = meshName + "_" + std::to_string(index);
+
+		Ref<VertexArray> vertarray = MeshLibrary::Load(meshName);
+		if (vertarray)
+		{
+			return vertarray;
+		}
+
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		// Vertex information
@@ -160,14 +188,9 @@ namespace QCat
 			for (uint32_t j = 0; j < face.mNumIndices; ++j)
 				indices.emplace_back(face.mIndices[j]);
 		}
-		std::string meshName = mesh->mName.C_Str();
-		if (meshName == "")
-		{
-			meshName = node->mName.C_Str();
-			meshName += "_Mesh";
-		}
+		
 			
-		Ref<VertexArray> vertarray = VertexArray::Create(meshName);
+		vertarray = VertexArray::Create(meshName);
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
 
 		vertexBuffer->SetData(vertices.data(), sizeof(Vertex) * vertices.size());
@@ -238,6 +261,7 @@ namespace QCat
 			if (aimaterial->GetTexture(aiTextureType_AMBIENT, 0, &path) == AI_SUCCESS)
 			{
 				fullpath = dir + path.data;
+				material.m_MetallicTexture = TextureLibrary::Load(fullpath, desc);
 			}
 		}
 		// Emissive Texture
@@ -256,6 +280,7 @@ namespace QCat
 			if (aimaterial->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS)
 			{
 				fullpath = dir + path.data;
+				material.m_NormalMapTexture = TextureLibrary::Load(fullpath, desc);
 			}
 		}
 		// Normal Texture

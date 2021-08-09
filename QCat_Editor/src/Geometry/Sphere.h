@@ -8,6 +8,7 @@ namespace QCat
 	{
 	public:
 		Sphere(const glm::vec3& position,float radius =1.0f,int sectorCount = 36, int stackCount = 18);
+		static void Initialize();
 	public:
 		void SetScale(const glm::vec3& scale);
 		void SetRotation(const glm::vec3& rotation);

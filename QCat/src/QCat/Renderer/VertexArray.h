@@ -21,6 +21,6 @@ namespace QCat
 
 		const std::string GetMeshName() { return meshname; }
 	protected:
-		std::string meshname;
+		std::string meshname="none";
 	};
 }

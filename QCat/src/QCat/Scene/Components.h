@@ -122,18 +122,23 @@ namespace QCat
 			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 	};
+	struct MeshInformation
+	{
+		Ref<VertexArray> vertexArray;
+		std::string materialName;
+	};
 	struct MeshComponent
 	{
-		std::vector<Ref<VertexArray>> vertexArray;
+		Ref<VertexArray> vertexArray;
 		MeshComponent() = default;
 		MeshComponent(const std::string& meshName)
 		{
-			vertexArray.push_back(MeshLibrary::Load(meshName));
+			vertexArray = MeshLibrary::Load(meshName);
 		}
 		MeshComponent(const std::string& meshName,Ref<VertexArray>& vertexarray)
 		{
 			MeshLibrary::Set(meshName, vertexarray);
-			vertexArray.push_back(std::move(vertexarray));
+			vertexArray = std::move(vertexarray);
 		}
 		/*void Bind()
 		{
@@ -147,15 +152,15 @@ namespace QCat
 		{
 			auto mesh = MeshLibrary::Load(meshName);
 			if (mesh != nullptr)
-				vertexArray.push_back(mesh);
+				vertexArray = mesh;
 			else
 				QCAT_CORE_ERROR("There is no mesh name '{1}'", meshName);
 		}
 		void AddMesh(Ref<VertexArray>& vertexarray)
 		{
-			vertexArray.push_back(vertexarray);
+			vertexArray = vertexarray;
 		}
-		std::vector<Ref<VertexArray>>& GetMeshes() { return vertexArray; }
+		Ref<VertexArray>& GetMesh() { return vertexArray; }
 	};
 	struct MaterialComponent
 	{

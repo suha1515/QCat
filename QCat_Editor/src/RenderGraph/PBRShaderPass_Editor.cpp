@@ -151,30 +151,31 @@ namespace QCat
 		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
 		for (auto entity : group)
 		{
-			glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
-			Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
-			//(*transformBuffer)["Transform"s] = transform;
-			//(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
-			transformData.transform = transform;
-			transformData.invtrnasform = glm::inverse(transform);
-			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
+			MeshComponent& meshComponent = group.get<MeshComponent>(entity);
 
-			matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
-			matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
-			matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
-			matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness) ? 1.0 : 0.0;
-			matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion) ? 1.0 : 0.0;
-
-			matData.albedo = mat.diffuse;
-			matData.metallic = mat.metallic;
-			matData.roughness = mat.roughness;
-			matData.ambientocclusion = mat.ao;
-
-			materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
-
-			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
-			for (auto& mesh : meshComponent.GetMeshes())
+			if (meshComponent.vertexArray != nullptr)
 			{
+				glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
+				Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
+				//(*transformBuffer)["Transform"s] = transform;
+				//(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
+				transformData.transform = transform;
+				transformData.invtrnasform = glm::inverse(transform);
+				transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
+
+				matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
+				matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
+				matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
+				matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness) ? 1.0 : 0.0;
+				matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion) ? 1.0 : 0.0;
+
+				matData.albedo = mat.diffuse;
+				matData.metallic = mat.metallic;
+				matData.roughness = mat.roughness;
+				matData.ambientocclusion = mat.ao;
+
+				materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
+
 				mat.Bind(0, Material::TextureType::Diffuse);
 				mat.Bind(1, Material::TextureType::Normal);
 				mat.Bind(2, Material::TextureType::Metallic);
@@ -184,7 +185,7 @@ namespace QCat
 				m_IrradianceCubeMap->Bind(5);
 				m_PrefilterMap->Bind(6);
 				m_BRDFLutTextrue->Bind(7);
-				
+
 				if (*m_SoftShadow)
 				{
 					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
@@ -221,7 +222,7 @@ namespace QCat
 						m_normalSampler->Bind(13);
 					}
 				}
-				RenderCommand::DrawIndexed(mesh);
+				RenderCommand::DrawIndexed(meshComponent.vertexArray);
 			}
 		}
 		m_PBRShader->UnBind();

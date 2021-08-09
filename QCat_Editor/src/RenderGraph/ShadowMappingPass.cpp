@@ -110,18 +110,18 @@ namespace QCat
 		auto view = registry.view<TransformComponent, MeshComponent>();
 		for (auto& model : view)
 		{
+
 			auto& transformcomp = view.get<TransformComponent>(model);
 			auto& meshcomp = view.get<MeshComponent>(model);
-
-			glm::mat4 transform = transformcomp.GetTransform();
-			Transform buffer;
-			buffer.transform = transform;
-			buffer.invtrnasform = glm::inverse(transform);
-			transformConstantBuffer->SetData(&buffer, sizeof(Transform), 0);
-
-			for (auto& mesh : meshcomp.GetMeshes())
+			if (meshcomp.GetMesh() != nullptr)
 			{
-				RenderCommand::DrawIndexed(mesh);
+				glm::mat4 transform = transformcomp.GetTransform();
+				Transform buffer;
+				buffer.transform = transform;
+				buffer.invtrnasform = glm::inverse(transform);
+				transformConstantBuffer->SetData(&buffer, sizeof(Transform), 0);
+
+				RenderCommand::DrawIndexed(meshcomp.GetMesh());
 			}
 		}
 	}
