@@ -38,6 +38,10 @@ namespace QCat
 		{
 			s_renderAPI->Clear();
 		}
+		inline static void Draw(unsigned int start,unsigned int count, RenderAPI::DrawMode mode = RenderAPI::DrawMode::TRIANGLES)
+		{
+			s_renderAPI->Draw(start, count, mode);
+		}
 		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray,unsigned int count =0,RenderAPI::DrawMode mode = RenderAPI::DrawMode::TRIANGLES)
 		{
 			vertexArray->Bind();

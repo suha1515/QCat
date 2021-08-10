@@ -27,6 +27,7 @@ namespace QCat
 		Ref<Shader>  m_PBRShader;
 		Ref<Shader>  m_FlatColorShader;
 		Ref<Shader>  m_SkyBoxShader;
+		Ref<Shader>  m_BillboardShader;
 		
 		Ref<glm::mat4> viewMatrix;
 		Ref<glm::mat4> projectionMatrix;
@@ -108,6 +109,11 @@ namespace QCat
 			int isSoft = 0;
 			int isDebug = 0;
 		};
+		struct Corners
+		{
+			// 0 - top left, 1 - top right, 2 - bottom left , 3 - bottom right
+			glm::vec4 corners[4];
+		};
 	
 		struct color
 		{
@@ -123,6 +129,7 @@ namespace QCat
 		Ref<ConstantBuffer> materialConstantBuffer;
 		Ref<ConstantBuffer> lightConstantBuffer;
 		Ref<ConstantBuffer> colorConstantBuffer;
+		Ref<ConstantBuffer> cornerConstantBuffer;
 
 		Ref<ElementBuffer> transformBuffer;
 		Ref<bool> m_SoftShadow;

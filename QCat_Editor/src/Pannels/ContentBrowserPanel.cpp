@@ -8,11 +8,8 @@ namespace QCat
 	ContentBrowserPanel::ContentBrowserPanel()
 		:m_CurrentDirectory(g_AssetPath)
 	{
-		Sampler_Desc desc;
-		m_DirectoryIcon = TextureLibrary::Load("DirectoryIcon", "Resources/ContentBrowser/folder.png");
-		m_FileIcon = TextureLibrary::Load("FileIcon", "Resources/ContentBrowser/files.png");
-		m_ImageIcon = TextureLibrary::Load("ImageIocn", "Resources/ContentBrowser/image.png");
 		
+		ReloadImage();
 		
 		uv1 = { 0,1 };
 		uv2 = { 1,0 };
@@ -22,6 +19,25 @@ namespace QCat
 			uv2 = { 1,1 };
 		}
 		
+	}
+
+	void ContentBrowserPanel::ReloadImage()
+	{
+		if (m_DirectoryIcon)
+			m_DirectoryIcon.reset();
+		if (m_FileIcon)
+			m_FileIcon.reset();
+		if (m_ImageIcon)
+			m_ImageIcon.reset();
+		Sampler_Desc desc;
+		desc.MAG = Filtering::POINT;
+		desc.MIN = Filtering::POINT;
+		desc.addressU = WrapingMode::CLAMP;
+		desc.addressV = WrapingMode::CLAMP;
+		TextureLibrary::Load("LightImage", "Resources/ContentBrowser/Light (3).png", desc);
+		m_DirectoryIcon = TextureLibrary::Load("DirectoryIcon", "Resources/ContentBrowser/folder.png", desc);
+		m_FileIcon = TextureLibrary::Load("FileIcon", "Resources/ContentBrowser/files.png", desc);
+		m_ImageIcon = TextureLibrary::Load("ImageIocn", "Resources/ContentBrowser/image.png", desc);
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()

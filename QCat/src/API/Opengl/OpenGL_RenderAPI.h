@@ -6,6 +6,8 @@ namespace QCat
 	class OpenGLRenderAPI : public RenderAPI
 	{
 	public:
+		virtual ~OpenGLRenderAPI();
+	public:
 		virtual void Init(uint32_t width, uint32_t height) override;
 		virtual void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) override;
 		virtual void ResizeFrameBuffer(unsigned int width, unsigned int height) override {};
@@ -14,7 +16,7 @@ namespace QCat
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount=0, DrawMode mode = DrawMode::TRIANGLES) override;
-
+		virtual void Draw(unsigned int startlocation, unsigned int count, DrawMode mode = DrawMode::TRIANGLES) override;
 		// depth-stencil option
 		virtual void SetDepthTest(bool enable)override;
 		virtual void SetDepthFunc(COMPARISON_FUNC func)override;
@@ -52,5 +54,7 @@ namespace QCat
 		Ref<DepthStencil> m_DepthStencilState;
 		Ref<Blender> m_BlenderState;
 		Ref<Rasterizer> m_RasterizeState;
+
+		unsigned int emptyvao;
 	};
 }

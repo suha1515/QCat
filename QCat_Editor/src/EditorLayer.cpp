@@ -536,10 +536,11 @@ namespace QCat
 		Sphere::Initialize();
 		Sampler_Desc desc;
 		TextureLibrary::Load("CheckerBoard", "Asset/textures/Checkerboard.png", desc);
-
+		
 		m_ActiveScene = CreateRef<Scene>();
 		m_ActiveScene->OnViewportReSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_ContentBrowserPanel.ReloadImage();
 	}
 
 	void EditorLayer::OpenScene()

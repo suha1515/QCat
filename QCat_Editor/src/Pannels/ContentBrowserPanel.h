@@ -10,6 +10,7 @@ namespace QCat
 	public:
 		ContentBrowserPanel();
 		
+		void ReloadImage();
 		void OnImGuiRender();
 	private:
 		std::filesystem::path m_CurrentDirectory;

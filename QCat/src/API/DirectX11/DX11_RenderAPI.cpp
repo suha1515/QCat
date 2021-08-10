@@ -4,6 +4,22 @@
 
 namespace QCat
 {
+	namespace Utils
+	{
+		D3D_PRIMITIVE_TOPOLOGY DrawModeDx(RenderAPI::DrawMode mode)
+		{
+			switch(mode)
+			{
+			case RenderAPI::DrawMode::POINT:		return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+			case RenderAPI::DrawMode::LINES:		return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			case RenderAPI::DrawMode::LINE_LOOP:	return D3D11_PRIMITIVE_TOPOLOGY_LINELIST_ADJ;
+			case RenderAPI::DrawMode::LINE_STRIP:	return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+			case RenderAPI::DrawMode::TRIANGLES:		return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			case RenderAPI::DrawMode::TRIANGLES_FAN:	return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ;
+			case RenderAPI::DrawMode::TRIANGLE_STRIP:	return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+			}
+		}
+	}
 	DX11RenderAPI::DX11RenderAPI()
 		:color(glm::vec4(0.0f))
 	{
@@ -98,10 +114,17 @@ namespace QCat
 	}
 	void DX11RenderAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount, DrawMode mode)
 	{
+		pgfx->GetContext()->IASetPrimitiveTopology(Utils::DrawModeDx(mode));
+
 		unsigned int count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		DrawIndexed(count);
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> nullSRV =  nullptr;
 		pgfx->GetContext()->PSSetShaderResources(0u, 1u, nullSRV.GetAddressOf());
+	}
+	void DX11RenderAPI::Draw(unsigned int startlocation, unsigned int count, DrawMode mode)
+	{
+		pgfx->GetContext()->IASetPrimitiveTopology(Utils::DrawModeDx(mode));
+		pgfx->GetContext()->Draw(count, startlocation);
 	}
 	void DX11RenderAPI::SetDepthTest(bool enable)
 	{

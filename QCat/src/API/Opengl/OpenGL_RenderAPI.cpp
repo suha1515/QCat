@@ -36,9 +36,14 @@ namespace QCat
 		}
 		
 	}
+	OpenGLRenderAPI::~OpenGLRenderAPI()
+	{
+		glDeleteVertexArrays(1, &emptyvao);
+	}
 	void OpenGLRenderAPI::Init(uint32_t width, uint32_t height)
 	{
 		QCAT_PROFILE_FUNCTION();
+		glCreateVertexArrays(1, &emptyvao);
 
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -111,10 +116,14 @@ namespace QCat
 	{
 		unsigned int count = indexCount ?  indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(Utils::DrawModetoGL(mode), count,GL_UNSIGNED_INT, nullptr);
-		//glBindTexture(GL_TEXTURE_2D, 0);
-		glBindTextureUnit(0, 0);
 	}
-	
+
+	void OpenGLRenderAPI::Draw(unsigned int startlocation, unsigned int count, DrawMode mode)
+	{
+		glBindVertexArray(emptyvao);
+		glDrawArrays(Utils::DrawModetoGL(mode), startlocation, count);
+		glBindVertexArray(0);
+	}
 	void OpenGLRenderAPI::SetDepthTest(bool enable)
 	{
 		m_DepthStencilState->EnableDepth(enable);

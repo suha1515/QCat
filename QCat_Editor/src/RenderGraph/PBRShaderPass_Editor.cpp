@@ -44,7 +44,7 @@ namespace QCat
 		lightConstantBuffer = ConstantBuffer::Create(sizeof(Light), 3);
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
 		dirlighbuffer = ConstantBuffer::Create(sizeof(ShadowMappingPass::LightMatrix), 4);
-		
+		cornerConstantBuffer = ConstantBuffer::Create(sizeof(Corners), 0);
 
 		LayoutElement lay(ShaderDataType::Struct,"Struct");
 		lay.Add(ShaderDataType::Mat4, "Transform");
@@ -64,6 +64,7 @@ namespace QCat
 		m_PBRShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBR_PointLight.glsl");
 		m_FlatColorShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/FlatColor.hlsl" : "Asset/shaders/glsl/FlatColor.glsl");
 		m_SkyBoxShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/MakeHDRCubeMap.hlsl" : "Asset/shaders/glsl/PBR/MakeHDRCubeMap.glsl");
+		m_BillboardShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/Billboard/Billboard.hlsl" : "Asset/shaders/glsl/Billboard/Billboard.glsl");
 	}
 	void PBRShaderPass::Execute(Ref<Scene>& scene)
 	{
@@ -80,8 +81,9 @@ namespace QCat
 		//Entity mainCamera = scene->GetPrimaryCameraEntity();
 		//glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
 		//\const glm::mat4& proj = mainCamera.GetComponent<CameraComponent>().Camera.GetProjection();
-		
-		glm::vec3 tc = glm::inverse(*viewMatrix)[3];
+		glm::mat4 invView = glm::inverse(*viewMatrix);
+		glm::mat4 projView = (*projectionMatrix) * (*viewMatrix);
+		glm::vec3 tc = invView[3];
 		const glm::mat4& proj = (*projectionMatrix);
 		entt::registry& registry = scene->GetRegistry();
 
@@ -232,7 +234,7 @@ namespace QCat
 		colorConstantBuffer->SetData(&colData, sizeof(color), 0);
 
 		//Light
-		m_FlatColorShader->Bind();
+		/*m_FlatColorShader->Bind();
 		for (auto entity : lightView)
 		{
 			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
@@ -245,7 +247,31 @@ namespace QCat
 			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
 			sphere->Draw();
 		}
-		m_FlatColorShader->UnBind();
+		m_FlatColorShader->UnBind();*/
+		m_BillboardShader->Bind();
+		cornerConstantBuffer->Bind(1, Type::Vetex);
+		Corners corner;
+		glm::mat4 view = *viewMatrix;
+		// For Vertices
+		glm::vec3 cameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
+		glm::vec3 cameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
+		float billboardsize = 0.5f;
+		for (auto entity : lightView)
+		{
+			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
+			corner.corners[0] = glm::vec4(lightPos + cameraRight * -0.5f * billboardsize + cameraUp * -0.5f * billboardsize, 1.0f) ;//bottom left
+			corner.corners[1] = glm::vec4(lightPos + cameraRight * -0.5f * billboardsize + cameraUp * 0.5f * billboardsize,1.0f); //top left
+			corner.corners[2] = glm::vec4(lightPos + cameraRight *  0.5f * billboardsize + cameraUp * -0.5f * billboardsize, 1.0f) ;//bottom right
+			corner.corners[3] = glm::vec4(lightPos + cameraRight *  0.5f * billboardsize + cameraUp * 0.5f * billboardsize, 1.0f) ;//top right
+			cornerConstantBuffer->SetData(&corner, sizeof(Corners), 0);
+
+			Ref<Texture2D> lightTex = TextureLibrary::Load("LightImage");
+			if (lightTex)
+				lightTex->Bind(0);
+
+			RenderCommand::Draw(0, 4,RenderAPI::DrawMode::TRIANGLE_STRIP);
+		}
+		m_BillboardShader->UnBind();
 
 		//Draw HDR skyBox
 		RenderCommand::SetCullMode(CullMode::None);
