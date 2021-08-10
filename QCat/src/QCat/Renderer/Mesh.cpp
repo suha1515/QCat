@@ -15,7 +15,7 @@ namespace QCat
 		glm::vec3 tangent;
 		glm::vec3 bitangent;
 	};
-	void PorcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene,unsigned int index=0)
+	void ProcessMesh(aiNode* node, aiMesh* mesh, const aiScene* scene,unsigned int index=0)
 	{
 		// Check is there mesh in library
 		std::string meshName = mesh->mName.C_Str();
@@ -119,7 +119,7 @@ namespace QCat
 		for (uint32_t i = 0; i < node->mNumMeshes; ++i)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			PorcessMesh(node, mesh, scene);
+			ProcessMesh(node, mesh, scene,i);
 		}
 		// and also node can have child nodes, do this procedure recursively
 		for (uint32_t i = 0; i < node->mNumChildren; ++i)

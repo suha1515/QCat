@@ -84,13 +84,7 @@ namespace QCat
 		entity.SetParent(parentEntity);
 
 		glm::mat4 transform = Utils::ConvertToGlm(node->mTransformation);
-		glm::vec3 scale, translation, skew;
-		glm::quat rotation;
-		glm::vec4 perspective;
-		glm::decompose(transform, scale, rotation, translation, skew, perspective);
-		entity.GetComponent<TransformComponent>().Rotation = glm::eulerAngles(rotation);
-		entity.GetComponent<TransformComponent>().Scale = scale;
-		entity.GetComponent<TransformComponent>().Translation = translation;
+		entity.GetComponent<TransformComponent>().SetTransform(transform);
 		if (node->mNumMeshes != 0)
 		{
 			entity.AddComponent<MeshComponent>();
@@ -130,12 +124,9 @@ namespace QCat
 		}
 		if (index != 0)
 			meshName = meshName + "_" + std::to_string(index);
-
 		Ref<VertexArray> vertarray = MeshLibrary::Load(meshName);
 		if (vertarray)
-		{
 			return vertarray;
-		}
 
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
@@ -189,7 +180,6 @@ namespace QCat
 				indices.emplace_back(face.mIndices[j]);
 		}
 		
-			
 		vertarray = VertexArray::Create(meshName);
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
 
@@ -199,11 +189,7 @@ namespace QCat
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
 
 		Ref<Shader> shader;
-		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-		{
-			shader = ShaderLibrary::Load("lightShader", "Asset/shaders/glsl/Blinn-phong.glsl");
-		}
-		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+		if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
 		{
 			shader = ShaderLibrary::Load("LightShader", "Asset/shaders/hlsl/Blinn-Phong.hlsl");
 		}

@@ -231,6 +231,7 @@ namespace QCat
 		colData.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		colorConstantBuffer->SetData(&colData, sizeof(color), 0);
 
+		//Light
 		m_FlatColorShader->Bind();
 		for (auto entity : lightView)
 		{

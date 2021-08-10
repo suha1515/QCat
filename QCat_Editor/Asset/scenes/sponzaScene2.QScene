@@ -7,57 +7,58 @@ TexturePath:
   - Path: Resources/ContentBrowser/image.png
   - Path: Asset/textures/Checkerboard.png
   - Path: Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr
+  - Path: Asset/textures/Checkerboard.png
   - Path: Asset/model/Sponza/textures\sponza_thorn_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_thorn_spec.png
   - Path: Asset/model/Sponza/textures\sponza_thorn_ddn.png
+  - Path: Asset/model/Sponza/textures\sponza_thorn_spec.png
   - Path: Asset/model/Sponza/textures\vase_plant.png
-  - Path: Asset/model/Sponza/textures\vase_plant_spec.png
   - Path: Asset/model/Sponza/textures\vase_plant_NRM.png
+  - Path: Asset/model/Sponza/textures\vase_plant_spec.png
   - Path: Asset/model/Sponza/textures\vase_round.png
-  - Path: Asset/model/Sponza/textures\vase_round_spec.png
   - Path: Asset/model/Sponza/textures\vase_round_ddn.png
+  - Path: Asset/model/Sponza/textures\vase_round_spec.png
   - Path: Asset/model/Sponza/textures\background.png
   - Path: Asset/model/Sponza/textures\background_ddn.png
   - Path: Asset/model/Sponza/textures\spnza_bricks_a_diff.png
-  - Path: Asset/model/Sponza/textures\spnza_bricks_a_spec.png
   - Path: Asset/model/Sponza/textures\spnza_bricks_a_ddn.png
+  - Path: Asset/model/Sponza/textures\spnza_bricks_a_spec.png
   - Path: Asset/model/Sponza/textures\sponza_arch_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_arch_spec.png
   - Path: Asset/model/Sponza/textures\sponza_arch_ddn.png
+  - Path: Asset/model/Sponza/textures\sponza_arch_spec.png
   - Path: Asset/model/Sponza/textures\sponza_ceiling_a_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_ceiling_a_spec.png
   - Path: Asset/model/Sponza/textures\sponza_ceiling_ddn.jpg
+  - Path: Asset/model/Sponza/textures\sponza_ceiling_a_spec.png
   - Path: Asset/model/Sponza/textures\sponza_column_a_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_column_a_spec.png
   - Path: Asset/model/Sponza/textures\sponza_column_a_ddn.png
+  - Path: Asset/model/Sponza/textures\sponza_column_a_spec.png
   - Path: Asset/model/Sponza/textures\sponza_floor_a_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_floor_a_diff_spec.png
   - Path: Asset/model/Sponza/textures\sponza_floor_ddn.jpg
+  - Path: Asset/model/Sponza/textures\sponza_floor_a_diff_spec.png
   - Path: Asset/model/Sponza/textures\sponza_column_c_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_column_c_spec.png
   - Path: Asset/model/Sponza/textures\sponza_column_c_ddn.png
+  - Path: Asset/model/Sponza/textures\sponza_column_c_spec.png
   - Path: Asset/model/Sponza/textures\sponza_details_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_details_spec.png
   - Path: Asset/model/Sponza/textures\sponza_details_ddn.jpg
+  - Path: Asset/model/Sponza/textures\sponza_details_spec.png
   - Path: Asset/model/Sponza/textures\sponza_column_b_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_column_b_spec.png
   - Path: Asset/model/Sponza/textures\sponza_column_b_ddn.png
+  - Path: Asset/model/Sponza/textures\sponza_column_b_spec.png
   - Path: Asset/model/Sponza/textures\sponza_flagpole_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_flagpole_spec.png
   - Path: Asset/model/Sponza/textures\sponza_flagpole_diff_NRM.png
+  - Path: Asset/model/Sponza/textures\sponza_flagpole_spec.png
   - Path: Asset/model/Sponza/textures\sponza_fabric_green_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_fabric_spec.png
   - Path: Asset/model/Sponza/textures\sponza_fabric_ddn.jpg
+  - Path: Asset/model/Sponza/textures\sponza_fabric_spec.png
   - Path: Asset/model/Sponza/textures\sponza_fabric_blue_diff.png
   - Path: Asset/model/Sponza/textures\sponza_fabric_diff.png
   - Path: Asset/model/Sponza/textures\sponza_curtain_blue_diff.png
-  - Path: Asset/model/Sponza/textures\sponza_curtain_blue_diff_spec.png
   - Path: Asset/model/Sponza/textures\sponza_curtain_ddn.jpg
+  - Path: Asset/model/Sponza/textures\sponza_curtain_blue_diff_spec.png
   - Path: Asset/model/Sponza/textures\sponza_curtain_diff.png
   - Path: Asset/model/Sponza/textures\sponza_curtain_green_diff.png
   - Path: Asset/model/Sponza/textures\chain_texture.png
-  - Path: Asset/model/Sponza/textures\chain_texture_spec.png
   - Path: Asset/model/Sponza/textures\chain_texture_ddn.png
+  - Path: Asset/model/Sponza/textures\chain_texture_spec.png
   - Path: Asset/model/Sponza/textures\vase_hanging.png
   - Path: Asset/model/Sponza/textures\vase_hanging_NRM.png
   - Path: Asset/model/Sponza/textures\vase_dif.png
@@ -66,6 +67,16 @@ TexturePath:
   - Path: Asset/model/Sponza/textures\lion_ddn.png
   - Path: Asset/model/Sponza/textures\sponza_roof_diff.png
   - Path: Asset/model/Sponza/textures\sponza_roof_diff_NRM.png
+  - Path: Asset\textures\PBR\gold\albedo.png
+  - Path: Asset\textures\PBR\gold\ao.png
+  - Path: Asset\textures\PBR\gold\metallic.png
+  - Path: Asset\textures\PBR\gold\normal.png
+  - Path: Asset\textures\PBR\gold\roughness.png
+  - Path: Asset\textures\PBR\wall\albedo.png
+  - Path: Asset\textures\PBR\wall\ao.png
+  - Path: Asset\textures\PBR\wall\metallic.png
+  - Path: Asset\textures\PBR\wall\normal.png
+  - Path: Asset\textures\PBR\wall\roughness.png
 Entities:
   - Entity: 1
     TagComponent:
@@ -13469,3 +13480,161 @@ Entities:
         Cutoff: 12.5
         OuterCutoff: 17.5
       Type: 0
+  - Entity: 791
+    TagComponent:
+      Tag: PointLight
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [9.24106598, 0.574778974, -0.41155377]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      LightColor:
+        Diffuse: [10, 10, 1]
+        Ambient: [0.200000003, 0.200000003, 0.200000003]
+        Specular: [1, 1, 1]
+      Directional Light:
+        LightDirection: [0, 0, 1]
+      Point Light:
+        Constant: 1
+        Quadratic: 0.0320000015
+        Linear: 0.0900000036
+        Radius: 0
+      Spot Light:
+        Cutoff: 12.5
+        OuterCutoff: 17.5
+      Type: 1
+  - Entity: 793
+    TagComponent:
+      Tag: PointLight2
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [4.71093988, 0.91137135, -0.849001944]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      LightColor:
+        Diffuse: [1, 1, 30]
+        Ambient: [0.200000003, 0.200000003, 0.200000003]
+        Specular: [1, 1, 1]
+      Directional Light:
+        LightDirection: [0, 0, 1]
+      Point Light:
+        Constant: 1
+        Quadratic: 0.0320000015
+        Linear: 0.0900000036
+        Radius: 0
+      Spot Light:
+        Cutoff: 12.5
+        OuterCutoff: 17.5
+      Type: 1
+  - Entity: 795
+    TagComponent:
+      Tag: Sphere
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [7.96359062, 0.571639597, -0.534161448]
+      Rotation: [0, 0, 0]
+      Scale: [0.600000024, 0.600000024, 0.600000024]
+    MeshComponent:
+      Meshname: Sphere
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 0.100000001
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: Asset\textures\PBR\gold\albedo.png
+      AlbedoTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      NormalTexture: Asset\textures\PBR\gold\normal.png
+      NormalTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: Asset\textures\PBR\gold\metallic.png
+      MetallicTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      RoughnessTexture: Asset\textures\PBR\gold\roughness.png
+      RoughnessTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      AmbientOcclusionTexture: Asset\textures\PBR\gold\ao.png
+      AmbientOcclusionTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+  - Entity: 797
+    TagComponent:
+      Tag: Sphere2
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [7.21928596, 0.457854033, 0.327956021]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    MeshComponent:
+      Meshname: Sphere
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 0.100000001
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: none
+      AlbedoTextureSampler: none
+      NormalTexture: none
+      NormalTextureSampler: none
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: none
+      MetallicTextureSampler: none
+      RoughnessTexture: none
+      RoughnessTextureSampler: none
+      AmbientOcclusionTexture: none
+      AmbientOcclusionTextureSampler: none
+  - Entity: 799
+    TagComponent:
+      Tag: Cube
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [7.54115725, 0.421047509, 1.41697586]
+      Rotation: [0, 0.473136157, 0]
+      Scale: [0.399999797, 0.400000006, 0.399999797]
+    MeshComponent:
+      Meshname: Cube
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 0.100000001
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: Asset\textures\PBR\wall\albedo.png
+      AlbedoTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      NormalTexture: Asset\textures\PBR\wall\normal.png
+      NormalTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: Asset\textures\PBR\wall\ao.png
+      MetallicTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      RoughnessTexture: Asset\textures\PBR\wall\roughness.png
+      RoughnessTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      AmbientOcclusionTexture: Asset\textures\PBR\wall\metallic.png
+      AmbientOcclusionTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00

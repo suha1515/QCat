@@ -152,9 +152,11 @@ namespace QCat
 		{
 			auto mesh = MeshLibrary::Load(meshName);
 			if (mesh != nullptr)
+			{
 				vertexArray = mesh;
+			}
 			else
-				QCAT_CORE_ERROR("There is no mesh name '{1}'", meshName);
+				QCAT_CORE_ERROR("There is no mesh name '{0}'", meshName);
 		}
 		void AddMesh(Ref<VertexArray>& vertexarray)
 		{

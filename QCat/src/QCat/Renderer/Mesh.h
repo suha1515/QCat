@@ -11,12 +11,20 @@ namespace QCat
 		{
 			Get().Load_(modelPath);
 		}
+		static void Reset()
+		{
+			Get().Reset_();
+		}
 		static std::vector<std::string>& GetModelList() { return Get().modelPath; };
 	private:
 		static ModelLibrary& Get()
 		{
 			static ModelLibrary lib;
 			return lib;
+		}
+		void Reset_()
+		{
+			modelPath.clear();
 		}
 		void Load_(const std::string& modelPath);
 	private:
