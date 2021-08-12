@@ -18,6 +18,7 @@ layout(std140,binding = 1) uniform Transform
 {
 	mat4 u_Transform;
 	mat4 u_InvTransform;
+	int id;
 };
 layout(std140,binding = 4) uniform LightTransform
 {
@@ -103,6 +104,12 @@ layout(std140,binding = 0) uniform Camera
 	mat4 u_View;
 	vec3 u_viewPosition;
 };
+layout(std140,binding = 1) uniform Transform
+{
+	mat4 u_Transform;
+	mat4 u_InvTransform;
+	int id;
+};
 layout(std140,binding = 2) uniform Mat
 {
 	Material material;
@@ -122,6 +129,7 @@ layout(std140,binding = 4) uniform LightTransform
 	float cascadeEndClipSpace[6];
 };
 layout(location = 0) out vec4 color;
+layout(location = 1) out int color2;
 
 struct VertexOutput
 {
@@ -488,4 +496,5 @@ void main()
 	result = pow(result,vec3(1.0/2.2));
 
 	color = vec4(result,1.0f);
+	color2 = id;
 }

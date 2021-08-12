@@ -79,8 +79,10 @@ namespace QCat
 	class Texture2D : public Texture
 	{
 	public:
-		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) = 0;
-		static Ref<Texture2D> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
+		virtual void ReadData(uint32_t miplevel,uint32_t xoffset,uint32_t yoffset,uint32_t width,uint32_t height,TextureFormat format, TextureDataType dataType,uint32_t bufSize,void* pixels) = 0;
+		virtual void ClearData(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType,const void* data)=0;
+
+		static Ref<Texture2D> Create(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, TextureUsage usage = TextureUsage::Default, void* pData = nullptr);
 		static Ref<Texture2D> Create(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false, bool gamacorrection = false);
 	};
 	class Texture2DArray : public Texture
@@ -127,9 +129,9 @@ namespace QCat
 		{
 			return Get().Load_(path, desc, mipLevel, samples, flip, gamaCorrection);
 		}
-		static Ref<Texture2D>& Load(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc = {}, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
+		static Ref<Texture2D>& Load(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc = {}, unsigned int mipLevel = 1, unsigned int samples = 1, TextureUsage usage = TextureUsage::Default, bool flip = false)
 		{
-			return Get().Load_(name, format, width, height, pData, desc, mipLevel, samples, flip);
+			return Get().Load_(name, format, width, height, pData, desc, mipLevel, samples, usage, flip);
 		}
 		static std::vector<std::string>& GetTexturePathList()
 		{
@@ -188,7 +190,7 @@ namespace QCat
 				return m_Textures[name];
 			}
 		}
-		Ref<Texture2D>& Load_(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip = false)
+		Ref<Texture2D>& Load_(const std::string& name, TextureFormat format, unsigned int width, unsigned int height, void* pData, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, TextureUsage usage = TextureUsage::Default, bool flip = false)
 		{
 			if (Exists(name))
 			{
@@ -196,7 +198,7 @@ namespace QCat
 			}
 			else
 			{
-				Ref<Texture2D> texture = Texture2D::Create(format, desc, width, height, mipLevel, samples, pData);
+				Ref<Texture2D> texture = Texture2D::Create(format, desc, width, height, mipLevel, samples, usage, pData);
 				m_Textures[name] = texture;
 				return m_Textures[name];
 			}

@@ -36,6 +36,7 @@ namespace QCat
 
 		Ref<Texture> m_ColorBuffer;
 		Ref<Texture> m_DepthBuffer;
+		Ref<Texture> m_IDBuffer;
 		Ref<ShadowMappingPass::LightMatrix> dirlightTransform;
 		Ref<ConstantBuffer> dirlighbuffer;
 		Ref<Texture> m_DirLightMap;
@@ -54,6 +55,7 @@ namespace QCat
 		{
 			glm::mat4 transform;
 			glm::mat4 invtrnasform;
+			int	id = -1;
 		};
 		struct Mat
 		{
@@ -113,6 +115,7 @@ namespace QCat
 		{
 			// 0 - top left, 1 - top right, 2 - bottom left , 3 - bottom right
 			glm::vec4 corners[4];
+			int id = -1;
 		};
 	
 		struct color

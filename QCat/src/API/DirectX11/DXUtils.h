@@ -30,6 +30,16 @@ namespace QCat
 
 			}
 		}
+		static D3D11_USAGE GetUsageDX(TextureUsage usage)
+		{
+			switch (usage)
+			{
+			case TextureUsage::Default: return D3D11_USAGE_DEFAULT;
+			case TextureUsage::Dynamic: return D3D11_USAGE_DYNAMIC;
+			case TextureUsage::Immutable: return D3D11_USAGE_IMMUTABLE;
+			case TextureUsage::Staging: return D3D11_USAGE_STAGING;
+			}
+		}
 		static DXGI_FORMAT GetDirectDataType(TextureFormat format)
 		{
 			switch (format)
@@ -124,7 +134,7 @@ namespace QCat
 			case TextureType::Texture3D:			 return 3;
 			}
 		}
-		static unsigned long long GetDataSize(TextureFormat format)
+		static unsigned long long GetDataSizeFromFormat(TextureFormat format)
 		{
 			switch (format)
 			{
@@ -147,6 +157,19 @@ namespace QCat
 			//24bit
 			case TextureFormat::RGB16_Float:    return 8;
 
+			}
+		}
+		static unsigned int GetDataTypeSize(TextureDataType type)
+		{
+			switch (type)
+			{
+			case TextureDataType::UNSIGNED_BYTE:	return 1;
+			case TextureDataType::BYTE:				return 1;
+			case TextureDataType::UNSIGNED_SHORT:	return 2;
+			case TextureDataType::SHORT:			return 2;
+			case TextureDataType::UNSGINED_INT:		return 4;
+			case TextureDataType::INT:				return 4;
+			case TextureDataType::FLOAT:			return 4;
 			}
 		}
 

@@ -126,9 +126,9 @@ namespace QCat
 		if (m_ViewportFocused)
 		{
 			m_CameraController.OnUpdate(ts);	
+			m_EditorCamera.OnUpdate(ts);
 		}
 
-		m_EditorCamera.OnUpdate(ts);
 		*viewMatrix = m_EditorCamera.GetViewMatrix();
 		*projectionMatrix = m_EditorCamera.GetProjection();
 
@@ -142,29 +142,7 @@ namespace QCat
 		//m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera); 
 		m_ActiveScene->OnUpdateRuntime(ts);
 
-		auto [mx, my] = ImGui::GetMousePos();
-		mx -= m_ViewportBounds[0].x;
-		my -= m_ViewportBounds[0].y;
-		glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-
-		// opengl texture origin is bottom left so we have to flip y coordinate
-		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-			my = viewportSize.y - my;
-
-		int mouseX = (int)mx;
-		int mouseY = (int)my;
-
-		/*if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
-		{
-			int pixelData;
-			pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
-		}*/
 		
-		
-		//m_Framebuffer->UnBind();
-		//m_FrameBufferEx->UnBind();
-		//RenderCommand::SetDefaultFrameBuffer();
 	
 	}
 
@@ -257,7 +235,7 @@ namespace QCat
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		ImGui::Begin("ViewPort");
-		//auto viewportOffset = ImGui::GetCursorPos(); // Includes tab bar
+		auto viewportOffset = ImGui::GetCursorPos(); // Includes tab bar
 
 		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -273,33 +251,11 @@ namespace QCat
 
 		ImVec2 viewportPanelsize = ImGui::GetContentRegionAvail();
 		m_ViewPortSize = { viewportPanelsize.x,viewportPanelsize.y };
-	/*	if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-		{
-			ImGui::Image(m_FrameBufferEx->GetTexture("ColorBuffer1")->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
-		}
-		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-		{
-			ImGui::Image(m_FrameBufferEx->GetTexture("ColorBuffer1")->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
-		}*/
+
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
-		{
 			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
-		}
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-		{
-			
 			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
-
-		}
-
-		/*auto windowSize = ImGui::GetWindowSize();
-		ImVec2 minBound = ImGui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-
-		ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-		m_ViewportBounds[0] = { minBound.x,minBound.y };
-		m_ViewportBounds[1] = { maxBound.x,maxBound.y };*/
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -318,9 +274,6 @@ namespace QCat
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-			/*float windowWidth = (float)ImGui::GetWindowWidth();
-			float windowHeight = (float)ImGui::GetWindowHeight();
-			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth,windowHeight);*/
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x
 				, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
@@ -522,8 +475,35 @@ namespace QCat
 	{
 		if (e.GetMouseButton() == Mouse::ButtonLeft || e.GetMouseButton() == Mouse::ButtonRight)
 		{
-			if(m_ViewportHovered&& !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+			auto [mx, my] = ImGui::GetMousePos();
+			mx -= m_ViewportBounds[0].x;
+			my -= m_ViewportBounds[0].y;
+			glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+
+			// opengl texture origin is bottom left so we have to flip y coordinate
+			if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
+				my = viewportSize.y - my;
+
+			int mouseX = (int)mx;
+			int mouseY = (int)my;
+
+			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
+			{
+				int idvalue=-1;
+				std::dynamic_pointer_cast<Texture2D>(EditorPBRRenderGraph.GetIDBuffer())->ReadData(0, mouseX, mouseY, 1, 1, TextureFormat::RED32_INTEGER, TextureDataType::INT, 4, &idvalue);
+				m_HoveredEntity = idvalue == -1 ? Entity() : Entity((entt::entity)idvalue, m_ActiveScene.get());
+			}
+
+			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+			{
+				if (m_HoveredEntity != Entity::emptyEntity)
+				{
+					std::string entityname = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+					QCAT_WARN("Select Entity Name : {0}", entityname);
+				}
 				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+			}
+				
 		}
 		return false;
 	}

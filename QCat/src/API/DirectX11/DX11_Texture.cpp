@@ -184,7 +184,7 @@ namespace QCat
 			pData = nullptr;
 		}
 	}
-	DX11Texture2D::DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples, void* pData)
+	DX11Texture2D::DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel, unsigned int samples, TextureUsage usage , void* pData)
 	{
 		m_dataFormat = Utils::GetDirectDataType(format);
 
@@ -196,7 +196,7 @@ namespace QCat
 		textureDesc.Format = m_dataFormat;
 		textureDesc.SampleDesc.Count = samples;
 		textureDesc.SampleDesc.Quality = 0;
-		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.Usage = Utils::GetUsageDX(usage);
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		if (m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS && m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS)
 			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
@@ -211,7 +211,7 @@ namespace QCat
 		this->desc.Height = height;
 		this->desc.Type = TextureType::Texture2D;
 		this->desc.Format = Utils::GetTextureFormatFromDX(textureDesc.Format);
-		this->desc.usage = TextureUsage::Default;
+		this->desc.usage = usage;
 		this->desc.SampleCount = samples;
 		this->desc.MipLevels = mipLevel;
 		this->desc.ArraySize = textureDesc.ArraySize;
@@ -237,7 +237,7 @@ namespace QCat
 		QCAT_PROFILE_FUNCTION();
 
 		//unsigned int bpc = m_dataFormat == DXGI_FORMAT_R8G8B8A8_UNORM ? 4 : 3;
-		//QCAT_CORE_ASSERT(size == m_width * m_height * bpc, "Data must be entire texture!");
+		//QCAT_CORE_ASSERT(size == m_width * m_height * bpc, "Data must be entire texture!");z
 		QGfxDeviceDX11::GetInstance()->GetContext()->UpdateSubresource(pTexture.Get(), 0u, nullptr, data, size, 0u);
 	}
 	void DX11Texture2D::SetSize(uint32_t width, uint32_t height, uint32_t depth)
@@ -255,11 +255,12 @@ namespace QCat
 		sampler->Bind(slot);
 		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
 	}
-	void DX11Texture2D::ReadData(uint32_t x, uint32_t y, const void* outdata)
+	void DX11Texture2D::ReadData(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, uint32_t bufSize, void* pixels)
 	{
-		namespace wrl = Microsoft::WRL;
+			namespace wrl = Microsoft::WRL;
 
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+
 		// soruce와 호환가능한 임시 텍스쳐를 만든다 하지만 cpu에서 읽고 쓸 수 있다.
 		wrl::ComPtr<ID3D11Resource> pResSource;
 		pTextureView->GetResource(&pResSource);
@@ -268,11 +269,11 @@ namespace QCat
 		D3D11_TEXTURE2D_DESC desc;
 	
 		D3D11_TEXTURE2D_DESC textureDesc;
-		textureDesc.Width = 1;
-		textureDesc.Height = 1;
+		textureDesc.Width = width;
+		textureDesc.Height = height;
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 1;
-		textureDesc.Format = m_dataFormat;
+		textureDesc.Format = Utils::GetDirectDataType(format);
 		textureDesc.SampleDesc.Count = this->desc.SampleCount;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
@@ -285,24 +286,165 @@ namespace QCat
 		gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexTemp);
 
 		// 텍스처 복사
-		//gfx.GetContext()->CopyResource(pTexTemp.Get(), pTexSource.Get());
 		D3D11_BOX srcBox;
-		srcBox.left = x;
-		srcBox.right = x + 1;
-		srcBox.bottom = y + 1;
-		srcBox.top = y;
+		srcBox.left = xoffset;
+		srcBox.right = xoffset + width;
+		srcBox.bottom = yoffset + height;
+		srcBox.top = yoffset;
 		srcBox.front = 0;
 		srcBox.back = 1;
 		gfx.GetContext()->CopySubresourceRegion(pTexTemp.Get(), 0, 0, 0, 0, pTexSource.Get(), 0, &srcBox);
 
 		D3D11_MAPPED_SUBRESOURCE msr = {};
 		gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_READ, 0, &msr);
-		if (x >= 0 && x <= this->desc.Width && y >= 0 && y <= this->desc.Height)
+		if (xoffset >= 0 && xoffset <= this->desc.Width && yoffset >= 0 && yoffset <= this->desc.Height)
 		{
-			*(int*)outdata = *(int*)msr.pData;
+			if(dataType == TextureDataType::INT)
+				*reinterpret_cast<int*>(pixels) = *reinterpret_cast<int*>(msr.pData);
 		}
 		gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
 	}
+	template<typename T>
+	void MapProcessing(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height,void* dstData,const void* srcdata)
+	{
+		for (int x = xoffset; x < width; ++x)
+		{
+			for (int y = xoffset; y < height; ++y)
+			{
+				T* ptr = reinterpret_cast<T*>(dstData);
+				ptr += width * height * sizeof(T);
+				*ptr = *reinterpret_cast<T*>(const_cast<void*>(srcdata));
+			}
+		}
+	}
+	void DX11Texture2D::ClearData(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, const void* data)
+	{
+		namespace wrl = Microsoft::WRL;
+		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+		uint32_t sizeData = Utils::GetDataTypeSize(dataType);
+		D3D11_MAPPED_SUBRESOURCE msr = {};
+
+		switch(textureDesc.Usage)
+		{
+			case D3D11_USAGE_DYNAMIC:
+			{
+				gfx.GetContext()->Map(pTexture.Get(), miplevel, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &msr);
+				if (xoffset >= 0 && xoffset <= this->desc.Width && yoffset >= 0 && yoffset <= this->desc.Height)
+				{
+					if (dataType == TextureDataType::INT)
+						MapProcessing<int>(miplevel, xoffset, yoffset, width, height, msr.pData, data);
+				}
+				gfx.GetContext()->Unmap(pTexture.Get(), 0);
+			}
+				break;
+			case D3D11_USAGE_STAGING:
+			case D3D11_USAGE_DEFAULT:
+			{
+				if (dataType == TextureDataType::INT)
+				{
+					int* pdata = new int[width * height];
+					int value = *reinterpret_cast<int*>(const_cast<void*>(data));
+					for (int i = 0; i < width * height; ++i)
+					{
+						pdata[i] = value;
+					}
+					D3D11_BOX srcBox;
+					srcBox.left = xoffset;
+					srcBox.right = xoffset + width;
+					srcBox.bottom = yoffset + height;
+					srcBox.top = yoffset;
+					srcBox.front = 0;
+					srcBox.back = 1;
+					gfx.GetContext()->UpdateSubresource(pTexture.Get(), miplevel, &srcBox, pdata, width * sizeData, 0);
+					delete[] pdata;
+				}
+			}
+			break;
+			case D3D11_USAGE_IMMUTABLE:
+				QCAT_CORE_ERROR("Texture Error : Immutable Texture can be changed! ");
+			break;
+		}
+
+		//wrl::ComPtr<ID3D11Resource> pResSource;
+		//pTextureView->GetResource(&pResSource);
+		//wrl::ComPtr<ID3D11Texture2D> pTexSource;
+		//pResSource.As(&pTexSource);
+
+		//D3D11_TEXTURE2D_DESC textureDesc;
+		//textureDesc.Width = width;
+		//textureDesc.Height = height;
+		//textureDesc.MipLevels = 1;
+		//textureDesc.ArraySize = 1;
+		//textureDesc.Format = Utils::GetDirectDataType(format);
+		//textureDesc.SampleDesc.Count = this->desc.SampleCount;
+		//textureDesc.SampleDesc.Quality = 0;
+		//textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		//textureDesc.Usage = D3D11_USAGE_DYNAMIC;
+		//textureDesc.BindFlags = 0;
+		//textureDesc.MiscFlags = 0;
+		//wrl::ComPtr<ID3D11Texture2D> pTexTemp;
+
+		////텍스처 생성
+		//gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexTemp);
+
+
+		//D3D11_MAPPED_SUBRESOURCE msr = {};
+		//gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &msr);
+		//if (xoffset >= 0 && xoffset <= this->desc.Width && yoffset >= 0 && yoffset <= this->desc.Height)
+		//{
+		//	if (dataType == TextureDataType::INT)
+		//		MapProcessing<int>(miplevel, 0, 0, width, height, msr.pData, data);
+		//}
+		//gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
+	}
+	//void DX11Texture2D::ReadData(uint32_t x, uint32_t y, const void* outdata)
+	//{
+	//	namespace wrl = Microsoft::WRL;
+
+	//	QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
+	//	// soruce와 호환가능한 임시 텍스쳐를 만든다 하지만 cpu에서 읽고 쓸 수 있다.
+	//	wrl::ComPtr<ID3D11Resource> pResSource;
+	//	pTextureView->GetResource(&pResSource);
+	//	wrl::ComPtr<ID3D11Texture2D> pTexSource;
+	//	pResSource.As(&pTexSource);
+	//	D3D11_TEXTURE2D_DESC desc;
+	//
+	//	D3D11_TEXTURE2D_DESC textureDesc;
+	//	textureDesc.Width = 1;
+	//	textureDesc.Height = 1;
+	//	textureDesc.MipLevels = 1;
+	//	textureDesc.ArraySize = 1;
+	//	textureDesc.Format = m_dataFormat;
+	//	textureDesc.SampleDesc.Count = this->desc.SampleCount;
+	//	textureDesc.SampleDesc.Quality = 0;
+	//	textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	//	textureDesc.Usage = D3D11_USAGE_STAGING;
+	//	textureDesc.BindFlags = 0;
+	//	textureDesc.MiscFlags = 0;
+	//	wrl::ComPtr<ID3D11Texture2D> pTexTemp;
+
+	//	//텍스처 생성
+	//	gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexTemp);
+
+	//	// 텍스처 복사
+	//	//gfx.GetContext()->CopyResource(pTexTemp.Get(), pTexSource.Get());
+	//	D3D11_BOX srcBox;
+	//	srcBox.left = x;
+	//	srcBox.right = x + 1;
+	//	srcBox.bottom = y + 1;
+	//	srcBox.top = y;
+	//	srcBox.front = 0;
+	//	srcBox.back = 1;
+	//	gfx.GetContext()->CopySubresourceRegion(pTexTemp.Get(), 0, 0, 0, 0, pTexSource.Get(), 0, &srcBox);
+
+	//	D3D11_MAPPED_SUBRESOURCE msr = {};
+	//	gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_READ, 0, &msr);
+	//	if (x >= 0 && x <= this->desc.Width && y >= 0 && y <= this->desc.Height)
+	//	{
+	//		*(int*)outdata = *(int*)msr.pData;
+	//	}
+	//	gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
+	//}
 	void DX11Texture2D::Invalidate(void * pData)
 	{
 		if (pTexture)

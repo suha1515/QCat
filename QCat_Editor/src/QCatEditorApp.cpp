@@ -12,7 +12,7 @@ namespace QCat
 	{
 	public:
 		QCatEditor()
-			:Application("QCat Editor", QCat::RenderAPI::API::DirectX11)
+			:Application("QCat Editor", QCat::RenderAPI::API::OpenGL)
 		{
 			//PushLayer(new ExamLayer());
 			PushLayer(new EditorLayer());

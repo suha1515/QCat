@@ -18,6 +18,7 @@ layout(std140,binding = 0) uniform Camera
 layout(std140,binding = 1) uniform Corners
 {
 	vec4 corners[4];
+	int id;
 };
 layout(location = 0 ) out VertexOutput Output;
 
@@ -41,8 +42,14 @@ struct VertexInput
 	vec2 b2;
 	vec2 b3;
 };
+layout(std140,binding = 1) uniform Corners
+{
+	vec4 corners[4];
+	int id;
+};
 layout(location = 0 ) in VertexInput Input;
 layout(location = 0) out vec4 color;
+layout(location = 1) out int color2;
 layout (binding =0 ) uniform sampler2D image;
 
 float Wedge2D(vec2 v,vec2 w)
@@ -78,5 +85,6 @@ void main()
 	vec4 col = texture(image,uv);
 	if(col.a < 0.1)
 		discard;
+	color2 = id;
 	color = col;
 }

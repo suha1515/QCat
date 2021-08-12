@@ -31,14 +31,19 @@ namespace QCat
         AddGlobalOutput(DataOutput<bool>::Make("DebugMode", m_DebugShadow, DataType::Bool));
         AddGlobalOutput(DataOutput<bool>::Make("SoftShadow", m_SoftShadow, DataType::Bool));
         AddGlobalOutput(DataOutput<float>::Make("CasacadeSplits", m_CascadeSplits, DataType::Float));
-
-
+        
+        //Buffer
         AddGlobalOutput(TextureOutput::Make("ColorBuffer", m_Colorbuffer));
         AddGlobalOutput(TextureOutput::Make("DepthBuffer", m_DepthBuffer));
+        AddGlobalOutput(TextureOutput::Make("IDBuffer", m_EntityIDBuffer));
     
+        //Color Buffer , DepthBuffer , IDBuffer
         Sampler_Desc smpDesc;
         m_Colorbuffer = Texture2D::Create(TextureFormat::RGB8, smpDesc, width, height);
         m_DepthBuffer = Texture2D::Create(TextureFormat::DEPTH24STENCIL8, smpDesc, width, height);
+        smpDesc.MIN = Filtering::POINT;
+        smpDesc.MAG = Filtering::POINT;
+        m_EntityIDBuffer = Texture2D::Create(TextureFormat::RED32_INTEGER, smpDesc,width,height);
 
         Ref<Pass> preComputPass = CreateRef<PBRPreComputePass>(0, "precomputepass");
         preComputPass->SetInputLink("HdrImage", "$.hdrImage");
@@ -63,6 +68,9 @@ namespace QCat
         pbrShaderPass->SetInputLink("projectionMatrix", "$.projectionMatrix");
         pbrShaderPass->SetInputLink("ColorBuffer", "$.ColorBuffer");
         pbrShaderPass->SetInputLink("DepthBuffer", "$.DepthBuffer");
+        pbrShaderPass->SetInputLink("IDBuffer", "$.IDBuffer");
+
+        //Bool
         pbrShaderPass->SetInputLink("DebugMode", "$.DebugMode");
         pbrShaderPass->SetInputLink("SoftShadow", "$.SoftShadow");
         // Shadowmap Link from ShadowPass
@@ -83,6 +91,7 @@ namespace QCat
             this->height = height;
             m_Colorbuffer->SetSize(width, height);
             m_DepthBuffer->SetSize(width, height);
+            m_EntityIDBuffer->SetSize(width, height);
         }
     }
 }

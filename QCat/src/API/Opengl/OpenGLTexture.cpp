@@ -116,7 +116,7 @@ namespace QCat
 
 		m_InternalFormat = Utils::GetTextureInternalFormat(desc.Format);
 		m_Format = Utils::GetTextureFormat(desc.Format);
-		m_DataFormat = Utils::GetTextureDataFormat(desc.Format);
+		m_DataFormat = Utils::GetTextureDataFromFormat(desc.Format);
 
 		Validate(pData);
 	}
@@ -157,7 +157,7 @@ namespace QCat
 
 		m_InternalFormat = Utils::GetTextureInternalFormat(this->desc.Format);
 		m_Format = Utils::GetTextureFormat(this->desc.Format);
-		m_DataFormat = Utils::GetTextureDataFormat(this->desc.Format);
+		m_DataFormat = Utils::GetTextureDataFromFormat(this->desc.Format);
 
 		Validate(pData);
 	}
@@ -180,11 +180,11 @@ namespace QCat
 
 		unsigned int bpc = Utils::GetTextureComponentCount(desc.Format);
 		QCAT_CORE_ASSERT(size == desc.Width * desc.Height* bpc,"Data must be entire texture!");
-		glTextureSubImage2D(m_renderID, 0, 0, 0, desc.Width, desc.Height, m_Format, Utils::GetTextureDataFormat(desc.Format), data);
+		glTextureSubImage2D(m_renderID, 0, 0, 0, desc.Width, desc.Height, m_Format, Utils::GetTextureDataFromFormat(desc.Format), data);
 	}
 	void OpenGLTexture2D::GetData(void* data, uint32_t mipLevel, uint32_t textureindex )
 	{
-		glGetTexImage(Utils::GetTextureTarget(desc.Type,desc.SampleCount>1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFormat(desc.Format), data);
+		glGetTexImage(Utils::GetTextureTarget(desc.Type,desc.SampleCount>1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFromFormat(desc.Format), data);
 	}
 	void OpenGLTexture2D::SetSize(uint32_t width, uint32_t height, uint32_t depth)
 	{
@@ -192,6 +192,24 @@ namespace QCat
 		desc.Width = width;
 		desc.Height = height;
 		Validate(nullptr);
+	}
+	void OpenGLTexture2D::ReadData(uint32_t miplevel,uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, uint32_t bufSize, void* pixels)
+	{
+		GLenum glFormat = Utils::GetTextureFormat(format);
+		GLenum glDataType = Utils::GetTextureDataType(dataType);
+		uint32_t totalsize = width * height * Utils::GetDataSize(dataType);
+		if (totalsize > bufSize)
+			QCAT_CORE_ERROR("return BufSize is {0} and requited bufSize {1} : Wrong Buffer Size!", totalsize, bufSize);
+
+		glGetTextureSubImage(m_renderID, miplevel, xoffset, yoffset, 0, width, height,1, glFormat, glDataType, bufSize, pixels);
+	}
+	void OpenGLTexture2D::ClearData(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, const void* data)
+	{
+		GLenum glFormat = Utils::GetTextureFormat(format);
+		GLenum glDataType = Utils::GetTextureDataType(dataType);
+
+		glClearTexSubImage(m_renderID, miplevel, xoffset, yoffset, 0, width, height, 1, glFormat, glDataType, data);
+		//glClearTexImage(m_renderID, 0, glFormat, glDataType, data);
 	}
 	void OpenGLTexture2D::Bind(unsigned int slot) const
 	{
@@ -227,7 +245,7 @@ namespace QCat
 		this->sampDesc = smpdesc;
 		m_InternalFormat = Utils::GetTextureInternalFormat(format);
 		m_Format = Utils::GetTextureFormat(format);
-		m_DataFormat = Utils::GetTextureDataFormat(format);
+		m_DataFormat = Utils::GetTextureDataFromFormat(format);
 
 		this->desc.Format = format;
 		this->desc.Type = TextureType::Texture2DArray;
@@ -367,7 +385,7 @@ namespace QCat
 	{
 		GLenum internalFormat= Utils::GetTextureInternalFormat(format);
 		GLenum textureformat = Utils::GetTextureFormat(format);
-		GLenum dataFormat = Utils::GetTextureDataFormat(format);
+		GLenum dataFormat = Utils::GetTextureDataFromFormat(format);
 		m_InternalFormat = internalFormat;
 		m_Format = textureformat;
 		m_DataFormat = dataFormat;
@@ -443,7 +461,7 @@ namespace QCat
 		if (textureindex < 6)
 		{
 			TextureCubeFace tempType = static_cast<TextureCubeFace>(textureindex);
-			glGetTexImage(Utils::GetTextureTargetFromCube(tempType, desc.SampleCount > 1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFormat(desc.Format), data);
+			glGetTexImage(Utils::GetTextureTargetFromCube(tempType, desc.SampleCount > 1), mipLevel, Utils::GetTextureFormat(desc.Format), Utils::GetTextureDataFromFormat(desc.Format), data);
 		}
 		else
 			QCAT_CORE_ERROR("Texture GetData Error : CubeMapTexture Index Wrong!");
@@ -480,7 +498,7 @@ namespace QCat
 	{
 		GLenum internalFormat = Utils::GetTextureInternalFormat(format);
 		GLenum textureformat = Utils::GetTextureFormat(format);
-		GLenum dataFormat = Utils::GetTextureDataFormat(format);
+		GLenum dataFormat = Utils::GetTextureDataFromFormat(format);
 		m_InternalFormat = internalFormat;
 		m_Format = textureformat;
 		m_DataFormat = dataFormat;
@@ -606,7 +624,7 @@ namespace QCat
 		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
 		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
 
-		//GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
+		//GLenum srcTextureFormat = Utils::GetTextureDataFromFormat(srcdesc.Format);
 		uint32_t srcTexMipLevels = srcdesc.MipLevels;
 		uint32_t srcTexLayerNum = srcdesc.ArraySize;
 		GLuint srcTexID = (GLuint)texture->GetTexture();
@@ -755,7 +773,7 @@ namespace QCat
 		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
 		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
 
-		//GLenum srcTextureFormat = Utils::GetTextureDataFormat(srcdesc.Format);
+		//GLenum srcTextureFormat = Utils::GetTextureDataFromFormat(srcdesc.Format);
 		uint32_t srcTexMipLevels = srcdesc.MipLevels;
 		uint32_t srcTexLayerNum = srcdesc.ArraySize;
 		GLuint srcTexID = (GLuint)texture->GetTexture();

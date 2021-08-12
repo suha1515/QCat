@@ -250,6 +250,32 @@ namespace QCat
 			}
 
 		}
+		static GLenum GetTextureDataType(TextureDataType type)
+		{
+			switch (type)
+			{
+			case TextureDataType::UNSIGNED_BYTE:	return GL_UNSIGNED_BYTE;
+			case TextureDataType::BYTE:				return GL_BYTE;
+			case TextureDataType::UNSIGNED_SHORT:	return GL_UNSIGNED_SHORT;
+			case TextureDataType::SHORT:			return GL_SHORT;
+			case TextureDataType::UNSGINED_INT:		return GL_UNSIGNED_INT;
+			case TextureDataType::INT:				return GL_INT;
+			case TextureDataType::FLOAT:			return GL_FLOAT;
+			}
+		}
+		static uint32_t GetDataSize(TextureDataType type)
+		{
+			switch (type)
+			{
+			case TextureDataType::UNSIGNED_BYTE:	return 1;
+			case TextureDataType::BYTE:				return 1;
+			case TextureDataType::UNSIGNED_SHORT:	return 2;
+			case TextureDataType::SHORT:			return 2;
+			case TextureDataType::UNSGINED_INT:		return 4;
+			case TextureDataType::INT:				return 4;
+			case TextureDataType::FLOAT:			return 4;
+			}
+		}
 		static GLenum GetTextureInternalFormat(TextureFormat format)
 		{
 			switch (format)
@@ -276,7 +302,7 @@ namespace QCat
 			}
 		}
 
-		static GLenum GetTextureDataFormat(TextureFormat format)
+		static GLenum GetTextureDataFromFormat(TextureFormat format)
 		{
 			switch (format)
 			{

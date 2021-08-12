@@ -21,7 +21,7 @@ namespace QCat
 	class DX11Texture2D : public Texture2D
 	{
 	public:
-		DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1, void* pData = nullptr);
+		DX11Texture2D(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevel = 1, unsigned int samples = 1,TextureUsage usage =TextureUsage::Default, void* pData = nullptr);
 		DX11Texture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel = 1, unsigned int samples = 1, bool flip=false,bool gamacorrection = false);
 		virtual ~DX11Texture2D();
 
@@ -38,7 +38,8 @@ namespace QCat
 
 		virtual void Bind(unsigned int slot = 0) const override;
 
-		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) override;
+		virtual void ReadData(uint32_t miplevel,uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, uint32_t bufSize, void* pixels) override;
+		virtual void ClearData(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, const void* data) override;
 
 		virtual bool operator==(const Texture& other) const override
 		{

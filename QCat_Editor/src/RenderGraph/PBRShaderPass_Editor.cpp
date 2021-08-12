@@ -20,6 +20,8 @@ namespace QCat
 
 		RegisterInput(TextureInput::Make("ColorBuffer", m_ColorBuffer));
 		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
+		RegisterInput(TextureInput::Make("IDBuffer", m_IDBuffer));
+
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
 		RegisterInput(DataInput<bool>::Make("DebugMode", m_DebugShadow, DataType::Bool));
@@ -32,6 +34,7 @@ namespace QCat
 		cube = CreateRef<Cube>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 		AttachmentSpecification spec = { { FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RGBA8,"ColorBuffer1" },
+										 { FramebufferUsage::Color,TextureType::Texture2D,TextureFormat::RED32_INTEGER,"IDBuffer" },
 										 { FramebufferUsage::Depth_Stencil,TextureType::Texture2D,TextureFormat::DEPTH24STENCIL8,"DepthBuffer" } };
 		spec.Width = 1600;
 		spec.Height = 900;
@@ -74,9 +77,12 @@ namespace QCat
 
 		m_Framebuffer->Bind();
 		m_Framebuffer->DetachAll();
+		int value = -1;
 		m_Framebuffer->AttachTexture(m_ColorBuffer, AttachmentType::Color_0, TextureType::Texture2D, 0);
+		m_Framebuffer->AttachTexture(m_IDBuffer, AttachmentType::Color_1, TextureType::Texture2D,0);
 		m_Framebuffer->AttachTexture(m_DepthBuffer, AttachmentType::Depth_Stencil, TextureType::Texture2D, 0);
 		m_Framebuffer->Clear();
+		std::dynamic_pointer_cast<Texture2D>(m_IDBuffer)->ClearData(0, 0, 0, m_IDBuffer->desc.Width, m_IDBuffer->desc.Height, TextureFormat::RED32_INTEGER, TextureDataType::INT, &value);
 
 		//Entity mainCamera = scene->GetPrimaryCameraEntity();
 		//glm::vec3 tc = mainCamera.GetComponent<TransformComponent>().Translation;
@@ -94,7 +100,7 @@ namespace QCat
 		cameraConstantBuffer->SetData(&camData, sizeof(CameraData), 0);
 		
 		m_PBRShader->Bind();
-		auto lightView = registry.view<TransformComponent, LightComponent>();
+		auto lightView = registry.view<TransformComponent, LightComponent, GuidComponent>();
 		int dirLightCount = 0;
 		int pointLightCount = 0;
 		int spotLightCount = 0;
@@ -150,7 +156,7 @@ namespace QCat
 		lightConstantBuffer->Bind(3, Type::Pixel);
 		dirlighbuffer->Bind(4, Type::Pixel);
 
-		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent>);
+		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent,GuidComponent>);
 		for (auto entity : group)
 		{
 			MeshComponent& meshComponent = group.get<MeshComponent>(entity);
@@ -163,6 +169,7 @@ namespace QCat
 				//(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
 				transformData.transform = transform;
 				transformData.invtrnasform = glm::inverse(transform);
+				transformData.id = group.get<GuidComponent>(entity).uid;
 				transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
 
 				matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
@@ -248,6 +255,7 @@ namespace QCat
 			sphere->Draw();
 		}
 		m_FlatColorShader->UnBind();*/
+
 		m_BillboardShader->Bind();
 		cornerConstantBuffer->Bind(1, Type::Vetex);
 		Corners corner;
@@ -263,6 +271,7 @@ namespace QCat
 			corner.corners[1] = glm::vec4(lightPos + cameraRight * -0.5f * billboardsize + cameraUp * 0.5f * billboardsize,1.0f); //top left
 			corner.corners[2] = glm::vec4(lightPos + cameraRight *  0.5f * billboardsize + cameraUp * -0.5f * billboardsize, 1.0f) ;//bottom right
 			corner.corners[3] = glm::vec4(lightPos + cameraRight *  0.5f * billboardsize + cameraUp * 0.5f * billboardsize, 1.0f) ;//top right
+			corner.id = lightView.get<GuidComponent>(entity).uid;
 			cornerConstantBuffer->SetData(&corner, sizeof(Corners), 0);
 
 			Ref<Texture2D> lightTex = TextureLibrary::Load("LightImage");
@@ -272,6 +281,7 @@ namespace QCat
 			RenderCommand::Draw(0, 4,RenderAPI::DrawMode::TRIANGLE_STRIP);
 		}
 		m_BillboardShader->UnBind();
+		m_Framebuffer->DetachTexture(AttachmentType::Color_1);
 
 		//Draw HDR skyBox
 		RenderCommand::SetCullMode(CullMode::None);
@@ -283,6 +293,7 @@ namespace QCat
 			cube->Draw();
 			m_SkyBoxShader->UnBind();
 		}
+
 		m_Framebuffer->UnBind();
 	}
 }

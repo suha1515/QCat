@@ -31,7 +31,8 @@ namespace QCat
 		virtual void GetData(void* data, uint32_t mipLevel = 0, uint32_t textureindex = 0) override;
 		virtual void SetSize(uint32_t width, uint32_t height, uint32_t depth = 0) override;
 
-		virtual void ReadData(uint32_t x, uint32_t y, const void* outdata) {};
+		virtual void ReadData(uint32_t miplevel,uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, uint32_t bufSize, void* pixels) override;
+		virtual void ClearData(uint32_t miplevel, uint32_t xoffset, uint32_t yoffset, uint32_t width, uint32_t height, TextureFormat format, TextureDataType dataType, const void* data) override;
 
 		virtual void Bind(unsigned int slot=0) const override;
 

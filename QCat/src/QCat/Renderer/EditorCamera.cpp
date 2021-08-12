@@ -68,8 +68,8 @@ namespace QCat {
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
 			/*else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-				MouseRotate(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+				MouseRotate(delta);*/
+		/*	else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 				MouseZoom(delta.y);
 			focalMode = true;*/
 		}
@@ -97,9 +97,9 @@ namespace QCat {
 		}
 		else if (focalMode&& Input::IsKeyReleased(Key::LeftAlt))
 		{
-			/*m_FocalPoint = m_Position;
+			m_FocalPoint = m_Position;
 			focalMode = false;
-			m_Distance = 1.0f;*/
+			m_Distance = 1.0f;
 			
 		}
 		

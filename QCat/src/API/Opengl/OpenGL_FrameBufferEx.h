@@ -36,5 +36,8 @@ namespace QCat
 
 		std::vector<Ref<OpenGLRenderTargetView>> m_RenderTargets;
 		Ref<OpenGLDepthStencilView> m_DepthStencilView;
+
+		uint32_t ColorBufferCount = 0;
+		uint32_t DepthBufferCount = 0;
 	};
 }

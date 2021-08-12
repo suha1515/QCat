@@ -9,6 +9,7 @@ cbuffer Transform : register(b1)
 {
 	matrix u_Transform;
 	matrix u_invTransform;
+	int	   u_ID;
 }
 
 struct VSOut
@@ -20,6 +21,7 @@ struct VSOut
 	float3 viewPosition      : ViewPos;
 	float4 pos :SV_Position;
 	float clipSpacePosZ : ClipPosZ;
+	int	   id : ID;
 };
 
 struct VSIn
@@ -33,6 +35,7 @@ struct VSIn
 VSOut VSMain(VSIn Input)
 {
 	VSOut vso;
+	vso.id = u_ID;
 	matrix viewprojMat = mul(u_Projection, mul(u_View,u_Transform));
 	float3x3 normalMat = (float3x3)transpose(u_invTransform);
 	vso.pos = mul(viewprojMat, float4(Input.pos, 1.0f));
@@ -148,10 +151,12 @@ struct PSIn
 	float3 viewPosition      : ViewPos;
 	float4 pos :SV_Position;
 	float clipSpacePosZ : ClipPosZ;
+	int	   id : ID;
 };
 struct PS_OUT
 {
 	float4 color :SV_TARGET0;
+	int color2 : SV_TARGET1;
 };
 const static float3 gridSamplingDisk[20] = {
 	{ 1, 1, 1}, { 1,-1, 1}, {-1,-1, 1}, {-1, 1, 1},
@@ -515,5 +520,6 @@ PS_OUT PSMain(PSIn input)
 	result = pow(result, 1.0f / 2.2f);
 	
 	output.color = float4(result, 1.0f);
+	output.color2 = input.id;
 	return output;
 }

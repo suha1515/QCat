@@ -59,6 +59,11 @@ namespace QCat
 		TextureCube,TextureCubeArray,
 		Texture3D
 	};
+	enum class TextureDataType
+	{
+		UNSIGNED_BYTE=0,BYTE,UNSIGNED_SHORT,SHORT,UNSGINED_INT,INT,FLOAT,
+		UNSIGNED_BYTE_3_3_2,UNSIGNED_BYTE_2_2_3_REVERSE,UNSIGNED_SHORT_5_6_5
+	};
 	enum class TextureCubeFace
 	{
 		TextureCube_PositiveX=0,

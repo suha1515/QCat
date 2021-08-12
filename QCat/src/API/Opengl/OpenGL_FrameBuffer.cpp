@@ -214,7 +214,7 @@ namespace QCat
 		QCAT_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
 
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glReadPixels(x, y, 1, 1, Utils::GetTextureFormat(format),Utils::GetTextureDataFormat(format), &value);
+		//glReadPixels(x, y, 1, 1, Utils::GetTextureFormat(format),Utils::GetTextureDataFormat(format), &value);
 	}
 	void OpenGLFrameBuffer::ClearAttachment(uint32_t attachmentIndex, const void* value)
 	{

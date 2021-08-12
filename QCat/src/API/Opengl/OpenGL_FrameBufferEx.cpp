@@ -3,12 +3,30 @@
 #include "OpenglUtils.h"
 namespace QCat
 {
+	void SetBuffer(uint32_t colorBufferCount)
+	{
+		if (colorBufferCount >= 1)
+		{
+			std::vector<GLenum> buffers;
+			for (int i = 0; i < colorBufferCount; ++i)
+			{
+				buffers.push_back(GL_COLOR_ATTACHMENT0 + i);
+			}
+			glDrawBuffers(colorBufferCount, buffers.data());
+
+		}
+		else if (colorBufferCount == 0)
+		{
+			glDrawBuffer(GL_NONE);
+			glReadBuffer(GL_NONE);
+		}
+	}
 	OpenGLFrameBufferEx::OpenGLFrameBufferEx(const AttachmentSpecification& attachments)
 		:m_AttachmentSpecifications(attachments.Attachments),m_spec(attachments)
 	{
 		glCreateFramebuffers(1, &m_RendererID);
-		uint32_t ColorBufferCount = 0;
-		uint32_t DepthBufferCount = 0;
+		ColorBufferCount = 0;
+		DepthBufferCount = 0;
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		for(auto spec : m_AttachmentSpecifications)
 		{
@@ -30,21 +48,7 @@ namespace QCat
 			}			
 		}
 
-		if (ColorBufferCount >=1)
-		{
-			std::vector<GLenum> buffers;
-			for (int i = 0; i < ColorBufferCount; ++i)
-			{
-				buffers.push_back(GL_COLOR_ATTACHMENT0 + i);
-			}
-			glDrawBuffers(ColorBufferCount, buffers.data());
-			
-		}
-		else if (ColorBufferCount == 0)
-		{
-			glDrawBuffer(GL_NONE);
-			glReadBuffer(GL_NONE);
-		}
+		SetBuffer(ColorBufferCount);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		m_RenderTargets.resize(8);
 		m_DepthStencilView = nullptr;

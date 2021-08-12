@@ -8,6 +8,7 @@ cbuffer Camera : register(b0)
 cbuffer u_Transform : register(b1)
 {
 	float4 corners[4];
+	int id;
 }
 struct VSOut
 {
@@ -16,11 +17,12 @@ struct VSOut
 	float2 b1  : TEXCOORD2;
 	float2 b2  : TEXCOORD3;
 	float2 b3  : TEXCOORD4;
+	int id	   : ID;
 };
 VSOut VSMain(uint vertexID : SV_VertexID)
 {
 	VSOut vso;
-
+	vso.id = id;
 	float4 pos = corners[vertexID];
 	vso.q =  (pos - corners[0]).xy;
 	vso.b1 = (corners[2] - corners[0]).xy;
@@ -42,10 +44,16 @@ struct PSIn
 	float2 b1  : TEXCOORD2;
 	float2 b2  : TEXCOORD3;
 	float2 b3  : TEXCOORD4;
+	int id : ID;
 };
 Texture2D image : register(t0);
 SamplerState imagesplr : register(s0);
-float4 PSMain(PSIn Input) : SV_TARGET
+struct PS_Out
+{
+	float4 color : SV_TARGET0;
+	int color2 : SV_TARGET1;
+};
+PS_Out PSMain(PSIn Input)
 {
 	float4 color;
 	float A = Wedge2D(Input.b2, Input.b3);
@@ -75,5 +83,11 @@ float4 PSMain(PSIn Input) : SV_TARGET
 	color = image.Sample(imagesplr, uv);
 	if (color.a < 0.1)
 		discard;
-	return color;
+
+	PS_Out output;
+	output.color = color;
+	output.color2 = Input.id;
+
+
+	return output;
 }
