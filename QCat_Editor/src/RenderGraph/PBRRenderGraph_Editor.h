@@ -21,6 +21,7 @@ namespace QCat
 		void SetSoftShadow(bool v) { *m_SoftShadow = v; }
 		Ref<Texture>& GetColorBuffer() { return m_Colorbuffer; }
 		Ref<Texture>& GetIDBuffer() { return m_EntityIDBuffer; }
+		Ref<Texture>& GetScreemTexture() { return m_ScreenTexture; }
 	public:
 		uint32_t width, height;
 	private:
@@ -33,6 +34,7 @@ namespace QCat
 		Ref<Texture> m_Colorbuffer;
 		Ref<Texture> m_DepthBuffer;
 		Ref<Texture> m_EntityIDBuffer;
+		Ref<Texture> m_ScreenTexture;
 
 		Ref<float> m_CascadeSplits;
 		Ref<float> m_ShadowMaxDistance;

@@ -255,7 +255,7 @@ namespace QCat
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+			ImGui::Image(EditorPBRRenderGraph.GetScreemTexture()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -500,10 +500,10 @@ namespace QCat
 				{
 					std::string entityname = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 					QCAT_WARN("Select Entity Name : {0}", entityname);
+					m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity, false);
+
 				}
-				m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
-			}
-				
+			}	
 		}
 		return false;
 	}

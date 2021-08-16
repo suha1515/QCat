@@ -121,10 +121,10 @@ namespace QCat
 		Validate(pData);
 	}
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples , bool flip, bool gammaCorrection)
-		: smpdesc(desc)
 	{
 		// Immutable
 		QCAT_PROFILE_FUNCTION();
+		this->sampDesc = desc;
 		this->pathes.push_back(path);
 		uint32_t width = 0, height = 0, channels=0;
 		void* pData = Utils::LoadImageFromFile(path, gammaCorrection, flip, width, height, channels, m_Format, m_InternalFormat, m_DataFormat);
@@ -169,7 +169,7 @@ namespace QCat
 	}
 	void OpenGLTexture2D::GenerateMipMap()
 	{
-		if (desc.MipLevels > 1 && smpdesc.MIP != Filtering::NONE)
+		if (desc.MipLevels > 1 && sampDesc.MIP != Filtering::NONE)
 			glGenerateTextureMipmap(m_renderID);
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap!");
@@ -224,7 +224,7 @@ namespace QCat
 			m_renderID = 0;
 		}
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_renderID);
-		Utils::SetTextureParameter(m_renderID, smpdesc);
+		Utils::SetTextureParameter(m_renderID, sampDesc);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		if (desc.SampleCount > 1)
@@ -234,15 +234,14 @@ namespace QCat
 		if (pData != nullptr)
 			glTextureSubImage2D(m_renderID, 0, 0, 0, desc.Width, desc.Height, m_Format, m_DataFormat, pData);
 
-		sampler = SamplerState::Create(smpdesc);
+		sampler = SamplerState::Create(sampDesc);
 	}
 	OpenGlTexture2DArray::OpenGlTexture2DArray(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int depth, unsigned int mipLevel, unsigned int samples)
-		:smpdesc(desc)
 	{
 		// Immutable
 		QCAT_PROFILE_FUNCTION();		
 
-		this->sampDesc = smpdesc;
+		this->sampDesc = desc;
 		m_InternalFormat = Utils::GetTextureInternalFormat(format);
 		m_Format = Utils::GetTextureFormat(format);
 		m_DataFormat = Utils::GetTextureDataFromFormat(format);
@@ -260,11 +259,10 @@ namespace QCat
 		Validate();
 	}
 	OpenGlTexture2DArray::OpenGlTexture2DArray(std::vector<std::string> imagePath, Sampler_Desc desc, unsigned int mipLevel, unsigned int samples, bool flip, bool gamacorrection)
-		:smpdesc(desc)
 	{
 		// Immutable
 		QCAT_PROFILE_FUNCTION();
-		this->sampDesc = smpdesc;
+		this->sampDesc = desc;
 
 		this->pathes = imagePath;
 		uint32_t width = 0, height = 0, channels = 0;
@@ -295,7 +293,7 @@ namespace QCat
 	}
 	void OpenGlTexture2DArray::GenerateMipMap()
 	{
-		if (desc.MipLevels > 1 && smpdesc.MIP != Filtering::NONE)
+		if (desc.MipLevels > 1 && sampDesc.MIP != Filtering::NONE)
 			glGenerateTextureMipmap(m_renderID);
 		else
 			QCAT_CORE_ERROR("this texture can't generate mipmap!");
@@ -323,7 +321,7 @@ namespace QCat
 		}
 		GLuint error;
 		glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_renderID);
-		Utils::SetTextureParameter(m_renderID, smpdesc);
+		Utils::SetTextureParameter(m_renderID, sampDesc);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		if (desc.SampleCount > 1)
@@ -334,12 +332,13 @@ namespace QCat
 		if (pData != nullptr && index < desc.Depth)
 			glTextureSubImage3D(m_renderID, 0, 0, 0,0, desc.Width, desc.Height, index, m_Format, m_DataFormat, pData);
 
-		sampler = SamplerState::Create(smpdesc);
+		sampler = SamplerState::Create(sampDesc);
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(const std::vector<std::string> imgPathes, Sampler_Desc desc, unsigned int mipLevels,bool flip , bool gammaCorrection)
-		:flip(flip),gammaCorrection(gammaCorrection), smpdesc(desc)
+		:flip(flip),gammaCorrection(gammaCorrection)
 	{
 		QCAT_PROFILE_FUNCTION();
+		this->sampDesc = desc;
 		uint32_t width=0, height=0, channels=0;	
 		
 		Utils::SetTextureParameter(m_renderID, desc);
@@ -381,8 +380,9 @@ namespace QCat
 		}
 	}
 	OpenGLCubeMapTexture::OpenGLCubeMapTexture(TextureFormat format, Sampler_Desc desc, unsigned int width, unsigned int height, unsigned int mipLevels)
-		:m_width(width),m_height(height), m_mipLevel(mipLevels), smpdesc(desc)
+		:m_width(width),m_height(height), m_mipLevel(mipLevels)
 	{
+		this->sampDesc = desc;
 		GLenum internalFormat= Utils::GetTextureInternalFormat(format);
 		GLenum textureformat = Utils::GetTextureFormat(format);
 		GLenum dataFormat = Utils::GetTextureDataFromFormat(format);
@@ -426,11 +426,11 @@ namespace QCat
 		//	glGenerateTextureMipmap(m_renderID);
 		//}
 
-		sampler = SamplerState::Create(smpdesc);
+		sampler = SamplerState::Create(sampDesc);
 	}
 	void OpenGLCubeMapTexture::GenerateMipMap()
 	{
-		if (m_mipLevel > 1 && smpdesc.MIP != Filtering::NONE)
+		if (m_mipLevel > 1 && sampDesc.MIP != Filtering::NONE)
 		{
 			glGenerateTextureMipmap(m_renderID);
 		}
@@ -536,7 +536,7 @@ namespace QCat
 		else
 			glTextureStorage3D(m_renderID, desc.MipLevels, m_InternalFormat, desc.Width, desc.Height,desc.ArraySize*6);
 
-		sampler = SamplerState::Create(smpdesc);
+		sampler = SamplerState::Create(sampDesc);
 	}
 
 	void OpenGLCubeMapArray::Bind(unsigned int slot) const

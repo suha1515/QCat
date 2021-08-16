@@ -73,6 +73,7 @@ namespace QCat
 				}
 			}
 		}
+
 	}
 	void RenderGraph::AddGlobalInput(Scope<PassInput> input)
 	{

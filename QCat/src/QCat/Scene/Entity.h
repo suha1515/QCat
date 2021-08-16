@@ -51,8 +51,10 @@ namespace QCat
 		Entity& operator =(const entt::entity& other) { m_EntityHandle = other; return *this; }
 		entt::entity GetHandle() { return m_EntityHandle; }
 		Scene* GetScene() { return m_pScene; };
+		//void SelectEntity();
 	public:
 		static Entity emptyEntity;
+		bool isSelected = false;
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_pScene=nullptr;	

@@ -110,7 +110,6 @@ namespace QCat
 		auto view = registry.view<TransformComponent, MeshComponent>();
 		for (auto& model : view)
 		{
-
 			auto& transformcomp = view.get<TransformComponent>(model);
 			auto& meshcomp = view.get<MeshComponent>(model);
 			if (meshcomp.GetMesh() != nullptr)
@@ -233,6 +232,7 @@ namespace QCat
 	}
 	void ShadowMappingPass::Execute(Ref<Scene>& scene)
 	{
+
 		std::vector<glm::mat4> shadowTransforms;
 
 		entt::registry& registry = scene->GetRegistry();
@@ -409,6 +409,7 @@ namespace QCat
 				m_PointLightShadow->Clear();
 
 				m_PointshadowMappingShader->Bind();
+				TextureLibrary::Load("white1x1tex")->Bind(0);
 				DrawModel(registry);
 				m_PointshadowMappingShader->UnBind();
 				m_PointLightShadow->UnBind();

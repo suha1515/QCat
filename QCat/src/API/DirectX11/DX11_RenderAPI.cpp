@@ -124,6 +124,9 @@ namespace QCat
 	void DX11RenderAPI::Draw(unsigned int startlocation, unsigned int count, DrawMode mode)
 	{
 		pgfx->GetContext()->IASetPrimitiveTopology(Utils::DrawModeDx(mode));
+		m_BlenderState->Bind();
+		m_DepthStencilState->Bind();
+		m_RasterizState->Bind();
 		pgfx->GetContext()->Draw(count, startlocation);
 	}
 	void DX11RenderAPI::SetDepthTest(bool enable)

@@ -13,6 +13,7 @@ namespace QCat
 		RegisterInput(TextureInput::Make("IrradianceCubeMap", m_IrradianceCubeMap));
 		RegisterInput(TextureInput::Make("BRDFLutTexture", m_BRDFLutTextrue));
 		RegisterInput(TextureInput::Make("PrefilterMap", m_PrefilterMap));
+
 		RegisterInput(TextureInput::Make("DirectionalLightShadowMap", m_DirectionalLightShadowMap));
 		RegisterInput(TextureInput::Make("PointLightShadowMap", m_PointLightShadowMap));
 		RegisterInput(TextureInput::Make("SpotLightShadowMap", m_SpotLightShadowMap));
@@ -21,6 +22,9 @@ namespace QCat
 		RegisterInput(TextureInput::Make("ColorBuffer", m_ColorBuffer));
 		RegisterInput(TextureInput::Make("DepthBuffer", m_DepthBuffer));
 		RegisterInput(TextureInput::Make("IDBuffer", m_IDBuffer));
+
+		RegisterOutput(TextureOutput::Make("PBRShader_ColorBuffer", m_ColorBuffer));
+		RegisterOutput(TextureOutput::Make("PBRShader_DepthBuffer", m_DepthBuffer));
 
 		RegisterInput(DataInput<glm::mat4>::Make("viewMatrix", viewMatrix, DataType::Matrix));
 		RegisterInput(DataInput<glm::mat4>::Make("projectionMatrix", projectionMatrix, DataType::Matrix));
@@ -39,7 +43,6 @@ namespace QCat
 		spec.Width = 1600;
 		spec.Height = 900;
 		m_Framebuffer = FrameBufferEx::Create(spec);
-
 
 		cameraConstantBuffer = ConstantBuffer::Create(sizeof(CameraData), 0);
 		transformConstantBuffer = ConstantBuffer::Create(sizeof(Transform), 1);
@@ -73,7 +76,7 @@ namespace QCat
 	{
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
-		RenderCommand::SetCullMode(CullMode::Back);
+		RenderCommand::SetDepthTest(true);
 
 		m_Framebuffer->Bind();
 		m_Framebuffer->DetachAll();
@@ -98,17 +101,28 @@ namespace QCat
 		camData.view = *viewMatrix;
 
 		cameraConstantBuffer->SetData(&camData, sizeof(CameraData), 0);
-		
-		m_PBRShader->Bind();
+
 		auto lightView = registry.view<TransformComponent, LightComponent, GuidComponent>();
 		int dirLightCount = 0;
 		int pointLightCount = 0;
 		int spotLightCount = 0;
+		std::vector<uint32_t> BillboardoutlineObjects;
+		std::vector<uint32_t> BillboardotherObjects;
 		Light light;
 		for (auto entity : lightView)
 		{
 			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
+			auto isClicked = lightView.get<TransformComponent>(entity).isClicked;
 			LightComponent& comp = lightView.get<LightComponent>(entity);
+			uint32_t id = lightView.get<GuidComponent>(entity).uid;
+			auto object = scene->GetEntityById(id);
+			if (isClicked)
+			{
+				BillboardoutlineObjects.push_back(id);
+			}
+			else
+				BillboardotherObjects.push_back(id);
+
 			if (comp.type == LightComponent::LightType::Directional && dirLightCount <= 0)
 			{
 				dirLightCount++;
@@ -138,9 +152,26 @@ namespace QCat
 				spotLightCount++;
 			}
 		}
+	
+		std::vector<uint32_t> outlineObjects;
+		std::vector<uint32_t> otherObjects;
+		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent, GuidComponent>);
+		for (auto entity : group)
+		{
+			auto isClicked = group.get<TransformComponent>(entity).isClicked;
+			uint32_t id = group.get<GuidComponent>(entity).uid;
+			auto object = scene->GetEntityById(id);
+			if (isClicked)
+			{
+				outlineObjects.push_back(id);
+			}	
+			else
+				otherObjects.push_back(id);
+		}
+
+		m_PBRShader->Bind();
 		ShadowMappingPass::LightMatrix data = *dirlightTransform;
 		dirlighbuffer->SetData(&data, sizeof(ShadowMappingPass::LightMatrix), 0);
-
 		light.isDebug = *m_DebugShadow;
 		light.isSoft = *m_SoftShadow;
 		lightConstantBuffer->SetData(&light, sizeof(Light), 0);
@@ -156,129 +187,55 @@ namespace QCat
 		lightConstantBuffer->Bind(3, Type::Pixel);
 		dirlighbuffer->Bind(4, Type::Pixel);
 
-		auto group = registry.group<TransformComponent>(entt::get<MeshComponent, MaterialComponent,GuidComponent>);
-		for (auto entity : group)
+		// PBR Rendering two part one is for stencil
+		if (!outlineObjects.empty())
 		{
-			MeshComponent& meshComponent = group.get<MeshComponent>(entity);
-
-			if (meshComponent.vertexArray != nullptr)
+			RenderCommand::SetStencilTest(true);
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1.0);
+			RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::REPLACE, STENCIL_OP::REPLACE);
+			RenderCommand::SetStencilWriteMask(0xff);
+			for (int i = 0; i < outlineObjects.size(); ++i)
 			{
-				glm::mat4 transform = group.get<TransformComponent>(entity).GetTransform();
-				Material& mat = group.get<MaterialComponent>(entity).GetMaterial();
-				//(*transformBuffer)["Transform"s] = transform;
-				//(*transformBuffer)["InvTransform"s] = glm::inverse(transform);
-				transformData.transform = transform;
-				transformData.invtrnasform = glm::inverse(transform);
-				transformData.id = group.get<GuidComponent>(entity).uid;
-				transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
-
-				matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
-				matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
-				matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
-				matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness) ? 1.0 : 0.0;
-				matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion) ? 1.0 : 0.0;
-
-				matData.albedo = mat.diffuse;
-				matData.metallic = mat.metallic;
-				matData.roughness = mat.roughness;
-				matData.ambientocclusion = mat.ao;
-
-				materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
-
-				mat.Bind(0, Material::TextureType::Diffuse);
-				mat.Bind(1, Material::TextureType::Normal);
-				mat.Bind(2, Material::TextureType::Metallic);
-				mat.Bind(3, Material::TextureType::Roughness);
-				mat.Bind(4, Material::TextureType::AmbientOcclusion);
-
-				m_IrradianceCubeMap->Bind(5);
-				m_PrefilterMap->Bind(6);
-				m_BRDFLutTextrue->Bind(7);
-
-				if (*m_SoftShadow)
-				{
-					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-					{
-						m_DirectionalLightShadowMap->Bind(8);
-						m_PointLightShadowMap->Bind(9);
-						m_SpotLightShadowMap->Bind(10);
-						m_normalSampler->Bind(9);
-					}
-					else
-					{
-						m_DirectionalLightShadowMap->Bind(8);
-						m_PointLightShadowMap->Bind(10);
-						m_SpotLightShadowMap->Bind(12);
-						m_normalSampler->Bind(9);
-					}
-				}
-				else
-				{
-					if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-					{
-						m_DirectionalLightShadowMap->Bind(8);
-						m_PointLightShadowMap->Bind(9);
-						m_SpotLightShadowMap->Bind(10);
-						m_normalSampler->Bind(9);
-					}
-					else
-					{
-						m_DirectionalLightShadowMap->Bind(9);
-						m_PointLightShadowMap->Bind(11);
-						m_SpotLightShadowMap->Bind(13);
-						m_normalSampler->Bind(9);
-						m_normalSampler->Bind(11);
-						m_normalSampler->Bind(13);
-					}
-				}
-				RenderCommand::DrawIndexed(meshComponent.vertexArray);
+				auto entity = scene->GetEntityById(outlineObjects[i]);
+				PBRRendering(entity);
 			}
+			RenderCommand::SetStencilTest(false);
 		}
+		for (int i = 0; i < otherObjects.size(); ++i)
+		{
+			auto entity = scene->GetEntityById(otherObjects[i]);
+			PBRRendering(entity);
+		}
+
 		m_PBRShader->UnBind();
 
-		colorConstantBuffer->Bind(2, Type::Pixel);
-		colData.color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		colorConstantBuffer->SetData(&colData, sizeof(color), 0);
-
-		//Light
-		/*m_FlatColorShader->Bind();
-		for (auto entity : lightView)
-		{
-			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
-			sphere->SetTranslation(lightPos);
-			sphere->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
-			glm::mat4 transform = sphere->GetTransform();
-
-			transformData.transform = transform;
-			transformData.invtrnasform = glm::inverse(transform);
-			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
-			sphere->Draw();
-		}
-		m_FlatColorShader->UnBind();*/
-
+		// Billboard Rendering for Light UI
 		m_BillboardShader->Bind();
 		cornerConstantBuffer->Bind(1, Type::Vetex);
-		Corners corner;
 		glm::mat4 view = *viewMatrix;
 		// For Vertices
 		glm::vec3 cameraRight = glm::vec3(view[0][0], view[1][0], view[2][0]);
 		glm::vec3 cameraUp = glm::vec3(view[0][1], view[1][1], view[2][1]);
 		float billboardsize = 0.5f;
-		for (auto entity : lightView)
+		if (!BillboardoutlineObjects.empty())
 		{
-			glm::vec3 lightPos = lightView.get<TransformComponent>(entity).Translation;
-			corner.corners[0] = glm::vec4(lightPos + cameraRight * -0.5f * billboardsize + cameraUp * -0.5f * billboardsize, 1.0f) ;//bottom left
-			corner.corners[1] = glm::vec4(lightPos + cameraRight * -0.5f * billboardsize + cameraUp * 0.5f * billboardsize,1.0f); //top left
-			corner.corners[2] = glm::vec4(lightPos + cameraRight *  0.5f * billboardsize + cameraUp * -0.5f * billboardsize, 1.0f) ;//bottom right
-			corner.corners[3] = glm::vec4(lightPos + cameraRight *  0.5f * billboardsize + cameraUp * 0.5f * billboardsize, 1.0f) ;//top right
-			corner.id = lightView.get<GuidComponent>(entity).uid;
-			cornerConstantBuffer->SetData(&corner, sizeof(Corners), 0);
-
-			Ref<Texture2D> lightTex = TextureLibrary::Load("LightImage");
-			if (lightTex)
-				lightTex->Bind(0);
-
-			RenderCommand::Draw(0, 4,RenderAPI::DrawMode::TRIANGLE_STRIP);
+			RenderCommand::SetStencilTest(true);
+			RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1.0);
+			// I dont know why this isnt working.. Comparison function always means what ever there is stencil or depth
+			// it will write its own value?
+			RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::REPLACE, STENCIL_OP::REPLACE);
+			RenderCommand::SetStencilWriteMask(0xff);
+			for (int i = 0; i < BillboardoutlineObjects.size(); ++i)
+			{
+				auto entity = scene->GetEntityById(BillboardoutlineObjects[i]);
+				BillboardRendering(entity, cameraUp, cameraRight, 0.5f);
+			}
+			RenderCommand::SetStencilTest(false);
+		}
+		for (int i = 0; i < BillboardotherObjects.size(); ++i)
+		{
+			auto entity = scene->GetEntityById(BillboardotherObjects[i]);
+			BillboardRendering(entity, cameraUp, cameraRight, 0.5f);
 		}
 		m_BillboardShader->UnBind();
 		m_Framebuffer->DetachTexture(AttachmentType::Color_1);
@@ -293,7 +250,99 @@ namespace QCat
 			cube->Draw();
 			m_SkyBoxShader->UnBind();
 		}
-
+		RenderCommand::SetDepthFunc(COMPARISON_FUNC::LESS);
+		RenderCommand::SetCullMode(CullMode::Back);
 		m_Framebuffer->UnBind();
+	}
+	void PBRShaderPass::PBRRendering(Entity& entity)
+	{
+		MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
+		if (meshComponent.vertexArray != nullptr)
+		{
+			glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();
+			Material& mat = entity.GetComponent<MaterialComponent>().GetMaterial();
+			transformData.transform = transform;
+			transformData.invtrnasform = glm::inverse(transform);
+			transformData.id = entity.GetUID();
+			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
+
+			matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
+			matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
+			matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
+			matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness) ? 1.0 : 0.0;
+			matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion) ? 1.0 : 0.0;
+
+			matData.albedo = mat.diffuse;
+			matData.metallic = mat.metallic;
+			matData.roughness = mat.roughness;
+			matData.ambientocclusion = mat.ao;
+
+			materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
+
+			mat.Bind(0, Material::TextureType::Diffuse);
+			mat.Bind(1, Material::TextureType::Normal);
+			mat.Bind(2, Material::TextureType::Metallic);
+			mat.Bind(3, Material::TextureType::Roughness);
+			mat.Bind(4, Material::TextureType::AmbientOcclusion);
+
+			m_IrradianceCubeMap->Bind(5);
+			m_PrefilterMap->Bind(6);
+			m_BRDFLutTextrue->Bind(7);
+
+			if (*m_SoftShadow)
+			{
+				if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+				{
+					m_DirectionalLightShadowMap->Bind(8);
+					m_PointLightShadowMap->Bind(9);
+					m_SpotLightShadowMap->Bind(10);
+					m_normalSampler->Bind(9);
+				}
+				else
+				{
+					m_DirectionalLightShadowMap->Bind(8);
+					m_PointLightShadowMap->Bind(10);
+					m_SpotLightShadowMap->Bind(12);
+					m_normalSampler->Bind(9);
+				}
+			}
+			else
+			{
+				if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+				{
+					m_DirectionalLightShadowMap->Bind(8);
+					m_PointLightShadowMap->Bind(9);
+					m_SpotLightShadowMap->Bind(10);
+					m_normalSampler->Bind(9);
+				}
+				else
+				{
+					m_DirectionalLightShadowMap->Bind(9);
+					m_PointLightShadowMap->Bind(11);
+					m_SpotLightShadowMap->Bind(13);
+					m_normalSampler->Bind(9);
+					m_normalSampler->Bind(11);
+					m_normalSampler->Bind(13);
+				}
+			}
+			RenderCommand::DrawIndexed(meshComponent.vertexArray);
+		}
+	}
+	void PBRShaderPass::BillboardRendering(Entity& entity,const glm::vec3& cameraUp,const glm::vec3& cameraRight,float size)
+	{
+		Corners corner;
+		glm::vec3 lightPos = entity.GetComponent<TransformComponent>().Translation;
+		corner.corners[0] = glm::vec4(lightPos + cameraRight * -0.5f * size + cameraUp * -0.5f * size, 1.0f);//bottom left
+		corner.corners[1] = glm::vec4(lightPos + cameraRight * -0.5f * size + cameraUp * 0.5f * size, 1.0f); //top left
+		corner.corners[2] = glm::vec4(lightPos + cameraRight * 0.5f * size + cameraUp * -0.5f * size, 1.0f);//bottom right
+		corner.corners[3] = glm::vec4(lightPos + cameraRight * 0.5f * size + cameraUp * 0.5f * size, 1.0f);//top right
+		corner.id = entity.GetUID();
+		cornerConstantBuffer->SetData(&corner, sizeof(Corners), 0);
+
+		Ref<Texture2D> lightTex = TextureLibrary::Load("LightImage");
+		if (lightTex)
+			lightTex->Bind(0);
+
+		RenderCommand::Draw(0, 4, RenderAPI::DrawMode::TRIANGLE_STRIP);
 	}
 }

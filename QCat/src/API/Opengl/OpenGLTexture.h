@@ -45,7 +45,6 @@ namespace QCat
 		unsigned int m_renderID=0;
 		bool flip = false;
 		GLenum m_InternalFormat=0, m_Format=0,m_DataFormat=0;
-		Sampler_Desc  smpdesc;
 	};
 	class OpenGlTexture2DArray : public Texture2DArray
 	{
@@ -78,7 +77,6 @@ namespace QCat
 	private:
 		unsigned int m_renderID = 0;
 		GLenum m_InternalFormat = 0, m_Format = 0, m_DataFormat = 0;
-		Sampler_Desc  smpdesc;
 	};
 	class OpenGLCubeMapTexture : public TextureCube
 	{
@@ -115,7 +113,6 @@ namespace QCat
 		unsigned int m_mipLevel, m_samples;
 		bool flip = false, gammaCorrection = false;
 		GLenum m_InternalFormat, m_Format, m_DataFormat;
-		Sampler_Desc  smpdesc;
 	};
 	class OpenGLCubeMapArray : public TextureCubeArray
 	{
@@ -145,7 +142,6 @@ namespace QCat
 	private:
 		unsigned int m_renderID;
 		GLenum m_InternalFormat, m_Format, m_DataFormat;
-		Sampler_Desc  smpdesc;
 	};
 
 	class OpenGLTextureUtility : public TextureUtility
@@ -156,8 +152,6 @@ namespace QCat
 
 		virtual void CopyTexture2D_(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion) override;
 		virtual void CopyCubemapFace2D_(Ref<Texture>& srcCubeMap, Ref<Texture>& dstTex, uint32_t index, uint32_t mipLevl, QCAT_BOX boxregion)override;
-
-
 	private:
 		uint32_t m_RendererID;
 

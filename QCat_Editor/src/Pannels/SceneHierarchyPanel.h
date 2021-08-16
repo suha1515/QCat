@@ -16,13 +16,16 @@ namespace QCat
 		void OnImguiRender();
 
 		Entity GetSelectedEntity() const { return m_SelectionContext; }
-		void SetSelectedEntity(Entity entity);
+		std::vector<Entity>& GetSelectedEntities() { return m_SelectedEntities; }
+		void RecursivelyUpdate(Entity entity);
+		void SetSelectedEntity(Entity entity,bool isctrl);
 	private:
 		void DrawEntityNode(Entity entity);
 		void DrawComponents(Entity entity);
 	private:
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
+		std::vector<Entity> m_SelectedEntities;
 		friend class Scene;
 	};
 }

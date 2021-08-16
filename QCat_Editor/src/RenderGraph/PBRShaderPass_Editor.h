@@ -15,6 +15,9 @@ namespace QCat
 		virtual void Initialize() override;
 		virtual void Execute(Ref<Scene>& scene) override;
 
+		void PBRRendering(Entity& entity);
+		void BillboardRendering(Entity& entity, const glm::vec3& cameraUp, const glm::vec3& cameraRight,float size);
+
 	private:
 		Ref<Texture> m_HdrCubeMap;
 		Ref<Texture> m_IrradianceCubeMap;

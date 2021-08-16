@@ -105,7 +105,7 @@ namespace QCat
 		int exRef = desc.referenceValue;
 		desc.FrontstencilFunc = func;
 		desc.referenceValue = ref;
-		if (exFunc != desc.FrontstencilFunc && exRef != desc.referenceValue)
+		if (exFunc != desc.FrontstencilFunc || exRef != desc.referenceValue)
 			changed = true;
 
 	}

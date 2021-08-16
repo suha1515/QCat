@@ -129,7 +129,7 @@ layout(std140,binding = 4) uniform LightTransform
 	float cascadeEndClipSpace[6];
 };
 layout(location = 0) out vec4 color;
-layout(location = 1) out int color2;
+layout(location = 1) out int idcolor;
 
 struct VertexOutput
 {
@@ -238,7 +238,7 @@ float PointShadowCalculation(int lightIndex,vec4 fragToLight,float far_plane,flo
 	float currentDepth = CalculationShadowDepth(fragToLight.xyz,far_plane,near_plane);
 	currentDepth = (currentDepth*0.5f) + 0.5f;
 
-	float bias = 0.01f;
+	float bias = 0.00001f;
 	fragToLight = normalize(fragToLight);
 	fragToLight.w = lightIndex;
 	currentDepth -=bias;
@@ -496,5 +496,5 @@ void main()
 	result = pow(result,vec3(1.0/2.2));
 
 	color = vec4(result,1.0f);
-	color2 = id;
+	idcolor = id;
 }

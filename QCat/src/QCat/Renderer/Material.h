@@ -18,14 +18,19 @@ namespace QCat
 			:ambient(ambient), diffuse(diffuse), specular(specular), shininess(shininess)
 		{
 			Sampler_Desc desc;
-			unsigned char r = 255;
-			unsigned char g = 255;
-			unsigned char b = 255;
-			unsigned char a = 255;
+			m_WhiteTexture = TextureLibrary::Load("white1x1tex");
+			if (m_WhiteTexture == nullptr)
+			{
+				unsigned char r = 255;
+				unsigned char g = 255;
+				unsigned char b = 255;
+				unsigned char a = 255;
 
-			//unsigned int whiteTextureData = 0xffffffff;
-			unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
-			m_WhiteTexture = TextureLibrary::Load("white1x1tex", TextureFormat::RGBA8, 1, 1, &whiteTextureData);
+				//unsigned int whiteTextureData = 0xffffffff;
+				unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
+				m_WhiteTexture = TextureLibrary::Load("white1x1tex", TextureFormat::RGBA8, 1, 1, &whiteTextureData);
+			}
+			
 		}
 		void SetTexture(const std::string& texturepath, Sampler_Desc& desc, TextureType type);
 		void SetTexture(const Ref<Texture>& texture, TextureType type);

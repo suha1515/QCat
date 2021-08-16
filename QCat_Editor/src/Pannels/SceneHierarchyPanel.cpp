@@ -19,6 +19,7 @@ namespace QCat
 	{
 		m_Context = context;
 		m_SelectionContext = Entity();
+		m_SelectedEntities.clear();
 	}
 	void SceneHierarchyPanel::OnImguiRender()
 	{
@@ -37,7 +38,6 @@ namespace QCat
 					
 				}
 			}
-
 			ImGui::EndDragDropTarget();
 		}
 
@@ -58,7 +58,15 @@ namespace QCat
 			DrawEntityNode(entity);	
 		});*/
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+		{
+			for (int i = 0; i < m_SelectedEntities.size(); ++i)
+			{
+				m_SelectedEntities[i].GetComponent<TransformComponent>().isClicked = false;
+			}
+			m_SelectedEntities.clear();
 			m_SelectionContext = Entity();
+		}
+			
 
 		// Right-Click on blank space
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
@@ -80,9 +88,33 @@ namespace QCat
 			
 		ImGui::End();
 	}
-	void SceneHierarchyPanel::SetSelectedEntity(Entity entity)
+	void SceneHierarchyPanel::RecursivelyUpdate(Entity entity)
 	{
+		m_SelectedEntities.push_back(entity);
+
+		auto& comp = entity.GetComponent<RelationShipComponent>();
+		entity.GetComponent<TransformComponent>().isClicked = true;
+		auto childid = comp.firstChild;
+		while (childid != 0xFFFFFFFF)
+		{
+			auto& childEntity = m_Context->m_entityMap[childid];
+			RecursivelyUpdate(childEntity);
+			childid = childEntity.GetComponent<RelationShipComponent>().nextSibling;
+		}
+	}
+	void SceneHierarchyPanel::SetSelectedEntity(Entity entity, bool isctrl)
+	{
+		if (!isctrl)
+		{
+			for (int i = 0; i < m_SelectedEntities.size(); ++i)
+			{
+				m_SelectedEntities[i].GetComponent<TransformComponent>().isClicked = false;
+			}
+			m_SelectedEntities.clear();
+		}
+		
 		m_SelectionContext = entity;
+		RecursivelyUpdate(entity);
 	}
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
 	{
@@ -90,8 +122,6 @@ namespace QCat
 
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-
-		
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 		// Drag On Entity
 		if (ImGui::BeginDragDropTarget())
@@ -105,7 +135,6 @@ namespace QCat
 				{
 					std::string temp = realpath.string();
 					ModelLoader::LoadModel(temp.c_str(), m_Context,&entity);
-
 				}
 			}
 
@@ -113,7 +142,7 @@ namespace QCat
 		}
 		if (ImGui::IsItemClicked())
 		{
-			m_SelectionContext = entity;
+			SetSelectedEntity(entity, false);
 		}
 
 		bool entityDeleted = false;

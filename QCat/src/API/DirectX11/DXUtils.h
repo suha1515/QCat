@@ -53,7 +53,7 @@ namespace QCat
 			case TextureFormat::RGB8:			 return DXGI_FORMAT_R8G8B8A8_UNORM;
 			case TextureFormat::DEPTH24STENCIL8: return DXGI_FORMAT_R24G8_TYPELESS;
 			case TextureFormat::DEPTH32:		 return DXGI_FORMAT_R32_TYPELESS;
-
+				
 			case TextureFormat::RGBA16_Float:    return DXGI_FORMAT_R16G16B16A16_FLOAT;
 			case TextureFormat::RGBA32_Float:    return DXGI_FORMAT_R32G32B32A32_FLOAT;
 			case TextureFormat::RG16_Float:		 return DXGI_FORMAT_R16G16_FLOAT;

@@ -113,6 +113,15 @@ namespace QCat
 	class TextureLibrary
 	{
 	public:
+		static void Initialize()
+		{
+			unsigned char r = 255;
+			unsigned char g = 255;
+			unsigned char b = 255;
+			unsigned char a = 255;
+			unsigned int whiteTextureData = r << 24 | g << 16 | b << 8 | a;
+			TextureLibrary::Load("white1x1tex", TextureFormat::RGBA8, 1, 1, &whiteTextureData);
+		}
 		static void Reset()
 		{
 			Get().Reset_();
@@ -146,6 +155,9 @@ namespace QCat
 		void Reset_()
 		{
 			m_Textures.clear();
+			texturepathlist.clear();
+
+			Initialize();
 		}
 		bool Exists(const std::string& path) const
 		{

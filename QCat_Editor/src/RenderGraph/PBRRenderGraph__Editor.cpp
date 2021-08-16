@@ -1,6 +1,7 @@
 #include "PBRRenderGraph_Editor.h"
 #include "PBRShaderPass_Editor.h"
 #include "PBRPreComputePass_Editor.h"
+#include "PostProcess_Editor.h"
 #include "ShadowMappingPass.h"
 #include "glm/gtc/type_ptr.hpp"
 namespace QCat
@@ -34,17 +35,22 @@ namespace QCat
         
         //Buffer
         AddGlobalOutput(TextureOutput::Make("ColorBuffer", m_Colorbuffer));
+        AddGlobalOutput(TextureOutput::Make("ScreenTexture", m_ScreenTexture));
         AddGlobalOutput(TextureOutput::Make("DepthBuffer", m_DepthBuffer));
         AddGlobalOutput(TextureOutput::Make("IDBuffer", m_EntityIDBuffer));
     
         //Color Buffer , DepthBuffer , IDBuffer
         Sampler_Desc smpDesc;
-        m_Colorbuffer = Texture2D::Create(TextureFormat::RGB8, smpDesc, width, height);
+        m_Colorbuffer = Texture2D::Create(TextureFormat::RGBA8, smpDesc, width, height);
         m_DepthBuffer = Texture2D::Create(TextureFormat::DEPTH24STENCIL8, smpDesc, width, height);
         smpDesc.MIN = Filtering::POINT;
         smpDesc.MAG = Filtering::POINT;
         m_EntityIDBuffer = Texture2D::Create(TextureFormat::RED32_INTEGER, smpDesc,width,height);
+        smpDesc.addressU = WrapingMode::CLAMP;
+        smpDesc.addressV = WrapingMode::CLAMP;
+        m_ScreenTexture = Texture2D::Create(TextureFormat::RGBA8, smpDesc, width, height);
 
+       
         Ref<Pass> preComputPass = CreateRef<PBRPreComputePass>(0, "precomputepass");
         preComputPass->SetInputLink("HdrImage", "$.hdrImage");
         AppendPass(preComputPass);
@@ -79,9 +85,14 @@ namespace QCat
         pbrShaderPass->SetInputLink("PointLightShadowMap", "shadowmappingpass.PointLightShadowMap");
         pbrShaderPass->SetInputLink("SpotLightShadowMap", "shadowmappingpass.SpotLightShadowMap");
 
-        
-
         AppendPass(pbrShaderPass);
+
+        Ref<Pass> postprocess = CreateRef<PostProcessPass>(2, "postprocessing");
+        postprocess->SetInputLink("PBRShader_ColorBuffer", "pbrrenderpass.PBRShader_ColorBuffer");
+        postprocess->SetInputLink("PBRShader_DepthBuffer", "pbrrenderpass.PBRShader_DepthBuffer");
+        postprocess->SetInputLink("ScreenTexture", "$.ScreenTexture");
+
+        AppendPass(postprocess);
     }
     void PBRRenderGraph::SetSize(uint32_t width, uint32_t height)
     {
@@ -92,6 +103,7 @@ namespace QCat
             m_Colorbuffer->SetSize(width, height);
             m_DepthBuffer->SetSize(width, height);
             m_EntityIDBuffer->SetSize(width, height);
+            m_ScreenTexture->SetSize(width, height);
         }
     }
 }

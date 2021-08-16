@@ -262,12 +262,12 @@ namespace QCat
 		QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
 
 		// soruce와 호환가능한 임시 텍스쳐를 만든다 하지만 cpu에서 읽고 쓸 수 있다.
-		wrl::ComPtr<ID3D11Resource> pResSource;
+		// Get Texture Resource from View
+		/*wrl::ComPtr<ID3D11Resource> pResSource;
 		pTextureView->GetResource(&pResSource);
 		wrl::ComPtr<ID3D11Texture2D> pTexSource;
 		pResSource.As(&pTexSource);
-		D3D11_TEXTURE2D_DESC desc;
-	
+		*/
 		D3D11_TEXTURE2D_DESC textureDesc;
 		textureDesc.Width = width;
 		textureDesc.Height = height;
@@ -293,7 +293,7 @@ namespace QCat
 		srcBox.top = yoffset;
 		srcBox.front = 0;
 		srcBox.back = 1;
-		gfx.GetContext()->CopySubresourceRegion(pTexTemp.Get(), 0, 0, 0, 0, pTexSource.Get(), 0, &srcBox);
+		gfx.GetContext()->CopySubresourceRegion(pTexTemp.Get(), 0, 0, 0, 0, pTexture.Get(), 0, &srcBox);
 
 		D3D11_MAPPED_SUBRESOURCE msr = {};
 		gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_READ, 0, &msr);
@@ -364,87 +364,7 @@ namespace QCat
 				QCAT_CORE_ERROR("Texture Error : Immutable Texture can be changed! ");
 			break;
 		}
-
-		//wrl::ComPtr<ID3D11Resource> pResSource;
-		//pTextureView->GetResource(&pResSource);
-		//wrl::ComPtr<ID3D11Texture2D> pTexSource;
-		//pResSource.As(&pTexSource);
-
-		//D3D11_TEXTURE2D_DESC textureDesc;
-		//textureDesc.Width = width;
-		//textureDesc.Height = height;
-		//textureDesc.MipLevels = 1;
-		//textureDesc.ArraySize = 1;
-		//textureDesc.Format = Utils::GetDirectDataType(format);
-		//textureDesc.SampleDesc.Count = this->desc.SampleCount;
-		//textureDesc.SampleDesc.Quality = 0;
-		//textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		//textureDesc.Usage = D3D11_USAGE_DYNAMIC;
-		//textureDesc.BindFlags = 0;
-		//textureDesc.MiscFlags = 0;
-		//wrl::ComPtr<ID3D11Texture2D> pTexTemp;
-
-		////텍스처 생성
-		//gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexTemp);
-
-
-		//D3D11_MAPPED_SUBRESOURCE msr = {};
-		//gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &msr);
-		//if (xoffset >= 0 && xoffset <= this->desc.Width && yoffset >= 0 && yoffset <= this->desc.Height)
-		//{
-		//	if (dataType == TextureDataType::INT)
-		//		MapProcessing<int>(miplevel, 0, 0, width, height, msr.pData, data);
-		//}
-		//gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
 	}
-	//void DX11Texture2D::ReadData(uint32_t x, uint32_t y, const void* outdata)
-	//{
-	//	namespace wrl = Microsoft::WRL;
-
-	//	QGfxDeviceDX11& gfx = *QGfxDeviceDX11::GetInstance();
-	//	// soruce와 호환가능한 임시 텍스쳐를 만든다 하지만 cpu에서 읽고 쓸 수 있다.
-	//	wrl::ComPtr<ID3D11Resource> pResSource;
-	//	pTextureView->GetResource(&pResSource);
-	//	wrl::ComPtr<ID3D11Texture2D> pTexSource;
-	//	pResSource.As(&pTexSource);
-	//	D3D11_TEXTURE2D_DESC desc;
-	//
-	//	D3D11_TEXTURE2D_DESC textureDesc;
-	//	textureDesc.Width = 1;
-	//	textureDesc.Height = 1;
-	//	textureDesc.MipLevels = 1;
-	//	textureDesc.ArraySize = 1;
-	//	textureDesc.Format = m_dataFormat;
-	//	textureDesc.SampleDesc.Count = this->desc.SampleCount;
-	//	textureDesc.SampleDesc.Quality = 0;
-	//	textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	//	textureDesc.Usage = D3D11_USAGE_STAGING;
-	//	textureDesc.BindFlags = 0;
-	//	textureDesc.MiscFlags = 0;
-	//	wrl::ComPtr<ID3D11Texture2D> pTexTemp;
-
-	//	//텍스처 생성
-	//	gfx.GetDevice()->CreateTexture2D(&textureDesc, nullptr, &pTexTemp);
-
-	//	// 텍스처 복사
-	//	//gfx.GetContext()->CopyResource(pTexTemp.Get(), pTexSource.Get());
-	//	D3D11_BOX srcBox;
-	//	srcBox.left = x;
-	//	srcBox.right = x + 1;
-	//	srcBox.bottom = y + 1;
-	//	srcBox.top = y;
-	//	srcBox.front = 0;
-	//	srcBox.back = 1;
-	//	gfx.GetContext()->CopySubresourceRegion(pTexTemp.Get(), 0, 0, 0, 0, pTexSource.Get(), 0, &srcBox);
-
-	//	D3D11_MAPPED_SUBRESOURCE msr = {};
-	//	gfx.GetContext()->Map(pTexTemp.Get(), 0, D3D11_MAP::D3D11_MAP_READ, 0, &msr);
-	//	if (x >= 0 && x <= this->desc.Width && y >= 0 && y <= this->desc.Height)
-	//	{
-	//		*(int*)outdata = *(int*)msr.pData;
-	//	}
-	//	gfx.GetContext()->Unmap(pTexTemp.Get(), 0);
-	//}
 	void DX11Texture2D::Invalidate(void * pData)
 	{
 		if (pTexture)
@@ -1214,6 +1134,8 @@ namespace QCat
 			QCAT_CORE_ERROR("DepthStenilView Contruction Error : ArrayIndex is Over or nuimLayer is over!");
 			pass = false;
 		}
+		viewDesc = srcTexDesc;
+
 		dsvDesc.Format = Utils::MapTypeDSV(viewTexFormat);
 		dsvDesc.ViewDimension = dstDimension;
 
@@ -1303,4 +1225,32 @@ namespace QCat
 			gfx->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH , depth, stencil);
 	}
 	
+	void DX11TextureUtility::CopyTexture2D_(Ref<Texture>& srcTex, Ref<Texture>& dstTex, uint32_t mipLevel, QCAT_BOX boxregion)
+	{
+		Texture_Desc srcTexDesc = srcTex->GetDesc();
+		Texture_Desc dstTexDesc = dstTex->GetDesc();
+		uint32_t srcDimension = Utils::GetDimensionFromType(srcTexDesc.Type);
+		uint32_t dstDimension = Utils::GetDimensionFromType(dstTexDesc.Type);
+		ID3D11Texture2D* srctexture2D = nullptr;
+		ID3D11Texture2D* dsttexture2D = nullptr;
+
+		D3D11_BOX box;
+		box.left = boxregion.xoffset;
+		box.right = boxregion.width;
+		box.top = boxregion.yoffset;
+		box.bottom = boxregion.height;
+		box.front = 0;
+		box.back = 1;
+
+		if (srcDimension != 2 || dstDimension !=2)
+			QCAT_CORE_ERROR("One of Texture Dimension isnt 2 : Textire Dimension Error");
+		else
+		{
+			srctexture2D = (ID3D11Texture2D*)srcTex->GetTextureHandle();
+			dsttexture2D = (ID3D11Texture2D*)dstTex->GetTextureHandle();
+
+			QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(dsttexture2D, mipLevel, 0, 0, 0, srctexture2D, mipLevel, &box);
+		}
+	}
+
 }

@@ -36,6 +36,7 @@ namespace QCat
 		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
+		bool isClicked = false;
 		bool changed = false;
 
 		TransformComponent() = default;
@@ -204,18 +205,6 @@ namespace QCat
 					debugMap.reset();
 				resolution = 2048;
 				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, resolution, resolution);
-				
-				//desc.MIN = Filtering::LINEAR;
-				//desc.MAG = Filtering::LINEAR;
-				//desc.MIP = Filtering::NONE;
-				//desc.addressU = WrapingMode::CLAMP;
-				//desc.addressV = WrapingMode::CLAMP;
-				//desc.addressW = WrapingMode::CLAMP;
-				//desc.mode = FilterMode::COMPARISON;
-				//desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
-				//if (shadowMap != nullptr)
-				//	shadowMap.reset();
-				//shadowMap = Texture2DArray::Create(TextureFormat::DEPTH32, desc, resolution, resolution,5);
 				break;
 			case LightType::Spot:
 				if (debugMap != nullptr)
@@ -224,18 +213,6 @@ namespace QCat
 				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, 512, 512);
 				far_plane = 10.0f;
 				near_plane = 0.1f;
-				
-				/*desc.MIN = Filtering::LINEAR;
-				desc.MAG = Filtering::LINEAR;
-				desc.MIP = Filtering::NONE;
-				desc.addressU = WrapingMode::CLAMP;
-				desc.addressV = WrapingMode::CLAMP;
-				desc.addressW = WrapingMode::CLAMP;
-				desc.mode = FilterMode::COMPARISON;
-				desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
-				if (shadowMap != nullptr)
-					shadowMap.reset();
-				shadowMap = Texture2D::Create(TextureFormat::DEPTH32, desc, resolution, resolution);*/
 				break;
 			case LightType::Point:
 				if (debugMap != nullptr)
@@ -244,18 +221,6 @@ namespace QCat
 				debugMap = Texture2D::Create(TextureFormat::RGBA8, desc, 512, 512);
 				far_plane = 10.0f;
 				near_plane = 0.1f;
-				
-				//desc.MIN = Filtering::LINEAR;
-				//desc.MAG = Filtering::LINEAR;
-				//desc.MIP = Filtering::NONE;
-				//desc.addressU = WrapingMode::CLAMP;
-				//desc.addressV = WrapingMode::CLAMP;
-				//desc.addressW = WrapingMode::CLAMP;
-				//desc.mode = FilterMode::COMPARISON;
-				//desc.comparisonFunc = COMPARISON_FUNC::LESS_EQUAL;
-				//if (shadowMap != nullptr)
-				//	shadowMap.reset();
-				//shadowMap = TextureCube::Create(TextureFormat::DEPTH32, desc, resolution, resolution);
 				break;
 			default:
 				break;

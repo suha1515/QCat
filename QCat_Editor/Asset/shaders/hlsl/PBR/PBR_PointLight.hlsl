@@ -156,7 +156,7 @@ struct PSIn
 struct PS_OUT
 {
 	float4 color :SV_TARGET0;
-	int color2 : SV_TARGET1;
+	int    id : SV_TARGET1;
 };
 const static float3 gridSamplingDisk[20] = {
 	{ 1, 1, 1}, { 1,-1, 1}, {-1,-1, 1}, {-1, 1, 1},
@@ -520,6 +520,6 @@ PS_OUT PSMain(PSIn input)
 	result = pow(result, 1.0f / 2.2f);
 	
 	output.color = float4(result, 1.0f);
-	output.color2 = input.id;
+	output.id = input.id;
 	return output;
 }
