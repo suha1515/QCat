@@ -17,31 +17,31 @@ namespace QCat
 {
 	namespace Utils
 	{
-		void UpdateTransform(Entity& entity, const glm::mat4 parentMatrix)
+		void UpdateTransform(Entity& entity,Ref<Scene>& activeScene, const glm::mat4 parentMatrix)
 		{
 			TransformComponent& transcomp = entity.GetComponent<TransformComponent>();
 			transcomp.parentMatrix = parentMatrix;
 			const glm::mat4 localMatrix = transcomp.GetTransform();
 			auto child = entity.GetComponent<RelationShipComponent>().firstChild;
-
-			while (child != Entity::emptyEntity)
+			while (child != 0xFFFFFFFF)
 			{
-				UpdateTransform(child, localMatrix);
-				child = child.GetComponent<RelationShipComponent>().nextSibling;
+				Entity childentity = activeScene->GetEntityById(child);
+				UpdateTransform(childentity, activeScene,localMatrix);
+				child = childentity.GetComponent<RelationShipComponent>().nextSibling;
 			}
 		}
-		void SetMaterial(Entity& entity, Material& mat)
+		/*void SetMaterial(Entity& entity, Material& mat)
 		{
 			if(entity.HasComponent<MaterialComponent>())
 				entity.GetComponent<MaterialComponent>().material = mat;
 			auto child = entity.GetComponent<RelationShipComponent>().firstChild;
 
-			while (child != Entity::emptyEntity)
+			while (child != 0xFFFFFFFF)
 			{
 				SetMaterial(child, mat);
 				child = child.GetComponent<RelationShipComponent>().nextSibling;
 			}
-		}
+		}*/
 	}
 	
 	ModelTestScene::ModelTestScene()
@@ -59,19 +59,19 @@ namespace QCat
 		HumanModel.GetComponent<TransformComponent>().Rotation = { 0.0,0.0,0.0f };
 		HumanModel.GetComponent<TransformComponent>().Translation = modelPos;
 
-		Material mat;
-		Sampler_Desc imgSamp;
-		imgSamp.addressU = WrapingMode::REPEAT;
-		imgSamp.addressV = WrapingMode::REPEAT;
-		imgSamp.MIN = Filtering::LINEAR;
-		imgSamp.MAG = Filtering::LINEAR;
-		imgSamp.MIP = Filtering::LINEAR;
-		mat.SetTexture("Asset/model/vampire/textures/Vampire_diffuse.png", imgSamp, Material::TextureType::Diffuse);
+		//Material mat;
+		//Sampler_Desc imgSamp;
+		//imgSamp.addressU = WrapingMode::REPEAT;
+		//imgSamp.addressV = WrapingMode::REPEAT;
+		//imgSamp.MIN = Filtering::LINEAR;
+		//imgSamp.MAG = Filtering::LINEAR;
+		//imgSamp.MIP = Filtering::LINEAR;
+		//mat.SetTexture("Asset/model/vampire/textures/Vampire_diffuse.png", imgSamp, Material::TextureType::Diffuse);
 		//mat.SetTexture("Asset/model/vampire/textures/Vampire_normal.png", imgSamp, Material::TextureType::Normal);
-		mat.SetTexture("Asset/model/vampire/textures/Vampire_specular.png", imgSamp, Material::TextureType::Specular);
+		//mat.SetTexture("Asset/model/vampire/textures/Vampire_specular.png", imgSamp, Material::TextureType::Specular);
 
-		Utils::SetMaterial(HumanModel, mat);
-		Utils::UpdateTransform(HumanModel, glm::mat4(1.0f));
+		//Utils::SetMaterial(HumanModel, mat);
+		Utils::UpdateTransform(HumanModel,m_ActiveScene, glm::mat4(1.0f));
 		
 
 		Entity pointLight = m_ActiveScene->CreateEntity("PointLight1");
@@ -184,10 +184,7 @@ namespace QCat
 			mat.Bind(3, Material::TextureType::AmbientOcclusion);
 
 			MeshComponent& meshComponent = group.get<MeshComponent>(entity);
-			for (auto& mesh : meshComponent.GetMeshes())
-			{
-				RenderCommand::DrawIndexed(mesh);
-			}
+			RenderCommand::DrawIndexed(meshComponent.GetMesh());
 
 		}
 

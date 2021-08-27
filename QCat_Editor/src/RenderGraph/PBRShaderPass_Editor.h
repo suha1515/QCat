@@ -15,7 +15,8 @@ namespace QCat
 		virtual void Initialize() override;
 		virtual void Execute(Ref<Scene>& scene) override;
 
-		void PBRRendering(Entity& entity);
+		void PBRRendering(Entity& entity,Ref<VertexArray>& vertexArray);
+		void PBRAnimRendering(Entity& entity);
 		void BillboardRendering(Entity& entity, const glm::vec3& cameraUp, const glm::vec3& cameraRight,float size);
 
 	private:
@@ -28,6 +29,7 @@ namespace QCat
 		Ref<Texture> m_SpotLightShadowMap;
 
 		Ref<Shader>  m_PBRShader;
+		Ref<Shader>  m_PBRAnimShader;
 		Ref<Shader>  m_FlatColorShader;
 		Ref<Shader>  m_SkyBoxShader;
 		Ref<Shader>  m_BillboardShader;
@@ -120,7 +122,10 @@ namespace QCat
 			glm::vec4 corners[4];
 			int id = -1;
 		};
-	
+		struct BoneMatrix
+		{
+			glm::mat4 boneMatrix[100];
+		};
 		struct color
 		{
 			glm::vec4 color;
@@ -136,6 +141,7 @@ namespace QCat
 		Ref<ConstantBuffer> lightConstantBuffer;
 		Ref<ConstantBuffer> colorConstantBuffer;
 		Ref<ConstantBuffer> cornerConstantBuffer;
+		Ref<ConstantBuffer> boneMatrixConstnatBuffer;
 
 		Ref<ElementBuffer> transformBuffer;
 		Ref<bool> m_SoftShadow;

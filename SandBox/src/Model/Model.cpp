@@ -387,7 +387,8 @@ namespace QCat
 		// if node has meshes, Node has a meshIndex and Scene has a real mesh so
 		// if node want to acess its own meshes , pass the nodes meshIndex to scene->mMeshes
 		std::string nodeName = node->mName.C_Str();
-		Entity entity = pScene->CreateEntity(nodeName,parentEntity);
+		Entity entity = pScene->CreateEntity(nodeName);
+		entity.SetParent(parentEntity);
 		glm::mat4 transform = Utils::ConvertToGlm(node->mTransformation);
 		glm::vec3 scale, translation, skew;
 		glm::quat rotation;
@@ -397,16 +398,16 @@ namespace QCat
 		entity.GetComponent<TransformComponent>().Scale = scale;
 		entity.GetComponent<TransformComponent>().Translation = translation;
 
-		std::vector<Ref<VertexArray>> vertexArrays;
+		Ref<VertexArray> vertexArrays;
 		for (uint32_t i = 0; i < node->mNumMeshes; ++i)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			if (animator!=nullptr)
 			{
-				vertexArrays.push_back(ProcessAnimatedMeshEntity(node, mesh, scene, *animator));
+				vertexArrays = ProcessAnimatedMeshEntity(node, mesh, scene, *animator);
 			}
 			else
-				vertexArrays.push_back(ProcessMeshEntity(node, mesh, scene));
+				vertexArrays = ProcessMeshEntity(node, mesh, scene);
 		}
 		if (node->mNumMeshes != 0)
 		{

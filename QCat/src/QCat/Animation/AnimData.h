@@ -8,6 +8,7 @@ namespace QCat
 	{
 		Entity entity;
 		std::string nodeName;
+		glm::mat4 nodeMatrix;
 		std::vector<NodeData> children;
 	};
 	struct BoneInfo

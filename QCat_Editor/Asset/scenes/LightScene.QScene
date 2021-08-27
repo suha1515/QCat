@@ -1,0 +1,213 @@
+Scene: Untitled
+ModelPath:
+  []
+TexturePath:
+  - Path: Asset/textures/Checkerboard.png
+  - Path: Resources/ContentBrowser/Light (3).png
+  - Path: Resources/ContentBrowser/folder.png
+  - Path: Resources/ContentBrowser/files.png
+  - Path: Resources/ContentBrowser/image.png
+  - Path: Asset/textures/HdrImage/Arches_E_PineTree/Arches_E_PineTree_3k.hdr
+  - Path: Asset\textures\PBR\gold\albedo.png
+  - Path: Asset\textures\PBR\gold\ao.png
+  - Path: Asset\textures\PBR\gold\metallic.png
+  - Path: Asset\textures\PBR\gold\normal.png
+  - Path: Asset\textures\PBR\gold\roughness.png
+  - Path: Asset\textures\PBR\plastic\albedo.png
+  - Path: Asset\textures\PBR\plastic\ao.png
+  - Path: Asset\textures\PBR\plastic\metallic.png
+  - Path: Asset\textures\PBR\plastic\normal.png
+  - Path: Asset\textures\PBR\plastic\roughness.png
+Entities:
+  - Entity: 0
+    TagComponent:
+      Tag: Sphere1
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 2
+    TransformComponent:
+      Translation: [-0.526529193, 0.319807798, -2.1433599]
+      Rotation: [0.0129602915, -0.395753235, -0.0134504652]
+      Scale: [1.00000417, 0.999999762, 1]
+    MeshComponent:
+      Meshname: Sphere
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 0.100000001
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: Asset\textures\PBR\gold\albedo.png
+      AlbedoTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_CLAMP_V_CLAMP_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      NormalTexture: Asset\textures\PBR\gold\normal.png
+      NormalTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: Asset\textures\PBR\gold\metallic.png
+      MetallicTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      RoughnessTexture: Asset\textures\PBR\gold\roughness.png
+      RoughnessTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+      AmbientOcclusionTexture: Asset\textures\PBR\gold\ao.png
+      AmbientOcclusionTextureSampler: Filtering_MIN_LINEAR_MAG_LINEAR_MIP_NONE_FilterMode_NONE_Adress_U_REPEAT_V_REPEAT_W_CLAMP_MipLodBias_0.00_MaxAnisotropy_1_ComparisonFunc_NEVER_BorderColor_1.00,1.00,1.00,1.00_MinMaxLod_-340282346638528859811704183484516925440.00,340282346638528859811704183484516925440.00
+  - Entity: 1
+    TagComponent:
+      Tag: SpotLight
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [1.55756736, -1.07192516, 0]
+      Rotation: [0, 0, 0]
+      Scale: [8.8265419, 0.160391018, 7.21009398]
+    MeshComponent:
+      Meshname: Cube
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 0.100000001
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: none
+      AlbedoTextureSampler: none
+      NormalTexture: none
+      NormalTextureSampler: none
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: none
+      MetallicTextureSampler: none
+      RoughnessTexture: none
+      RoughnessTextureSampler: none
+      AmbientOcclusionTexture: none
+      AmbientOcclusionTextureSampler: none
+  - Entity: 2
+    TagComponent:
+      Tag: Empty Entity
+    RelationShipComponent:
+      Parent: 0
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [1.81943393, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.483443826, 0.403035611, 0.55768615]
+    MeshComponent:
+      Meshname: Cube
+    MaterialComponent:
+      Albedo: [0, 1, 0]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 1
+      Roughness: 0.100000001
+      AmbientOcclusion: 1
+      AlbedoTexture: none
+      AlbedoTextureSampler: none
+      NormalTexture: none
+      NormalTextureSampler: none
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: none
+      MetallicTextureSampler: none
+      RoughnessTexture: none
+      RoughnessTextureSampler: none
+      AmbientOcclusionTexture: none
+      AmbientOcclusionTextureSampler: none
+  - Entity: 3
+    TagComponent:
+      Tag: Box
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [4.35279799, 0.290369749, 0.958782554]
+      Rotation: [0, -0.845164359, 0]
+      Scale: [0.999999881, 1, 0.999999881]
+    MeshComponent:
+      Meshname: Cube
+    MaterialComponent:
+      Albedo: [1, 1, 1]
+      Specular: [1, 1, 1]
+      Ambient: [0.200000003, 0.200000003, 0.200000003]
+      Shininess: 32
+      Metallic: 0.100000001
+      Roughness: 1
+      AmbientOcclusion: 1
+      AlbedoTexture: none
+      AlbedoTextureSampler: none
+      NormalTexture: none
+      NormalTextureSampler: none
+      SpecularTexture: none
+      SpecularTextureSampler: none
+      MetallicTexture: none
+      MetallicTextureSampler: none
+      RoughnessTexture: none
+      RoughnessTextureSampler: none
+      AmbientOcclusionTexture: none
+      AmbientOcclusionTextureSampler: none
+  - Entity: 5
+    TagComponent:
+      Tag: SpotLight
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [6.97961044, 1.09193027, -0.499993622]
+      Rotation: [-1.21787834, 1.02599072, -2.69949508]
+      Scale: [0.999928772, 0.999999106, 0.999998808]
+    LightComponent:
+      LightColor:
+        Diffuse: [30, 1, 1]
+        Ambient: [0.200000003, 0.200000003, 0.200000003]
+        Specular: [1, 1, 1]
+      Directional Light:
+        LightDirection: [-0.85516715, -0.486310571, 0.179127008]
+      Point Light:
+        Constant: 1
+        Quadratic: 0.0320000015
+        Linear: 0.0900000036
+        Radius: 0
+      Spot Light:
+        Cutoff: 29.3999996
+        OuterCutoff: 38.9000015
+      Type: 2
+  - Entity: 6
+    TagComponent:
+      Tag: PointLight
+    RelationShipComponent:
+      Parent: 4294967295
+      PrevSibling: 4294967295
+      NextSibling: 4294967295
+      FirstChild: 4294967295
+    TransformComponent:
+      Translation: [0.745437026, 2.77070808, 0.467020094]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    LightComponent:
+      LightColor:
+        Diffuse: [1, 1, 30]
+        Ambient: [0.200000003, 0.200000003, 0.200000003]
+        Specular: [1, 1, 1]
+      Directional Light:
+        LightDirection: [0, 0, 1]
+      Point Light:
+        Constant: 1
+        Quadratic: 0.0320000015
+        Linear: 0.0900000036
+        Radius: 0
+      Spot Light:
+        Cutoff: 12.5
+        OuterCutoff: 17.5
+      Type: 1

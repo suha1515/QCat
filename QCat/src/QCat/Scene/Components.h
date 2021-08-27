@@ -1,7 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #define GLM_ENABLE_EXPERIMENT
 #include <glm/gtx/quaternion.hpp>
 
@@ -16,6 +15,10 @@
 
 namespace QCat
 {
+	struct BasicComponent
+	{
+		Entity owner;
+	};
 	struct TagComponent
 	{
 		std::string Tag;
@@ -131,6 +134,7 @@ namespace QCat
 	struct MeshComponent
 	{
 		Ref<VertexArray> vertexArray;
+		bool isDynamic = false;
 		MeshComponent() = default;
 		MeshComponent(const std::string& meshName)
 		{
@@ -141,14 +145,6 @@ namespace QCat
 			MeshLibrary::Set(meshName, vertexarray);
 			vertexArray = std::move(vertexarray);
 		}
-		/*void Bind()
-		{
-			vertexArray->Bind();
-		}
-		void UnBind()
-		{
-			vertexArray->UnBind();
-		}*/
 		void AddMesh(const std::string& meshName)
 		{
 			auto mesh = MeshLibrary::Load(meshName);
@@ -164,6 +160,45 @@ namespace QCat
 			vertexArray = vertexarray;
 		}
 		Ref<VertexArray>& GetMesh() { return vertexArray; }
+	};
+
+	// DynamicMesh has a Node that effect mesh
+	struct DynamicMeshComponent
+	{
+		Ref<VertexArray> vertexArray;
+		//std::set<std::string> m_boneName;
+		std::unordered_map<std::string, BoneInfo> m_OffsetMatrix;
+		//std::vector<uint32_t> m_nodes;
+		std::vector<std::pair<uint32_t, std::string>> m_nodes;
+
+		std::string modelPath;
+		DynamicMeshComponent() = default;
+		//DynamicMeshComponent()
+		void AddMesh(const std::string& meshName)
+		{
+			auto mesh = MeshLibrary::Load(meshName);
+			if (mesh != nullptr)
+				vertexArray = mesh;
+			else
+				QCAT_CORE_ERROR("There is no mesh name '{0}'", meshName);
+		}
+		void AddMesh(Ref<VertexArray>& vertexarray)
+		{
+			vertexArray= vertexarray;
+		}
+		void Initialize(std::vector<std::pair<uint32_t, std::string>>& nodes)
+		{
+			for (auto& element : nodes)
+			{
+				const std::string& nodename = element.second;
+				uint32_t id = element.first;
+				auto iter = m_OffsetMatrix.find(nodename);
+				if (iter != m_OffsetMatrix.end())
+				{
+					m_nodes.push_back(element);
+				}
+			}
+		}
 	};
 	struct MaterialComponent
 	{

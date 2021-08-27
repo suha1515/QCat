@@ -31,7 +31,7 @@ namespace QCat
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path realpath = std::filesystem::path(g_AssetPath) / path;
 				QCAT_CORE_WARN("{0}", realpath.string());
-				if (realpath.extension() == ".obj" || realpath.extension() == ".fbx" || realpath.extension() == ".FBX")
+				if (realpath.extension() == ".obj" || realpath.extension() == ".fbx" || realpath.extension() == ".FBX" || realpath.extension() == ".dae")
 				{
 					std::string temp = realpath.string();
 					ModelLoader::LoadModel(temp.c_str(), m_Context);
@@ -131,7 +131,7 @@ namespace QCat
 				const wchar_t* path = (const wchar_t*)payload->Data;
 				std::filesystem::path realpath = std::filesystem::path(g_AssetPath) / path;
 				QCAT_CORE_WARN("{0}", realpath.string());
-				if (realpath.extension() == ".obj" || realpath.extension() == ".fbx" || realpath.extension() == ".FBX")
+				if (realpath.extension() == ".obj" || realpath.extension() == ".fbx" || realpath.extension() == ".FBX" || realpath.extension() == ".dae")
 				{
 					std::string temp = realpath.string();
 					ModelLoader::LoadModel(temp.c_str(), m_Context,&entity);
@@ -155,7 +155,10 @@ namespace QCat
 					entity.SetParent(&m_SelectionContext);
 			}
 			if (ImGui::MenuItem("Delete Entity"))
+			{
 				entityDeleted = true;
+			}
+				
 
 				ImGui::EndPopup();
 		}
@@ -175,7 +178,10 @@ namespace QCat
 		if (entityDeleted)
 		{
 			if (m_SelectionContext == entity)
+			{
+				m_SelectedEntities.clear();
 				m_SelectionContext = Entity();
+			}
 			m_Context->DestroyEntity(entity);
 		}
 	}
@@ -531,7 +537,7 @@ namespace QCat
 				if (ImGui::SmallButton("Set Texture##albedo"))
 					OpenTexture(mat.m_DiffuseTexture);
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Set None"))
+				if (ImGui::SmallButton("Set None##albedoNone"))
 					mat.m_DiffuseTexture = nullptr;
 
 				std::string name;
@@ -548,6 +554,8 @@ namespace QCat
 						const wchar_t* path = (const wchar_t*)payload->Data;
 						std::filesystem::path texturepath = std::filesystem::path(g_AssetPath) / path;
 						Sampler_Desc desc;
+						desc.addressU = WrapingMode::CLAMP;
+						desc.addressV = WrapingMode::CLAMP;
 						auto& texture = TextureLibrary::Load(texturepath.string(), desc, 1, 1, RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? false : true);
 						if (texture)
 							mat.m_DiffuseTexture = texture;
@@ -569,7 +577,7 @@ namespace QCat
 				if (ImGui::SmallButton("Set Texture##normal"))
 					 OpenTexture(mat.m_NormalMapTexture);
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Set None"))
+				if (ImGui::SmallButton("Set None##NormalNone"))
 					mat.m_NormalMapTexture = nullptr;
 
 				if (mat.m_NormalMapTexture)
@@ -605,7 +613,7 @@ namespace QCat
 				if (ImGui::SmallButton("Set Texture##metaillic"))
 					OpenTexture(mat.m_MetallicTexture);
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Set None"))
+				if (ImGui::SmallButton("Set None##MetallicNone"))
 					mat.m_MetallicTexture = nullptr;
 
 				if (mat.m_MetallicTexture)
@@ -642,7 +650,7 @@ namespace QCat
 				if (ImGui::SmallButton("Set Texture##roughness"))
 					OpenTexture(mat.m_RoughnessTexture );
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Set None"))
+				if (ImGui::SmallButton("Set None##roughnessNone"))
 					mat.m_RoughnessTexture = nullptr;
 
 				if (mat.m_RoughnessTexture)
@@ -678,7 +686,7 @@ namespace QCat
 				if (ImGui::SmallButton("Set Texture##ambient"))
 					OpenTexture(mat.m_AmbientOcclusionTexture);
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Set None"))
+				if (ImGui::SmallButton("Set None##ambientNone"))
 					mat.m_AmbientOcclusionTexture = nullptr;
 
 				if (mat.m_AmbientOcclusionTexture)

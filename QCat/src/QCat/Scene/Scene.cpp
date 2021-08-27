@@ -17,7 +17,6 @@ namespace QCat
 	}
 	Entity Scene::CreateEntity(const std::string& name , uint32_t id)
 	{
-		m_Registry.create();
 		Entity  entity = { m_Registry.create(), this};
 		auto& uidcomp = entity.AddComponent<GuidComponent>();
 		entity.AddComponent<TransformComponent>();
@@ -27,6 +26,8 @@ namespace QCat
 
 		if (id != 0)
 		{
+			if (id >= m_nextID)
+				m_nextID = id+1;
 			uidcomp.uid = id;
 			if (m_entityMap.find(id) == m_entityMap.end())
 				m_entityMap.insert({ id, entity });
@@ -35,7 +36,9 @@ namespace QCat
 		}
 		else
 		{
-			uidcomp.uid  = static_cast<std::underlying_type_t< entt::entity>>(entity.GetHandle());
+			//uidcomp.uid  = static_cast<std::underlying_type_t< entt::entity>>(entity.GetHandle());
+			uidcomp.uid = m_nextID;
+			m_nextID++;
 			if (m_entityMap.find(entity.GetUID()) == m_entityMap.end())
 				m_entityMap.insert({ entity.GetUID(), entity });
 			else
@@ -96,18 +99,14 @@ namespace QCat
 	void Scene::UpdateRecursively(Entity& entity,const glm::mat4& parentMatrix)
 	{	
 			auto& rc = entity.GetComponent<RelationShipComponent>();
+			auto& tc = entity.GetComponent<TransformComponent>();
+			tc.parentMatrix = parentMatrix;
 			auto childid = rc.firstChild;
 			while (childid != 0xFFFFFFFF)
 			{
 				auto& childEntity = m_entityMap[childid];
-				auto& ctc = childEntity.GetComponent<TransformComponent>();
 				auto& crc = childEntity.GetComponent<RelationShipComponent>();
-				ctc.parentMatrix = parentMatrix;
-				ctc.changed = false;
-				if (crc.firstChild != 0xFFFFFFFF)
-				{
-					UpdateRecursively(childEntity,ctc.GetTransform());
-				}
+				UpdateRecursively(childEntity, tc.GetTransform());
 				childid = crc.nextSibling;
 			}
 	}
@@ -128,16 +127,26 @@ namespace QCat
 				}
 			);
 		}
+		//Update Animation
+		auto aniamtorView = m_Registry.view<AnimatorComponent>();
+		for (auto entity: aniamtorView)
+		{
+			auto& animComp = aniamtorView.get<AnimatorComponent>(entity).animator;
+			animComp.UpdateAnimation(this,ts);
+		}
+
 		// Update Entity
 		for (auto& entity : m_entityMap)
 		{
 			auto& tc = entity.second.GetComponent<TransformComponent>();
+			auto& rc = entity.second.GetComponent<RelationShipComponent>();
+			if (rc.parent == 0xFFFFFFFF && rc.firstChild != 0xFFFFFFFF)
+				UpdateRecursively(entity.second, glm::mat4(1.0f));
 			if (tc.changed)
-			{
-				UpdateRecursively(entity.second,tc.GetTransform());
 				tc.changed = false;
-			}
 		}
+		
+
 		// Render
 		Camera* maincamera = nullptr;
 		glm::mat4 cameraTransform ;
@@ -234,6 +243,9 @@ namespace QCat
 	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
 	{
 	}
+	template<>
+	void Scene::OnComponentAdded<DynamicMeshComponent>(Entity entity, DynamicMeshComponent& component)
+	{}
 	template<>
 	void Scene::OnComponentAdded<MaterialComponent>(Entity entity, MaterialComponent& component)
 	{

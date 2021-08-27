@@ -9,29 +9,25 @@ namespace QCat
 	{
 	public:
 		Animator() = default;
-		void Initialize(const aiScene* scene,Entity& rootNode);
+		void Initialize(const aiScene* scene, std::vector<std::pair<uint32_t, std::string>>& nodes, std::unordered_map<std::string, BoneInfo>& boneMap, uint32_t& boneCount);
 		
 		void PlayAnimation(int index)
 		{
-			m_CurrentAnimation = &animationClips[index];
+			m_CurrentAnimation = index;
 			m_CurrentTime = 0.0f;
 		}
-		void UpdateAnimation(float dt);
-		void CalculateBoneTransform(NodeData& node, glm::mat4 parentTransform);
-
-		std::vector<glm::mat4>& GetTransforms()
-		{
-			return m_Transforms;
-		}
-	public:
-		std::map<std::string, BoneInfo> m_OffsetMatMap;
-		int m_BoneCount=0;
+		void UpdateAnimation(Scene* pScene,float dt);
+		void CalculateBoneTransform(Scene* pScene);
 	private:
-		std::vector<glm::mat4> m_Transforms;
-		NodeData m_RootNode;
+		void ReadHierarchy(Entity& node);
+	public:
+		std::unordered_map<uint32_t, std::string> m_MapNodeID;
+	private:
+		std::vector<std::pair<uint32_t, std::string>> m_Nodes;
 		std::vector<Animation> animationClips;
-		Animation* m_CurrentAnimation;
+		int m_CurrentAnimation=0;
 		float m_CurrentTime;
 		float m_DeltaTime;
+		bool isStop = true;
 	};
 }

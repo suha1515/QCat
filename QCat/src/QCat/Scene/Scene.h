@@ -37,5 +37,6 @@ namespace QCat
 		uint32_t m_ViewPortWidth = 0, m_ViewPortHeight = 0;
 
 		std::map<uint32_t, Entity> m_entityMap;
+		uint32_t m_nextID = 0;
 	};
 }

@@ -164,4 +164,104 @@ namespace QCat
 		std::string m_Name;
 		int m_ID;
 	};
+	/*class BoneLibrary
+	{
+	public:
+		static BoneInfo GetBoneMatrix(const std::string& modelPath, const std::string boneName)
+		{
+			return Get().GetBoneMatrix_(modelPath, boneName);
+		}
+		static BoneInfo GetBoneMatrix(const std::string& modelPath, const uint32_t entityId)
+		{
+			return Get().GetBoneMatrix_(modelPath, entityId);
+		}
+		static void SetBoneMap(const std::string& modelPath, std::unordered_map<std::string, BoneInfo>& boneMap)
+		{
+			Get().SetBoneMap_(modelPath, boneMap);
+		}
+		static void SetEntityMap(const uint32_t id, std::string boneName)
+		{
+			Get().SetEntityMap_(id, boneName);
+		}
+	private:
+
+		static BoneLibrary& Get()
+		{
+			static BoneLibrary lib;
+			return lib;
+		}
+		void SetBoneMap_(const std::string& modelPath, std::unordered_map<std::string, BoneInfo>& boneMap)
+		{
+			auto iter = m_boneMaps.find(modelPath);
+			if (iter == m_boneMaps.end())
+				m_boneMaps[modelPath] = boneMap;
+			else
+				QCAT_CORE_ERROR("There is aready bonemap on modelPath {0} ", modelPath);
+		}
+		void SetEntityMap_(const uint32_t id, std::string boneName)
+		{
+			auto iter = m_nodeToBoneNameMap.find(id);
+			if (iter == m_nodeToBoneNameMap.end())
+				m_nodeToBoneNameMap[id] = boneName;
+			else
+				QCAT_CORE_ERROR("There is aready Entity on EntityMap : {0} ", id);
+		}
+
+		BoneInfo GetBoneMatrix_(const std::string& modelPath, const std::string boneName)
+		{
+			auto iter = m_boneMaps.find(modelPath);
+			if (iter != m_boneMaps.end())
+			{
+				auto& bonemap = m_boneMaps[modelPath];
+				auto iter2 = bonemap.find(boneName);
+				if (iter2 != bonemap.end())
+					return bonemap[boneName];
+				else
+				{
+					QCAT_CORE_ERROR("There is no BoneName '{0}' on ModelPath : {1}",boneName,modelPath);
+					return BoneInfo();
+				}
+			}
+			else
+			{
+				QCAT_CORE_ERROR("There is no modelPath '{0}' ", modelPath);
+				return BoneInfo();
+			}
+		}
+
+		BoneInfo GetBoneMatrix_(const std::string& modelPath, const uint32_t entityId)
+		{
+			auto iter_node = m_nodeToBoneNameMap.find(entityId);
+			std::string boneName;
+			if (iter_node != m_nodeToBoneNameMap.end())
+				boneName = iter_node->second;
+			else
+			{
+				QCAT_CORE_ERROR("There is no entityID '{0}' on nodeMap", entityId);
+				return BoneInfo();
+			}
+			auto iter = m_boneMaps.find(modelPath);
+			if (iter != m_boneMaps.end())
+			{
+				auto& bonemap = m_boneMaps[modelPath];
+				auto iter2 = bonemap.find(boneName);
+				if (iter2 != bonemap.end())
+					return bonemap[boneName];
+				else
+				{
+					QCAT_CORE_ERROR("There is no BoneName '{0}' on ModelPath : {1}", boneName, modelPath);
+					return BoneInfo();
+				}
+			}
+			else
+			{
+				QCAT_CORE_ERROR("There is no modelPath '{0}' ", modelPath);
+				return BoneInfo();
+			}
+		}
+
+	private:
+		std::unordered_map<std::string,std::unordered_map<std::string, BoneInfo>> m_boneMaps;
+		std::unordered_map<uint32_t, std::string> m_nodeToBoneNameMap;
+	};*/
 }

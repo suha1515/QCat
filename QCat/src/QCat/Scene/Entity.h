@@ -30,7 +30,18 @@ namespace QCat
 			return m_pScene->m_Registry.get<T>(m_EntityHandle);
 		}
 		template<typename T>
+		T& GetComponent() const
+		{
+			QCAT_CORE_ASSERT(HasComponent<T>(), "Entity does not have Component!");
+			return m_pScene->m_Registry.get<T>(m_EntityHandle);
+		}
+		template<typename T>
 		bool HasComponent()
+		{
+			return m_pScene->m_Registry.has<T>(m_EntityHandle);
+		}
+		template<typename T>
+		bool HasComponent() const
 		{
 			return m_pScene->m_Registry.has<T>(m_EntityHandle);
 		}

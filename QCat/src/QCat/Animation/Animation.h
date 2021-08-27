@@ -12,7 +12,7 @@ namespace QCat
 	{
 	public:
 		Animation() = default;
-		Animation(const aiAnimation* animationClip, std::map<std::string, BoneInfo>& boneMap, int& boneCount)
+		Animation(const aiAnimation* animationClip, std::unordered_map<std::string, BoneInfo>& boneMap, uint32_t& boneCount)
 		{
 			m_Duration = animationClip->mDuration;
 			m_TicksPerSecond = animationClip->mTicksPerSecond;
@@ -34,7 +34,7 @@ namespace QCat
 		inline float GetDuration() { return m_Duration; }
 
 	private:
-		void SetBone(const aiAnimation* animationClip,std::map<std::string, BoneInfo>& boneMap,int& boneCount)
+		void SetBone(const aiAnimation* animationClip,std::unordered_map<std::string, BoneInfo>& boneMap, uint32_t& boneCount)
 		{
 			int size = animationClip->mNumChannels;
 			for (int i = 0; i < size; ++i)

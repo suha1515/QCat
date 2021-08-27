@@ -124,10 +124,7 @@ namespace QCat
 			m_BRDFLutTextrue->Bind(7);
 
 			MeshComponent& meshComponent =  group.get<MeshComponent>(entity);
-			for (auto& mesh : meshComponent.GetMeshes())
-			{
-				RenderCommand::DrawIndexed(mesh);
-			}
+			RenderCommand::DrawIndexed(meshComponent.GetMesh());
 			
 		}
 

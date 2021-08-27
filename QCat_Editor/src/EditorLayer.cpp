@@ -255,7 +255,7 @@ namespace QCat
 		if (RenderAPI::GetAPI() == RenderAPI::API::OpenGL)
 			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y), ImVec2{ 0,1 }, ImVec2{ 1,0 });
 		else if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
-			ImGui::Image(EditorPBRRenderGraph.GetScreemTexture()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
+			ImGui::Image(EditorPBRRenderGraph.GetColorBuffer()->GetTexture(), ImVec2(m_ViewPortSize.x, m_ViewPortSize.y));
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -491,7 +491,7 @@ namespace QCat
 			{
 				int idvalue=-1;
 				std::dynamic_pointer_cast<Texture2D>(EditorPBRRenderGraph.GetIDBuffer())->ReadData(0, mouseX, mouseY, 1, 1, TextureFormat::RED32_INTEGER, TextureDataType::INT, 4, &idvalue);
-				m_HoveredEntity = idvalue == -1 ? Entity() : Entity((entt::entity)idvalue, m_ActiveScene.get());
+				m_HoveredEntity = idvalue == -1 ? Entity() : m_ActiveScene->GetEntityById(idvalue);
 			}
 
 			if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))

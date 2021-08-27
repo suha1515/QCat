@@ -51,6 +51,7 @@ namespace QCat
 		colorConstantBuffer = ConstantBuffer::Create(sizeof(color), 2);
 		dirlighbuffer = ConstantBuffer::Create(sizeof(ShadowMappingPass::LightMatrix), 4);
 		cornerConstantBuffer = ConstantBuffer::Create(sizeof(Corners), 0);
+		boneMatrixConstnatBuffer = ConstantBuffer::Create(sizeof(BoneMatrix), 0);
 
 		LayoutElement lay(ShaderDataType::Struct,"Struct");
 		lay.Add(ShaderDataType::Mat4, "Transform");
@@ -68,6 +69,7 @@ namespace QCat
 	void PBRShaderPass::Initialize()
 	{
 		m_PBRShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_PointLight.hlsl" : "Asset/shaders/glsl/PBR/PBR_PointLight.glsl");
+		m_PBRAnimShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/PBR_Animation.hlsl" : "Asset/shaders/glsl/PBR/PBR_Animation.glsl");
 		m_FlatColorShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/FlatColor.hlsl" : "Asset/shaders/glsl/FlatColor.glsl");
 		m_SkyBoxShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PBR/MakeHDRCubeMap.hlsl" : "Asset/shaders/glsl/PBR/MakeHDRCubeMap.glsl");
 		m_BillboardShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/Billboard/Billboard.hlsl" : "Asset/shaders/glsl/Billboard/Billboard.glsl");
@@ -160,16 +162,18 @@ namespace QCat
 		{
 			auto isClicked = group.get<TransformComponent>(entity).isClicked;
 			uint32_t id = group.get<GuidComponent>(entity).uid;
+			bool isDynamic = group.get<MeshComponent>(entity).isDynamic;
+
 			auto object = scene->GetEntityById(id);
-			if (isClicked)
+			if (!isDynamic)
 			{
-				outlineObjects.push_back(id);
-			}	
-			else
-				otherObjects.push_back(id);
+				if (isClicked)
+					outlineObjects.push_back(id);
+				else
+					otherObjects.push_back(id);
+			}
 		}
 
-		m_PBRShader->Bind();
 		ShadowMappingPass::LightMatrix data = *dirlightTransform;
 		dirlighbuffer->SetData(&data, sizeof(ShadowMappingPass::LightMatrix), 0);
 		light.isDebug = *m_DebugShadow;
@@ -187,6 +191,7 @@ namespace QCat
 		lightConstantBuffer->Bind(3, Type::Pixel);
 		dirlighbuffer->Bind(4, Type::Pixel);
 
+		m_PBRShader->Bind();
 		// PBR Rendering two part one is for stencil
 		if (!outlineObjects.empty())
 		{
@@ -197,17 +202,61 @@ namespace QCat
 			for (int i = 0; i < outlineObjects.size(); ++i)
 			{
 				auto entity = scene->GetEntityById(outlineObjects[i]);
-				PBRRendering(entity);
+				PBRRendering(entity, entity.GetComponent<MeshComponent>().vertexArray);
 			}
 			RenderCommand::SetStencilTest(false);
 		}
 		for (int i = 0; i < otherObjects.size(); ++i)
 		{
 			auto entity = scene->GetEntityById(otherObjects[i]);
-			PBRRendering(entity);
+			PBRRendering(entity, entity.GetComponent<MeshComponent>().vertexArray);
 		}
 
 		m_PBRShader->UnBind();
+
+		m_PBRAnimShader->Bind();
+		boneMatrixConstnatBuffer->Bind(5, Type::Vetex);
+		BoneMatrix matrices;
+		auto dynamicview = registry.view<DynamicMeshComponent, TransformComponent, GuidComponent>();
+		for (auto entity : dynamicview)
+		{
+			std::vector<Entity> outlineAnimObject;
+			std::vector<Entity> otherAnimObject;
+			auto& dynamicMeshComp = dynamicview.get<DynamicMeshComponent>(entity);
+			auto& transofrmComp = dynamicview.get<TransformComponent>(entity);
+			uint32_t id = dynamicview.get<GuidComponent>(entity).uid;
+			auto& nodes = dynamicMeshComp.m_nodes;
+			auto& offsetMap = dynamicMeshComp.m_OffsetMatrix;
+			for (int i = 0; i < nodes.size(); ++i)
+			{
+				auto& boneInfo = offsetMap[nodes[i].second];
+				const glm::mat4& globalTransform = scene->GetEntityById(nodes[i].first).GetComponent<TransformComponent>().GetTransform();
+				matrices.boneMatrix[boneInfo.id] = globalTransform* boneInfo.offsetMatrix;
+			}
+			boneMatrixConstnatBuffer->SetData(&matrices, sizeof(BoneMatrix), 0);
+
+			bool isClicked = transofrmComp.isClicked;
+			if (isClicked)
+				outlineAnimObject.push_back(scene->GetEntityById(id));
+			else
+				otherAnimObject.push_back(scene->GetEntityById(id));
+
+			if (!outlineAnimObject.empty())
+			{
+				RenderCommand::SetStencilTest(true);
+				RenderCommand::SetFrontStencilFunc(COMPARISON_FUNC::ALWAYS, 1.0);
+				RenderCommand::SetFrontStencilOp(STENCIL_OP::KEEP, STENCIL_OP::REPLACE, STENCIL_OP::REPLACE);
+				RenderCommand::SetStencilWriteMask(0xff);
+				for (int i = 0; i < outlineAnimObject.size(); ++i)
+				{
+					PBRRendering(outlineAnimObject[i], outlineAnimObject[i].GetComponent<DynamicMeshComponent>().vertexArray);
+				}	
+				RenderCommand::SetStencilTest(false);
+			}
+			for (int i = 0; i < otherAnimObject.size(); ++i)
+				PBRRendering(otherAnimObject[i], otherAnimObject[i].GetComponent<DynamicMeshComponent>().vertexArray);
+		}
+		m_PBRAnimShader->UnBind();
 
 		// Billboard Rendering for Light UI
 		m_BillboardShader->Bind();
@@ -254,13 +303,87 @@ namespace QCat
 		RenderCommand::SetCullMode(CullMode::Back);
 		m_Framebuffer->UnBind();
 	}
-	void PBRShaderPass::PBRRendering(Entity& entity)
+	void PBRShaderPass::PBRRendering(Entity& entity,Ref<VertexArray>& vertexArray)
 	{
-		MeshComponent& meshComponent = entity.GetComponent<MeshComponent>();
+		if (vertexArray != nullptr)
+		{
+			glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();
+			Material& mat = entity.GetComponent<MaterialComponent>().GetMaterial();
+			transformData.transform = transform;
+			transformData.invtrnasform = glm::inverse(transform);
+			transformData.id = entity.GetUID();
+			transformConstantBuffer->SetData(&transformData, sizeof(Transform), 0);
+
+			matData.IsAlbedoMap = mat.IsThereTexture(Material::TextureType::Diffuse) ? 1.0 : 0.0;
+			matData.IsNormalMap = mat.IsThereTexture(Material::TextureType::Normal) ? 1.0 : 0.0;
+			matData.IsMetallicMap = mat.IsThereTexture(Material::TextureType::Metallic) ? 1.0 : 0.0;
+			matData.IsRoughnessMap = mat.IsThereTexture(Material::TextureType::Roughness) ? 1.0 : 0.0;
+			matData.IsAoMap = mat.IsThereTexture(Material::TextureType::AmbientOcclusion) ? 1.0 : 0.0;
+
+			matData.albedo = mat.diffuse;
+			matData.metallic = mat.metallic;
+			matData.roughness = mat.roughness;
+			matData.ambientocclusion = mat.ao;
+
+			materialConstantBuffer->SetData(&matData, sizeof(Mat), 0);
+
+			mat.Bind(0, Material::TextureType::Diffuse);
+			mat.Bind(1, Material::TextureType::Normal);
+			mat.Bind(2, Material::TextureType::Metallic);
+			mat.Bind(3, Material::TextureType::Roughness);
+			mat.Bind(4, Material::TextureType::AmbientOcclusion);
+
+			m_IrradianceCubeMap->Bind(5);
+			m_PrefilterMap->Bind(6);
+			m_BRDFLutTextrue->Bind(7);
+
+			if (*m_SoftShadow)
+			{
+				if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+				{
+					m_DirectionalLightShadowMap->Bind(8);
+					m_PointLightShadowMap->Bind(9);
+					m_SpotLightShadowMap->Bind(10);
+					m_normalSampler->Bind(9);
+				}
+				else
+				{
+					m_DirectionalLightShadowMap->Bind(8);
+					m_PointLightShadowMap->Bind(10);
+					m_SpotLightShadowMap->Bind(12);
+					m_normalSampler->Bind(9);
+				}
+			}
+			else
+			{
+				if (RenderAPI::GetAPI() == RenderAPI::API::DirectX11)
+				{
+					m_DirectionalLightShadowMap->Bind(8);
+					m_PointLightShadowMap->Bind(9);
+					m_SpotLightShadowMap->Bind(10);
+					m_normalSampler->Bind(9);
+				}
+				else
+				{
+					m_DirectionalLightShadowMap->Bind(9);
+					m_PointLightShadowMap->Bind(11);
+					m_SpotLightShadowMap->Bind(13);
+					m_normalSampler->Bind(9);
+					m_normalSampler->Bind(11);
+					m_normalSampler->Bind(13);
+				}
+			}
+			RenderCommand::DrawIndexed(vertexArray);
+		}
+	}
+	void PBRShaderPass::PBRAnimRendering(Entity& entity)
+	{
+		DynamicMeshComponent& meshComponent = entity.GetComponent<DynamicMeshComponent>();
 		if (meshComponent.vertexArray != nullptr)
 		{
 			glm::mat4 transform = entity.GetComponent<TransformComponent>().GetTransform();
 			Material& mat = entity.GetComponent<MaterialComponent>().GetMaterial();
+
 			transformData.transform = transform;
 			transformData.invtrnasform = glm::inverse(transform);
 			transformData.id = entity.GetUID();
