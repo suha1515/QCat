@@ -1,15 +1,6 @@
 [submodule "QCat/3rdLib/spdlog"]
 	path = QCat/3rdLib/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "QCat/3rdLib/Imgui"]
-	path = QCat/3rdLib/Imgui
-	url = https://github.com/suha1515/imgui
 [submodule "QCat/3rdLib/glm"]
 	path = QCat/3rdLib/glm
 	url = https://github.com/g-truc/glm
-[submodule "QCat/3rdLib/yaml-cpp"]
-	path = QCat/3rdLib/yaml-cpp
-	url = https://github.com/suha1515/yaml-cpp
-[submodule "QCat/3rdLib/ImGuizmo"]
-	path = QCat/3rdLib/ImGuizmo
-	url = https://github.com/suha1515/ImGuizmo
