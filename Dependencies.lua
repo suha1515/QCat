@@ -22,8 +22,12 @@ LibraryDir = {}
 
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["VulkanSDK_Debug"] = "%{wks.location}/QCat/3rdLib/VulkanSDK/Lib"
+LibraryDir["VulkanSDK_DebugDLL"] = "%{wks.location}/QCat/3rdLib/VulkanSDK/Bin"
+LibraryDir["Assimp_Debug"] = "%{wks.location}/QCat/3rdLib/assimp/Lib"
+LibraryDir["Assimp_DebugDLL"] = "%{wks.location}/QCat/3rdLib/assimp/Bin"
 
 Library = {}
+Library["Assimp_Debug"] = "%{LibraryDir.Assimp_Debug}/assimp-vc142-mtd.lib"
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"
 

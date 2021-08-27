@@ -13,8 +13,6 @@ project "QCat"
 	pchheader "qcpch.h"
 	pchsource "src/qcpch.cpp"
 
-	libdirs { "%{wks.location}/QCat/3rdLib/assimp/Debug" }
-
 	files
 	{
 		"src/**.h",
@@ -50,7 +48,6 @@ project "QCat"
 	{
 		"d3d11.lib",
 		"opengl32.lib",
-		"assimp-vc142-mtd.lib",
 		"ImGui",
 		"Glad",
 		"yaml-cpp"
@@ -68,7 +65,8 @@ project "QCat"
 		{
 			"%{Library.ShaderC_Debug}",
 			"%{Library.SPIRV_Cross_Debug}",
-			"%{Library.SPIRV_Cross_GLSL_Debug}"
+			"%{Library.SPIRV_Cross_GLSL_Debug}",
+			"%{Library.Assimp_Debug}"
 		}
 	filter "configurations:Release"
 		defines "QCAT_RELEASE"

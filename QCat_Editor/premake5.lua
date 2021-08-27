@@ -10,12 +10,6 @@ project "QCat_Editor"
 	disablewarnings{"4819"}
 	characterset ("MBCS")
 
-	environmentVariables =
-	{
-		"PATH=%{wks.location}/QCat/3rdLib/assimp/Debug;%PATH%"
-	}
-	debugenvs(environmentVariables)
-	libdirs { "%{wks.location}/QCat/3rdLib/assimp/Debug" }
 	files
 	{
 		"src/**.h",
@@ -48,7 +42,15 @@ project "QCat_Editor"
 	filter "configurations:Debug"
 		defines "QCAT_DEBUG"
 		symbols "on"
-
+		postbuildcommands
+		{
+			"{COPY} \"%{LibraryDir.VulkanSDK_DebugDLL}\" \"%{cfg.targetdir}\""
+		}
+		postbuildcommands
+		{
+			"{COPY} \"%{LibraryDir.Assimp_DebugDLL}\" \"%{cfg.targetdir}\""
+		}
+		
 	filter "configurations:Release"
 		defines "QCAT_RELEASE"
 		optimize "on"
