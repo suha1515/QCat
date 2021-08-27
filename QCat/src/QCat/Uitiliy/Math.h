@@ -22,4 +22,13 @@ namespace QCat
 
 		Float16 x=0.0f, y=0.0f, z=0.0f, w=0.0f;
 	};
+
+	namespace Utils
+	{
+		static float Lerp(float a, float b, float alpha)
+		{
+			return a * (1 - alpha) + b * alpha;
+		}
+	}
+	
 }

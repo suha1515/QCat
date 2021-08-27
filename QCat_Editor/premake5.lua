@@ -1,7 +1,7 @@
 project "QCat_Editor"
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++latest"
+	cppdialect "C++17"
 	staticruntime "off"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .."/%{prj.name}")

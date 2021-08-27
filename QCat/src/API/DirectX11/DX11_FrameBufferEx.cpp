@@ -261,7 +261,7 @@ namespace QCat
 	{
 		if (m_RenderTargets[Utils::GetAttachmentIndex(type)])
 			m_RenderTargets[Utils::GetAttachmentIndex(type)].reset();
-		m_RenderTargets[Utils::GetAttachmentIndex(type)] = dynamic_pointer_cast<DX11RenderTargetView>(textureView);
+		m_RenderTargets[Utils::GetAttachmentIndex(type)] = std::dynamic_pointer_cast<DX11RenderTargetView>(textureView);
 
 		Bind();
 	}
@@ -269,7 +269,7 @@ namespace QCat
 	{
 		if (m_DepthAttachment)
 			m_DepthAttachment.reset();
-		m_DepthStencilView = dynamic_pointer_cast<DX11DepthStencilView>(textureView);
+		m_DepthStencilView = std::dynamic_pointer_cast<DX11DepthStencilView>(textureView);
 
 		Bind();
 	}

@@ -135,7 +135,8 @@ namespace QCat
 			float index = (i / (float)amount);
 			float uniformSplit = nearz + (farz - nearz) * index;
 			float logarithmSplit = nearz * std::powf((farz / nearz), index);
-			zSplits[i] = std::lerp(logarithmSplit, uniformSplit, lamda);
+			zSplits[i] = Utils::Lerp(logarithmSplit, uniformSplit, lamda);
+			
 		}
 		return zSplits;
 	}
