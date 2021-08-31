@@ -11,11 +11,7 @@
 #include "QCat/Renderer/Shader.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Header/Sandbox2D.h"
-#include "../Header/ModelTestScene.h"
-#include "../Header/TestScene.h"
-#include "../Header/PbrTest.h"
-#include "../Header/RenderGraphTest.h"
+
 class ExamLayer : public QCat::Layer
 {
 public:
@@ -24,25 +20,19 @@ public:
 	{
 
 	}
+	void OnAttach() override
+	{
+		QCat::RenderCommand::SetClearColor(glm::vec4(0.3f,0.3f,0.3f,1.0f));
+
+	}
 	void OnUpdate(QCat::Timestep step) override
 	{
-		////Update
-		//m_CameraController.OnUpdate(step);
+		QCat::RenderCommand::Clear();
 
-		////Render
-		//QCat::RenderCommand::SetClearColor(glm::vec4{ 0.1f, 0.1f, 0.1f, 1 });
-		//QCat::RenderCommand::Clear();
-
-		//QCat::Renderer::BeginScene(m_CameraController.GetCamera());
-
-		//QCat::Renderer::EndScene();
 	}
 	virtual void OnImGuiRender() override
 	{
-		//ImGui::Begin("Settings");
-		//ImGui::ColorEdit3("Square Color", glm::value_ptr(m_SquareColor));
-		//ImGui::End();
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 
 	}
 	void OnEvent(QCat::Event& e) override
@@ -60,12 +50,7 @@ public:
 	Sandbox()
 		:Application("QCat App",QCat::RenderAPI::API::OpenGL)
 	{
-		//PushLayer(new ExamLayer());
-		PushLayer(new QCat::ModelTestScene());
-		//PushLayer(new QCat::Sandbox2D());
-		//PushLayer(new QCat::TestScene());
-		//PushLayer(new QCat::PbrTest());
-		//PushLayer(new QCat::RenderGraphTest());
+		PushLayer(new ExamLayer());
 	}
 	~Sandbox()
 	{
