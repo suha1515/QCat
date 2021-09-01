@@ -11,10 +11,11 @@ namespace QCat
 	class DX11VertexShader;
 	class DX11PixelShader;
 	class DX11GeometryShader;
+	class DX11ComputeShader;
 	struct ElementRef;
 	enum class DXshaderType
 	{
-		None =0,VS, PS, GS
+		None =0,VS, PS, GS,CS
 	};
 	class DX11Shader;
 	class DXShader : public Shader
@@ -30,6 +31,7 @@ namespace QCat
 			Ref<DX11VertexShader> pvs;
 			Ref<DX11PixelShader> pps;
 			Ref<DX11GeometryShader> pgs;
+			Ref<DX11ComputeShader> pcs;
 		};
 		static const DXShader* s_CurrentlyBound;
 	public:
@@ -153,7 +155,24 @@ namespace QCat
 	private:
 		//VertexShader
 		Microsoft::WRL::ComPtr<ID3D11GeometryShader> pGeometryShader;
-		std::vector<char> data;
+	};
+	class DX11ComputeShader : public DX11Shader
+	{
+	public:
+		DX11ComputeShader(const std::string& name, const std::string& path);
+		DX11ComputeShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob);
+		~DX11ComputeShader();
+	public:
+		Microsoft::WRL::ComPtr <ID3D11ShaderReflection>& GetReflector() { return pReflector; };
+	public:
+		virtual void Bind()const;
+		virtual void UpdateBuffer() const;
+		virtual void UnBind()const;
+
+		const std::string& GetName()const { return m_name; }
+	private:
+		//VertexShader
+		Microsoft::WRL::ComPtr<ID3D11ComputeShader> pComputeShader;
 	};
 	
 }

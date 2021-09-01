@@ -3,7 +3,7 @@ namespace QCat
 {
 	enum class ShaderType
 	{
-		VS = 0, PS, GS, CS
+		NONE =0,VS , PS, GS, CS
 	};
 	enum class COMPARISON_FUNC
 	{

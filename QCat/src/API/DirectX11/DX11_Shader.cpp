@@ -13,6 +13,8 @@ namespace QCat
 			return DXshaderType::PS;
 		if (type == "geometry")
 			return DXshaderType::GS;
+		if(type == "compute")
+			return DXshaderType::CS;
 
 		QCAT_CORE_ASSERT(false, "Unknown shader Type!");
 		return DXshaderType::None;
@@ -135,6 +137,19 @@ namespace QCat
 				return pBlob;
 				break;
 			}
+			case DXshaderType::CS:
+			{
+				HRESULT hr = D3DCompile(src.c_str(), src.length(), errormsg,
+					nullptr, nullptr, "main", "cs_5_0",
+					flag, 0,
+					&pBlob, nullptr);
+				if (FAILED(hr))
+				{
+					QCAT_CORE_ASSERT(false, errormsg);
+				}
+				return pBlob;
+				break;
+			}
 			}
 			QCAT_CORE_ASSERT(false, "Compile Faile!");
 			return pBlob;
@@ -227,6 +242,12 @@ namespace QCat
 				shaderBlob = Compile(sourcecode, "ps_5_0", "PSMain", info);
 				m_Data.pps = CreateRef<DX11PixelShader>("", shaderBlob);
 			}
+			sourcecode = shaderSources[DXshaderType::CS];
+			if (sourcecode != "")
+			{
+				shaderBlob = Compile(sourcecode, "cs_5_0", "CSMain", info);
+				m_Data.pcs = CreateRef<DX11ComputeShader>("", shaderBlob);
+			}
 		}
 		else 
 		{
@@ -305,6 +326,8 @@ namespace QCat
 		{
 			m_Data.pgs = nullptr;
 		}
+
+
 		
 	}
 
@@ -322,6 +345,8 @@ namespace QCat
 			m_Data.pgs->Bind();
 		if(m_Data.pps)
 			m_Data.pps->Bind();
+		if (m_Data.pcs)
+			m_Data.pcs->Bind();
 	}
 	void DXShader::UpdateBuffer() const
 	{
@@ -342,6 +367,8 @@ namespace QCat
 			m_Data.pgs->UnBind();
 		if(m_Data.pps)
 			m_Data.pps->UnBind();
+		if (m_Data.pcs)
+			m_Data.pcs->UnBind();
 	}
 	void DXShader::SetInt(const std::string& name, int value, ShaderType type)
 	{
@@ -513,7 +540,7 @@ namespace QCat
 		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobVertex);
 
 		D3DReflect(pBlobVertex->GetBufferPointer(), pBlobVertex->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
-		MakeBufferElement();
+		//MakeBufferElement();
 		char* ptr = (char*)pBlobVertex->GetBufferPointer();
 		unsigned int size = pBlobVertex->GetBufferSize();
 		data.assign(size, 0);
@@ -534,7 +561,7 @@ namespace QCat
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
 		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
-		MakeBufferElement();
+		//MakeBufferElement();
 		char* ptr = (char*)pBlob->GetBufferPointer();
 		unsigned int size = pBlob->GetBufferSize();
 		data.assign(size, 0);
@@ -579,7 +606,7 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlobPixel;
 		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobPixel);
 		D3DReflect(pBlobPixel->GetBufferPointer(), pBlobPixel->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
-		MakeBufferElement();
+		//MakeBufferElement();
 		HRESULT result = gfx->GetDevice()->CreatePixelShader(pBlobPixel->GetBufferPointer(),
 			pBlobPixel->GetBufferSize(),
 			nullptr, &pPixelShader);
@@ -592,7 +619,7 @@ namespace QCat
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
 		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
-		MakeBufferElement();
+		//MakeBufferElement();
 		HRESULT result = gfx->GetDevice()->CreatePixelShader(pBlob->GetBufferPointer(),
 			pBlob->GetBufferSize(),
 			nullptr, &pPixelShader);
@@ -625,7 +652,7 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3DBlob> pBlobGeo;
 		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobGeo);
 		D3DReflect(pBlobGeo->GetBufferPointer(), pBlobGeo->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
-		MakeBufferElement();
+		//MakeBufferElement();
 		HRESULT result = gfx->GetDevice()->CreateGeometryShader(pBlobGeo->GetBufferPointer(),
 			pBlobGeo->GetBufferSize(),
 			nullptr, &pGeometryShader);
@@ -639,7 +666,7 @@ namespace QCat
 		m_name = name;
 		this->gfx = QGfxDeviceDX11::GetInstance();
 		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
-		MakeBufferElement();
+		//MakeBufferElement();
 		HRESULT result = gfx->GetDevice()->CreateGeometryShader(pBlob->GetBufferPointer(),
 			pBlob->GetBufferSize(),
 			nullptr, &pGeometryShader);
@@ -837,4 +864,49 @@ namespace QCat
 	}
 
 	
+	DX11ComputeShader::DX11ComputeShader(const std::string& name, const std::string& path)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		type = DXshaderType::CS;
+		m_name = name;
+		this->gfx = QGfxDeviceDX11::GetInstance();
+		Microsoft::WRL::ComPtr<ID3DBlob> pBlobGeo;
+		D3DReadFileToBlob(ToWide(path).c_str(), &pBlobGeo);
+		D3DReflect(pBlobGeo->GetBufferPointer(), pBlobGeo->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		//MakeBufferElement();
+		HRESULT result = gfx->GetDevice()->CreateComputeShader(pBlobGeo->GetBufferPointer(),
+			pBlobGeo->GetBufferSize(),
+			nullptr, &pComputeShader);
+	}
+
+	DX11ComputeShader::DX11ComputeShader(const std::string& name, const Microsoft::WRL::ComPtr<ID3DBlob>& pBlob)
+	{
+		QCAT_PROFILE_FUNCTION();
+
+		type = DXshaderType::CS;
+		m_name = name;
+		this->gfx = QGfxDeviceDX11::GetInstance();
+		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, &pReflector);
+		//MakeBufferElement();
+		HRESULT result = gfx->GetDevice()->CreateComputeShader(pBlob->GetBufferPointer(),
+			pBlob->GetBufferSize(),
+			nullptr, &pComputeShader);
+	}
+
+	DX11ComputeShader::~DX11ComputeShader()
+	{
+	}
+	void DX11ComputeShader::Bind() const
+	{
+		gfx->GetContext()->CSSetShader(pComputeShader.Get(), nullptr, 0u);
+	}
+	void DX11ComputeShader::UpdateBuffer() const
+	{
+	}
+	void DX11ComputeShader::UnBind() const
+	{
+		gfx->GetContext()->CSSetShader(nullptr,nullptr, 0u);
+	}
+
 }

@@ -1,4 +1,3 @@
-
 #include <QCat.h>
 
 // ---- Entry Point----//
@@ -23,7 +22,7 @@ public:
 	void OnAttach() override
 	{
 		QCat::RenderCommand::SetClearColor(glm::vec4(0.3f,0.3f,0.3f,1.0f));
-
+		computeShader = QCat::Shader::Create("Asset/shaders/hlsl/ComputShaderPractice.hlsl");
 	}
 	void OnUpdate(QCat::Timestep step) override
 	{
@@ -41,14 +40,14 @@ public:
 	}
 
 private:
-
+	QCat::Ref<QCat::Shader> computeShader;
 };
 
 class Sandbox : public QCat::Application
 {
 public:
 	Sandbox()
-		:Application("QCat App",QCat::RenderAPI::API::OpenGL)
+		:Application("QCat App",QCat::RenderAPI::API::DirectX11)
 	{
 		PushLayer(new ExamLayer());
 	}

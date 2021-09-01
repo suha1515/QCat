@@ -266,5 +266,79 @@ namespace QCat
 			}
 		}
 	}
+	DX11StructureBuffer::DX11StructureBuffer(uint32_t size, uint32_t count, void* pData)
+	{
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.ByteWidth = size * count;
+		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		desc.CPUAccessFlags = 0;
+		desc.StructureByteStride = size;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		D3D11_SUBRESOURCE_DATA initData;
+		initData.pSysMem = nullptr;
+		if (pData != nullptr)
+		{
+			initData.pSysMem = pData;
+		}
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, &initData, pBuffer.GetAddressOf());
+
+		// Create Shader ResourceView
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		srvDesc.Format = DXGI_FORMAT_UNKNOWN; //For StructureBuffer
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
+		srvDesc.BufferEx.FirstElement = 0;
+		srvDesc.BufferEx.Flags;
+		srvDesc.BufferEx.NumElements = count;
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(pBuffer.Get(), &srvDesc, pBufferView.GetAddressOf());
+	}
+	void DX11StructureBuffer::Bind(uint32_t slot, ShaderType type) const
+	{
+		switch (type)
+		{
+		case ShaderType::VS: QGfxDeviceDX11::GetInstance()->GetContext()->VSSetShaderResources(slot, 1, pBufferView.GetAddressOf()); break;
+		case ShaderType::PS: QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1, pBufferView.GetAddressOf()); break;
+		case ShaderType::CS: QGfxDeviceDX11::GetInstance()->GetContext()->CSSetShaderResources(slot, 1, pBufferView.GetAddressOf()); break;
+		case ShaderType::GS: QGfxDeviceDX11::GetInstance()->GetContext()->GSSetShaderResources(slot, 1, pBufferView.GetAddressOf()); break;
+		default:
+			QCAT_CORE_ERROR("StructBuffer Bind Error!: Shader Type Wrong!");
+		}
+		
+	}
+	DX11RWStructureBuffer::DX11RWStructureBuffer(uint32_t size, uint32_t count, void* pData)
+	{
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.ByteWidth = size * count;
+		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+		desc.CPUAccessFlags = 0;
+		desc.StructureByteStride = size;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		D3D11_SUBRESOURCE_DATA initData;
+		initData.pSysMem = nullptr;
+		if (pData != nullptr)
+		{
+			initData.pSysMem = pData;
+		}
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, &initData, pBuffer.GetAddressOf());
+
+		//Create Unordered Access View
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.Flags = 0;
+		uavDesc.Buffer.NumElements = count;
+
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateUnorderedAccessView(pBuffer.Get(), &uavDesc, pBufferView.GetAddressOf());
+	}
+	void DX11RWStructureBuffer::Bind(uint32_t slot, ShaderType type) const
+	{
+		switch (type)
+		{
+		case ShaderType::CS: QGfxDeviceDX11::GetInstance()->GetContext()->CSSetUnorderedAccessViews(slot, 1, pBufferView.GetAddressOf(),nullptr); break;
+		default:
+			QCAT_CORE_ERROR("RWStructBuffer Bind Error!: Shader Type isnt ComputShader!");
+		}
+	}
 }
 

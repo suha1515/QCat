@@ -198,4 +198,31 @@ namespace QCat
 			pgfx->GetContext()->GSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
 	};
+
+	class QCAT_API DX11StructureBuffer : public ShaderBuffer
+	{
+	public:
+		DX11StructureBuffer(uint32_t size, uint32_t count, void* pData=nullptr);
+		virtual ~DX11StructureBuffer() {};
+
+		virtual void Bind(uint32_t slot, ShaderType type = ShaderType::NONE) const override;
+	private:
+		D3D11_BUFFER_DESC desc;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> pBuffer;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pBufferView;
+
+	};
+	class QCAT_API DX11RWStructureBuffer : public ShaderBuffer
+	{
+	public:
+		DX11RWStructureBuffer(uint32_t size, uint32_t count, void* pData = nullptr);
+		virtual ~DX11RWStructureBuffer() {};
+
+		virtual void Bind(uint32_t slot, ShaderType type = ShaderType::NONE) const override;
+	private:
+		D3D11_BUFFER_DESC desc;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> pBuffer;
+		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> pBufferView;
+
+	};
 }

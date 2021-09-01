@@ -65,4 +65,21 @@ namespace QCat
 		return nullptr;
 	}
 	
+	Ref<ShaderBuffer> ShaderBuffer::Create(uint32_t size, uint32_t count, BufferType type, void* pData)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
+		case RenderAPI::API::OpenGL:	return  nullptr; break;
+		case RenderAPI::API::DirectX11: 
+			if(type == ShaderBuffer::BufferType::Read)
+				return CreateRef<DX11StructureBuffer>(size,count,pData);
+			else
+				return CreateRef<DX11RWStructureBuffer>(size, count, pData);
+			break;
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+
 }
