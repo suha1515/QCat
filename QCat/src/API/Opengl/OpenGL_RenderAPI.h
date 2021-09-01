@@ -17,6 +17,8 @@ namespace QCat
 		virtual void Clear() override;
 		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, unsigned int indexCount=0, DrawMode mode = DrawMode::TRIANGLES) override;
 		virtual void Draw(unsigned int startlocation, unsigned int count, DrawMode mode = DrawMode::TRIANGLES) override;
+		virtual void DispatchCompute(uint32_t groupx, uint32_t groupy, uint32_t groupz) override;
+
 		// depth-stencil option
 		virtual void SetDepthTest(bool enable)override;
 		virtual void SetDepthFunc(COMPARISON_FUNC func)override;

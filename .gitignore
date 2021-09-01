@@ -28,3 +28,4 @@ bin-int/
 QCat/3rdLib/VulkanSDK
 QCat_Editor/Asset/cache
 scripts/__pycache__
+*.txt

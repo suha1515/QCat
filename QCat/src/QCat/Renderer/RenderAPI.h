@@ -37,6 +37,8 @@ namespace QCat
 		virtual void Clear() = 0;
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, unsigned int indexCount = 0, DrawMode mode = DrawMode::TRIANGLES)=0;
 		virtual void Draw(unsigned int startlocation,unsigned int count , DrawMode mode = DrawMode::TRIANGLES) = 0;
+
+		virtual void DispatchCompute(uint32_t groupx, uint32_t groupy, uint32_t groupz) = 0;
 		// Depth Stencil Function
 		virtual void SetDepthTest(bool enable)=0;
 		virtual void SetDepthWriteMask(DEPTH_WRITE_MASK mask) = 0;

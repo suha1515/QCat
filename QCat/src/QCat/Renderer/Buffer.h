@@ -104,21 +104,23 @@ namespace QCat
 		virtual unsigned int GetCount() const = 0;
 		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int size=0);
 	};
-
+	enum class BufferType
+	{
+		Read = 0, ReadWrite
+	};
 	class ShaderBuffer
 	{
 	public:
-		enum class BufferType
-		{
-			Read = 0,ReadWrite
-		};
+		
 	public:
 		ShaderBuffer()=default;
 		virtual ~ShaderBuffer() {};
 
 		virtual void Bind(uint32_t slot,ShaderType type=ShaderType::NONE) const = 0;
-
+		virtual void ReadData(std::vector<char>& data) = 0;
 		static Ref<ShaderBuffer> Create(uint32_t size, uint32_t count, BufferType type,void* pData=nullptr);
-	private:
+	protected:
+		uint32_t dataSize=0;
+		uint32_t count=0; 
 	};
 }

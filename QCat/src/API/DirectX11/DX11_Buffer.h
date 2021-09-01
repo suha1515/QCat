@@ -206,6 +206,8 @@ namespace QCat
 		virtual ~DX11StructureBuffer() {};
 
 		virtual void Bind(uint32_t slot, ShaderType type = ShaderType::NONE) const override;
+		virtual void ReadData(std::vector<char>& data) override;
+
 	private:
 		D3D11_BUFFER_DESC desc;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pBuffer;
@@ -219,6 +221,7 @@ namespace QCat
 		virtual ~DX11RWStructureBuffer() {};
 
 		virtual void Bind(uint32_t slot, ShaderType type = ShaderType::NONE) const override;
+		virtual void ReadData(std::vector<char>& data) override;
 	private:
 		D3D11_BUFFER_DESC desc;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pBuffer;

@@ -123,6 +123,10 @@ namespace QCat
 		glDrawArrays(Utils::DrawModetoGL(mode), startlocation, count);
 		glBindVertexArray(0);
 	}
+	void OpenGLRenderAPI::DispatchCompute(uint32_t groupx, uint32_t groupy, uint32_t groupz)
+	{
+		glDispatchCompute(groupx, groupy, groupz);
+	}
 	void OpenGLRenderAPI::SetDepthTest(bool enable)
 	{
 		m_DepthStencilState->EnableDepth(enable);

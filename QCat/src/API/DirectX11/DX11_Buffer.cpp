@@ -268,19 +268,25 @@ namespace QCat
 	}
 	DX11StructureBuffer::DX11StructureBuffer(uint32_t size, uint32_t count, void* pData)
 	{
+		this->dataSize = size;
+		this->count = count;
+
 		desc.Usage = D3D11_USAGE_DEFAULT;
 		desc.ByteWidth = size * count;
 		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		desc.CPUAccessFlags = 0;
 		desc.StructureByteStride = size;
 		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-		D3D11_SUBRESOURCE_DATA initData;
-		initData.pSysMem = nullptr;
+		
 		if (pData != nullptr)
 		{
+			D3D11_SUBRESOURCE_DATA initData;
+			initData.pSysMem = nullptr;
 			initData.pSysMem = pData;
+			QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, &initData, pBuffer.GetAddressOf());
 		}
-		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, &initData, pBuffer.GetAddressOf());
+		else
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, 0, pBuffer.GetAddressOf());
 
 		// Create Shader ResourceView
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -305,22 +311,53 @@ namespace QCat
 		}
 		
 	}
+	void DX11StructureBuffer::ReadData(std::vector<char>& data)
+	{
+		D3D11_BUFFER_DESC outputDesc;
+		outputDesc.Usage = D3D11_USAGE_STAGING;
+		outputDesc.BindFlags = 0;
+		outputDesc.ByteWidth = this->dataSize * this->count;
+		outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		outputDesc.StructureByteStride = this->dataSize;
+		outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		ID3D11Buffer* outputBuffer = nullptr;
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&outputDesc, 0, &outputBuffer);
+		QGfxDeviceDX11::GetInstance()->GetContext()->CopyResource(outputBuffer, pBuffer.Get());
+
+		int size = this->dataSize * this->count;
+		if (data.size() != size)
+			data.resize(size);
+
+		D3D11_MAPPED_SUBRESOURCE mappedData;
+		QGfxDeviceDX11::GetInstance()->GetContext()->Map(outputBuffer, 0, D3D11_MAP_READ, 0, &mappedData);
+
+		char* pData = reinterpret_cast<char*>(mappedData.pData);
+		for (int i = 0; i < size; ++i)
+			data[i] = (pData)[i];
+		QGfxDeviceDX11::GetInstance()->GetContext()->Unmap(outputBuffer, 0);
+	}
 	DX11RWStructureBuffer::DX11RWStructureBuffer(uint32_t size, uint32_t count, void* pData)
 	{
+		this->dataSize = size;
+		this->count = count;
+
 		desc.Usage = D3D11_USAGE_DEFAULT;
 		desc.ByteWidth = size * count;
 		desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
 		desc.CPUAccessFlags = 0;
 		desc.StructureByteStride = size;
 		desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-		D3D11_SUBRESOURCE_DATA initData;
-		initData.pSysMem = nullptr;
+		
 		if (pData != nullptr)
 		{
+			D3D11_SUBRESOURCE_DATA initData;
+			initData.pSysMem = nullptr;
 			initData.pSysMem = pData;
+			QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, &initData, pBuffer.GetAddressOf());
 		}
-		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, &initData, pBuffer.GetAddressOf());
-
+		else
+			QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&desc, 0, pBuffer.GetAddressOf());
 		//Create Unordered Access View
 		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
 		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -339,6 +376,32 @@ namespace QCat
 		default:
 			QCAT_CORE_ERROR("RWStructBuffer Bind Error!: Shader Type isnt ComputShader!");
 		}
+	}
+	void DX11RWStructureBuffer::ReadData(std::vector<char>& data)
+	{
+		D3D11_BUFFER_DESC outputDesc;
+		outputDesc.Usage = D3D11_USAGE_STAGING;
+		outputDesc.BindFlags = 0;
+		outputDesc.ByteWidth = this->dataSize * this->count;
+		outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		outputDesc.StructureByteStride = this->dataSize;
+		outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+
+		ID3D11Buffer* outputBuffer = nullptr;
+		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&outputDesc, 0, &outputBuffer);
+		QGfxDeviceDX11::GetInstance()->GetContext()->CopyResource(outputBuffer, pBuffer.Get());
+
+		int size = this->dataSize * this->count;
+		if (data.size() != size)
+			data.resize(size);
+
+		D3D11_MAPPED_SUBRESOURCE mappedData;
+		QGfxDeviceDX11::GetInstance()->GetContext()->Map(outputBuffer, 0, D3D11_MAP_READ, 0, &mappedData);
+
+		char* pData = reinterpret_cast<char*>(mappedData.pData);
+		for (int i = 0; i < size; ++i)
+			data[i] = pData[i];
+		QGfxDeviceDX11::GetInstance()->GetContext()->Unmap(outputBuffer, 0);
 	}
 }
 

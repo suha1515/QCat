@@ -9,39 +9,9 @@
 
 #include "QCat/Renderer/Shader.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 
-
-class ExamLayer : public QCat::Layer
-{
-public:
-	ExamLayer()
-		:Layer("Example")
-	{
-
-	}
-	void OnAttach() override
-	{
-		QCat::RenderCommand::SetClearColor(glm::vec4(0.3f,0.3f,0.3f,1.0f));
-		computeShader = QCat::Shader::Create("Asset/shaders/hlsl/ComputShaderPractice.hlsl");
-	}
-	void OnUpdate(QCat::Timestep step) override
-	{
-		QCat::RenderCommand::Clear();
-
-	}
-	virtual void OnImGuiRender() override
-	{
-		//ImGui::ShowDemoWindow();
-
-	}
-	void OnEvent(QCat::Event& e) override
-	{
-		//m_CameraController.OnEvent(e);
-	}
-
-private:
-	QCat::Ref<QCat::Shader> computeShader;
-};
+#include "ExamLayer.h"
 
 class Sandbox : public QCat::Application
 {
@@ -49,7 +19,7 @@ public:
 	Sandbox()
 		:Application("QCat App",QCat::RenderAPI::API::DirectX11)
 	{
-		PushLayer(new ExamLayer());
+		PushLayer(new QCat::ExamLayer());
 	}
 	~Sandbox()
 	{

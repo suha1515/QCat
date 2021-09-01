@@ -48,6 +48,10 @@ namespace QCat
 			s_renderAPI->DrawIndexed(vertexArray, count,mode);
 			vertexArray->UnBind();
 		}
+		inline static void DispatchCompute(uint32_t groupx, uint32_t groupy, uint32_t groupz)
+		{
+			s_renderAPI->DispatchCompute(groupx, groupy, groupz);
+		}
 		// Depth Stencil State Function
 		inline static void SetDepthTest(bool enable)
 		{

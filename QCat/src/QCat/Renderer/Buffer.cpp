@@ -72,7 +72,7 @@ namespace QCat
 		case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
 		case RenderAPI::API::OpenGL:	return  nullptr; break;
 		case RenderAPI::API::DirectX11: 
-			if(type == ShaderBuffer::BufferType::Read)
+			if(type == BufferType::Read)
 				return CreateRef<DX11StructureBuffer>(size,count,pData);
 			else
 				return CreateRef<DX11RWStructureBuffer>(size, count, pData);

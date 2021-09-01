@@ -129,6 +129,10 @@ namespace QCat
 		m_RasterizState->Bind();
 		pgfx->GetContext()->Draw(count, startlocation);
 	}
+	void DX11RenderAPI::DispatchCompute(uint32_t groupx, uint32_t groupy, uint32_t groupz)
+	{
+		pgfx->GetContext()->Dispatch(groupx, groupy, groupz);
+	}
 	void DX11RenderAPI::SetDepthTest(bool enable)
 	{
 		m_DepthStencilState->EnableDepth(enable);
