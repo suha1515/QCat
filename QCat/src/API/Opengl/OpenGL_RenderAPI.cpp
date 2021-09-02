@@ -126,6 +126,7 @@ namespace QCat
 	void OpenGLRenderAPI::DispatchCompute(uint32_t groupx, uint32_t groupy, uint32_t groupz)
 	{
 		glDispatchCompute(groupx, groupy, groupz);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
 	void OpenGLRenderAPI::SetDepthTest(bool enable)
 	{

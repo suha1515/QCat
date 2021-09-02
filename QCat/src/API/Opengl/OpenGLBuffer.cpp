@@ -77,6 +77,34 @@ namespace QCat
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	
+	OpenGLShaderBuffer::OpenGLShaderBuffer(uint32_t size, uint32_t count, void* pData)
+	{
+		this->dataSize = size;
+		this->count = count;
+
+		glGenBuffers(1, &m_renderID);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_renderID);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, int(size * count), pData, GL_STATIC_DRAW);
+	}
+
+	void OpenGLShaderBuffer::Bind(uint32_t slot, ShaderType type) const
+	{
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, m_renderID);
+	}
+
+	void OpenGLShaderBuffer::ReadData(std::vector<char>& data)
+	{
+		int size = this->dataSize * this->count;
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_renderID);
+		char* pData = reinterpret_cast<char*>(glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, size, GL_MAP_READ_BIT));
+
+		for (int i = 0; i < size; ++i)
+			data[i] = pData[i];
+
+		//glMapNamedBufferRange(m_renderID,)
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	}
+
 	//Layout::Layout(const std::string& layoutname)
 	//{
 	//	pElement = Element(ShaderDataType::Struct, layoutname);

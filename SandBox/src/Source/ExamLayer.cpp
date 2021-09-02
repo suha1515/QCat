@@ -5,10 +5,10 @@ namespace QCat
 	void ExamLayer::OnAttach()
 	{
 		RenderCommand::SetClearColor(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
-		computeShader =Shader::Create("Asset/shaders/hlsl/ComputShaderPractice.hlsl");
+		computeShader =Shader::Create(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/ComputShaderPractice.hlsl":"Asset/shaders/glsl/ComputShaderPractice.glsl");
 
-		std::vector<Data> dataA(32);
-		std::vector<Data> dataB(32);
+		std::vector<Data> dataA(12800);
+		std::vector<Data> dataB(12800);
 
 		for (int i = 0; i < 32; ++i)
 		{
@@ -19,8 +19,6 @@ namespace QCat
 			dataB[i].v2 = glm::vec2(0, -i);
 		}
 
-		
-		
 		InputBufferA = ShaderBuffer::Create(sizeof(Data), 32, BufferType::Read, dataA.data());
 		InputBufferB = ShaderBuffer::Create(sizeof(Data), 32, BufferType::Read, dataB.data());
 		OutputBufferA =ShaderBuffer::Create(sizeof(Data), 32, BufferType::ReadWrite);
@@ -30,15 +28,17 @@ namespace QCat
 		InputBufferB->Bind(1, ShaderType::CS);
 		OutputBufferA->Bind(0,ShaderType::CS);
 
+		// Check The Compute Shader Calculation time
 		std::chrono::system_clock::time_point time1 = std::chrono::system_clock::now();
-		RenderCommand::DispatchCompute(1, 1, 1);
+		RenderCommand::DispatchCompute(50, 1, 1);
 		std::chrono::system_clock::time_point time2 = std::chrono::system_clock::now();
 		std::chrono::nanoseconds t =time2- time1;
 		QCAT_CORE_INFO("Compute Shader time : {0}", t.count());
 		
-		std::vector<Data> dataC(32);
+		// Check The Cpu Calculation time
+		std::vector<Data> dataC(12800);
 		time1 = std::chrono::system_clock::now();
-		for (int i = 0; i < 32; ++i)
+		for (int i = 0; i < 12800; ++i)
 		{
 			dataC[i].v1 = (dataA[i].v1 + dataB[i].v1);
 			dataC[i].v2 = (dataA[i].v2 + dataB[i].v2);
@@ -46,9 +46,6 @@ namespace QCat
 		time2 = std::chrono::system_clock::now();
 		t = time2 - time1;
 		QCAT_CORE_INFO("CPU time : {0}", t.count() );
-
-
-		
 
 		std::vector<char> data(sizeof(Data) * 32);
 		OutputBufferA->ReadData(data);

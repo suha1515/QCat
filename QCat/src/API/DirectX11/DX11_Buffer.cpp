@@ -292,9 +292,9 @@ namespace QCat
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		srvDesc.Format = DXGI_FORMAT_UNKNOWN; //For StructureBuffer
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-		srvDesc.BufferEx.FirstElement = 0;
-		srvDesc.BufferEx.Flags;
-		srvDesc.BufferEx.NumElements = count;
+		srvDesc.Buffer.FirstElement = 0;
+		//srvDesc.Buffer.Flags=0;
+		srvDesc.Buffer.NumElements = count;
 
 		QGfxDeviceDX11::GetInstance()->GetDevice()->CreateShaderResourceView(pBuffer.Get(), &srvDesc, pBufferView.GetAddressOf());
 	}

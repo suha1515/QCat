@@ -33,12 +33,7 @@ namespace QCat
 			case spirv_cross::SPIRType::BaseType::UInt64:	return "Unsigned-Int64"; break;
 			case spirv_cross::SPIRType::BaseType::UShort:	return "Unsigned-Short"; break;
 			}
-		}
-		/*static ShaderDataType SPirvBaseTypeToString(spirv_cross::SPIRType::BaseType type)
-		{
-			
-		}*/
-		
+		}	
 		ShaderDataType GetDataType(size_t vecSize, size_t column, spirv_cross::SPIRType::BaseType type)
 		{
 			switch (vecSize)
@@ -105,6 +100,8 @@ namespace QCat
 				return GL_FRAGMENT_SHADER;
 			if (type == "geometry")
 				return GL_GEOMETRY_SHADER;
+			if (type == "compute")
+				return GL_COMPUTE_SHADER;
 
 			QCAT_CORE_ASSERT(false, "Unknown shader Type!");
 			return 0;
@@ -116,6 +113,7 @@ namespace QCat
 			case GL_VERTEX_SHADER: return shaderc_glsl_vertex_shader;
 			case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
 			case GL_GEOMETRY_SHADER: return shaderc_glsl_geometry_shader;
+			case GL_COMPUTE_SHADER: return shaderc_glsl_compute_shader;
 			}
 			QCAT_CORE_ASSERT(false,"GL_TO_SHADERC Stage type error!");
 			return (shaderc_shader_kind)0;
@@ -127,6 +125,7 @@ namespace QCat
 			case GL_VERTEX_SHADER: return "GL_VERTEX_SHADER";
 			case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
 			case GL_GEOMETRY_SHADER: return "GL_GEOMETRY_SHADER";
+			case GL_COMPUTE_SHADER: return "GL_COMPUTE_SHADER";
 			}
 			QCAT_CORE_ASSERT(false, "GL_TO_SHADERC Stage type error!");
 			return nullptr;
@@ -148,6 +147,7 @@ namespace QCat
 			case GL_VERTEX_SHADER: return ".cached_opengl.vert";
 			case GL_FRAGMENT_SHADER: return ".cached_opengl.frag";
 			case GL_GEOMETRY_SHADER: return ".cached_opengl.geom";
+			case GL_COMPUTE_SHADER: return ".cached_opengl.comp";
 			}
 			QCAT_CORE_ASSERT(false);
 			return "";
@@ -159,6 +159,7 @@ namespace QCat
 			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
 			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
 			case GL_GEOMETRY_SHADER: return ".cached_vulkan.geom";
+			case GL_COMPUTE_SHADER: return ".cached_vulkan.comp";
 			}
 			QCAT_CORE_ASSERT(false);
 			return "";
@@ -166,7 +167,6 @@ namespace QCat
 
 	}
 	
-
 	OpenGLShader::OpenGLShader(const std::string& filepath)
 		:m_FilePath(filepath)
 	{

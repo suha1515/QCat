@@ -92,7 +92,10 @@ namespace QCat
 	private:
 		unsigned int geometryShader = 0;
 	};
+	class OpenGLComputeShader
+	{
 
+	};
 	class OpenGLPixelShader
 	{
 	public:
