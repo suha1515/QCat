@@ -222,7 +222,7 @@ namespace QCat
 	class TextureView
 	{
 	public:
-		enum class ViewType{ShaderResourceView=0,RenderTargetView,DepthStencilView};
+		enum class ViewType{ShaderResourceView=0,RenderTargetView,DepthStencilView,ReadWriteView};
 	public:
 		TextureView() = default;
 		virtual ~TextureView() = default;
@@ -262,6 +262,20 @@ namespace QCat
 		DepthStencilView() = default;
 		virtual ~DepthStencilView() = default;
 		virtual void Bind(uint32_t framebufferid, AttachmentType type)=0;
+	};
+
+	class ReadWriteView : public TextureView
+	{
+	public:
+		enum class Mode
+		{
+			Read_Only=0, Write_Only, Read_Write
+		};
+		static Ref<ReadWriteView> Create(TextureType type,const Ref<Texture>& originTexture, TextureFormat foramt, uint32_t startMip, uint32_t startLayer, uint32_t numlayer,Mode mode=Mode::Read_Write);
+	public:
+		ReadWriteView() = default;
+		virtual ~ReadWriteView() = default;
+		virtual void Bind(uint32_t slot) const = 0;
 	};
 
 	class TextureUtility

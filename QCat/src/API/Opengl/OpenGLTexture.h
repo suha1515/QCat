@@ -194,6 +194,22 @@ namespace QCat
 	private:
 		uint32_t m_renderID;
 		uint32_t m_startMip;
+	};
+	class OpenGLReadWriteView : public ReadWriteView
+	{
+	public:
+		OpenGLReadWriteView() = default;
+		OpenGLReadWriteView(TextureType type,const Ref<Texture>& originTexture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer,Mode mode=Mode::Read_Write);
+		virtual ~OpenGLReadWriteView() override;
+
+		virtual void Bind(uint32_t slot) const override;
+		virtual void* GetTextureView() const override { return (void*)m_renderID; };
+	private:
+		bool layered = false;
+		uint32_t m_renderID;
+		uint32_t layer = 0;
+		GLenum access;
+		GLenum format;
 
 	};
 }

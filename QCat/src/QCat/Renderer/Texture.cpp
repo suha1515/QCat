@@ -198,4 +198,16 @@ namespace  QCat
 
 	
 
+	Ref<ReadWriteView> ReadWriteView::Create(TextureType type, const Ref<Texture>& originTexture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer, Mode mode)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
+		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLReadWriteView>(type, originTexture, format, startMip, startLayer, numlayer,mode);
+		case RenderAPI::API::DirectX11:		return nullptr;//CreateRef<DX11DepthStencilView>(type, originTexture, foramt, startMip, startLayer, numlayer);
+		}
+		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
+		return nullptr;
+	}
+
 }

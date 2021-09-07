@@ -19,6 +19,8 @@ namespace QCat
 
 		m_ColorConstantBuffer = ConstantBuffer::Create(sizeof(Color), 0);
 		m_OutlineConstantBuffer = ConstantBuffer::Create(sizeof(Outline), 0);
+
+		Sampler_Desc desc;
 	}
 	PostProcessPass::~PostProcessPass()
 	{
@@ -27,12 +29,43 @@ namespace QCat
 	{
 		m_ScreenShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PostProcessing/ScreenShader.hlsl" : "Asset/shaders/glsl/PostProcessing/ScreenShader.glsl");
 		m_OutlineShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PostProcessing/OutlineEffect.hlsl" : "Asset/shaders/glsl/PostProcessing/OutlineEffect.glsl");
+		m_VerticalBlurShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PostProcessing/VerticalBlur.hlsl" : "Asset/shaders/glsl/PostProcessing/VerticalBlur.glsl");
+		m_HorizontalBlurShader = ShaderLibrary::Load(RenderAPI::GetAPI() == RenderAPI::API::DirectX11 ? "Asset/shaders/hlsl/PostProcessing/HorizontalBlur.hlsl" : "Asset/shaders/glsl/PostProcessing/HorizontalBlur.glsl");
 	}
 	void PostProcessPass::Execute(Ref<Scene>& scene)
 	{
 		Texture_Desc desc = m_ColorBuffer->GetDesc();
+		Ref<Texture> m_ColorBuffer2;
+		m_ColorBuffer2 = Texture2D::Create(TextureFormat::RGBA8, Sampler_Desc(), desc.Width, desc.Height);
 		RenderCommand::SetViewport(0, 0, desc.Width, desc.Height);
 		
+		Ref<TextureShaderView> readView1 = TextureShaderView::Create(TextureType::Texture2D, m_ColorBuffer, TextureFormat::RGBA8, 0, 1, 0, 1);
+		Ref<TextureShaderView> readView2 = TextureShaderView::Create(TextureType::Texture2D, m_ColorBuffer2, TextureFormat::RGBA8, 0, 1, 0, 1);
+		Ref<ReadWriteView> writeView1 = ReadWriteView::Create(TextureType::Texture2D, m_ColorBuffer, TextureFormat::RGBA8, 0, 0, 1);
+		Ref<ReadWriteView> writeView2 = ReadWriteView::Create(TextureType::Texture2D, m_ColorBuffer2, TextureFormat::RGBA8, 0, 0, 1);
+		//Blur
+		for (int i = 0; i < 4; ++i)
+		{
+			m_HorizontalBlurShader->Bind();
+
+			readView1->Bind(0,ShaderType::CS);
+			writeView2->Bind(0);
+
+			int xGroup = ceilf((float)desc.Width / 256.0f);
+			RenderCommand::DispatchCompute(xGroup, desc.Height, 1);
+
+			m_HorizontalBlurShader->UnBind();
+
+			m_VerticalBlurShader->Bind();
+
+			readView2->Bind(0, ShaderType::CS);
+			writeView1->Bind(0);
+
+			int yGroup = ceilf((float)desc.Height / 256.0f);
+			RenderCommand::DispatchCompute(desc.Width, yGroup, 1);
+
+			m_VerticalBlurShader->UnBind();
+		}
 
 		//Outline Stencil making
 		RenderCommand::SetStencilTest(true);

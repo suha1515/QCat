@@ -19,9 +19,12 @@ namespace QCat
 		//Shader
 		Ref<Shader> m_ScreenShader;
 		Ref<Shader> m_OutlineShader;
+		Ref<Shader> m_VerticalBlurShader;
+		Ref<Shader> m_HorizontalBlurShader;
 		//Input
 		Ref<Texture> m_ColorBuffer;
 		Ref<Texture> m_DepthBuffer;
+
 
 		Ref<Texture> m_ScreenTexture;
 

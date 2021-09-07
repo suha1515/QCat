@@ -846,4 +846,78 @@ namespace QCat
 	
 	
 
+	OpenGLReadWriteView::OpenGLReadWriteView(TextureType type,const Ref<Texture>& originTexture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer, Mode mode)
+	{
+		if ((numlayer - startLayer) > 1)
+			layered = true;
+		else
+		{
+			layered = false;
+			layer = startLayer;
+		}
+
+		switch (mode)
+		{
+		case Mode::Read_Only: access = GL_READ_ONLY; break;
+		case Mode::Write_Only: access = GL_WRITE_ONLY; break;
+		case Mode::Read_Write: access = GL_READ_WRITE; break;
+		default:
+			QCAT_CORE_ASSERT("unknown Mode for ReadWriteView!");
+			break;
+		}
+
+		Texture_Desc srcdesc = originTexture->GetDesc();
+		bool multisampled = srcdesc.SampleCount > 1;
+		GLenum target = Utils::GetTextureTarget(type, multisampled);
+		GLenum internalformat = Utils::GetTextureInternalFormat(format);
+		this->format = internalformat;
+
+		uint32_t bitSize = Utils::GetBitSizeFromFormat(format);
+		uint32_t srcBitSize = Utils::GetBitSizeFromFormat(srcdesc.Format);
+
+		//GLenum srcTextureFormat = Utils::GetTextureDataFromFormat(srcdesc.Format);
+		uint32_t srcTexMipLevels = srcdesc.MipLevels;
+		uint32_t srcTexLayerNum = srcdesc.ArraySize;
+		GLuint srcTexID = (GLuint)originTexture->GetTexture();
+		glGenTextures(1, &m_renderID);
+		switch (type)
+		{
+		case TextureType::Texture1D:
+		case TextureType::Texture1DArray:
+		case TextureType::Texture2D:
+		case TextureType::Texture2DArray:
+			glTextureView(m_renderID, target, srcTexID, internalformat, startMip, 1, startLayer, numlayer);
+			break;
+		default:
+			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for DepthStencilView!");
+			break;
+		}
+		this->viewDesc = srcdesc;
+		this->viewDesc.ArraySize = numlayer;
+		this->viewDesc.MipLevels = 1;
+		this->viewDesc.Format = format;
+		uint32_t temp_width = srcdesc.Width;
+		uint32_t temp_height = srcdesc.Height;
+		for (int i = 0; i < startMip; ++i)
+		{
+			if (temp_width == 1 || temp_height == 1)
+				break;
+			temp_width = std::max<unsigned int>(1, (temp_width / 2));
+			temp_height = std::max<unsigned int>(1, (temp_height / 2));
+		}
+		this->viewDesc.Width = temp_width;
+		this->viewDesc.Height = temp_height;
+		this->viewDesc.Type = type;
+		
+	}
+
+	OpenGLReadWriteView::~OpenGLReadWriteView()
+	{
+		glDeleteTextures(1, &m_renderID);
+	}
+
+	void OpenGLReadWriteView::Bind(uint32_t slot) const
+	{
+		glBindImageTexture(slot, m_renderID, 0, layered, layer, access, format);
+	}
 }
