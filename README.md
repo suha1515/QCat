@@ -1,5 +1,7 @@
 # QCat
 QCat Engine
+![2](https://user-images.githubusercontent.com/44773554/131804867-3be8dda8-2206-4032-bce0-cb316bca4c40.PNG)
+
 https://docs.google.com/presentation/d/1K9nU--GRioxq3LCUa_G441JZe4bG993vVGfFOvKmzxQ/edit?usp=sharing
 
 git clone --recursive https://github.com/suha1515
@@ -22,5 +24,5 @@ there is
  - Render Graph System
  - Scene Save/Load (not now dynamic mesh save)
  - Guizmo (ImGuizmo)
-
+ - Compute Shader ( Now workOn)
 * You should UnLoad SandBox Project or it cant be build 
