@@ -674,6 +674,10 @@ namespace QCat
 	{
 		glBindTextureUnit(slot, m_renderID);
 	}
+	void OpenGLTextureShaderView::UnBind(uint32_t slot, ShaderType type) const
+	{
+		glBindTextureUnit(slot, 0);
+	}
 	OpenGLRenderTargetView::OpenGLRenderTargetView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer)
 		:m_renderID(0), m_startMip(startMip)
 	{
@@ -919,5 +923,9 @@ namespace QCat
 	void OpenGLReadWriteView::Bind(uint32_t slot) const
 	{
 		glBindImageTexture(slot, m_renderID, 0, layered, layer, access, format);
+	}
+	void OpenGLReadWriteView::UnBind(uint32_t slot) const
+	{
+		
 	}
 }

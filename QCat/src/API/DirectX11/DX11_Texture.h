@@ -182,6 +182,7 @@ namespace QCat
 		virtual ~DX11ShaderView() override;
 
 		virtual void Bind(uint32_t slot, ShaderType type) const override;
+		virtual void UnBind(uint32_t slot, ShaderType type) const override;
 
 		virtual void* GetTextureView() const override { return (void*)pShaderView.Get(); };
 	private:
@@ -215,5 +216,18 @@ namespace QCat
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepthStencilView = nullptr;
 		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	};
-	
+	class DX11ReadWriteTextureView : public ReadWriteView
+	{
+	public:
+		DX11ReadWriteTextureView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer, Mode mode = Mode::Read_Write);
+		virtual ~DX11ReadWriteTextureView() {};
+
+		virtual void* GetTextureView() const override { return (void*)pUnorderedAccessView.Get(); };
+		virtual void Bind(uint32_t slot) const override;
+		virtual void UnBind(uint32_t slot) const override;
+
+	private:
+		Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> pUnorderedAccessView = nullptr;
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+	};
 }

@@ -46,8 +46,8 @@ namespace QCat
 		{}
 		virtual ~SamplerState() = default;
 
-		virtual void Bind(unsigned int slot) = 0;
-		virtual void UnBind(unsigned int slot) = 0;
+		virtual void Bind(unsigned int slot,ShaderType type = ShaderType::PS) = 0;
+		virtual void UnBind(unsigned int slot, ShaderType type = ShaderType::PS) = 0;
 
 		virtual void Invalidate() = 0;
 

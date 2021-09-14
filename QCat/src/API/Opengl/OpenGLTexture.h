@@ -165,6 +165,8 @@ namespace QCat
 		virtual ~OpenGLTextureShaderView() override;
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
 		virtual void Bind(uint32_t slot, ShaderType type) const override;
+		virtual void UnBind(uint32_t slot, ShaderType type) const override;
+
 	private:
 		uint32_t m_renderID;
 	};
@@ -203,6 +205,8 @@ namespace QCat
 		virtual ~OpenGLReadWriteView() override;
 
 		virtual void Bind(uint32_t slot) const override;
+		virtual void UnBind(uint32_t slot) const override;
+
 		virtual void* GetTextureView() const override { return (void*)m_renderID; };
 	private:
 		bool layered = false;

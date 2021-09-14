@@ -159,7 +159,7 @@ namespace QCat
 		textureDesc.SampleDesc.Count = samples;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;
-		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET ;
 		textureDesc.CPUAccessFlags = 0;
 		if (mipLevel !=1 && mipLevel>=0)
 			textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
@@ -199,7 +199,7 @@ namespace QCat
 		textureDesc.Usage = Utils::GetUsageDX(usage);
 		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 		if (m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R24G8_TYPELESS && m_dataFormat != DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS)
-			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+			textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET| D3D11_BIND_UNORDERED_ACCESS;
 		else
 			textureDesc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
 
@@ -1007,6 +1007,27 @@ namespace QCat
 		}
 	}
 
+	void DX11ShaderView::UnBind(uint32_t slot, ShaderType type) const
+	{
+		QCAT_PROFILE_FUNCTION();
+		ID3D11ShaderResourceView* nullSRV[1] = { 0 };
+		switch (type)
+		{
+		case ShaderType::VS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->VSSetShaderResources(slot, 1u, nullSRV);
+			break;
+		case ShaderType::GS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->GSSetShaderResources(slot, 1u, nullSRV);
+			break;
+		case ShaderType::PS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->PSSetShaderResources(slot, 1u, nullSRV);
+			break;
+		case ShaderType::CS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->CSSetShaderResources(slot, 1u, nullSRV);
+			break;
+		}
+	}
+
 	DX11RenderTargetView::DX11RenderTargetView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip,  uint32_t startLayer, uint32_t numlayer)
 	{
 		Texture_Desc srcTexDesc = texture->GetDesc();
@@ -1251,6 +1272,115 @@ namespace QCat
 
 			QGfxDeviceDX11::GetInstance()->GetContext()->CopySubresourceRegion(dsttexture2D, mipLevel, 0, 0, 0, srctexture2D, mipLevel, &box);
 		}
+	}
+
+	DX11ReadWriteTextureView::DX11ReadWriteTextureView(TextureType type, const Ref<Texture>& texture, TextureFormat format, uint32_t startMip, uint32_t startLayer, uint32_t numlayer, Mode mode)
+	{
+		Texture_Desc srcTexDesc = texture->GetDesc();
+		DXGI_FORMAT srcTexFormat = Utils::GetDirectDataType(srcTexDesc.Format);
+		DXGI_FORMAT viewTexFormat = Utils::GetDirectDataType(format);
+
+		uint32_t srcDimension = Utils::GetDimensionFromType(srcTexDesc.Type);
+
+
+		bool pass = true;
+		if (srcTexDesc.MipLevels < startMip)
+		{
+			QCAT_CORE_ERROR("UnorderedView Contruction Error : MipLevel is wrong value for OriginTexture");
+			pass = false;
+		}
+		if (srcTexDesc.ArraySize < startLayer || srcTexDesc.ArraySize < startLayer + numlayer)
+		{
+			QCAT_CORE_ERROR("UnorderedView Contruction Error : ArrayIndex is Over or nuimLayer is over!");
+			pass = false;
+		}
+		D3D11_UAV_DIMENSION dstDimension = Utils::GetUAVDimensionFromType(type);
+
+		uavDesc.Format = Utils::MapTypeSRV(viewTexFormat);
+		uavDesc.ViewDimension = dstDimension;
+
+		ID3D11Texture1D* texture1D = nullptr;
+		ID3D11Texture2D* texture2D = nullptr;
+		ID3D11Texture3D* texture3D = nullptr;
+		switch (srcDimension)
+		{
+		case 1:		texture1D = (ID3D11Texture1D*)texture->GetTextureHandle(); break;
+		case 2:		texture2D = (ID3D11Texture2D*)texture->GetTextureHandle(); break;
+		case 3:		texture3D = (ID3D11Texture3D*)texture->GetTextureHandle(); break;
+		default:
+			break;
+		}
+		uint32_t layerstart = startLayer;
+		uint32_t layercount = numlayer;
+		uint32_t mipstart = startMip;
+		//if (TextureType::TextureCubeArray == type)
+		//{
+		//	dstDimension = multisampled ? D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY : D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+		//}
+
+		if (numlayer > 1 || startLayer > 0)
+		{
+			if (TextureType::Texture1D == type)
+				dstDimension = D3D11_UAV_DIMENSION_TEXTURE1DARRAY;
+			else if (TextureType::Texture2D == type)
+				dstDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+			uavDesc.ViewDimension = dstDimension;
+		}
+
+		switch (dstDimension)
+		{
+		case D3D11_UAV_DIMENSION_TEXTURE1D:
+			uavDesc.Texture1D.MipSlice = mipstart;
+			break;
+		case D3D11_UAV_DIMENSION_TEXTURE1DARRAY:
+			uavDesc.Texture1DArray.MipSlice = mipstart;
+			uavDesc.Texture1DArray.ArraySize = layercount;
+			uavDesc.Texture1DArray.FirstArraySlice = layerstart;
+			break;
+		case D3D11_UAV_DIMENSION_TEXTURE2D:
+			uavDesc.Texture2D.MipSlice = mipstart;
+			break;
+		case D3D11_UAV_DIMENSION_TEXTURE2DARRAY:
+			uavDesc.Texture2DArray.MipSlice = mipstart;
+			uavDesc.Texture2DArray.ArraySize = layercount;
+			uavDesc.Texture2DArray.FirstArraySlice = layerstart;
+			break;
+		case D3D11_UAV_DIMENSION_TEXTURE3D:
+			uavDesc.Texture3D.MipSlice = startMip;
+			uavDesc.Texture3D.FirstWSlice = startLayer;
+			uavDesc.Texture3D.WSize = numlayer;
+			break;
+		default:
+			QCAT_CORE_ERROR("Texture View Contruction Error! : Wrong Texture Type for DepthStenilView!");
+			break;
+		}
+		ID3D11Resource* textureresource = nullptr;
+		if (texture1D != nullptr)
+			textureresource = texture1D;
+		else if (texture2D != nullptr)
+			textureresource = texture2D;
+		else if (texture3D != nullptr)
+			textureresource = texture3D;
+
+		// Create ShaderResouceView
+		HRESULT result = QGfxDeviceDX11::GetInstance()->GetDevice()->CreateUnorderedAccessView(
+			textureresource, &uavDesc, &pUnorderedAccessView
+		);
+		if (result != S_OK)
+		{
+			QCAT_CORE_ERROR("UnorderedAccessView Contruction Failed!");
+		}
+	}
+
+	void DX11ReadWriteTextureView::Bind(uint32_t slot) const
+	{
+		QGfxDeviceDX11::GetInstance()->GetContext()->CSSetUnorderedAccessViews(slot, 1u, pUnorderedAccessView.GetAddressOf(),nullptr);
+	}
+
+	void DX11ReadWriteTextureView::UnBind(uint32_t slot) const
+	{
+		ID3D11UnorderedAccessView* nullUAV[1] = { 0 };
+		QGfxDeviceDX11::GetInstance()->GetContext()->CSSetUnorderedAccessViews(slot, 1u, nullUAV, nullptr);
 	}
 
 }

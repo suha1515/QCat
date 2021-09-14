@@ -41,13 +41,13 @@ namespace QCat
     
         //Color Buffer , DepthBuffer , IDBuffer
         Sampler_Desc smpDesc;
+        smpDesc.addressU = WrapingMode::CLAMP;
+        smpDesc.addressV = WrapingMode::CLAMP;
         m_Colorbuffer = Texture2D::Create(TextureFormat::RGBA8, smpDesc, width, height);
         m_DepthBuffer = Texture2D::Create(TextureFormat::DEPTH24STENCIL8, smpDesc, width, height);
         smpDesc.MIN = Filtering::POINT;
         smpDesc.MAG = Filtering::POINT;
         m_EntityIDBuffer = Texture2D::Create(TextureFormat::RED32_INTEGER, smpDesc,width,height);
-        smpDesc.addressU = WrapingMode::CLAMP;
-        smpDesc.addressV = WrapingMode::CLAMP;
         m_ScreenTexture = Texture2D::Create(TextureFormat::RGBA8, smpDesc, width, height);
 
        

@@ -204,7 +204,7 @@ namespace  QCat
 		{
 		case RenderAPI::API::None:			QCAT_CORE_ASSERT(false, "RenderAPI isnt selected! : VertexArray Error"); return nullptr;
 		case RenderAPI::API::OpenGL:		return CreateRef<OpenGLReadWriteView>(type, originTexture, format, startMip, startLayer, numlayer,mode);
-		case RenderAPI::API::DirectX11:		return nullptr;//CreateRef<DX11DepthStencilView>(type, originTexture, foramt, startMip, startLayer, numlayer);
+		case RenderAPI::API::DirectX11:		return CreateRef<DX11ReadWriteTextureView>(type, originTexture, format, startMip, startLayer, numlayer);
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;

@@ -265,17 +265,39 @@ namespace QCat
 	DX11Sampler::~DX11Sampler()
 	{
 	}
-	void DX11Sampler::Bind(unsigned int slot)
+	void DX11Sampler::Bind(unsigned int slot, ShaderType type)
 	{
 		if (IsChanged)
 		{
 			Invalidate();
 			IsChanged = false;
 		}
-		QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(slot, 1u, pSamplerState.GetAddressOf());
+		switch (type)
+		{
+		case ShaderType::VS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->VSSetSamplers(slot, 1u, pSamplerState.GetAddressOf()); break;
+		case ShaderType::GS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->GSSetSamplers(slot, 1u, pSamplerState.GetAddressOf()); break;
+		case ShaderType::PS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(slot, 1u, pSamplerState.GetAddressOf()); break;
+		case ShaderType::CS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->CSSetSamplers(slot, 1u, pSamplerState.GetAddressOf()); break;
+		}
 	}
-	void DX11Sampler::UnBind(unsigned int slot)
+	void DX11Sampler::UnBind(unsigned int slot, ShaderType type )
 	{
+		ID3D11SamplerState* nullSampler[1] = { 0 };
+		switch (type)
+		{
+		case ShaderType::VS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->VSSetSamplers(slot, 1u, nullSampler); break;
+		case ShaderType::GS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->GSSetSamplers(slot, 1u, nullSampler); break;
+		case ShaderType::PS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->PSSetSamplers(slot, 1u, nullSampler); break;
+		case ShaderType::CS:
+			QGfxDeviceDX11::GetInstance()->GetContext()->CSSetSamplers(slot, 1u, nullSampler); break;
+		}
 	}
 	void DX11Sampler::Invalidate()
 	{

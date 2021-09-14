@@ -10,8 +10,8 @@ namespace QCat
 		DX11Sampler(Sampler_Desc desc);
 		virtual ~DX11Sampler();
 
-		virtual void Bind(unsigned int slot) override;
-		virtual void UnBind(unsigned int slot) override;
+		virtual void Bind(unsigned int slot, ShaderType type = ShaderType::PS) override;
+		virtual void UnBind(unsigned int slot, ShaderType type = ShaderType::PS) override;
 
 		void Invalidate() override;
 	private:

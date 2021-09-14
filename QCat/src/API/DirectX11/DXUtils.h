@@ -82,27 +82,40 @@ namespace QCat
 			case DXGI_FORMAT_R8_UNORM:				  return TextureFormat::R8;
 			}
 		}
-		static D3D11_SRV_DIMENSION GetSRVDimensionFromType(TextureType type,bool multisample)
+		static D3D11_SRV_DIMENSION GetSRVDimensionFromType(TextureType type,bool multisampled)
 		{
 			switch (type)
 			{
 			case TextureType::Texture1D:			return D3D11_SRV_DIMENSION_TEXTURE1D;
 			case TextureType::Texture1DArray:		return D3D11_SRV_DIMENSION_TEXTURE1DARRAY;
-			case TextureType::Texture2D:		    return multisample ? D3D11_SRV_DIMENSION_TEXTURE2DMS  : D3D11_SRV_DIMENSION_TEXTURE2D;
-			case TextureType::Texture2DArray:       return multisample ? D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY: D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+			case TextureType::Texture2D:		    return multisampled ? D3D11_SRV_DIMENSION_TEXTURE2DMS  : D3D11_SRV_DIMENSION_TEXTURE2D;
+			case TextureType::Texture2DArray:       return multisampled ? D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY: D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 			case TextureType::TextureCube:		    return D3D11_SRV_DIMENSION_TEXTURECUBE;
 			case TextureType::TextureCubeArray:		 return D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
 			case TextureType::Texture3D:			 return D3D11_SRV_DIMENSION_TEXTURE3D;
 			}
 		}
-		static D3D11_RTV_DIMENSION GetRTVDimensionFromType(TextureType type, bool multisample)
+		static D3D11_UAV_DIMENSION GetUAVDimensionFromType(TextureType type)
+		{
+			switch (type)
+			{
+			case TextureType::Texture1D:			return D3D11_UAV_DIMENSION_TEXTURE1D;
+			case TextureType::Texture1DArray:		return D3D11_UAV_DIMENSION_TEXTURE1DARRAY;
+			case TextureType::Texture2D:		    return D3D11_UAV_DIMENSION_TEXTURE2D;
+			case TextureType::Texture2DArray:       return D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
+			case TextureType::Texture3D:			 return D3D11_UAV_DIMENSION_TEXTURE3D;
+			default:
+				QCAT_CORE_ERROR("UavDimension is wrong!");
+			}
+		}
+		static D3D11_RTV_DIMENSION GetRTVDimensionFromType(TextureType type, bool multisampled)
 		{
 			switch (type)
 			{
 			case TextureType::Texture1D:			return D3D11_RTV_DIMENSION_TEXTURE1D;
 			case TextureType::Texture1DArray:		return D3D11_RTV_DIMENSION_TEXTURE1DARRAY;
-			case TextureType::Texture2D:		    return multisample ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
-			case TextureType::Texture2DArray:       return multisample ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+			case TextureType::Texture2D:		    return multisampled ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+			case TextureType::Texture2DArray:       return multisampled ? D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY : D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
 			case TextureType::Texture3D:			 return D3D11_RTV_DIMENSION_TEXTURE3D;
 			default:
 				QCAT_CORE_ASSERT(false, "Wrong RTV textureType!");

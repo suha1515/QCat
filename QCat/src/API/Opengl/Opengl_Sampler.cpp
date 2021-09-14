@@ -14,7 +14,7 @@ namespace QCat
 	{
 		glDeleteSamplers(1, &id);
 	}
-	void OpenGLSampler::Bind(unsigned int textureId)
+	void OpenGLSampler::Bind(unsigned int textureId, ShaderType type )
 	{
 		if (IsChanged)
 		{
@@ -23,7 +23,7 @@ namespace QCat
 		}
 		glBindSampler(textureId, id);
 	}
-	void OpenGLSampler::UnBind(unsigned int slot)
+	void OpenGLSampler::UnBind(unsigned int slot, ShaderType type )
 	{
 		glBindSampler(slot, 0);
 	}

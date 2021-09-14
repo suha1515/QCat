@@ -242,6 +242,7 @@ namespace QCat
 		virtual ~TextureShaderView() = default;
 
 		virtual void Bind(uint32_t slot, ShaderType type) const = 0;
+		virtual void UnBind(uint32_t slot, ShaderType type) const = 0;
 	};
 	class RenderTargetView : public TextureView
 	{
@@ -276,6 +277,8 @@ namespace QCat
 		ReadWriteView() = default;
 		virtual ~ReadWriteView() = default;
 		virtual void Bind(uint32_t slot) const = 0;
+		virtual void UnBind(uint32_t slot) const = 0;
+
 	};
 
 	class TextureUtility

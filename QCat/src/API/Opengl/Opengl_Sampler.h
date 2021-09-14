@@ -9,8 +9,8 @@ namespace QCat
 		OpenGLSampler(Sampler_Desc desc);
 		virtual ~OpenGLSampler();
 
-		virtual void Bind(unsigned int slot)override;
-		virtual void UnBind(unsigned int slot) override;
+		virtual void Bind(unsigned int slot, ShaderType type = ShaderType::PS)override;
+		virtual void UnBind(unsigned int slot, ShaderType type = ShaderType::PS) override;
 	
 		void Invalidate() override;
 	private:
