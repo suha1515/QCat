@@ -3,30 +3,24 @@
 
 namespace QCat
 {
-	DX11VertexBuffer::DX11VertexBuffer(unsigned int size)
-	{
-		QCAT_PROFILE_FUNCTION();
-
-		//vertex Bufferf
-		D3D11_BUFFER_DESC bd = {};
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.Usage = D3D11_USAGE_DYNAMIC;
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		bd.MiscFlags = 0u;
-		bd.ByteWidth = size;
-		bd.StructureByteStride = 0u;
-
-		HRESULT result = QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&bd, nullptr, &m_pVertexBuffer);
-	}
-	DX11VertexBuffer::DX11VertexBuffer(float* vertices,unsigned int size,unsigned int stride)
+	DX11VertexBuffer::DX11VertexBuffer(void* vertices,unsigned int size, BufferUsage usage ,unsigned int stride)
 		:m_stride(stride)
 	{
 		QCAT_PROFILE_FUNCTION();
 
+		D3D11_USAGE dxusage;
+		switch (usage)
+		{
+		case BufferUsage::Default: dxusage = D3D11_USAGE_DEFAULT; break;
+		case BufferUsage::Dynamic: dxusage = D3D11_USAGE_DYNAMIC; break;
+		case BufferUsage::Immutable: dxusage = D3D11_USAGE_IMMUTABLE; break;
+		case BufferUsage::Staging: dxusage = D3D11_USAGE_STAGING;  break;
+		}
+
 		//vertex Bufferf
 		D3D11_BUFFER_DESC bd = {};
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.Usage = dxusage;
 		bd.CPUAccessFlags = 0u;
 		bd.MiscFlags = 0u;
 		bd.ByteWidth = size;
@@ -63,14 +57,23 @@ namespace QCat
 		// after Unmap gpu can access (cpu cant)
 		QGfxDeviceDX11::GetInstance()->GetContext()->Unmap(m_pVertexBuffer.Get(), 0u);
 	}
-	DX11IndexBuffer::DX11IndexBuffer(unsigned int* indices,unsigned int size)
+	DX11IndexBuffer::DX11IndexBuffer(unsigned int* indices,unsigned int size,BufferUsage usage)
 	{
 		QCAT_PROFILE_FUNCTION();
+
+		D3D11_USAGE dxusage;
+		switch (usage)
+		{
+		case BufferUsage::Default: dxusage = D3D11_USAGE_DEFAULT; break;
+		case BufferUsage::Dynamic: dxusage = D3D11_USAGE_DYNAMIC; break;
+		case BufferUsage::Immutable: dxusage = D3D11_USAGE_IMMUTABLE; break;
+		case BufferUsage::Staging: dxusage = D3D11_USAGE_STAGING;  break;
+		}
 
 		m_count = size;
 		D3D11_BUFFER_DESC ibd = {};
 		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		ibd.Usage = D3D11_USAGE_DEFAULT;
+		ibd.Usage = dxusage;
 		ibd.CPUAccessFlags = 0u;
 		ibd.MiscFlags = 0u;
 		ibd.ByteWidth = m_count * sizeof(unsigned int);
@@ -78,9 +81,6 @@ namespace QCat
 		D3D11_SUBRESOURCE_DATA isd = {};
 		isd.pSysMem = indices;
 		HRESULT result = QGfxDeviceDX11::GetInstance()->GetDevice()->CreateBuffer(&ibd, &isd, &m_pIndexBuffer);
-		if (result == S_OK)
-		{
-		}
 	}
 	void DX11IndexBuffer::Bind() const
 	{

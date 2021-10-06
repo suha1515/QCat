@@ -1,10 +1,4 @@
 #type compute
-
-cbuffer fixed
-{
-	static const int blurRadius = 5;
-};
-
 Texture2D inputImage : register(t0);
 SamplerState splr : register(s0);
 RWTexture2D<float4> outputImage: register(u0);

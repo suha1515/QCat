@@ -29,9 +29,8 @@ namespace QCat
 		}
 
 	private:
-		Ref<Shader> computeShader;
-		Ref<ShaderBuffer> InputBufferA;
-		Ref<ShaderBuffer> InputBufferB;
-		Ref<ShaderBuffer> OutputBufferA;
+		Ref<VertexArray> dynamicBuffer;
+		Ref<VertexBuffer> vertexBuffer;
+		Ref<IndexBuffer> IndexBuffer;
 	};
 }

@@ -83,12 +83,12 @@ namespace QCat
 			}
 
 			Ref<VertexArray> vertarray = VertexArray::Create(meshName);
-			Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+			Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr,vertices.size() * sizeof(Vertex), BufferUsage::Default);
 
 			vertexBuffer->SetData(vertices.data(), sizeof(Vertex) * vertices.size());
 
 			// makeIndexBuffer
-			Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+			Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices.data(), indices.size(),BufferUsage::Default);
 
 			Ref<Shader> shader;
 

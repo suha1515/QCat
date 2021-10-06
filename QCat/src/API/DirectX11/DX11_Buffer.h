@@ -60,8 +60,7 @@ namespace QCat
 	class QCAT_API DX11VertexBuffer : public VertexBuffer
 	{
 	public:
-		DX11VertexBuffer(unsigned int size);
-		DX11VertexBuffer(float* vertices, unsigned int size,unsigned int stride=0);
+		DX11VertexBuffer(void* vertices, unsigned int size, BufferUsage usage, unsigned int stride = 0);
 		~DX11VertexBuffer(){}
 
 		virtual void Bind() const override ;
@@ -79,7 +78,7 @@ namespace QCat
 	class QCAT_API DX11IndexBuffer : public IndexBuffer
 	{
 	public:
-		DX11IndexBuffer(unsigned int* indices ,unsigned int size);
+		DX11IndexBuffer(unsigned int* indices ,unsigned int size,BufferUsage usage);
 		~DX11IndexBuffer() {}
 
 		virtual void Bind() const override;

@@ -5,6 +5,10 @@
 
 namespace QCat
 {
+	enum class BufferUsage
+	{
+		Default = 0, Dynamic, Immutable, Staging
+	};
 	struct BufferElement
 	{
 		std::string name;
@@ -76,9 +80,10 @@ namespace QCat
 		unsigned int m_stride;
 	};
 	
-	class VertexBuffer
+	class VertexBuffer 
 	{
 	public:
+		VertexBuffer() = default;
 		virtual ~VertexBuffer() {}
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
@@ -87,22 +92,21 @@ namespace QCat
 		virtual const Ref<BufferLayout>& GetLayout() const = 0;
 		virtual void SetLayout(Ref<BufferLayout> layout) = 0;
 
-
-		static Ref<VertexBuffer> Create(unsigned int size);
-		static Ref<VertexBuffer> Create(float* vertices, unsigned int size);
+		static Ref<VertexBuffer> Create(void* vertices, unsigned int size,BufferUsage usage);
 
 	};
 	// Currently QCat Only supoort 32-bit index buffer
 	class IndexBuffer
 	{
 	public:
+		IndexBuffer() = default;
 		virtual ~IndexBuffer(){}
 
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
 
 		virtual unsigned int GetCount() const = 0;
-		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int size=0);
+		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int size, BufferUsage usage);
 	};
 	enum class BufferType
 	{
@@ -110,8 +114,6 @@ namespace QCat
 	};
 	class ShaderBuffer
 	{
-	public:
-		
 	public:
 		ShaderBuffer()=default;
 		virtual ~ShaderBuffer() {};

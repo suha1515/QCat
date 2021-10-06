@@ -11,8 +11,7 @@ namespace QCat
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer(unsigned int size);
-		OpenGLVertexBuffer(float* vertices, unsigned int size);
+		OpenGLVertexBuffer(void* data, unsigned int size, BufferUsage usage);
 		virtual ~OpenGLVertexBuffer();
 
 		virtual void Bind() const override;
@@ -28,7 +27,7 @@ namespace QCat
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer(unsigned int* indices, unsigned int count);
+		OpenGLIndexBuffer(unsigned int* indices, unsigned int count, BufferUsage usage);
 		virtual ~OpenGLIndexBuffer();
 
 		virtual void Bind() const;

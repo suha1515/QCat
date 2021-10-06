@@ -8,35 +8,24 @@
 
 namespace QCat
 {
-	Ref<VertexBuffer> VertexBuffer::Create(unsigned int size)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
-		case RenderAPI::API::OpenGL:	return CreateRef<OpenGLVertexBuffer>(size); break;
-		case RenderAPI::API::DirectX11: return CreateRef<DX11VertexBuffer>(size); break;
-		}
-		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
-		return nullptr;
-	}
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned int size)
+	Ref<VertexBuffer> VertexBuffer::Create(void* vertices, unsigned int size, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{
 			case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
-			case RenderAPI::API::OpenGL:	return CreateRef<OpenGLVertexBuffer>(vertices, size); break;
-			case RenderAPI::API::DirectX11: return  CreateRef<DX11VertexBuffer>(vertices, size); break;
+			case RenderAPI::API::OpenGL:	return CreateRef<OpenGLVertexBuffer>(vertices, size, usage); break;
+			case RenderAPI::API::DirectX11: return  CreateRef<DX11VertexBuffer>(vertices, size, usage); break;
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;
 	}
-	Ref<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int size)
+	Ref<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int size, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{
 			case RenderAPI::API::None:		QCAT_CORE_ASSERT(false, "RenderAPI is none!"); return nullptr; break;
-			case RenderAPI::API::OpenGL:	return  CreateRef<OpenGLIndexBuffer>(indices, size); break;
-			case RenderAPI::API::DirectX11: return CreateRef<DX11IndexBuffer>(indices, size); break;
+			case RenderAPI::API::OpenGL:	return  CreateRef<OpenGLIndexBuffer>(indices, size, usage); break;
+			case RenderAPI::API::DirectX11: return CreateRef<DX11IndexBuffer>(indices, size, usage); break;
 		}
 		QCAT_CORE_ASSERT(false, "Unknown RenderAPI!");
 		return nullptr;

@@ -55,7 +55,7 @@ namespace QCat
 		const void* extraData = nullptr;
 
 		//vertexBuffer
-		s_data.QuadVertexBuffer = VertexBuffer::Create(s_data.MaxVertices * sizeof(QuadVertex));
+		s_data.QuadVertexBuffer = VertexBuffer::Create(nullptr,s_data.MaxVertices * sizeof(QuadVertex), BufferUsage::Default);
 		
 		unsigned int* quadIndices = new unsigned int[s_data.MaxIndices];
 
@@ -75,7 +75,7 @@ namespace QCat
 		Sampler_Desc desc;
 		//indexBuffer
 		Ref<IndexBuffer> quadIB;
-		quadIB = IndexBuffer::Create(quadIndices,s_data.MaxIndices);
+		quadIB = IndexBuffer::Create(quadIndices,s_data.MaxIndices,BufferUsage::Default);
 		s_data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[]quadIndices;
 		
