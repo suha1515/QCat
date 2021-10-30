@@ -92,7 +92,7 @@ namespace QCat
 		virtual const Ref<BufferLayout>& GetLayout() const = 0;
 		virtual void SetLayout(Ref<BufferLayout> layout) = 0;
 
-		static Ref<VertexBuffer> Create(void* vertices, unsigned int size,BufferUsage usage);
+		static Ref<VertexBuffer> Create(void* vertices, unsigned int size,BufferUsage usage = BufferUsage::Default);
 
 	};
 	// Currently QCat Only supoort 32-bit index buffer
@@ -106,7 +106,7 @@ namespace QCat
 		virtual void UnBind() const = 0;
 
 		virtual unsigned int GetCount() const = 0;
-		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int size, BufferUsage usage);
+		static Ref<IndexBuffer> Create(unsigned int* indices, unsigned int size, BufferUsage usage = BufferUsage::Default);
 	};
 	enum class BufferType
 	{

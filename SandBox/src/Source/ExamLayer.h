@@ -1,6 +1,6 @@
 #pragma once
 #include <QCat.h>
-
+#include "../Geometry/Cube.h"
 namespace QCat
 {
 	class ExamLayer : public Layer
@@ -32,5 +32,28 @@ namespace QCat
 		Ref<VertexArray> dynamicBuffer;
 		Ref<VertexBuffer> vertexBuffer;
 		Ref<IndexBuffer> IndexBuffer;
+
+		Ref<Shader> particleShader;
+
+		struct modelInfo
+		{
+			glm::mat4 transform;
+			glm::mat4 Invtransform;
+		};
+
+		struct cameraInfo
+		{
+			glm::mat4 projection;
+			glm::mat4 view;
+			glm::vec3 viewPos;
+		};
+		Ref<ConstantBuffer> transformBuffer;
+		Ref<ConstantBuffer> cameraBuffer;
+		Ref<Cube> cube;
+
+
+		glm::mat4 viewMatrix;
+		glm::mat4 projMatrix;
+		glm::vec3 cameraPosition;
 	};
 }

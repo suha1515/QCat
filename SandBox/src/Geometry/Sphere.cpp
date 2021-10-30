@@ -147,7 +147,7 @@ namespace QCat
 			vertices[indices[i+2]].BiTangent = bitangent1;
 		}
 		// VertexBuffer
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr, vertices.size() * sizeof(Vertex));
 		vertexBuffer->SetData(vertices.data(), vertices.size() *sizeof(Vertex));
 
 		// IndexBuffer

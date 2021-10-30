@@ -14,7 +14,7 @@ namespace QCat
 		m_VertexArray = VertexArray::Create();
 
 		// VertexBuffer
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(36 * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr,36 * sizeof(Vertex));
 		Vertex vertex[36];
 		// front
 		vertex[0] = { {-1.0f,-1.0f,-1.0f} };

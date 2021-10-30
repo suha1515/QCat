@@ -18,7 +18,7 @@ namespace QCat
 		// VertexArray Object Creation
 		m_VertexArray = VertexArray::Create();
 		// make vertexBuffer
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.data(),vertices.size() * sizeof(Vertex));
 
 		vertexBuffer->SetData(vertices.data(), sizeof(Vertex) * vertices.size());
 
