@@ -47,7 +47,7 @@ namespace QCat
 		{
 			if (in->GetName() == input->GetName())
 			{
-				QCAT_CORE_ERROR("{0} Pass Error : there is same input in pass passname:{1}", this->name, in->GetName());
+				QCAT_CORE_ERROR("{0} Pass Error : there is same input in pass passname:{1}", this->name, in->GetName().c_str());
 				overlap = true;
 				break;
 			}
@@ -63,7 +63,7 @@ namespace QCat
 		{
 			if (out->GetName() == output->GetName())
 			{
-				QCAT_CORE_ERROR("{0} Pass Error :there is same output in pass passname:{1}", this->name, out->GetName());
+				QCAT_CORE_ERROR("{0} Pass Error :there is same output in pass passname:{1}", this->name, out->GetName().c_str());
 				overlap = true;
 				break;
 			}

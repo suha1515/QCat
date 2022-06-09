@@ -100,7 +100,7 @@ namespace QCat
 				return m_materials[name];
 			else
 			{
-				QCAT_CORE_ERROR("There is no Material ID : {0}", name);
+				QCAT_CORE_ERROR("There is no Material ID : {0}", name.c_str());
 				return nullptr;
 			}
 		}
@@ -110,7 +110,7 @@ namespace QCat
 				return m_materials[name] = material;
 			else
 			{
-				QCAT_CORE_ERROR("There is already Material at ID : {0}", name);
+				QCAT_CORE_ERROR("There is already Material at ID : {0}", name.c_str());
 				return nullptr;
 			}
 		}

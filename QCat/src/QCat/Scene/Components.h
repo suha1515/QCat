@@ -153,7 +153,7 @@ namespace QCat
 				vertexArray = mesh;
 			}
 			else
-				QCAT_CORE_ERROR("There is no mesh name '{0}'", meshName);
+				QCAT_CORE_ERROR("There is no mesh name '{0}'", meshName.c_str());
 		}
 		void AddMesh(Ref<VertexArray>& vertexarray)
 		{
@@ -180,7 +180,7 @@ namespace QCat
 			if (mesh != nullptr)
 				vertexArray = mesh;
 			else
-				QCAT_CORE_ERROR("There is no mesh name '{0}'", meshName);
+				QCAT_CORE_ERROR("There is no mesh name '{0}'", meshName.c_str());
 		}
 		void AddMesh(Ref<VertexArray>& vertexarray)
 		{

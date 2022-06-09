@@ -64,7 +64,7 @@ namespace QCat
 			auto type = output.GetType();
 			if (GetType() != type)
 			{
-				QCAT_CORE_ERROR("{0} Pass Error : Input and output type missmatch", GetPassName());
+				QCAT_CORE_ERROR("{0} Pass Error : Input and output type missmatch", GetPassName().c_str());
 			}
 			else
 			{
@@ -72,7 +72,7 @@ namespace QCat
 
 				DataType type = dataoutput->GetDataType();
 				if (this->type != type)
-					QCAT_CORE_ERROR("{0} Pass Error : InputData Type and OutputData Type missmatch!", GetPassName());
+					QCAT_CORE_ERROR("{0} Pass Error : InputData Type and OutputData Type missmatch!", GetPassName().c_str());
 
 				pData = dataoutput->GetData();
 			}

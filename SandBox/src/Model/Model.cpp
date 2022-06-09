@@ -75,7 +75,8 @@ namespace QCat
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
 			std::string error = "Error:Assimp:";
-			QCAT_ASSERT(false, error + importer.GetErrorString());
+			error += importer.GetErrorString();
+			QCAT_ASSERT(false, error.c_str());
 		}
 
 		Entity rootNode;

@@ -22,7 +22,7 @@ namespace QCat
 		m_VertexArray = VertexArray::Create("Cube");
 
 		// VertexBuffer
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(36 * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr, 36 * sizeof(Vertex));
 		Vertex vertex[36];
 		// backward
 		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? 1.0f : 0.0f;
@@ -156,7 +156,7 @@ namespace QCat
 		Ref<VertexArray> m_VertexArray = VertexArray::Create("Cube");
 
 		// VertexBuffer
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(36 * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr, 36 * sizeof(Vertex));
 		Vertex vertex[36];
 		// backward
 		float bias = RenderAPI::GetAPI() == RenderAPI::API::OpenGL ? 1.0f : 0.0f;

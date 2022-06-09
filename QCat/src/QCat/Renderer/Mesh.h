@@ -77,7 +77,7 @@ namespace QCat
 		{
 			if (IsExist_(meshName))
 			{
-				QCAT_CORE_ERROR("There is already same meshname :{0}", meshName);
+				QCAT_CORE_ERROR("There is already same meshname :{0}", meshName.c_str());
 				return false;
 			}
 			else

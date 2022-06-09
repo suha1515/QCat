@@ -255,7 +255,7 @@ namespace QCat
 		}
 		else
 		{
-			QCAT_CORE_ERROR("Could not open file '{0}'", filepath);
+			QCAT_CORE_ERROR("Could not open file '{0}'", filepath.c_str());
 		}
 		return result;
 	}
@@ -502,7 +502,7 @@ namespace QCat
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-			QCAT_CORE_ERROR("Shader linking faild({0} : \n{1}", m_FilePath, infoLog.data());
+			QCAT_CORE_ERROR("Shader linking faild({0} : \n{1}", m_FilePath.c_str(), infoLog.data());
 			glDeleteProgram(program);
 			for (auto id : shaderIDs)
 				glDeleteShader(id);

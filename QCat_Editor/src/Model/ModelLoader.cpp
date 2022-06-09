@@ -259,7 +259,7 @@ namespace QCat
 		}
 		
 		vertarray = VertexArray::Create(meshName);
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr, vertices.size() * sizeof(Vertex));
 
 		vertexBuffer->SetData(vertices.data(), sizeof(Vertex) * vertices.size());
 
@@ -420,7 +420,7 @@ namespace QCat
 		ExtractBoneWeightForVertices(vertices, mesh, scene, boneStructure,comp);
 
 		vertarray = VertexArray::Create(meshName);
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(vertices.size() * sizeof(AnimatedVertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr, vertices.size() * sizeof(AnimatedVertex));
 
 		vertexBuffer->SetData(vertices.data(), sizeof(AnimatedVertex) * vertices.size());
 

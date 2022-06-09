@@ -49,7 +49,7 @@ namespace QCat
 				}
 				if (!bound)
 				{
-					QCAT_CORE_ERROR("output named {0} not found in globaloutput",input->GetOutputName());
+					QCAT_CORE_ERROR("output named {0} not found in globaloutput",input->GetOutputName().c_str());
 					std::runtime_error("RenderGraph LinkInput Error!");
 				}
 			}
@@ -68,7 +68,7 @@ namespace QCat
 				}
 				if (!bound)
 				{
-					QCAT_CORE_ERROR("PassName {0} not found", inputPassName);
+					QCAT_CORE_ERROR("PassName {0} not found", inputPassName.c_str());
 					std::runtime_error("RenderGraph LinkInput Error!");
 				}
 			}

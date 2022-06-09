@@ -38,7 +38,7 @@ namespace QCat
 		}
 		else
 		{
-			QCAT_CORE_ERROR("Could not open file '{0}'", filepath);
+			QCAT_CORE_ERROR("Could not open file '{0}'", filepath.c_str());
 		}
 		return result;
 	}
@@ -202,7 +202,7 @@ namespace QCat
 				std::string msg = (const char*)errorBlob->GetBufferPointer();
 				info.meesage = profile + "Shader Compile Error!\n";
 				info.meesage += msg;
-				QCAT_CORE_ERROR(info.meesage);
+				QCAT_CORE_ERROR(info.meesage.c_str());
 				QCAT_CORE_ASSERT(msg.find("warning", 0) != std::string::npos,"Shader Error!")
 			}
 		}

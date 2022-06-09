@@ -539,7 +539,7 @@ namespace QCat
 		std::string extension = filepath.substr(begin + 1, filepath.length());
 		if (extension != "QScene")
 		{
-			QCAT_CORE_ERROR("Wrong Extension for LoadScene! Wrong Extension : {0}", extension);
+			QCAT_CORE_ERROR("Wrong Extension for LoadScene! Wrong Extension : {0}", extension.c_str());
 		}
 		else
 		{

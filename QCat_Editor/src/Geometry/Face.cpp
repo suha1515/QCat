@@ -19,7 +19,7 @@ namespace QCat
 		m_VertexArray = VertexArray::Create();
 
 		// VertexBuffer
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(24 * sizeof(Vertex));
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(nullptr, 24 * sizeof(Vertex));
 
 		Vertex vertex[6];
 		vertex[0] = { {-0.5f*size,-0.5f*size,0.0f,},{0.0f,0.0f,-1.0f},{0.0f,1.0f} };

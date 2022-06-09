@@ -194,7 +194,7 @@ namespace QCat
 		//dynamicBuffer->UnBind();
 		//particleShader->UnBind();
 
-		cameraInfo caminfo;
+		/*cameraInfo caminfo;
 		caminfo.projection = projMatrix;
 		caminfo.view = viewMatrix;
 
@@ -208,7 +208,7 @@ namespace QCat
 		transformBuffer->Bind(1);
 		cube->Draw();
 
-		particleShader->UnBind();
+		particleShader->UnBind();*/
 
 	}
 
