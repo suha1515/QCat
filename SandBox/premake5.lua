@@ -12,7 +12,7 @@ project "SandBox"
 
 	environmentVariables =
 	{
-		"PATH=%{wks.location}/QCat/3rdLib/assimp/Debug;%PATH%"
+		"PATH=%{wks.location}/QCat/3rdLib/dll;%PATH%"
 	}
 	debugenvs(environmentVariables)
 	libdirs { "%{wks.location}/QCat/3rdLib/assimp/Debug" }
